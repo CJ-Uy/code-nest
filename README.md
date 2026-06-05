@@ -1,10 +1,17 @@
 # CODE Portal prototype
 
-This repo contains a Next.js prototype for the CODE Portal member workspace. The design covers the signed-in experience for member profiles, private content, short links, CRS events, calendar, announcements, and scoped admin tools.
+This repo contains a Next.js prototype for CODE. The public site lives at `/`, public articles live under `/articles`, and the member portal demo lives at `/portal`.
 
 ## Design
 
-The original static exports live in `open design/`. The current product direction is documented in `design.md` and implemented in `src/app/page.tsx`.
+The original static exports live in `open design/`. The current product direction is documented in `design.md`.
+
+Route map:
+
+- `/`: public publishing home
+- `/articles`: public article index
+- `/articles/[slug]`: public article detail
+- `/portal`: member workspace demo
 
 The UI uses Tailwind CSS v4 and shadcn-style local components in `src/components/ui`. Shared design tokens live in `src/app/globals.css`.
 
@@ -18,7 +25,7 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Edit `src/app/page.tsx` for the prototype shell and module content.
+Edit `src/app/page.tsx` for the public site and `src/components/portal-workspace.tsx` for the member workspace.
 
 ## Preview
 

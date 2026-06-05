@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "CODE Portal",
-	description: "Member workspace design for CODE content, retention, links, calendar, announcements, and admin tools.",
+	title: "CODE",
+	description: "Public CODE publishing site with a private member portal demo.",
 };
 
 export default function RootLayout({

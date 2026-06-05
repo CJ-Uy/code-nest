@@ -2,9 +2,16 @@
 
 ## Product shape
 
-CODE Portal should feel like a quiet member workspace, not a marketing site. The public site can keep articles, public pages, and a low-emphasis sign-in link. After sign-in, members land on one hub that brings together the profile, private library, short links, CRS events, calendar, announcements, and admin tools.
+CODE should open as a public publishing site, not as the member portal. The public site keeps articles, public resources, event notices, and non-confidential updates on `/`. A low-emphasis member access link points to `/portal`, where the signed-in member demo lives.
 
-The older `open design` folder split these into many static pages and referenced missing CSS, JavaScript, and image assets. The new direction keeps the same product scope but removes duplicate navigation and compresses the experience into a single shell with clear module tabs.
+The older `open design` folder split the member area into many static pages and referenced missing CSS, JavaScript, and image assets. The current direction keeps the same member scope but separates the public site from the member workspace.
+
+## Public routes
+
+- `/`: public landing, featured writing, public library preview, public updates, and low-emphasis member access.
+- `/articles`: public publishing index.
+- `/articles/[slug]`: public article detail pages.
+- `/portal`: member workspace demo. Authentication is not wired yet.
 
 ## Main modules
 
@@ -19,7 +26,8 @@ The older `open design` folder split these into many static pages and referenced
 
 ## UX decisions
 
-- One shell is easier than ten pages for members. Module tabs let users move quickly without losing context.
+- The home route should serve readers first. Members can enter the portal through a quiet access link.
+- One portal shell is easier than ten member pages. Module tabs let users move quickly without losing context.
 - Admin tools stay visible only as a module in the signed-in workspace. Super admins inherit all scoped roles, while specific admins see only the queues they can act on.
 - CRS is modeled as a simple lifecycle: create, scan, archive, approve. Feedback forum access and selected surveys are treated as separate actions.
 - The private library is filter-first. Graph search is presented as an advanced assist, not the default way to find content.
@@ -29,7 +37,7 @@ The older `open design` folder split these into many static pages and referenced
 
 The app uses Tailwind CSS v4 and shadcn-style local components. Tokens live in `src/app/globals.css`, while reusable primitives live in `src/components/ui`.
 
-The visual direction is restrained and operational: neutral surfaces, teal primary actions, small amber and sky states, compact cards, clear tables, visible focus rings, and no decorative blobs or oversized marketing hero sections.
+The visual direction follows the supplied CODE brand assets. Main colors are navy `#061B30` and `#0A182E`, blue `#0C315D`, light blue `#D8DFE9`, dark gray `#121315`, white gray `#F5F5F6`, and mid grays from the logo exports.
 
 ## Writing rules
 
@@ -37,4 +45,4 @@ Interface copy should be plain and specific. Avoid em dashes, curly quotes, prom
 
 ## Current prototype
 
-`src/app/page.tsx` implements the signed-in workspace with interactive module switching and basic library filtering. It is still a front-end scope prototype. Authentication, database models, QR generation, camera scanning, analytics, permissions, and graph retrieval should be built as separate implementation phases.
+`src/app/page.tsx` implements the public site. `src/components/portal-workspace.tsx` implements the signed-in workspace with interactive module switching and basic library filtering. Authentication, database-backed content, QR generation, camera scanning, analytics, permissions, and graph retrieval should be built as separate implementation phases.
