@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -19,20 +20,27 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
 	return (
 		<main className="min-h-screen bg-background text-foreground">
-			<article className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-				<Button asChild variant="ghost" size="sm">
-					<Link href="/articles">
-						<ArrowLeft />
-						Articles
+			<header className="border-b bg-card">
+				<div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+					<Link href="/" aria-label="CODE home">
+						<Image src="/code-logo-full-navy.png" alt="CODE" width={132} height={44} priority style={{ height: "auto" }} />
 					</Link>
-				</Button>
-				<div className="mt-10">
+					<Button asChild variant="ghost" size="sm">
+						<Link href="/articles">
+							<ArrowLeft />
+							Articles
+						</Link>
+					</Button>
+				</div>
+			</header>
+			<article className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+				<div>
 					<div className="flex flex-wrap gap-2">
 						<Badge variant="outline">{article.category}</Badge>
 						<Badge variant="secondary">{article.date}</Badge>
 						<Badge variant="secondary">{article.readTime}</Badge>
 					</div>
-					<h1 className="mt-5 text-4xl font-semibold tracking-normal sm:text-5xl">{article.title}</h1>
+					<h1 className="mt-5 text-4xl font-bold sm:text-5xl">{article.title}</h1>
 					<p className="mt-5 text-lg leading-8 text-muted-foreground">{article.excerpt}</p>
 				</div>
 				<div className="mt-10 space-y-6 border-t pt-8 text-base leading-8">

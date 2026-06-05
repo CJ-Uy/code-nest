@@ -86,7 +86,7 @@ function Metric({
 				<Icon className="h-4 w-4 text-muted-foreground" />
 			</CardHeader>
 			<CardContent>
-				<div className="text-2xl font-semibold tracking-normal">{value}</div>
+				<div className="text-2xl font-semibold">{value}</div>
 				<p className="mt-1 text-xs text-muted-foreground">{description}</p>
 			</CardContent>
 		</Card>
@@ -104,8 +104,8 @@ function SectionTitle({
 }) {
 	return (
 		<div className="flex flex-col gap-1">
-			<p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">{kicker}</p>
-			<h2 className="text-xl font-semibold tracking-normal text-foreground">{title}</h2>
+			<p className="text-xs font-semibold uppercase text-primary">{kicker}</p>
+			<h2 className="text-xl font-bold text-foreground">{title}</h2>
 			<p className="max-w-2xl text-sm leading-6 text-muted-foreground">{children}</p>
 		</div>
 	);
@@ -315,7 +315,7 @@ function Links() {
 					</CardHeader>
 					<CardContent className="overflow-x-auto">
 						<table className="w-full min-w-[640px] text-left text-sm">
-							<thead className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+							<thead className="text-xs uppercase text-muted-foreground">
 								<tr className="border-b">
 									<th className="py-3">Slug</th>
 									<th>Destination</th>
@@ -571,7 +571,7 @@ function Admin() {
 				</CardHeader>
 				<CardContent className="overflow-x-auto">
 					<table className="w-full min-w-[640px] text-left text-sm">
-						<thead className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+						<thead className="text-xs uppercase text-muted-foreground">
 							<tr className="border-b">
 								<th className="py-3">Item</th>
 								<th>Role</th>
@@ -649,25 +649,25 @@ export default function Home() {
 
 	return (
 		<main className="min-h-screen bg-background text-foreground">
-			<div className="border-b bg-card">
+			<div className="border-b border-[#3D5266] bg-primary text-primary-foreground">
 				<div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
 					<div className="flex items-center gap-3">
 						<div
-							className="h-10 w-28 bg-[url('/code-logo-full-navy.png')] bg-contain bg-left bg-no-repeat"
+							className="h-10 w-28 bg-[url('/code-logo-full-white.png')] bg-contain bg-left bg-no-repeat"
 							role="img"
 							aria-label="CODE"
 						/>
 						<div>
-							<p className="text-xs text-muted-foreground">Member workspace</p>
+							<p className="text-xs text-white/75">Member workspace</p>
 						</div>
 					</div>
-					<div className="hidden min-w-72 items-center gap-2 rounded-md border bg-background px-3 py-2 md:flex">
-						<Search className="h-4 w-4 text-muted-foreground" />
-						<span className="text-sm text-muted-foreground">Search events, resources, links</span>
+					<div className="hidden min-w-72 items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-2 md:flex">
+						<Search className="h-4 w-4 text-white/75" />
+						<span className="text-sm text-white/75">Search events, resources, links</span>
 					</div>
 					<div className="flex items-center gap-2">
-						<Button variant="ghost" size="sm">Replay tour</Button>
-						<Button variant="outline" size="sm">
+						<Button className="text-white hover:bg-white/10 hover:text-white" variant="ghost" size="sm">Replay tour</Button>
+						<Button className="border-white/35 bg-transparent text-white hover:bg-white/10 hover:text-white" variant="outline" size="sm">
 							<CircleUserRound />
 							<span className="hidden sm:inline">Sam</span>
 						</Button>

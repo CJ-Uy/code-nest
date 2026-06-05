@@ -37,7 +37,15 @@ The older `open design` folder split the member area into many static pages and 
 
 The app uses Tailwind CSS v4 and shadcn-style local components. Tokens live in `src/app/globals.css`, while reusable primitives live in `src/components/ui`.
 
-The visual direction follows the supplied CODE brand assets. Main colors are navy `#061B30` and `#0A182E`, blue `#0C315D`, light blue `#D8DFE9`, dark gray `#121315`, white gray `#F5F5F6`, and mid grays from the logo exports.
+The visual direction follows the supplied CODE brand manual and official logo exports. Headings use Unna. Body text uses Source Sans. Main colors are navy `#06192F`, white `#FFFFFF`, blue `#0C315C`, light blue `#D7DFE9`, dark gray `#121315`, and pale blue `#90B4CC`. Supporting colors are `#4986AC`, `#3D5266`, `#343B41`, `#717D89`, and `#AAAFB5`.
+
+Copied brand assets live in `public`:
+
+- `code-logo-full-navy.png`
+- `code-logo-full-white.png`
+- `code-falcon-transparent.png`
+- `code-doc-cover.png`
+- `code-form-cover.png`
 
 ## Writing rules
 

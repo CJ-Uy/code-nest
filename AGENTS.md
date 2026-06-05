@@ -10,7 +10,9 @@
 - Keep cards shallow. Do not place cards inside cards.
 - Avoid em dashes in code comments, UI copy, docs, commits, and README text.
 - Avoid generic AI-sounding wording. Use plain, specific product language.
-- Use the supplied CODE palette: navy `#061B30`, blue `#0C315D`, light blue `#D8DFE9`, dark gray `#121315`, white gray `#F5F5F6`, and logo grays.
+- Use the supplied CODE palette from the brand manual: navy `#06192F`, white `#FFFFFF`, blue `#0C315C`, light blue `#D7DFE9`, dark gray `#121315`, pale blue `#90B4CC`, and supporting grays `#3D5266`, `#343B41`, `#717D89`, and `#AAAFB5`.
+- Use Unna for headings and Source Sans for body text.
+- Keep official logo colors intact. Do not recolor, stretch, crop, outline, shadow, or manipulate the logo.
 
 ## Product priorities
 

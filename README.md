@@ -15,6 +15,12 @@ Route map:
 
 The UI uses Tailwind CSS v4 and shadcn-style local components in `src/components/ui`. Shared design tokens live in `src/app/globals.css`.
 
+The current UI follows the supplied CODE brand manual:
+
+- Headings use Unna and body text uses Source Sans.
+- Brand tokens use navy `#06192F`, white `#FFFFFF`, blue `#0C315C`, light blue `#D7DFE9`, dark gray `#121315`, and pale blue `#90B4CC`.
+- Official logo and cover assets copied from the manual live in `public`.
+
 ## Develop
 
 Run the Next.js development server:
