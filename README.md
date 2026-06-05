@@ -1,31 +1,31 @@
-# OpenNext Starter
+# CODE Portal prototype
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This repo contains a Next.js prototype for the CODE Portal member workspace. The design covers the signed-in experience for member profiles, private content, short links, CRS events, calendar, announcements, and scoped admin tools.
 
-## Getting Started
+## Design
 
-Read the documentation at https://opennext.js.org/cloudflare.
+The original static exports live in `open design/`. The current product direction is documented in `design.md` and implemented in `src/app/page.tsx`.
+
+The UI uses Tailwind CSS v4 and shadcn-style local components in `src/components/ui`. Shared design tokens live in `src/app/globals.css`.
 
 ## Develop
 
 Run the Next.js development server:
 
 ```bash
-npm run dev
-# or similar package manager command
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Edit `src/app/page.tsx` for the prototype shell and module content.
 
 ## Preview
 
 Preview the application locally on the Cloudflare runtime:
 
 ```bash
-npm run preview
-# or similar package manager command
+pnpm preview
 ```
 
 ## Deploy
@@ -33,15 +33,16 @@ npm run preview
 Deploy the application to Cloudflare:
 
 ```bash
-npm run deploy
-# or similar package manager command
+pnpm run deploy
 ```
 
-## Learn More
+## Next build phases
 
-To learn more about Next.js, take a look at the following resources:
+- Add authentication and the hidden public sign-in path.
+- Add data models for members, roles, resources, links, CRS events, surveys, announcements, and audits.
+- Build real QR generation, camera scanning, link analytics, and permission checks.
+- Split the prototype into routes once the data contracts are stable.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Cloudflare
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This project keeps the OpenNext for Cloudflare setup from the starter. See `wrangler.jsonc` and `open-next.config.ts` for deployment configuration.

@@ -6,7 +6,7 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"lint": "next lint",
+		"lint": "eslint .",
 		"deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
 		"upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
 		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
@@ -14,9 +14,14 @@
 	},
 	"dependencies": {
 		"@opennextjs/cloudflare": "^1.19.9",
+		"@radix-ui/react-slot": "^1.2.4",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^1.17.0",
 		"next": "16.2.6",
 		"react": "^19.1.7",
-		"react-dom": "^19.1.7"
+		"react-dom": "^19.1.7",
+		"tailwind-merge": "^3.6.0"
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3",
