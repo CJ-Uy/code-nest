@@ -1,18 +1,10 @@
-/**
- * For more details on how to configure Wrangler, refer to:
- * https://developers.cloudflare.com/workers/wrangler/configuration/
- */
-/**
- * For more details on how to configure Wrangler, refer to:
- * https://developers.cloudflare.com/workers/wrangler/configuration/
- */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "code-nest",
 	"account_id": "8527ec1369d46f55304a6f59ab5356e4",
 	"main": ".open-next/worker.js",
 	"workers_dev": true,
-	"compatibility_date": "2026-06-05",
+	"compatibility_date": "2026-06-10",
 	"compatibility_flags": [
 		"nodejs_compat",
 		"global_fetch_strictly_public"
@@ -22,61 +14,116 @@
 		"directory": ".open-next/assets"
 	},
 	"images": {
-		// Enable image optimization
-		// see https://opennext.js.org/cloudflare/howtos/image
 		"binding": "IMAGES"
 	},
 	"services": [
 		{
-			// Self-reference service binding, the service name must match the worker name
-			// see https://opennext.js.org/cloudflare/caching
 			"binding": "WORKER_SELF_REFERENCE",
 			"service": "code-nest"
-		}
-	],
-	"routes": [
-		{
-			"pattern": "code.cjuy.dev",
-			"custom_domain": true
 		}
 	],
 	"observability": {
 		"enabled": true
 	},
 	"upload_source_maps": true,
+	"vars": {
+		"APP_ENV": "local",
+		"STORAGE_MODE": "binding",
+		"LOCAL_SQLITE_PATH": "./.local/dev.db",
+		"LOCAL_STORAGE_DIR": "./.local/uploads"
+	},
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "code-nest-db",
-			"database_id": "8524a142-d7c2-4cc8-a603-f08ecc83f4b2",
-			"migrations_dir": "migrations"
+			"database_name": "code-nest-dev-db",
+			"database_id": "f9d2b16f-3358-49c2-a88e-e72c9339a22b",
+			"migrations_dir": "drizzle/migrations"
 		}
 	],
 	"r2_buckets": [
 		{
-			"binding": "MEDIA",
-			"bucket_name": "code-nest-media"
+			"binding": "BUCKET",
+			"bucket_name": "code-nest-dev-uploads"
 		}
 	],
-	"vars": {
-		"DEMO_MODE": "true"
+	"env": {
+		"dev": {
+			"name": "code-nest-dev",
+			"assets": {
+				"binding": "ASSETS",
+				"directory": ".open-next/assets"
+			},
+			"images": {
+				"binding": "IMAGES"
+			},
+			"services": [
+				{
+					"binding": "WORKER_SELF_REFERENCE",
+					"service": "code-nest-dev"
+				}
+			],
+			"vars": {
+				"APP_ENV": "local",
+				"STORAGE_MODE": "binding",
+				"LOCAL_SQLITE_PATH": "./.local/dev.db",
+				"LOCAL_STORAGE_DIR": "./.local/uploads"
+			},
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "code-nest-dev-db",
+					"database_id": "f9d2b16f-3358-49c2-a88e-e72c9339a22b",
+					"migrations_dir": "drizzle/migrations"
+				}
+			],
+			"r2_buckets": [
+				{
+					"binding": "BUCKET",
+					"bucket_name": "code-nest-dev-uploads"
+				}
+			]
+		},
+		"production": {
+			"name": "code-nest",
+			"routes": [
+				{
+					"pattern": "code.cjuy.dev",
+					"custom_domain": true
+				}
+			],
+			"assets": {
+				"binding": "ASSETS",
+				"directory": ".open-next/assets"
+			},
+			"images": {
+				"binding": "IMAGES"
+			},
+			"services": [
+				{
+					"binding": "WORKER_SELF_REFERENCE",
+					"service": "code-nest"
+				}
+			],
+			"vars": {
+				"APP_ENV": "production",
+				"STORAGE_MODE": "binding",
+				"LOCAL_SQLITE_PATH": "./.local/dev.db",
+				"LOCAL_STORAGE_DIR": "./.local/uploads"
+			},
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "code-nest-prod-db",
+					"database_id": "a66fac5e-c122-466d-b7fe-5910ba6a98b9",
+					"migrations_dir": "drizzle/migrations"
+				}
+			],
+			"r2_buckets": [
+				{
+					"binding": "BUCKET",
+					"bucket_name": "code-nest-prod-uploads"
+				}
+			]
+		}
 	}
-	/**
-	 * Smart Placement
-	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
-	 */
-	// "placement": {  "mode": "smart" }
-	/**
-	 * Bindings
-	 * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
-	 * databases, object storage, AI inference, real-time communication and more.
-	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
-	 */
-	/**
-	 * Environment Variables
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
-	 * Note: Use secrets to store sensitive data.
-	 * https://developers.cloudflare.com/workers/configuration/secrets/
-	 */
-	// "vars": {  "MY_VARIABLE": "production_value" }
 }
