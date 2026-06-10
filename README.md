@@ -41,6 +41,8 @@ Preview the application locally on the Cloudflare runtime:
 pnpm preview
 ```
 
+`pnpm build` runs the OpenNext Cloudflare build so the Worker and static assets are prepared together.
+
 ## Deploy
 
 Deploy the application to Cloudflare:
