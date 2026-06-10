@@ -14,6 +14,8 @@
 | Apply production D1 migration | `pnpm db:migrate:prod` |
 | Deploy shared/dev | `pnpm deploy:dev` |
 | Deploy production | `pnpm deploy:prod` |
+| Cloudflare Workers build command | `pnpm build` |
+| Cloudflare Workers deploy command | `pnpm upload:prod` |
 | Generate Cloudflare types | `pnpm cf-typegen:dev` or `pnpm cf-typegen:prod` |
 
 Useful Wrangler commands:

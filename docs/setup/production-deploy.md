@@ -20,12 +20,23 @@ The database adapter uses `drizzle(env.DB, { schema })`. The storage adapter use
 
 ## Deploy
 
+Cloudflare Workers build settings should be:
+
+| Setting | Value |
+| --- | --- |
+| Build command | `pnpm build` |
+| Deploy command | `pnpm upload:prod` |
+
+Do not use `npx opennextjs-cloudflare build` as the Cloudflare build command. The package script runs `next build`, clears stale `.open-next` output, then runs the OpenNext build. That cleanup prevents duplicate exports in `.open-next/cloudflare/next-env.mjs`.
+
+For local production deploys, run:
+
 ```bash
 pnpm db:migrate:prod
 pnpm deploy:prod
 ```
 
-`pnpm deploy:prod` passes `--env=""` so Wrangler targets the top-level production config instead of the explicit `dev` environment.
+`pnpm deploy:prod` builds and then uploads. In Cloudflare Workers, use `pnpm build` as the build command and `pnpm upload:prod` as the deploy command so the platform does not build twice.
 
 ## Verify
 
