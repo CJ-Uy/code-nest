@@ -2,6 +2,8 @@
 
 Project slug: `code-nest`
 
+The existing connected Cloudflare Worker is `code-nest`. Production bindings live at the top level of `wrangler.jsonc`; the explicit `dev` environment is only for shared/dev deploys.
+
 ## D1
 
 | Purpose | Name | Binding | Database ID |
@@ -22,4 +24,3 @@ Project slug: `code-nest`
 - Production resources are production-only.
 - Outside developers should not receive D1 credentials or Cloudflare account access.
 - R2 S3 credentials, if issued, must target dev workflows only.
-

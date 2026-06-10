@@ -27,7 +27,7 @@
 	},
 	"upload_source_maps": true,
 	"vars": {
-		"APP_ENV": "local",
+		"APP_ENV": "production",
 		"STORAGE_MODE": "binding",
 		"LOCAL_SQLITE_PATH": "./.local/dev.db",
 		"LOCAL_STORAGE_DIR": "./.local/uploads"
@@ -35,15 +35,15 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "code-nest-dev-db",
-			"database_id": "f9d2b16f-3358-49c2-a88e-e72c9339a22b",
+			"database_name": "code-nest-prod-db",
+			"database_id": "a66fac5e-c122-466d-b7fe-5910ba6a98b9",
 			"migrations_dir": "drizzle/migrations"
 		}
 	],
 	"r2_buckets": [
 		{
 			"binding": "BUCKET",
-			"bucket_name": "code-nest-dev-uploads"
+			"bucket_name": "code-nest-prod-uploads"
 		}
 	],
 	"env": {
@@ -80,48 +80,6 @@
 				{
 					"binding": "BUCKET",
 					"bucket_name": "code-nest-dev-uploads"
-				}
-			]
-		},
-		"production": {
-			"name": "code-nest",
-			"routes": [
-				{
-					"pattern": "code.cjuy.dev",
-					"custom_domain": true
-				}
-			],
-			"assets": {
-				"binding": "ASSETS",
-				"directory": ".open-next/assets"
-			},
-			"images": {
-				"binding": "IMAGES"
-			},
-			"services": [
-				{
-					"binding": "WORKER_SELF_REFERENCE",
-					"service": "code-nest"
-				}
-			],
-			"vars": {
-				"APP_ENV": "production",
-				"STORAGE_MODE": "binding",
-				"LOCAL_SQLITE_PATH": "./.local/dev.db",
-				"LOCAL_STORAGE_DIR": "./.local/uploads"
-			},
-			"d1_databases": [
-				{
-					"binding": "DB",
-					"database_name": "code-nest-prod-db",
-					"database_id": "a66fac5e-c122-466d-b7fe-5910ba6a98b9",
-					"migrations_dir": "drizzle/migrations"
-				}
-			],
-			"r2_buckets": [
-				{
-					"binding": "BUCKET",
-					"bucket_name": "code-nest-prod-uploads"
 				}
 			]
 		}

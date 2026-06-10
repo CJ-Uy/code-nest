@@ -4,7 +4,7 @@ Production runs as a Cloudflare Worker built by OpenNext.
 
 ## Production Bindings
 
-Wrangler environment `production` binds:
+The top-level Wrangler config deploys the already connected `code-nest` Worker and binds:
 
 - `DB` to `code-nest-prod-db`
 - `BUCKET` to `code-nest-prod-uploads`
@@ -25,6 +25,8 @@ pnpm db:migrate:prod
 pnpm deploy:prod
 ```
 
+`pnpm deploy:prod` passes `--env=""` so Wrangler targets the top-level production config instead of the explicit `dev` environment.
+
 ## Verify
 
 After deploy, check:
@@ -41,4 +43,3 @@ After deploy, check:
 - Run `pnpm build`.
 - Review pending migrations.
 - Confirm no secret files are staged.
-

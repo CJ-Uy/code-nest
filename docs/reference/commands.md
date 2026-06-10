@@ -22,6 +22,5 @@ Useful Wrangler commands:
 pnpm exec wrangler whoami
 pnpm exec wrangler d1 list
 pnpm exec wrangler r2 bucket list
-pnpm exec wrangler tail --env production
+pnpm exec wrangler tail code-nest
 ```
-
