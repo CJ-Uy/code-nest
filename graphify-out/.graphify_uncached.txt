@@ -1,0 +1,26 @@
+C:\Users\charl\Documents\GitHub\code nest\.remember\now.md
+C:\Users\charl\Documents\GitHub\code nest\.remember\today-2026-06-17.md
+C:\Users\charl\Documents\GitHub\code nest\AGENTS.md
+C:\Users\charl\Documents\GitHub\code nest\README.md
+C:\Users\charl\Documents\GitHub\code nest\design.md
+C:\Users\charl\Documents\GitHub\code nest\design\Design System.html
+C:\Users\charl\Documents\GitHub\code nest\design\Member Portal.html
+C:\Users\charl\Documents\GitHub\code nest\design\index.html
+C:\Users\charl\Documents\GitHub\code nest\docs\README.md
+C:\Users\charl\Documents\GitHub\code nest\docs\architecture\adapters.md
+C:\Users\charl\Documents\GitHub\code nest\docs\architecture\database.md
+C:\Users\charl\Documents\GitHub\code nest\docs\architecture\overview.md
+C:\Users\charl\Documents\GitHub\code nest\docs\architecture\security.md
+C:\Users\charl\Documents\GitHub\code nest\docs\architecture\storage.md
+C:\Users\charl\Documents\GitHub\code nest\docs\operations\migrations.md
+C:\Users\charl\Documents\GitHub\code nest\docs\operations\secrets-and-env.md
+C:\Users\charl\Documents\GitHub\code nest\docs\operations\troubleshooting.md
+C:\Users\charl\Documents\GitHub\code nest\docs\reference\commands.md
+C:\Users\charl\Documents\GitHub\code nest\docs\reference\env-vars.md
+C:\Users\charl\Documents\GitHub\code nest\docs\setup\cloudflare-resources.md
+C:\Users\charl\Documents\GitHub\code nest\docs\setup\environment-modes.md
+C:\Users\charl\Documents\GitHub\code nest\docs\setup\local-development.md
+C:\Users\charl\Documents\GitHub\code nest\docs\setup\overview.md
+C:\Users\charl\Documents\GitHub\code nest\docs\setup\production-deploy.md
+C:\Users\charl\Documents\GitHub\code nest\docs\setup\shared-dev-onboarding.md
+C:\Users\charl\Documents\GitHub\code nest\docs\superpowers\plans\2026-06-18-code-portal-master-plan.md
