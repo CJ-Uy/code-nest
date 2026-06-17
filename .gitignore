@@ -58,3 +58,5 @@ drizzle/local.db
 
 
 !.dev.vars.example
+
+/.claude

@@ -1,0 +1,99 @@
+/* ===========================================================
+   Ateneo CODE — shared design tokens & primitives
+   Used by: Design System.html, Member Portal.html, (public index.html mirrors these)
+   =========================================================== */
+:root{
+  /* brand */
+  --navy:#06192F; --navy-deep:#0C315C; --ink:#121315;
+  --white:#FFFFFF; --pale:#D7DFE9; --mid:#90B4CC;
+  /* secondary accents */
+  --a-steel:#4986AC; --a-slate:#3D5266; --a-char:#343B41; --a-grey:#717D89; --a-mist:#AAAFB5;
+
+  /* semantic — light */
+  --bg:#F4F7FB; --bg-alt:#EAEFF6; --surface:#FFFFFF; --surface-2:#F2F5FA;
+  --pale-tint:#EAEFF6; --line:#DCE3ED; --line-soft:#E8ECF3;
+  --text:#0E2034; --text-2:#3D5266; --text-3:#6A7787;
+  --chrome:#06192F; --chrome-2:#0A233F; --chrome-text:#EAF0F8; --chrome-dim:#9FB3CC;
+  --on-chrome-line:rgba(215,223,233,.14);
+  --link:#0C315C; --accent:#4986AC; --accent-strong:#0C315C;
+
+  /* states (brand-harmonized) */
+  --ok:#2E7D63; --ok-bg:#E2F0EB;
+  --warn:#B5742B; --warn-bg:#F6EBDC;
+  --danger:#B23A3A; --danger-bg:#F6E2E2;
+  --info:#4986AC; --info-bg:#E4EEF4;
+
+  --shadow-sm:0 1px 2px rgba(6,25,47,.06), 0 1px 3px rgba(6,25,47,.05);
+  --shadow-md:0 4px 14px rgba(6,25,47,.08), 0 2px 6px rgba(6,25,47,.05);
+  --shadow-lg:0 18px 48px rgba(6,25,47,.14), 0 6px 16px rgba(6,25,47,.08);
+  --radius:14px; --radius-sm:9px; --radius-lg:22px;
+  --serif:"Unna", Georgia, serif;
+  --sans:"Source Sans 3", system-ui, -apple-system, sans-serif;
+}
+html[data-theme="dark"]{
+  --bg:#08172A; --bg-alt:#0A1E38; --surface:#0E2240; --surface-2:#0B1C34;
+  --pale-tint:#11294A; --line:#1C3556; --line-soft:#16294552;
+  --text:#EAF0F8; --text-2:#AFC2D8; --text-3:#7C92AC;
+  --chrome:#040F1E; --chrome-2:#08182C; --chrome-text:#EAF0F8; --chrome-dim:#7C92AC;
+  --on-chrome-line:rgba(215,223,233,.12);
+  --link:#90B4CC; --accent:#4986AC; --accent-strong:#90B4CC;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4); --shadow-md:0 6px 18px rgba(0,0,0,.45); --shadow-lg:0 22px 54px rgba(0,0,0,.55);
+}
+*{box-sizing:border-box}
+.ac-root{font-family:var(--sans); color:var(--text); -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; line-height:1.5}
+.ac-root h1,.ac-root h2,.ac-root h3,.ac-root h4{font-family:var(--serif); font-weight:700; margin:0; color:var(--text); letter-spacing:.2px}
+.ac-root h1,.ac-root h2{line-height:1.14}
+.ac-root h3,.ac-root h4{line-height:1.24}
+.ac-root p{margin:0}
+.ac-root a{color:inherit; text-decoration:none}
+.ac-root img{display:block; max-width:100%}
+.ac-root button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit}
+.ac-root ::selection{background:var(--mid); color:var(--navy)}
+
+.eyebrow{font-family:var(--sans); font-weight:600; font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--accent)}
+.serif-i{font-family:var(--serif); font-style:italic; font-weight:400}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+
+/* buttons */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:.5em; font-family:var(--sans); font-weight:600; font-size:.94rem; padding:.66em 1.2em; border-radius:999px; transition:.16s ease; white-space:nowrap; line-height:1}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--navy); color:#fff}
+.btn-primary:hover{background:var(--navy-deep); box-shadow:var(--shadow-md)}
+.btn-secondary{background:var(--pale-tint); color:var(--accent-strong)}
+.btn-secondary:hover{background:#dde6f1}
+.btn-ghost{background:transparent; color:var(--text); box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn-ghost:hover{box-shadow:inset 0 0 0 1.5px var(--accent); color:var(--accent-strong)}
+.btn-danger{background:var(--danger); color:#fff}
+.btn-danger:hover{filter:brightness(.93)}
+.btn-on-chrome{background:rgba(255,255,255,.1); color:#fff; box-shadow:inset 0 0 0 1px var(--on-chrome-line)}
+.btn-on-chrome:hover{background:#fff; color:var(--navy)}
+.btn-sm{font-size:.84rem; padding:.5em 1em}
+.btn-lg{font-size:1.02rem; padding:.82em 1.6em}
+.btn[disabled]{opacity:.5; cursor:not-allowed}
+
+/* inputs */
+.inp{width:100%; border:1px solid var(--line); border-radius:var(--radius-sm); padding:11px 13px; background:var(--surface-2); color:var(--text); outline:none; transition:.16s; font-size:.98rem}
+.inp:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(73,134,172,.15); background:var(--surface)}
+.inp::placeholder{color:var(--text-3)}
+select.inp{appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236A7787' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:36px}
+
+/* card */
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm)}
+
+/* badge / pill */
+.badge{display:inline-flex; align-items:center; gap:.4em; font-family:var(--sans); font-weight:600; font-size:.72rem; letter-spacing:.04em; padding:.32em .7em; border-radius:999px; line-height:1.2}
+.badge-neutral{background:var(--pale-tint); color:var(--accent-strong)}
+.badge-ok{background:var(--ok-bg); color:var(--ok)}
+.badge-warn{background:var(--warn-bg); color:var(--warn)}
+.badge-danger{background:var(--danger-bg); color:var(--danger)}
+.badge-info{background:var(--info-bg); color:var(--info)}
+.badge-dot::before{content:""; width:6px; height:6px; border-radius:50%; background:currentColor; display:inline-block}
+
+/* scrollbars */
+.thin-scroll::-webkit-scrollbar{width:8px; height:8px}
+.thin-scroll::-webkit-scrollbar-thumb{background:var(--line); border-radius:6px}
+.thin-scroll::-webkit-scrollbar-track{background:transparent}
+
+/* reveal-safe: nothing hidden by default here */
+@keyframes ac-spin{to{transform:rotate(360deg)}}
+.ac-spinner{width:30px;height:30px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:ac-spin 1s linear infinite}
