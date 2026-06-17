@@ -1,13 +1,22 @@
 import { z } from "zod";
 import { getOptionalCloudflareEnv } from "./cloudflare";
 
-const appEnvSchema = z.enum(["local", "shared", "production"]);
-const storageModeSchema = z.enum(["local", "api", "r2-s3", "binding"]);
+export const appEnvSchema = z.enum(["local", "shared", "production"]);
+export const deployEnvSchema = z.enum(["dev", "prod"]);
+export const storageModeSchema = z.enum(["local", "api", "r2-s3", "binding"]);
 
 const rawEnvSchema = z.object({
 	APP_ENV: appEnvSchema.default("local"),
+	DEPLOY_ENV: deployEnvSchema.optional(),
 	STORAGE_MODE: storageModeSchema.default("local"),
 	ALLOW_PRODUCTION_STORAGE_MODE_OVERRIDE: z.string().optional(),
+	AUTH_SECRET: z.string().optional(),
+	AUTH_GOOGLE_ID: z.string().optional(),
+	AUTH_GOOGLE_SECRET: z.string().optional(),
+	AUTH_URL: z.string().optional(),
+	APP_BASE_URL: z.string().optional(),
+	AUTH_ALLOWED_DOMAINS: z.string().optional(),
+	AUTH_ALLOWLIST_EMAILS: z.string().optional(),
 	SHARED_API_BASE_URL: z.string().optional(),
 	SHARED_API_TOKEN: z.string().optional(),
 	R2_ACCOUNT_ID: z.string().optional(),
@@ -21,6 +30,7 @@ const rawEnvSchema = z.object({
 
 export type AppConfig = z.infer<typeof rawEnvSchema>;
 export type AppEnv = AppConfig["APP_ENV"];
+export type DeployEnv = NonNullable<AppConfig["DEPLOY_ENV"]>;
 export type StorageMode = AppConfig["STORAGE_MODE"];
 
 function runtimeEnvValue(key: keyof AppConfig): string | undefined {
@@ -31,8 +41,16 @@ function runtimeEnvValue(key: keyof AppConfig): string | undefined {
 export function getAppConfig(): AppConfig {
 	const parsed = rawEnvSchema.parse({
 		APP_ENV: runtimeEnvValue("APP_ENV"),
+		DEPLOY_ENV: runtimeEnvValue("DEPLOY_ENV"),
 		STORAGE_MODE: runtimeEnvValue("STORAGE_MODE"),
 		ALLOW_PRODUCTION_STORAGE_MODE_OVERRIDE: runtimeEnvValue("ALLOW_PRODUCTION_STORAGE_MODE_OVERRIDE"),
+		AUTH_SECRET: runtimeEnvValue("AUTH_SECRET"),
+		AUTH_GOOGLE_ID: runtimeEnvValue("AUTH_GOOGLE_ID"),
+		AUTH_GOOGLE_SECRET: runtimeEnvValue("AUTH_GOOGLE_SECRET"),
+		AUTH_URL: runtimeEnvValue("AUTH_URL"),
+		APP_BASE_URL: runtimeEnvValue("APP_BASE_URL"),
+		AUTH_ALLOWED_DOMAINS: runtimeEnvValue("AUTH_ALLOWED_DOMAINS"),
+		AUTH_ALLOWLIST_EMAILS: runtimeEnvValue("AUTH_ALLOWLIST_EMAILS"),
 		SHARED_API_BASE_URL: runtimeEnvValue("SHARED_API_BASE_URL"),
 		SHARED_API_TOKEN: runtimeEnvValue("SHARED_API_TOKEN"),
 		R2_ACCOUNT_ID: runtimeEnvValue("R2_ACCOUNT_ID"),
@@ -49,6 +67,26 @@ export function getAppConfig(): AppConfig {
 	if (parsed.APP_ENV === "shared") {
 		if (!parsed.SHARED_API_BASE_URL) issues.push("SHARED_API_BASE_URL is required when APP_ENV=shared.");
 		if (!parsed.SHARED_API_TOKEN) issues.push("SHARED_API_TOKEN is required when APP_ENV=shared.");
+	}
+
+	if (parsed.APP_ENV !== "shared") {
+		if (!parsed.AUTH_SECRET) issues.push("AUTH_SECRET is required unless APP_ENV=shared.");
+		if (!parsed.AUTH_GOOGLE_ID) issues.push("AUTH_GOOGLE_ID is required unless APP_ENV=shared.");
+		if (!parsed.AUTH_GOOGLE_SECRET) issues.push("AUTH_GOOGLE_SECRET is required unless APP_ENV=shared.");
+	}
+
+	if (parsed.DEPLOY_ENV === "prod") {
+		if (parsed.SHARED_API_TOKEN) issues.push("SHARED_API_TOKEN must not be configured when DEPLOY_ENV=prod.");
+		if (parsed.SHARED_API_BASE_URL) issues.push("SHARED_API_BASE_URL must not be configured when DEPLOY_ENV=prod.");
+		if (parsed.STORAGE_MODE === "binding" || parsed.ALLOW_PRODUCTION_STORAGE_MODE_OVERRIDE === "true") {
+			// Production binding mode is valid.
+		} else {
+			issues.push("Production storage must use binding unless ALLOW_PRODUCTION_STORAGE_MODE_OVERRIDE=true.");
+		}
+	}
+
+	if (parsed.APP_ENV === "production" && !parsed.DEPLOY_ENV && getOptionalCloudflareEnv()) {
+		issues.push("DEPLOY_ENV is required for deployed Workers.");
 	}
 
 	if (parsed.STORAGE_MODE === "r2-s3") {
@@ -69,8 +107,14 @@ export function getPublicEnvStatus() {
 
 	return {
 		APP_ENV: config.APP_ENV,
+		DEPLOY_ENV: config.DEPLOY_ENV ?? null,
 		STORAGE_MODE: config.STORAGE_MODE,
 		requiredEnv: {
+			AUTH_SECRET: Boolean(config.AUTH_SECRET),
+			AUTH_GOOGLE_ID: Boolean(config.AUTH_GOOGLE_ID),
+			AUTH_GOOGLE_SECRET: Boolean(config.AUTH_GOOGLE_SECRET),
+			AUTH_ALLOWED_DOMAINS: Boolean(config.AUTH_ALLOWED_DOMAINS),
+			AUTH_ALLOWLIST_EMAILS: Boolean(config.AUTH_ALLOWLIST_EMAILS),
 			SHARED_API_BASE_URL: Boolean(config.SHARED_API_BASE_URL),
 			SHARED_API_TOKEN: Boolean(config.SHARED_API_TOKEN),
 			R2_ACCOUNT_ID: Boolean(config.R2_ACCOUNT_ID),

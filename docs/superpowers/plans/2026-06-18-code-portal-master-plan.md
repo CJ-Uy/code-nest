@@ -8,7 +8,7 @@
 
 **Architecture:** Next.js 16 App Router rendered on Cloudflare Workers through `@opennextjs/cloudflare`. All infrastructure access stays behind the existing adapter seam (`src/db`, `src/storage`, `src/server`). Drizzle ORM runs server-side in the prod Worker and the dev Worker against their own D1 bindings; pure-local fallback uses better-sqlite3 through the same Drizzle schema; outside ("shared") developers run the app locally and reach the **dev Worker** through a typed, per-domain internal API, authenticated by a bearer token that maps to a seeded actor — they never receive Cloudflare credentials.
 
-**Tech Stack:** Next.js 16, React 19, TypeScript, Tailwind CSS v4 + local shadcn-style components, Drizzle ORM + drizzle-kit, Cloudflare D1 / R2 / Workers, OpenNext, Auth.js v5 (`next-auth`) + `@auth/drizzle-adapter` (Google OAuth, database sessions), Zod, Vitest + `@cloudflare/vitest-pool-workers`, lucide-react.
+**Tech Stack:** Next.js 16, React 19, TypeScript, Tailwind CSS v4 + local shadcn-style components, Drizzle ORM + drizzle-kit, Cloudflare D1 / R2 / Workers, OpenNext, Auth.js v5 (`next-auth`) + `@auth/drizzle-adapter` (Google OAuth, database sessions), Zod, Vitest + `@cloudflare/vitest-pool-workers`, shadcn/ui (local `src/components/ui` registry) + lucide-react.
 
 ---
 
@@ -25,7 +25,8 @@
 - Mutating `/api/*` handlers (cookie-authenticated, same-origin) call `assertSameOrigin(request)`. `/internal/*` handlers are cross-origin by design: they authenticate with the shared bearer token, are guarded by `DEPLOY_ENV === 'dev'` (return 404 otherwise), use NO cookie auth, and apply a CORS allowlist instead of same-origin.
 - All repository queries must respect the D1 budget (§3.4): batch within 100 bound params / 100 KB / statement, paginate unbounded lists, and have a backing index.
 - No realtime infra in v1. Live-looking features use request/response + light client polling behind a data interface a Durable-Object layer can replace later.
-- Brand: headings Unna, body Source Sans; palette navy `#06192F`, white, blue `#0C315C`, light blue `#D7DFE9`, ink `#121315`, pale blue `#90B4CC`, plus supporting grays. No logo manipulation. No em dashes in UI copy, code comments, docs, commits. Plain product language; no AI-stock phrasing. Cards stay shallow. Light + dark themes (tokens already in the design export).
+- **UI is built from shadcn/ui components** wherever one fits. The repo already has a shadcn-style local registry (`src/components/ui` + `components.json`); add/generate the official component with `pnpm dlx shadcn@latest add <component>` (button, dialog, dropdown-menu, form, table, tabs, sheet, calendar, etc.) and theme it via the design tokens in `src/app/globals.css` rather than hand-rolling controls. Only write a bespoke component when shadcn has no equivalent, and build it on the same Radix/Tailwind primitives. Reuse before adding; do not duplicate an existing `ui/` component.
+- Brand: headings Unna, body Source Sans; palette navy `#06192F`, white, blue `#0C315C`, light blue `#D7DFE9`, ink `#121315`, pale blue `#90B4CC`, plus supporting grays. No logo manipulation. No em dashes in UI copy, code comments, docs, commits. Plain product language; no AI-stock phrasing. Cards stay shallow (no cards inside cards). Light + dark themes (tokens already in the design export).
 
 ---
 
@@ -333,6 +334,7 @@ Bottom-up; each phase ends with working, tested software and gets its own task p
 | 9 | `member_feed_state` can't track events (minor) | §6: add `events_seen_at`. |
 | — | User decision: **Auth.js** for auth | §4 fully rewritten to Auth.js v5 + `@auth/drizzle-adapter` (DB sessions, Google), replacing the Arctic + custom-session design. Email-takeover concern now covered by Auth.js defaults (no dangerous email linking). |
 | — | User question: shared dev Worker ops | New §15 added (shared Worker lifecycle + when to redeploy + AGENTS/README/CLAUDE doc deliverable). |
+| — | User directive: use shadcn/ui | Global Constraints now require building UI from the shadcn/ui local registry (`pnpm dlx shadcn@latest add …`) wherever one fits; bespoke only when no shadcn equivalent. Applies to every UI phase (2-9). |
 
 **v4 (after Codex adversarial round 3 — verdict ready-with-changes; round-2 fixes confirmed correct):**
 

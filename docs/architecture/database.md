@@ -2,12 +2,9 @@
 
 Drizzle schema lives at `src/db/schema.ts`.
 
-Current starter table:
+The Phase 0 schema includes identity, Auth.js adapter tables, roles, content, member library state, short links, CRS events, points, surveys, announcements, notifications, audit logs, shared dev tokens, and consultancy teams.
 
-- `users.id`
-- `users.email`
-- `users.name`
-- `users.created_at`
+`members` is the Auth.js user table. There is no separate `users` table in the new schema.
 
 ## Production
 
@@ -26,7 +23,6 @@ Shared dev database access goes through an internal API with typed endpoints. It
 
 ## Local
 
-Local mode uses D1 bindings when running through Wrangler/OpenNext. Plain `next dev` falls back to SQLite at `LOCAL_SQLITE_PATH`.
+Local mode uses the same Drizzle migrations against SQLite at `LOCAL_SQLITE_PATH`.
 
 D1 is not a normal `DATABASE_URL` database. Treat migrations and bindings as Cloudflare resources.
-

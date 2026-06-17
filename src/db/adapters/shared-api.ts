@@ -1,5 +1,5 @@
 import { getAppConfig } from "@/server/env";
-import type { CreateUserInput, DatabaseAdapter, User } from "../types";
+import type { CreateMemberInput, DatabaseAdapter, Member } from "../types";
 
 export class SharedApiDatabaseAdapter implements DatabaseAdapter {
 	readonly adapterType = "shared-api" as const;
@@ -20,25 +20,25 @@ export class SharedApiDatabaseAdapter implements DatabaseAdapter {
 		});
 	}
 
-	async listUsers(): Promise<User[]> {
-		const response = await this.request("/internal/users");
-		if (!response.ok) throw new Error("Shared API failed to list users.");
+	async listMembers(): Promise<Member[]> {
+		const response = await this.request("/internal/members");
+		if (!response.ok) throw new Error("Shared API failed to list members.");
 		return response.json();
 	}
 
-	async createUser(input: CreateUserInput): Promise<User> {
-		const response = await this.request("/internal/users", {
+	async createMember(input: CreateMemberInput): Promise<Member> {
+		const response = await this.request("/internal/members", {
 			method: "POST",
 			body: JSON.stringify(input),
 		});
-		if (!response.ok) throw new Error("Shared API failed to create user.");
+		if (!response.ok) throw new Error("Shared API failed to create member.");
 		return response.json();
 	}
 
-	async getUserById(id: string): Promise<User | null> {
-		const response = await this.request(`/internal/users/${encodeURIComponent(id)}`);
+	async getMemberById(id: string): Promise<Member | null> {
+		const response = await this.request(`/internal/members/${encodeURIComponent(id)}`);
 		if (response.status === 404) return null;
-		if (!response.ok) throw new Error("Shared API failed to fetch user.");
+		if (!response.ok) throw new Error("Shared API failed to fetch member.");
 		return response.json();
 	}
 }

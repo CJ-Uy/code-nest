@@ -3,6 +3,7 @@ import { getAppConfig } from "@/server/env";
 import { D1DatabaseAdapter } from "./adapters/d1";
 import { LocalSqliteDatabaseAdapter } from "./adapters/local-sqlite";
 import { SharedApiDatabaseAdapter } from "./adapters/shared-api";
+import { createDrizzleRepositories, createSharedRepositories } from "./repositories";
 import type { DatabaseAdapter } from "./types";
 
 export function getDatabaseAdapter(): DatabaseAdapter {
@@ -21,4 +22,15 @@ export function getDatabaseAdapter(): DatabaseAdapter {
 	}
 
 	return new LocalSqliteDatabaseAdapter();
+}
+
+export async function getRepositories() {
+	const config = getAppConfig();
+
+	if (config.APP_ENV === "shared") {
+		return createSharedRepositories(new SharedApiDatabaseAdapter());
+	}
+
+	const { getDb } = await import("./client");
+	return createDrizzleRepositories(getDb());
 }
