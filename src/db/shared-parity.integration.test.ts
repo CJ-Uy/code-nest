@@ -10,6 +10,8 @@ import { createMembersRepository } from "./repositories/members";
 import { createMembersInternalHandlers } from "@/server/internal/members";
 import type { Actor } from "@/server/auth/permissions";
 import { createAuthInternalHandlers } from "@/server/internal/auth";
+import { createUploadsInternalHandlers } from "@/server/internal/uploads";
+import type { StorageAdapter } from "@/storage/types";
 
 const adminActor: Actor = {
 	memberId: "mem_shared_admin",
@@ -174,7 +176,43 @@ describe("shared members parity", () => {
 
 		expect(response.status).toBe(404);
 	});
+
+	it("authenticates shared upload deletes before applying the destructive-operation gate", async () => {
+		const db = drizzle(env.DB, { schema });
+		const handlers = createUploadsInternalHandlers({
+			db,
+			deployEnv: "dev",
+			storage: memoryStorage,
+		});
+		const key = "avatars/mem_shared_admin/avatar.png";
+
+		const unauthenticated = await handlers.object(
+			new Request("https://dev.example/internal/uploads/key", { method: "DELETE" }),
+			key,
+		);
+		const authenticated = await handlers.object(
+			new Request("https://dev.example/internal/uploads/key", {
+				method: "DELETE",
+				headers: { authorization: "Bearer shared-test-token" },
+			}),
+			key,
+		);
+
+		expect(unauthenticated.status).toBe(401);
+		expect(authenticated.status).toBe(403);
+	});
 });
+
+const memoryStorage: StorageAdapter = {
+	adapterType: "local-fs",
+	async putObject(input) {
+		return { key: input.key };
+	},
+	async getObject() {
+		return { body: null };
+	},
+	async deleteObject() {},
+};
 
 async function hashToken(token: string): Promise<string> {
 	const value = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));

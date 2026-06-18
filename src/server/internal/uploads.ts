@@ -44,6 +44,13 @@ export function createUploadsInternalHandlers({
 			if (deployEnv !== "dev") return new Response("Not found", { status: 404 });
 			return withCors(request, allowedOrigins, async () => {
 				if (request.method === "DELETE" && uploadsContract.delete.sharedDev === "deny") {
+					const actor = await resolveSharedActor(db, request);
+					if (!actor) {
+						return Response.json(
+							{ error: "Invalid shared development token." },
+							{ status: 401 },
+						);
+					}
 					return Response.json(
 						{ error: "Operation is disabled in shared development." },
 						{ status: 403 },
