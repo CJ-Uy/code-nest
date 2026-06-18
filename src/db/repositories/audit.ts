@@ -7,7 +7,7 @@ export type AuditRecordInput = {
 	action: string;
 	targetType: string;
 	targetId: string;
-	category: "role" | "event" | "content" | "survey" | "link" | "member";
+	category: "role" | "event" | "retention" | "survey" | "link" | "member";
 	detail?: string | null;
 };
 

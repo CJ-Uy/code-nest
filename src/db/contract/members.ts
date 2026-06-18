@@ -16,8 +16,6 @@ export const memberOutputSchema = z.object({
 	birthdayPrivate: z.boolean(),
 	avatarKey: z.string().nullable(),
 	status: z.enum(["active", "pending", "inactive"]),
-	tourMemberDone: z.boolean(),
-	tourAdminDone: z.boolean(),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
 });
