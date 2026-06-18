@@ -1,16 +1,17 @@
-export const roleKeys = ["super", "member", "calendar", "publishing", "link", "crs", "member_admin"] as const;
+export const roleKeys = ["super", "member", "calendar", "link", "retention", "member_admin"] as const;
 
 export type RoleKey = (typeof roleKeys)[number];
 
 export const permissionActions = [
 	"event:approve",
 	"points:assign",
+	"retention:record",
 	"link:moderate",
-	"content:publish",
 	"role:assign",
 	"survey:configure",
 	"member:manage",
-	"library:read_confidential",
+	"roster:manage",
+	"nav:configure",
 ] as const;
 
 export type PermissionAction = (typeof permissionActions)[number];
@@ -25,10 +26,9 @@ export type Actor = {
 
 const rolePermissions: Record<Exclude<RoleKey, "super" | "member">, PermissionAction[]> = {
 	calendar: [],
-	publishing: ["content:publish", "library:read_confidential"],
 	link: ["link:moderate"],
-	crs: ["event:approve", "points:assign"],
-	member_admin: ["member:manage", "role:assign"],
+	retention: ["event:approve", "points:assign", "retention:record"],
+	member_admin: ["member:manage", "role:assign", "roster:manage", "nav:configure"],
 };
 
 export function can(actor: Actor | null, action: PermissionAction): boolean {

@@ -4,21 +4,21 @@ import { can, type Actor, type PermissionAction, type RoleKey } from "./permissi
 const cases: Array<{ role: RoleKey; allowed: PermissionAction[] }> = [
 	{ role: "member", allowed: [] },
 	{ role: "calendar", allowed: [] },
-	{ role: "publishing", allowed: ["content:publish", "library:read_confidential"] },
 	{ role: "link", allowed: ["link:moderate"] },
-	{ role: "crs", allowed: ["event:approve", "points:assign"] },
-	{ role: "member_admin", allowed: ["member:manage", "role:assign"] },
+	{ role: "retention", allowed: ["event:approve", "points:assign", "retention:record"] },
+	{ role: "member_admin", allowed: ["member:manage", "role:assign", "roster:manage", "nav:configure"] },
 ];
 
 const actions: PermissionAction[] = [
 	"event:approve",
 	"points:assign",
+	"retention:record",
 	"link:moderate",
-	"content:publish",
 	"role:assign",
 	"survey:configure",
 	"member:manage",
-	"library:read_confidential",
+	"roster:manage",
+	"nav:configure",
 ];
 
 describe("permissions", () => {
