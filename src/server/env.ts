@@ -69,12 +69,6 @@ export function getAppConfig(): AppConfig {
 		if (!parsed.SHARED_API_TOKEN) issues.push("SHARED_API_TOKEN is required when APP_ENV=shared.");
 	}
 
-	if (parsed.APP_ENV !== "shared") {
-		if (!parsed.AUTH_SECRET) issues.push("AUTH_SECRET is required unless APP_ENV=shared.");
-		if (!parsed.AUTH_GOOGLE_ID) issues.push("AUTH_GOOGLE_ID is required unless APP_ENV=shared.");
-		if (!parsed.AUTH_GOOGLE_SECRET) issues.push("AUTH_GOOGLE_SECRET is required unless APP_ENV=shared.");
-	}
-
 	if (parsed.DEPLOY_ENV === "prod") {
 		if (parsed.SHARED_API_TOKEN) issues.push("SHARED_API_TOKEN must not be configured when DEPLOY_ENV=prod.");
 		if (parsed.SHARED_API_BASE_URL) issues.push("SHARED_API_BASE_URL must not be configured when DEPLOY_ENV=prod.");
