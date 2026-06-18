@@ -62,6 +62,22 @@ describe("shared members parity", () => {
 		expect(sharedMembers).toEqual(directMembers);
 	});
 
+	it("returns the same authorized member detail over Drizzle and the internal proxy", async () => {
+		const db = drizzle(env.DB, { schema });
+		const direct = createMembersRepository(db, createAuditRepository(db));
+		const handlers = createMembersInternalHandlers({ db, deployEnv: "dev" });
+		const adapter = new SharedApiDatabaseAdapter(
+			(request) => handlers.fetch(request, "mem_shared_member"),
+			{ baseUrl: "https://dev.example", token: "shared-test-token" },
+		);
+		const shared = createSharedRepositories(adapter);
+
+		const directMember = await direct.getById(adminActor, "mem_shared_member");
+		const sharedMember = await shared.members.getById(adminActor, "mem_shared_member");
+
+		expect(sharedMember).toEqual(directMember);
+	});
+
 	it("refuses a sharedDev deny operation over the proxy", async () => {
 		const db = drizzle(env.DB, { schema });
 		const handlers = createMembersInternalHandlers({ db, deployEnv: "dev" });

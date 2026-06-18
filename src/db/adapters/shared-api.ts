@@ -48,7 +48,8 @@ export class SharedApiDatabaseAdapter implements DatabaseAdapter {
 		const response = await this.request(`/internal/members/${encodeURIComponent(id)}`);
 		if (response.status === 404) return null;
 		if (!response.ok) throw new Error("Shared API failed to fetch member.");
-		return deserializeMember(await response.json() as Member);
+		const body = await response.json() as { member: Member };
+		return deserializeMember(body.member);
 	}
 
 	async updateMemberProfile(id: string, input: UpdateMemberProfileInput): Promise<Member> {

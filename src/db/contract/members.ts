@@ -30,6 +30,12 @@ export const membersContract = {
 		permission: "member:manage",
 		sharedDev: "allow",
 	}),
+	get: operation({
+		input: z.object({ id: z.string().min(1) }),
+		output: z.object({ member: memberOutputSchema.nullable() }),
+		auth: "member",
+		sharedDev: "allow",
+	}),
 	create: operation({
 		input: createMemberInputSchema,
 		output: z.object({ member: memberOutputSchema }),

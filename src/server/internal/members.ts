@@ -21,7 +21,7 @@ export function createMembersInternalHandlers({
 	const repository = createMembersRepository(db, createAuditRepository(db));
 
 	return {
-		async fetch(request: Request): Promise<Response> {
+		async fetch(request: Request, memberId?: string): Promise<Response> {
 			if (deployEnv !== "dev") return new Response("Not found", { status: 404 });
 
 			const corsHeaders = getInternalCorsHeaders(request, allowedOrigins);
@@ -40,6 +40,12 @@ export function createMembersInternalHandlers({
 
 			try {
 				if (request.method === "GET") {
+					if (memberId) {
+						const input = membersContract.get.input.parse({ id: memberId });
+						const member = await repository.getById(actor, input.id);
+						const output = membersContract.get.output.parse({ member });
+						return Response.json(output, { status: member ? 200 : 404, headers: responseHeaders });
+					}
 					const url = new URL(request.url);
 					const input = membersContract.list.input.parse({
 						limit: url.searchParams.get("limit") ? Number(url.searchParams.get("limit")) : undefined,
