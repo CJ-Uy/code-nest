@@ -30,3 +30,19 @@
 - Run `pnpm lint` when lint support is available.
 - Run `pnpm build` before claiming the UI compiles.
 - Check mobile and desktop layouts for horizontal overflow.
+
+## Shared dev Worker
+
+The `shared` access mode depends on the deployed dev Worker `code-nest-dev`. It owns `code-nest-dev-db`, `code-nest-dev-uploads`, and the `/internal/*` API used by outside developers.
+
+Redeploy the dev Worker, and migrate or seed dev D1 when needed, after changes to:
+
+- `src/db/schema.ts` or `drizzle/migrations`.
+- `src/db/contract/*` or `src/app/internal/*`.
+- `src/server/auth/permissions.ts`, shared actor resolution, or shared dev token seed data.
+- Seed data that outside developers rely on.
+- `src/auth.ts`, `src/server/env.ts`, or `wrangler.jsonc`.
+- `/internal/uploads` or `src/storage/adapters/shared-api.ts`.
+- Worker runtime dependencies such as Auth.js, Drizzle, OpenNext, or Wrangler.
+
+Show the exact `pnpm exec wrangler` command and wait for approval before any D1 reset, migration, seed, delete, or production-touching command.

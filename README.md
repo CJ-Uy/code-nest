@@ -43,6 +43,19 @@ pnpm preview
 
 `pnpm build` runs the OpenNext Cloudflare build so the Worker and static assets are prepared together.
 
+## Shared dev backend
+
+Outside developers can run the app with `APP_ENV=shared`. In that mode, the local app talks to the deployed dev Worker, `code-nest-dev`, through typed `/internal/*` endpoints. They do not need Cloudflare credentials.
+
+When schema, migrations, internal contracts, permissions, auth config, shared token seed data, or Worker runtime dependencies change, the dev backend must be updated too:
+
+```bash
+pnpm db:migrate:dev
+pnpm deploy:dev
+```
+
+Any D1 reset, migration, seed, or production-touching command needs explicit approval before it is run. See `docs/setup/shared-dev-onboarding.md` and `docs/operations/shared-dev-deploy-note.md`.
+
 ## Deploy
 
 Deploy the application to Cloudflare:

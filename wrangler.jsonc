@@ -28,6 +28,7 @@
 	"upload_source_maps": true,
 	"vars": {
 		"APP_ENV": "production",
+		"DEPLOY_ENV": "prod",
 		"STORAGE_MODE": "binding",
 		"LOCAL_SQLITE_PATH": "./.local/dev.db",
 		"LOCAL_STORAGE_DIR": "./.local/uploads"
@@ -63,7 +64,8 @@
 				}
 			],
 			"vars": {
-				"APP_ENV": "local",
+				"APP_ENV": "production",
+				"DEPLOY_ENV": "dev",
 				"STORAGE_MODE": "binding",
 				"LOCAL_SQLITE_PATH": "./.local/dev.db",
 				"LOCAL_STORAGE_DIR": "./.local/uploads"

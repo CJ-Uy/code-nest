@@ -24,9 +24,9 @@ LOCAL_STORAGE_DIR=./.local/uploads
 
 Shared mode uses typed internal API endpoints:
 
-- `GET /internal/users`
-- `POST /internal/users`
-- `GET /internal/users/:id`
+- `GET /internal/members`
+- `POST /internal/members`
+- `GET /internal/members/:id`
 
 There is no raw SQL endpoint. D1 is not exposed as `DATABASE_URL`.
 
@@ -38,3 +38,6 @@ There is no raw SQL endpoint. D1 is not exposed as `DATABASE_URL`.
 
 If a token expires or is missing, ask the project owner for a refreshed `.env.local`. Do not request production credentials.
 
+## Backend freshness
+
+Shared mode depends on the deployed dev Worker. When schema, migrations, internal contracts, permissions, auth config, shared token seed data, or Worker runtime dependencies change, the dev Worker must be migrated, seeded when needed, and redeployed.

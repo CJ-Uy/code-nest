@@ -3,10 +3,10 @@ import { eq } from "drizzle-orm";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { createId } from "@/lib/ids";
 import { getAppConfig } from "@/server/env";
-import { users } from "../schema";
-import type { CreateUserInput, DatabaseAdapter, User } from "../types";
+import { members } from "../schema";
+import type { CreateMemberInput, DatabaseAdapter, Member } from "../types";
 
-type LocalDatabase = BetterSQLite3Database<{ users: typeof users }>;
+type LocalDatabase = BetterSQLite3Database<{ members: typeof members }>;
 
 export class LocalSqliteDatabaseAdapter implements DatabaseAdapter {
 	readonly adapterType = "local-sqlite" as const;
@@ -23,30 +23,22 @@ export class LocalSqliteDatabaseAdapter implements DatabaseAdapter {
 		const config = getAppConfig();
 		await fs.mkdir(dirname(config.LOCAL_SQLITE_PATH), { recursive: true });
 		const sqlite = new Database(config.LOCAL_SQLITE_PATH);
-		sqlite.exec(`
-			CREATE TABLE IF NOT EXISTS users (
-				id TEXT PRIMARY KEY,
-				email TEXT NOT NULL UNIQUE,
-				name TEXT,
-				created_at INTEGER NOT NULL DEFAULT (unixepoch())
-			);
-		`);
-		this.dbInstance = drizzle(sqlite, { schema: { users } });
+		this.dbInstance = drizzle(sqlite, { schema: { members } });
 		return this.dbInstance;
 	}
 
-	async listUsers(): Promise<User[]> {
-		return (await this.db()).select().from(users).orderBy(users.createdAt).all();
+	async listMembers(): Promise<Member[]> {
+		return (await this.db()).select().from(members).orderBy(members.createdAt).all();
 	}
 
-	async createUser(input: CreateUserInput): Promise<User> {
-		const id = createId("usr");
-		const created = (await this.db()).insert(users).values({ id, email: input.email, name: input.name ?? null }).returning().get();
+	async createMember(input: CreateMemberInput): Promise<Member> {
+		const id = createId("mem");
+		const created = (await this.db()).insert(members).values({ id, email: input.email, name: input.name ?? null }).returning().get();
 		return created;
 	}
 
-	async getUserById(id: string): Promise<User | null> {
-		const user = (await this.db()).select().from(users).where(eq(users.id, id)).limit(1).get();
-		return user ?? null;
+	async getMemberById(id: string): Promise<Member | null> {
+		const member = (await this.db()).select().from(members).where(eq(members.id, id)).limit(1).get();
+		return member ?? null;
 	}
 }

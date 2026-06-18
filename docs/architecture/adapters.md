@@ -6,9 +6,9 @@ Adapters let app code stay independent from the active backend mode.
 
 `src/db/types.ts` exposes:
 
-- `listUsers()`
-- `createUser(input)`
-- `getUserById(id)`
+- `listMembers()`
+- `createMember(input)`
+- `getMemberById(id)`
 
 Adapters:
 
@@ -34,4 +34,3 @@ Adapters:
 ## Adding An Adapter
 
 Add a focused file under `src/db/adapters` or `src/storage/adapters`, implement the interface, then update `getDatabaseAdapter()` or `getStorageAdapter()`.
-
