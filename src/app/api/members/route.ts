@@ -1,21 +1,20 @@
 import { NextResponse } from "next/server";
-import { getDatabaseAdapter } from "@/db";
-import { createMemberInputSchema } from "@/db/types";
+import { getRepositories } from "@/db";
+import { getActor } from "@/server/auth/actor";
 
 export async function GET() {
-	const db = getDatabaseAdapter();
-	const members = await db.listMembers();
-	return NextResponse.json({ members });
+	const actor = await getActor();
+	if (!actor) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+
+	try {
+		const repositories = await getRepositories();
+		const members = await repositories.members.list(actor, { limit: 25 });
+		return NextResponse.json({ members });
+	} catch {
+		return NextResponse.json({ error: "Not authorized." }, { status: 403 });
+	}
 }
 
-export async function POST(request: Request) {
-	const parsed = createMemberInputSchema.safeParse(await request.json().catch(() => null));
-
-	if (!parsed.success) {
-		return NextResponse.json({ error: "Invalid member input." }, { status: 400 });
-	}
-
-	const db = getDatabaseAdapter();
-	const member = await db.createMember(parsed.data);
-	return NextResponse.json({ member }, { status: 201 });
+export async function POST() {
+	return NextResponse.json({ error: "Member accounts are created on first sign-in." }, { status: 405 });
 }

@@ -19,6 +19,7 @@ const rawEnvSchema = z.object({
 	AUTH_ALLOWLIST_EMAILS: z.string().optional(),
 	SHARED_API_BASE_URL: z.string().optional(),
 	SHARED_API_TOKEN: z.string().optional(),
+	SHARED_API_ALLOWED_ORIGINS: z.string().optional(),
 	R2_ACCOUNT_ID: z.string().optional(),
 	R2_BUCKET_NAME: z.string().optional(),
 	R2_ACCESS_KEY_ID: z.string().optional(),
@@ -53,6 +54,7 @@ export function getAppConfig(): AppConfig {
 		AUTH_ALLOWLIST_EMAILS: runtimeEnvValue("AUTH_ALLOWLIST_EMAILS"),
 		SHARED_API_BASE_URL: runtimeEnvValue("SHARED_API_BASE_URL"),
 		SHARED_API_TOKEN: runtimeEnvValue("SHARED_API_TOKEN"),
+		SHARED_API_ALLOWED_ORIGINS: runtimeEnvValue("SHARED_API_ALLOWED_ORIGINS"),
 		R2_ACCOUNT_ID: runtimeEnvValue("R2_ACCOUNT_ID"),
 		R2_BUCKET_NAME: runtimeEnvValue("R2_BUCKET_NAME"),
 		R2_ACCESS_KEY_ID: runtimeEnvValue("R2_ACCESS_KEY_ID"),
@@ -78,6 +80,7 @@ export function getAppConfig(): AppConfig {
 	if (parsed.DEPLOY_ENV === "prod") {
 		if (parsed.SHARED_API_TOKEN) issues.push("SHARED_API_TOKEN must not be configured when DEPLOY_ENV=prod.");
 		if (parsed.SHARED_API_BASE_URL) issues.push("SHARED_API_BASE_URL must not be configured when DEPLOY_ENV=prod.");
+		if (parsed.SHARED_API_ALLOWED_ORIGINS) issues.push("SHARED_API_ALLOWED_ORIGINS must not be configured when DEPLOY_ENV=prod.");
 		if (parsed.STORAGE_MODE === "binding" || parsed.ALLOW_PRODUCTION_STORAGE_MODE_OVERRIDE === "true") {
 			// Production binding mode is valid.
 		} else {
@@ -117,6 +120,7 @@ export function getPublicEnvStatus() {
 			AUTH_ALLOWLIST_EMAILS: Boolean(config.AUTH_ALLOWLIST_EMAILS),
 			SHARED_API_BASE_URL: Boolean(config.SHARED_API_BASE_URL),
 			SHARED_API_TOKEN: Boolean(config.SHARED_API_TOKEN),
+			SHARED_API_ALLOWED_ORIGINS: Boolean(config.SHARED_API_ALLOWED_ORIGINS),
 			R2_ACCOUNT_ID: Boolean(config.R2_ACCOUNT_ID),
 			R2_BUCKET_NAME: Boolean(config.R2_BUCKET_NAME),
 			R2_ACCESS_KEY_ID: Boolean(config.R2_ACCESS_KEY_ID),

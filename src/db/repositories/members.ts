@@ -4,7 +4,8 @@ import { createId } from "@/lib/ids";
 import { members } from "@/db/schema";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
-import type { CreateMemberInput, Member } from "../types";
+import type { CreateMemberInput, Member, UpdateMemberProfileInput } from "../types";
+import type { AuditRepository } from "./audit";
 
 type MemberInsert = InferInsertModel<typeof members>;
 
@@ -20,15 +21,23 @@ export type MemberDb = {
 			returning(): Promise<Member[]> | Member[];
 		};
 	};
+	update(table: typeof members): {
+		set(value: Partial<MemberInsert>): {
+			where(condition: unknown): {
+				returning(): Promise<Member[]> | Member[];
+			};
+		};
+	};
 };
 
 export type MembersRepository = {
 	list(actor: Actor, input?: { limit?: number }): Promise<Member[]>;
 	getById(actor: Actor, id: string): Promise<Member | null>;
 	create(actor: Actor, input: CreateMemberInput): Promise<Member>;
+	updateProfile(actor: Actor, id: string, input: UpdateMemberProfileInput): Promise<Member>;
 };
 
-export function createMembersRepository(db: MemberDb): MembersRepository {
+export function createMembersRepository(db: MemberDb, audit: AuditRepository): MembersRepository {
 	return {
 		async list(actor, input) {
 			if (!can(actor, "member:manage")) {
@@ -48,6 +57,32 @@ export function createMembersRepository(db: MemberDb): MembersRepository {
 				throw new Error("Not authorized to create members.");
 			}
 			const [member] = await db.insert(members).values({ id: createId("mem"), email: input.email, name: input.name ?? null }).returning();
+			await audit.record(actor, {
+				action: "member:create",
+				targetType: "member",
+				targetId: member.id,
+				category: "member",
+			});
+			return member;
+		},
+		async updateProfile(actor, id, input) {
+			if (actor.memberId !== id && !can(actor, "member:manage")) {
+				throw new Error("Not authorized to update this member.");
+			}
+			const [member] = await db
+				.update(members)
+				.set({ ...input, updatedAt: new Date() })
+				.where(eq(members.id, id))
+				.returning();
+			if (!member) {
+				throw new Error("Member not found.");
+			}
+			await audit.record(actor, {
+				action: "member:profile_update",
+				targetType: "member",
+				targetId: member.id,
+				category: "member",
+			});
 			return member;
 		},
 	};

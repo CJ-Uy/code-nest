@@ -1,33 +1,38 @@
-import { NextResponse } from "next/server";
-import { createObjectKey } from "@/lib/ids";
+import { eq } from "drizzle-orm";
+import { crsEvents } from "@/db/schema";
+import { getDb } from "@/db/client";
+import { getActor } from "@/server/auth/actor";
+import { getAppConfig } from "@/server/env";
+import { assertSameOrigin } from "@/server/http/origin";
+import { proxySharedApiRequest } from "@/server/shared-api";
+import { createUploadHandlers } from "@/server/uploads";
 import { getStorageAdapter } from "@/storage";
 
 export async function POST(request: Request) {
-	const storage = getStorageAdapter();
-	const contentType = request.headers.get("content-type") ?? undefined;
-
-	if (contentType?.includes("multipart/form-data")) {
-		const form = await request.formData();
-		const file = form.get("file");
-		if (!(file instanceof File)) {
-			return NextResponse.json({ error: "Expected multipart field named file." }, { status: 400 });
-		}
-
-		const key = String(form.get("key") ?? createObjectKey(file.name));
-		const result = await storage.putObject({
-			key,
-			body: file,
-			contentType: file.type || undefined,
-		});
-		return NextResponse.json(result, { status: 201 });
+	const config = getAppConfig();
+	try {
+		assertSameOrigin(request, config.APP_BASE_URL);
+	} catch {
+		return Response.json({ error: "Cross-origin request rejected." }, { status: 403 });
+	}
+	if (config.APP_ENV === "shared") {
+		return proxySharedApiRequest(request, "/internal/uploads");
 	}
 
-	const key = request.headers.get("x-object-key") ?? createObjectKey();
-	const result = await storage.putObject({
-		key,
-		body: await request.arrayBuffer(),
-		contentType,
-	});
+	return createHandlers().collection(request);
+}
 
-	return NextResponse.json(result, { status: 201 });
+function createHandlers() {
+	return createUploadHandlers({
+		getActor: async () => getActor(),
+		storage: getStorageAdapter(),
+		canPostEvent: async (_actor, eventId) => {
+			const [event] = await getDb()
+				.select()
+				.from(crsEvents)
+				.where(eq(crsEvents.id, eventId))
+				.limit(1);
+			return event?.status === "approved";
+		},
+	});
 }
