@@ -5,6 +5,7 @@ import { members } from "@/db/schema";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
 import type { CreateMemberInput, Member } from "../types";
+import type { AuditRepository } from "./audit";
 
 type MemberInsert = InferInsertModel<typeof members>;
 
@@ -28,7 +29,7 @@ export type MembersRepository = {
 	create(actor: Actor, input: CreateMemberInput): Promise<Member>;
 };
 
-export function createMembersRepository(db: MemberDb): MembersRepository {
+export function createMembersRepository(db: MemberDb, audit: AuditRepository): MembersRepository {
 	return {
 		async list(actor, input) {
 			if (!can(actor, "member:manage")) {
@@ -48,6 +49,12 @@ export function createMembersRepository(db: MemberDb): MembersRepository {
 				throw new Error("Not authorized to create members.");
 			}
 			const [member] = await db.insert(members).values({ id: createId("mem"), email: input.email, name: input.name ?? null }).returning();
+			await audit.record(actor, {
+				action: "member:create",
+				targetType: "member",
+				targetId: member.id,
+				category: "member",
+			});
 			return member;
 		},
 	};

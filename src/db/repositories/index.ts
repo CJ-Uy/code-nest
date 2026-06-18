@@ -1,6 +1,6 @@
 import { createAnnouncementsRepository } from "./announcements";
 import { createArticlesRepository } from "./articles";
-import { createAuditRepository } from "./audit";
+import { createAuditRepository, createUnavailableAuditRepository } from "./audit";
 import { createCalendarRepository } from "./calendar";
 import { createEventsRepository } from "./events";
 import { createLibraryRepository } from "./library";
@@ -12,11 +12,13 @@ import { createSessionsRepository } from "./sessions";
 import { createSurveysRepository } from "./surveys";
 import { createTeamsRepository } from "./teams";
 import type { MemberDb } from "./members";
+import type { AuditDb } from "./audit";
 import type { DatabaseAdapter } from "../types";
 
-export function createDrizzleRepositories(db: MemberDb) {
+export function createDrizzleRepositories(db: MemberDb & AuditDb) {
+	const audit = createAuditRepository(db);
 	return {
-		members: createMembersRepository(db),
+		members: createMembersRepository(db, audit),
 		sessions: createSessionsRepository(),
 		articles: createArticlesRepository(),
 		library: createLibraryRepository(),
@@ -27,7 +29,7 @@ export function createDrizzleRepositories(db: MemberDb) {
 		announcements: createAnnouncementsRepository(),
 		notifications: createNotificationsRepository(),
 		calendar: createCalendarRepository(),
-		audit: createAuditRepository(),
+		audit,
 		teams: createTeamsRepository(),
 	};
 }
@@ -35,6 +37,7 @@ export function createDrizzleRepositories(db: MemberDb) {
 export type Repositories = ReturnType<typeof createDrizzleRepositories>;
 
 export function createSharedRepositories(adapter: DatabaseAdapter): Repositories {
+	const audit = createUnavailableAuditRepository();
 	return {
 		members: {
 			list: async (_actor, input) => adapter.listMembers().then((members) => members.slice(0, input?.limit ?? 25)),
@@ -51,7 +54,7 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 		announcements: createAnnouncementsRepository(),
 		notifications: createNotificationsRepository(),
 		calendar: createCalendarRepository(),
-		audit: createAuditRepository(),
+		audit,
 		teams: createTeamsRepository(),
 	};
 }
