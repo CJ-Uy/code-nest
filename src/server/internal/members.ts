@@ -4,6 +4,7 @@ import { membersContract } from "@/db/contract/members";
 import { createAuditRepository } from "@/db/repositories/audit";
 import { createMembersRepository } from "@/db/repositories/members";
 import type { DeployEnv } from "@/server/env";
+import { getInternalCorsHeaders } from "./cors";
 import { resolveSharedActor } from "./shared-actor";
 
 type MembersInternalDependencies = {
@@ -23,7 +24,7 @@ export function createMembersInternalHandlers({
 		async fetch(request: Request): Promise<Response> {
 			if (deployEnv !== "dev") return new Response("Not found", { status: 404 });
 
-			const corsHeaders = getCorsHeaders(request, allowedOrigins);
+			const corsHeaders = getInternalCorsHeaders(request, allowedOrigins);
 			if (request.method === "OPTIONS") {
 				return new Response(null, { status: corsHeaders ? 204 : 403, headers: corsHeaders ?? undefined });
 			}
@@ -61,6 +62,13 @@ export function createMembersInternalHandlers({
 					return Response.json(output, { status: 201, headers: responseHeaders });
 				}
 
+				if (request.method === "PATCH") {
+					const input = membersContract.updateProfile.input.parse(await request.json());
+					const member = await repository.updateProfile(actor, actor.memberId, input);
+					const output = membersContract.updateProfile.output.parse({ member });
+					return Response.json(output, { headers: responseHeaders });
+				}
+
 				return new Response("Method not allowed", { status: 405, headers: responseHeaders });
 			} catch (error) {
 				const message = error instanceof Error ? error.message : "Internal request failed.";
@@ -69,17 +77,4 @@ export function createMembersInternalHandlers({
 			}
 		},
 	};
-}
-
-function getCorsHeaders(request: Request, allowedOrigins: string[]): Headers | null {
-	const origin = request.headers.get("origin");
-	if (!origin) return new Headers();
-	if (!allowedOrigins.includes(origin)) return null;
-
-	return new Headers({
-		"Access-Control-Allow-Headers": "Authorization, Content-Type",
-		"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-		"Access-Control-Allow-Origin": origin,
-		Vary: "Origin",
-	});
 }

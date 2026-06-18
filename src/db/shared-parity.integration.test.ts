@@ -9,6 +9,7 @@ import { createAuditRepository } from "./repositories/audit";
 import { createMembersRepository } from "./repositories/members";
 import { createMembersInternalHandlers } from "@/server/internal/members";
 import type { Actor } from "@/server/auth/permissions";
+import { createAuthInternalHandlers } from "@/server/internal/auth";
 
 const adminActor: Actor = {
 	memberId: "mem_shared_admin",
@@ -98,6 +99,55 @@ describe("shared members parity", () => {
 		const response = await handlers.fetch(new Request("https://dev.example/internal/members"));
 
 		expect(response.status).toBe(401);
+	});
+
+	it("applies the internal API CORS allowlist", async () => {
+		const db = drizzle(env.DB, { schema });
+		const handlers = createMembersInternalHandlers({
+			db,
+			deployEnv: "dev",
+			allowedOrigins: ["http://localhost:3000"],
+		});
+		const blocked = await handlers.fetch(
+			new Request("https://dev.example/internal/members", {
+				headers: {
+					authorization: "Bearer shared-test-token",
+					origin: "https://attacker.example",
+				},
+			}),
+		);
+		const allowed = await handlers.fetch(
+			new Request("https://dev.example/internal/members", {
+				headers: {
+					authorization: "Bearer shared-test-token",
+					origin: "http://localhost:3000",
+				},
+			}),
+		);
+
+		expect(blocked.status).toBe(403);
+		expect(allowed.headers.get("access-control-allow-origin")).toBe("http://localhost:3000");
+	});
+
+	it("returns the token-mapped actor for shared mode", async () => {
+		const db = drizzle(env.DB, { schema });
+		const handlers = createAuthInternalHandlers({ db, deployEnv: "dev" });
+
+		const response = await handlers.fetch(
+			new Request("https://dev.example/internal/auth", {
+				headers: { authorization: "Bearer shared-test-token" },
+			}),
+		);
+
+		expect(response.status).toBe(200);
+		expect(await response.json()).toMatchObject({
+			actor: {
+				memberId: adminActor.memberId,
+				roles: ["member", "super"],
+				context: "shared_dev_token",
+				sharedTokenLabel: "Test admin token",
+			},
+		});
 	});
 
 	it("returns 404 outside the dev Worker", async () => {
