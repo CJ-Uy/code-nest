@@ -1,16 +1,12 @@
-import { createAnnouncementsRepository } from "./announcements";
-import { createArticlesRepository } from "./articles";
 import { createAuditRepository, createUnavailableAuditRepository } from "./audit";
 import { createCalendarRepository } from "./calendar";
 import { createEventsRepository } from "./events";
-import { createLibraryRepository } from "./library";
 import { createLinksRepository } from "./links";
 import { createMembersRepository } from "./members";
 import { createNotificationsRepository } from "./notifications";
-import { createPointsRepository } from "./points";
+import { createRetentionRepository } from "./retention";
 import { createSessionsRepository } from "./sessions";
 import { createSurveysRepository } from "./surveys";
-import { createTeamsRepository } from "./teams";
 import type { MemberDb } from "./members";
 import type { AuditDb } from "./audit";
 import type { DatabaseAdapter } from "../types";
@@ -20,17 +16,13 @@ export function createDrizzleRepositories(db: MemberDb & AuditDb) {
 	return {
 		members: createMembersRepository(db, audit),
 		sessions: createSessionsRepository(),
-		articles: createArticlesRepository(),
-		library: createLibraryRepository(),
 		links: createLinksRepository(),
 		events: createEventsRepository(),
-		points: createPointsRepository(),
+		retention: createRetentionRepository(),
 		surveys: createSurveysRepository(),
-		announcements: createAnnouncementsRepository(),
 		notifications: createNotificationsRepository(),
 		calendar: createCalendarRepository(),
 		audit,
-		teams: createTeamsRepository(),
 	};
 }
 
@@ -46,16 +38,12 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 			updateProfile: async (_actor, id, input) => adapter.updateMemberProfile(id, input),
 		},
 		sessions: createSessionsRepository(),
-		articles: createArticlesRepository(),
-		library: createLibraryRepository(),
 		links: createLinksRepository(),
 		events: createEventsRepository(),
-		points: createPointsRepository(),
+		retention: createRetentionRepository(),
 		surveys: createSurveysRepository(),
-		announcements: createAnnouncementsRepository(),
 		notifications: createNotificationsRepository(),
 		calendar: createCalendarRepository(),
 		audit,
-		teams: createTeamsRepository(),
 	};
 }
