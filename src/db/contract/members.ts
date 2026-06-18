@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createMemberInputSchema } from "@/db/types";
+import { createMemberInputSchema, updateMemberProfileInputSchema } from "@/db/types";
 import { operation } from "./common";
 
 export const memberOutputSchema = z.object({
@@ -36,5 +36,11 @@ export const membersContract = {
 		auth: "admin",
 		permission: "member:manage",
 		sharedDev: "deny",
+	}),
+	updateProfile: operation({
+		input: updateMemberProfileInputSchema,
+		output: z.object({ member: memberOutputSchema }),
+		auth: "member",
+		sharedDev: "allow",
 	}),
 };

@@ -2,7 +2,7 @@ import { env } from "cloudflare:test";
 import { drizzle } from "drizzle-orm/d1";
 import { beforeEach, describe, expect, it } from "vitest";
 import * as schema from "@/db/schema";
-import { auditLogs, members } from "@/db/schema";
+import { auditLogs } from "@/db/schema";
 import type { Actor } from "@/server/auth/permissions";
 import { createAuditRepository } from "./audit";
 import { createMembersRepository } from "./members";
@@ -53,5 +53,39 @@ describe("members repository on D1", () => {
 		const repository = createMembersRepository(db, createAuditRepository(db));
 
 		await expect(repository.list(memberActor, { limit: 10 })).rejects.toThrow("Not authorized");
+	});
+
+	it("lets a member update their own profile and audits the change", async () => {
+		await env.DB.prepare("INSERT INTO members (id, email, name) VALUES (?, ?, ?)")
+			.bind(memberActor.memberId, "member@example.com", "Member")
+			.run();
+		const db = drizzle(env.DB, { schema });
+		const repository = createMembersRepository(db, createAuditRepository(db));
+
+		const updated = await repository.updateProfile(memberActor, memberActor.memberId, {
+			fullName: "Member Name",
+			nickname: "Mem",
+			pronouns: "they/them",
+			batch: "2027",
+			birthday: "2005-03-14",
+			birthdayPrivate: true,
+		});
+		const [audit] = await db.select().from(auditLogs);
+
+		expect(updated).toMatchObject({ fullName: "Member Name", nickname: "Mem", batch: "2027" });
+		expect(audit).toMatchObject({
+			actorMemberId: memberActor.memberId,
+			action: "member:profile_update",
+			targetId: memberActor.memberId,
+		});
+	});
+
+	it("prevents a member from updating another profile", async () => {
+		const db = drizzle(env.DB, { schema });
+		const repository = createMembersRepository(db, createAuditRepository(db));
+
+		await expect(
+			repository.updateProfile(memberActor, "another-member", { nickname: "Nope" }),
+		).rejects.toThrow("Not authorized");
 	});
 });

@@ -43,6 +43,7 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 			list: async (_actor, input) => adapter.listMembers().then((members) => members.slice(0, input?.limit ?? 25)),
 			getById: async (_actor, id) => adapter.getMemberById(id),
 			create: async (_actor, input) => adapter.createMember(input),
+			updateProfile: async (_actor, id, input) => adapter.updateMemberProfile(id, input),
 		},
 		sessions: createSessionsRepository(),
 		articles: createArticlesRepository(),

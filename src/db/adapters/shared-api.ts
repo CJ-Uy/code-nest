@@ -1,5 +1,5 @@
 import { getAppConfig } from "@/server/env";
-import type { CreateMemberInput, DatabaseAdapter, Member } from "../types";
+import type { CreateMemberInput, DatabaseAdapter, Member, UpdateMemberProfileInput } from "../types";
 
 export class SharedApiDatabaseAdapter implements DatabaseAdapter {
 	readonly adapterType = "shared-api" as const;
@@ -49,6 +49,18 @@ export class SharedApiDatabaseAdapter implements DatabaseAdapter {
 		if (response.status === 404) return null;
 		if (!response.ok) throw new Error("Shared API failed to fetch member.");
 		return deserializeMember(await response.json() as Member);
+	}
+
+	async updateMemberProfile(id: string, input: UpdateMemberProfileInput): Promise<Member> {
+		const response = await this.request("/internal/members", {
+			method: "PATCH",
+			body: JSON.stringify(input),
+		});
+		if (!response.ok) throw new Error("Shared API failed to update the member profile.");
+		const body = await response.json() as { member: Member };
+		const member = deserializeMember(body.member);
+		if (member.id !== id) throw new Error("Shared API returned the wrong member profile.");
+		return member;
 	}
 }
 
