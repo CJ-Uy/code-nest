@@ -4,7 +4,7 @@ import { createAuditRepository } from "./audit";
 import { createCalendarRepository } from "./calendar";
 import { createEventsRepository } from "./events";
 import { createLibraryRepository } from "./library";
-import { createLinksRepository } from "./links";
+import { createLinksRepository, createUnavailableLinksRepository } from "./links";
 import { createMembersRepository } from "./members";
 import { createNotificationsRepository } from "./notifications";
 import { createPointsRepository } from "./points";
@@ -12,15 +12,16 @@ import { createSessionsRepository } from "./sessions";
 import { createSurveysRepository } from "./surveys";
 import { createTeamsRepository } from "./teams";
 import type { MemberDb } from "./members";
+import type { LinksDb } from "./links";
 import type { DatabaseAdapter } from "../types";
 
-export function createDrizzleRepositories(db: MemberDb) {
+export function createDrizzleRepositories(db: MemberDb & LinksDb) {
 	return {
 		members: createMembersRepository(db),
 		sessions: createSessionsRepository(),
 		articles: createArticlesRepository(),
 		library: createLibraryRepository(),
-		links: createLinksRepository(),
+		links: createLinksRepository(db),
 		events: createEventsRepository(),
 		points: createPointsRepository(),
 		surveys: createSurveysRepository(),
@@ -44,7 +45,7 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 		sessions: createSessionsRepository(),
 		articles: createArticlesRepository(),
 		library: createLibraryRepository(),
-		links: createLinksRepository(),
+		links: createUnavailableLinksRepository(),
 		events: createEventsRepository(),
 		points: createPointsRepository(),
 		surveys: createSurveysRepository(),
