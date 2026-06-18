@@ -2,17 +2,14 @@ import { sql } from "drizzle-orm";
 import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export type MemberStatus = "active" | "pending" | "inactive";
-export type ArticleKind = "article" | "case";
-export type ArticleConfidentiality = "public" | "members" | "confidential";
-export type PrincipalType = "member" | "role" | "team";
 export type EventType = "official" | "casual" | "birthday";
 export type EventStatus = "pending" | "approved" | "rejected";
 export type RsvpState = "going" | "none";
 export type SurveyStatus = "draft" | "running" | "closed";
 export type SurveyQuestionType = "scale" | "text" | "choice";
-export type AnnouncementAudienceKind = "all" | "role" | "batch";
 export type AuditActorContext = "session" | "shared_dev_token";
-export type AuditCategory = "role" | "event" | "content" | "survey" | "link" | "member";
+export type AuditCategory = "role" | "event" | "retention" | "survey" | "link" | "member";
+export type RetentionRecordSource = "event_attendance" | "manual";
 
 const nowMs = sql`(unixepoch() * 1000)`;
 
@@ -32,8 +29,6 @@ export const members = sqliteTable(
 		birthdayPrivate: integer("birthday_private", { mode: "boolean" }).notNull().default(true),
 		avatarKey: text("avatar_key"),
 		status: text("status").$type<MemberStatus>().notNull().default("active"),
-		tourMemberDone: integer("tour_member_done", { mode: "boolean" }).notNull().default(false),
-		tourAdminDone: integer("tour_admin_done", { mode: "boolean" }).notNull().default(false),
 		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 		updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 	},
@@ -121,220 +116,6 @@ export const sharedDevTokens = sqliteTable("shared_dev_tokens", {
 	createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 });
 
-export const consultancyTeams = sqliteTable("consultancy_teams", {
-	id: text("id").primaryKey(),
-	name: text("name").notNull(),
-	createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
-});
-
-export const teamMembers = sqliteTable(
-	"team_members",
-	{
-		teamId: text("team_id")
-			.notNull()
-			.references(() => consultancyTeams.id, { onDelete: "cascade" }),
-		memberId: text("member_id")
-			.notNull()
-			.references(() => members.id, { onDelete: "cascade" }),
-	},
-	(table) => [primaryKey({ columns: [table.teamId, table.memberId] }), index("team_members_member_id_idx").on(table.memberId)],
-);
-
-export const articles = sqliteTable(
-	"articles",
-	{
-		id: text("id").primaryKey(),
-		slug: text("slug").notNull().unique(),
-		kind: text("kind").$type<ArticleKind>().notNull(),
-		confidentiality: text("confidentiality").$type<ArticleConfidentiality>().notNull(),
-		category: text("category").notNull(),
-		title: text("title").notNull(),
-		dek: text("dek").notNull(),
-		abstract: text("abstract").notNull(),
-		author: text("author").notNull(),
-		client: text("client"),
-		readTime: text("read_time").notNull(),
-		locked: integer("locked", { mode: "boolean" }).notNull().default(false),
-		dateSort: integer("date_sort").notNull(),
-		publishedAt: integer("published_at", { mode: "timestamp_ms" }),
-		createdBy: text("created_by").references(() => members.id, { onDelete: "set null" }),
-		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
-		updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
-	},
-	(table) => [
-		index("articles_slug_idx").on(table.slug),
-		index("articles_confidentiality_idx").on(table.confidentiality),
-		index("articles_published_at_idx").on(table.publishedAt),
-		index("articles_date_sort_idx").on(table.dateSort),
-		index("articles_category_idx").on(table.category),
-	],
-);
-
-export const articleSections = sqliteTable(
-	"article_sections",
-	{
-		id: text("id").primaryKey(),
-		articleId: text("article_id")
-			.notNull()
-			.references(() => articles.id, { onDelete: "cascade" }),
-		position: integer("position").notNull(),
-		heading: text("heading"),
-		body: text("body").notNull(),
-	},
-	(table) => [index("article_sections_article_id_idx").on(table.articleId)],
-);
-
-export const articleComponents = sqliteTable(
-	"article_components",
-	{
-		id: text("id").primaryKey(),
-		articleId: text("article_id")
-			.notNull()
-			.references(() => articles.id, { onDelete: "cascade" }),
-		position: integer("position").notNull(),
-		kind: text("kind").notNull(),
-		title: text("title"),
-		body: text("body"),
-		dataJson: text("data_json"),
-	},
-	(table) => [index("article_components_article_id_idx").on(table.articleId)],
-);
-
-export const articleQuestions = sqliteTable(
-	"article_questions",
-	{
-		id: text("id").primaryKey(),
-		articleId: text("article_id")
-			.notNull()
-			.references(() => articles.id, { onDelete: "cascade" }),
-		position: integer("position").notNull(),
-		prompt: text("prompt").notNull(),
-	},
-	(table) => [index("article_questions_article_id_idx").on(table.articleId)],
-);
-
-export const articleRefs = sqliteTable(
-	"article_refs",
-	{
-		id: text("id").primaryKey(),
-		articleId: text("article_id")
-			.notNull()
-			.references(() => articles.id, { onDelete: "cascade" }),
-		position: integer("position").notNull(),
-		label: text("label").notNull(),
-		href: text("href"),
-	},
-	(table) => [index("article_refs_article_id_idx").on(table.articleId)],
-);
-
-export const topics = sqliteTable("topics", {
-	id: text("id").primaryKey(),
-	name: text("name").notNull().unique(),
-});
-
-export const articleTopics = sqliteTable(
-	"article_topics",
-	{
-		articleId: text("article_id")
-			.notNull()
-			.references(() => articles.id, { onDelete: "cascade" }),
-		topicId: text("topic_id")
-			.notNull()
-			.references(() => topics.id, { onDelete: "cascade" }),
-	},
-	(table) => [primaryKey({ columns: [table.articleId, table.topicId] }), index("article_topics_topic_id_idx").on(table.topicId)],
-);
-
-export const articleRelated = sqliteTable(
-	"article_related",
-	{
-		articleId: text("article_id")
-			.notNull()
-			.references(() => articles.id, { onDelete: "cascade" }),
-		relatedId: text("related_id")
-			.notNull()
-			.references(() => articles.id, { onDelete: "cascade" }),
-	},
-	(table) => [primaryKey({ columns: [table.articleId, table.relatedId] })],
-);
-
-export const articleAcl = sqliteTable(
-	"article_acl",
-	{
-		articleId: text("article_id")
-			.notNull()
-			.references(() => articles.id, { onDelete: "cascade" }),
-		principalType: text("principal_type").$type<PrincipalType>().notNull(),
-		principalId: text("principal_id").notNull(),
-	},
-	(table) => [
-		primaryKey({ columns: [table.articleId, table.principalType, table.principalId] }),
-		index("article_acl_article_id_idx").on(table.articleId),
-	],
-);
-
-export const favorites = sqliteTable(
-	"favorites",
-	{
-		memberId: text("member_id")
-			.notNull()
-			.references(() => members.id, { onDelete: "cascade" }),
-		articleId: text("article_id")
-			.notNull()
-			.references(() => articles.id, { onDelete: "cascade" }),
-		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
-	},
-	(table) => [primaryKey({ columns: [table.memberId, table.articleId] }), index("favorites_article_id_idx").on(table.articleId)],
-);
-
-export const lists = sqliteTable(
-	"lists",
-	{
-		id: text("id").primaryKey(),
-		memberId: text("member_id")
-			.notNull()
-			.references(() => members.id, { onDelete: "cascade" }),
-		name: text("name").notNull(),
-		color: text("color").notNull(),
-		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
-	},
-	(table) => [index("lists_member_id_idx").on(table.memberId)],
-);
-
-export const listItems = sqliteTable(
-	"list_items",
-	{
-		listId: text("list_id")
-			.notNull()
-			.references(() => lists.id, { onDelete: "cascade" }),
-		articleId: text("article_id")
-			.notNull()
-			.references(() => articles.id, { onDelete: "cascade" }),
-		position: integer("position").notNull(),
-	},
-	(table) => [primaryKey({ columns: [table.listId, table.articleId] })],
-);
-
-export const comments = sqliteTable(
-	"comments",
-	{
-		id: text("id").primaryKey(),
-		articleId: text("article_id")
-			.notNull()
-			.references(() => articles.id, { onDelete: "cascade" }),
-		memberId: text("member_id")
-			.notNull()
-			.references(() => members.id, { onDelete: "cascade" }),
-		parentId: text("parent_id"),
-		body: text("body").notNull(),
-		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
-	},
-	(table) => [
-		index("comments_article_created_idx").on(table.articleId, table.createdAt),
-		index("comments_parent_id_idx").on(table.parentId),
-	],
-);
-
 export const shortLinks = sqliteTable(
 	"short_links",
 	{
@@ -346,6 +127,9 @@ export const shortLinks = sqliteTable(
 			.notNull()
 			.references(() => members.id, { onDelete: "cascade" }),
 		clickCount: integer("click_count").notNull().default(0),
+		previewTitle: text("preview_title"),
+		previewDescription: text("preview_description"),
+		previewImageKey: text("preview_image_key"),
 		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 		updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 	},
@@ -485,8 +269,28 @@ export const terms = sqliteTable(
 	(table) => [index("terms_starts_ends_idx").on(table.startsAt, table.endsAt)],
 );
 
-export const pointAwards = sqliteTable(
-	"point_awards",
+export const termMemberRoster = sqliteTable(
+	"term_member_roster",
+	{
+		termId: text("term_id")
+			.notNull()
+			.references(() => terms.id, { onDelete: "cascade" }),
+		email: text("email").notNull(),
+		memberId: text("member_id").references(() => members.id, { onDelete: "set null" }),
+		addedBy: text("added_by")
+			.notNull()
+			.references(() => members.id, { onDelete: "cascade" }),
+		addedAt: integer("added_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+	},
+	(table) => [
+		primaryKey({ columns: [table.termId, table.email] }),
+		index("term_member_roster_term_id_idx").on(table.termId),
+		index("term_member_roster_email_idx").on(table.email),
+	],
+);
+
+export const retentionRecords = sqliteTable(
+	"retention_records",
 	{
 		id: text("id").primaryKey(),
 		memberId: text("member_id")
@@ -496,14 +300,19 @@ export const pointAwards = sqliteTable(
 			.notNull()
 			.references(() => terms.id, { onDelete: "cascade" }),
 		eventId: text("event_id").references(() => crsEvents.id, { onDelete: "set null" }),
-		points: integer("points").notNull(),
+		points: integer("points"),
 		reason: text("reason").notNull(),
-		awardedBy: text("awarded_by")
+		source: text("source").$type<RetentionRecordSource>().notNull().default("manual"),
+		recordedBy: text("recorded_by")
 			.notNull()
 			.references(() => members.id, { onDelete: "cascade" }),
-		awardedAt: integer("awarded_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+		recordedAt: integer("recorded_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 	},
-	(table) => [index("point_awards_member_term_idx").on(table.memberId, table.termId), index("point_awards_term_id_idx").on(table.termId)],
+	(table) => [
+		index("retention_records_member_term_idx").on(table.memberId, table.termId),
+		index("retention_records_term_id_idx").on(table.termId),
+		index("retention_records_event_id_idx").on(table.eventId),
+	],
 );
 
 export const surveys = sqliteTable(
@@ -576,35 +385,10 @@ export const surveyAnswers = sqliteTable("survey_answers", {
 	value: text("value").notNull(),
 });
 
-export const announcements = sqliteTable(
-	"announcements",
-	{
-		id: text("id").primaryKey(),
-		title: text("title").notNull(),
-		body: text("body").notNull(),
-		tag: text("tag"),
-		audienceKind: text("audience_kind").$type<AnnouncementAudienceKind>().notNull(),
-		audienceValue: text("audience_value"),
-		pinnedUntil: integer("pinned_until", { mode: "timestamp_ms" }),
-		scheduledFor: integer("scheduled_for", { mode: "timestamp_ms" }),
-		publishedAt: integer("published_at", { mode: "timestamp_ms" }),
-		authorMemberId: text("author_member_id")
-			.notNull()
-			.references(() => members.id, { onDelete: "cascade" }),
-		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
-	},
-	(table) => [
-		index("announcements_published_at_idx").on(table.publishedAt),
-		index("announcements_audience_idx").on(table.audienceKind, table.audienceValue),
-		index("announcements_pinned_until_idx").on(table.pinnedUntil),
-	],
-);
-
 export const memberFeedState = sqliteTable("member_feed_state", {
 	memberId: text("member_id")
 		.primaryKey()
 		.references(() => members.id, { onDelete: "cascade" }),
-	announcementsSeenAt: integer("announcements_seen_at", { mode: "timestamp_ms" }),
 	surveysSeenAt: integer("surveys_seen_at", { mode: "timestamp_ms" }),
 	eventsSeenAt: integer("events_seen_at", { mode: "timestamp_ms" }),
 });
@@ -645,4 +429,37 @@ export const auditLogs = sqliteTable(
 		index("audit_logs_category_created_idx").on(table.category, table.createdAt),
 		index("audit_logs_actor_member_id_idx").on(table.actorMemberId),
 	],
+);
+
+export const navPins = sqliteTable(
+	"nav_pins",
+	{
+		id: text("id").primaryKey(),
+		label: text("label").notNull(),
+		url: text("url").notNull(),
+		icon: text("icon").notNull(),
+		position: integer("position").notNull(),
+		createdBy: text("created_by")
+			.notNull()
+			.references(() => members.id, { onDelete: "cascade" }),
+		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+	},
+	(table) => [index("nav_pins_position_idx").on(table.position)],
+);
+
+export const quickLinks = sqliteTable(
+	"quick_links",
+	{
+		id: text("id").primaryKey(),
+		label: text("label").notNull(),
+		url: text("url").notNull(),
+		position: integer("position").notNull(),
+		createdBy: text("created_by")
+			.notNull()
+			.references(() => members.id, { onDelete: "cascade" }),
+		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+	},
+	(table) => [index("quick_links_position_idx").on(table.position)],
 );
