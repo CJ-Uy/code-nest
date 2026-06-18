@@ -6,7 +6,7 @@ export type Member = InferSelectModel<typeof members>;
 export type NewMember = InferInsertModel<typeof members>;
 
 export const createMemberInputSchema = z.object({
-	email: z.string().trim().email(),
+	email: z.string().trim().toLowerCase().email(),
 	name: z.string().trim().min(1).max(120).optional().nullable(),
 });
 

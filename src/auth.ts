@@ -15,13 +15,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 	const db = getDb();
 	const allowedDomains = splitAuthList(config.AUTH_ALLOWED_DOMAINS);
 
+	const baseAdapter = DrizzleAdapter(db, {
+		usersTable: members,
+		accountsTable: accounts,
+		sessionsTable: sessions,
+		verificationTokensTable: verificationToken,
+	});
+
+	// The roster gate (src/server/auth/roster.ts) looks members up by a
+	// lowercased email. Google's OIDC email claim is normally already
+	// lowercase, but nothing guarantees that, so normalize here too —
+	// otherwise a mixed-case claim would create a member row the gate
+	// can never find, silently breaking the super-admin bypass and the
+	// off-roster deactivation.
+	const adapter: typeof baseAdapter = {
+		...baseAdapter,
+		createUser: (data) => baseAdapter.createUser!({ ...data, email: data.email.toLowerCase() }),
+		getUserByEmail: (email) => baseAdapter.getUserByEmail!(email.toLowerCase()),
+	};
+
 	return {
-		adapter: DrizzleAdapter(db, {
-			usersTable: members,
-			accountsTable: accounts,
-			sessionsTable: sessions,
-			verificationTokensTable: verificationToken,
-		}),
+		adapter,
 		providers: [
 			Google({
 				clientId: config.AUTH_GOOGLE_ID,

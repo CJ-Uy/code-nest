@@ -17,7 +17,7 @@ const unna = Unna({
 
 export const metadata: Metadata = {
 	title: "CODE",
-	description: "Public CODE publishing site with a private member portal demo.",
+	description: "Ateneo CODE public site and member portal.",
 };
 
 export default function RootLayout({
