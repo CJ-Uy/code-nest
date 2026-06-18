@@ -1,0 +1,2577 @@
+{
+  ".remember/tmp/last-ndc.ts": {
+    "mtime": 1781802041.5957406,
+    "ast_hash": "e26f685d5e78b3eb0fb7df254a8f5d59",
+    "semantic_hash": ""
+  },
+  ".remember/tmp/last-save.json": {
+    "mtime": 1781804725.7619605,
+    "ast_hash": "515206b9307a2fe729b56ed80a5a8cf4",
+    "semantic_hash": ""
+  },
+  ".vscode/settings.json": {
+    "mtime": 1779196829.0,
+    "ast_hash": "8eafd3f9d5a688fa610be394746d0557",
+    "semantic_hash": ""
+  },
+  "cloudflare-env.d.ts": {
+    "mtime": 1781059039.3463879,
+    "ast_hash": "6b3319f6dbdd498eee3d5dd11794aa23",
+    "semantic_hash": ""
+  },
+  "components.json": {
+    "mtime": 1780655380.1660373,
+    "ast_hash": "cbc0c2624f4b21a8805b90caa2b9516c",
+    "semantic_hash": ""
+  },
+  "design/admin-data.jsx": {
+    "mtime": 1781710832.8217711,
+    "ast_hash": "88141ce7a0f739bc1411dfc196dd42f2",
+    "semantic_hash": ""
+  },
+  "design/admin-events-audit.jsx": {
+    "mtime": 1781710832.8297691,
+    "ast_hash": "9d6bb1bfeeabecb1a3b17a28f022d13c",
+    "semantic_hash": ""
+  },
+  "design/admin-module.jsx": {
+    "mtime": 1781710832.8350265,
+    "ast_hash": "bfd2dc858ceb25bf7996ef581f207a7d",
+    "semantic_hash": ""
+  },
+  "design/admin-roles.jsx": {
+    "mtime": 1781710832.8395364,
+    "ast_hash": "d655a1c8a868889fd210365bbf4fefe8",
+    "semantic_hash": ""
+  },
+  "design/admin-survey.jsx": {
+    "mtime": 1781710832.844545,
+    "ast_hash": "75327754ceb9cda14ffde85455287f77",
+    "semantic_hash": ""
+  },
+  "design/admin-tour-settings.jsx": {
+    "mtime": 1781710832.8485444,
+    "ast_hash": "2059d836789a5defa9a81fe848e8cc5c",
+    "semantic_hash": ""
+  },
+  "design/app.jsx": {
+    "mtime": 1781710832.8528647,
+    "ast_hash": "0df9a662bc3f4aa828961ebeb854adaa",
+    "semantic_hash": ""
+  },
+  "design/data.jsx": {
+    "mtime": 1781710832.910135,
+    "ast_hash": "3df460e80a3d1147f3f1f21ff9772939",
+    "semantic_hash": ""
+  },
+  "design/ds-sheet.jsx": {
+    "mtime": 1781710832.9141462,
+    "ast_hash": "cf69eda3de2681fcb6611da2c314418d",
+    "semantic_hash": ""
+  },
+  "design/frames/browser-window.jsx": {
+    "mtime": 1781710832.9196515,
+    "ast_hash": "012473bf2dadc37459f85def9606449c",
+    "semantic_hash": ""
+  },
+  "design/frames/ios-frame.jsx": {
+    "mtime": 1781710832.9236841,
+    "ast_hash": "2663a8fee17b7b6f58bf4ba48a26cc60",
+    "semantic_hash": ""
+  },
+  "design/kit.jsx": {
+    "mtime": 1781710832.9341645,
+    "ast_hash": "ea2313512079e233bca9e10b463a2daa",
+    "semantic_hash": ""
+  },
+  "design/member-announcements.jsx": {
+    "mtime": 1781710832.9381661,
+    "ast_hash": "055c999d2041e58b63e563bafd1520c6",
+    "semantic_hash": ""
+  },
+  "design/member-app.jsx": {
+    "mtime": 1781710832.942684,
+    "ast_hash": "ae6cd9a9027c56b06a1417b9f6906913",
+    "semantic_hash": ""
+  },
+  "design/member-calendar.jsx": {
+    "mtime": 1781710832.9466848,
+    "ast_hash": "dfd9ea178ac7f04e0b64146b21da5e54",
+    "semantic_hash": ""
+  },
+  "design/member-dashboard.jsx": {
+    "mtime": 1781710832.9511957,
+    "ast_hash": "1620e16227995f6673ca83736e591656",
+    "semantic_hash": ""
+  },
+  "design/member-data.jsx": {
+    "mtime": 1781710832.955803,
+    "ast_hash": "46a8c9cf978d91be3e9d60197dc551a6",
+    "semantic_hash": ""
+  },
+  "design/member-events-data.jsx": {
+    "mtime": 1781710832.9598446,
+    "ast_hash": "42b8545e7c5cb577b18670bcd5f2f2b3",
+    "semantic_hash": ""
+  },
+  "design/member-events-detail.jsx": {
+    "mtime": 1781710832.9648535,
+    "ast_hash": "5ab7539cb557bf1d36d50cf673f68823",
+    "semantic_hash": ""
+  },
+  "design/member-events-module.jsx": {
+    "mtime": 1781710832.9688535,
+    "ast_hash": "c3e90a69e69687be3f88282e96383083",
+    "semantic_hash": ""
+  },
+  "design/member-events-scan.jsx": {
+    "mtime": 1781710832.9723809,
+    "ast_hash": "6f8c455fa1a4126a8b755964e7b612b9",
+    "semantic_hash": ""
+  },
+  "design/member-events.jsx": {
+    "mtime": 1781710832.9773653,
+    "ast_hash": "638ad9c399cf44fb379dca1f2f9fd86a",
+    "semantic_hash": ""
+  },
+  "design/member-library-data.jsx": {
+    "mtime": 1781710832.981878,
+    "ast_hash": "7366deda15a7d0eafc401a77fe467524",
+    "semantic_hash": ""
+  },
+  "design/member-library-detail.jsx": {
+    "mtime": 1781710832.987877,
+    "ast_hash": "0f575eb1c52d2417cbbf510b6099aa14",
+    "semantic_hash": ""
+  },
+  "design/member-library-lists.jsx": {
+    "mtime": 1781710832.9930294,
+    "ast_hash": "ab7fe0255c573678840e92d9bebce9b2",
+    "semantic_hash": ""
+  },
+  "design/member-library.jsx": {
+    "mtime": 1781710832.998028,
+    "ast_hash": "c9c69d95a307e7261477c7424225c7eb",
+    "semantic_hash": ""
+  },
+  "design/member-links-data.jsx": {
+    "mtime": 1781710833.0028532,
+    "ast_hash": "cb5009985ecc1586b57f8e9dfa1b8968",
+    "semantic_hash": ""
+  },
+  "design/member-links-detail.jsx": {
+    "mtime": 1781710833.0073607,
+    "ast_hash": "75d9104e7e842f3191a1555fbec24887",
+    "semantic_hash": ""
+  },
+  "design/member-links.jsx": {
+    "mtime": 1781710833.0118797,
+    "ast_hash": "28953b44b52126673b9a223fc51c2745",
+    "semantic_hash": ""
+  },
+  "design/member-more-data.jsx": {
+    "mtime": 1781710833.015885,
+    "ast_hash": "12a027b11e507d935e7bdf6b023f5b18",
+    "semantic_hash": ""
+  },
+  "design/member-profile.jsx": {
+    "mtime": 1781710833.0203855,
+    "ast_hash": "b8f8321e737af76aacd378a34a185931",
+    "semantic_hash": ""
+  },
+  "design/member-shell.jsx": {
+    "mtime": 1781710833.0249045,
+    "ast_hash": "638c2ca431d0262bf225d4e2c552a8b7",
+    "semantic_hash": ""
+  },
+  "design/member-survey.jsx": {
+    "mtime": 1781710833.0289047,
+    "ast_hash": "304e338bf7f0e803e62d77ec333782e0",
+    "semantic_hash": ""
+  },
+  "design/page-contact-signin.jsx": {
+    "mtime": 1781710833.0361502,
+    "ast_hash": "66e944eb746dd1876e3d963e557a9e59",
+    "semantic_hash": ""
+  },
+  "design/page-landing.jsx": {
+    "mtime": 1781710833.0416594,
+    "ast_hash": "624dde4c253d5498cdc631fc5ad00694",
+    "semantic_hash": ""
+  },
+  "design/page-product.jsx": {
+    "mtime": 1781710833.0466654,
+    "ast_hash": "226d9d29fc78a7b3620d182add329672",
+    "semantic_hash": ""
+  },
+  "design/page-services-projects.jsx": {
+    "mtime": 1781710833.052682,
+    "ast_hash": "bb94470a03676f77f403215e0a35c8c2",
+    "semantic_hash": ""
+  },
+  "design/ui.jsx": {
+    "mtime": 1781710833.1752632,
+    "ast_hash": "2a43cd9176e98a31f76c28f43b70497a",
+    "semantic_hash": ""
+  },
+  "drizzle.config.ts": {
+    "mtime": 1781056643.7805436,
+    "ast_hash": "7b0307d3774d642c3b2532d8964cb836",
+    "semantic_hash": ""
+  },
+  "drizzle/migrations/0000_young_bullseye.sql": {
+    "mtime": 1781720174.8898435,
+    "ast_hash": "66f5e844ea0715861258ce7db32a3710",
+    "semantic_hash": ""
+  },
+  "drizzle/migrations/0001_v5_drop_deferred.sql": {
+    "mtime": 1781799814.395093,
+    "ast_hash": "536f197006b840ab88afa23a0c0df884",
+    "semantic_hash": ""
+  },
+  "drizzle/migrations/0002_v5_add_foundation.sql": {
+    "mtime": 1781799835.433525,
+    "ast_hash": "dfd582fb32ffe0d29972b5ae2d3527c2",
+    "semantic_hash": ""
+  },
+  "drizzle/migrations/meta/0000_snapshot.json": {
+    "mtime": 1781720174.888844,
+    "ast_hash": "c76fb8102011bf136a4308513a28725e",
+    "semantic_hash": ""
+  },
+  "drizzle/migrations/meta/0001_snapshot.json": {
+    "mtime": 1781799814.395093,
+    "ast_hash": "cfdd6adbf4c16435e6317bcdbbfcc810",
+    "semantic_hash": ""
+  },
+  "drizzle/migrations/meta/0002_snapshot.json": {
+    "mtime": 1781799835.434531,
+    "ast_hash": "4401b2b35fca305e0d2ee5ba356e476f",
+    "semantic_hash": ""
+  },
+  "drizzle/migrations/meta/_journal.json": {
+    "mtime": 1781799835.4352753,
+    "ast_hash": "ec3a01c9da4507d077f9baa6facf56d6",
+    "semantic_hash": ""
+  },
+  "eslint.config.mjs": {
+    "mtime": 1781802057.610132,
+    "ast_hash": "38c3f604a467edd0daf219ea95c4f198",
+    "semantic_hash": ""
+  },
+  "next.config.ts": {
+    "mtime": 1781056864.8961346,
+    "ast_hash": "35cfbf106037b38186c9a497317f7de7",
+    "semantic_hash": ""
+  },
+  "open-next.config.ts": {
+    "mtime": 1779196829.0,
+    "ast_hash": "55fe345dc034d0932d2d55c138ed4e98",
+    "semantic_hash": ""
+  },
+  "package.json": {
+    "mtime": 1781796857.1968908,
+    "ast_hash": "abe11c97a2416f52d5d649753af63032",
+    "semantic_hash": ""
+  },
+  "postcss.config.mjs": {
+    "mtime": 1779196829.0,
+    "ast_hash": "50cdf299c0baa82eedb9cebe33c2ade0",
+    "semantic_hash": ""
+  },
+  "scripts/check-shared-dev-note.ts": {
+    "mtime": 1781720342.939049,
+    "ast_hash": "f8c907834495314b1a6c4f4eaea9b15e",
+    "semantic_hash": ""
+  },
+  "src/app/api/auth/[...nextauth]/route.ts": {
+    "mtime": 1781796857.2108972,
+    "ast_hash": "c1cf280752702b4e4a109c1c0acfcfd5",
+    "semantic_hash": ""
+  },
+  "src/app/api/health/route.ts": {
+    "mtime": 1781056569.0548222,
+    "ast_hash": "32b5ad380765f5b1a9394a932694e2ed",
+    "semantic_hash": ""
+  },
+  "src/app/api/members/route.ts": {
+    "mtime": 1781796857.2194357,
+    "ast_hash": "e1e18b4f57172029e3932e4a06bfd1b4",
+    "semantic_hash": ""
+  },
+  "src/app/api/uploads/[key]/route.ts": {
+    "mtime": 1781796857.22816,
+    "ast_hash": "cc28a4c98a65c937af7abfb7d1e8beac",
+    "semantic_hash": ""
+  },
+  "src/app/api/uploads/route.ts": {
+    "mtime": 1781796857.2349677,
+    "ast_hash": "28638e3d5205cddf340f3f24c210112a",
+    "semantic_hash": ""
+  },
+  "src/app/internal/auth/route.ts": {
+    "mtime": 1781796857.2552924,
+    "ast_hash": "c551a2d1076be19bcf15b701cd1d5a31",
+    "semantic_hash": ""
+  },
+  "src/app/internal/members/[id]/route.ts": {
+    "mtime": 1781796857.2623448,
+    "ast_hash": "6d08cf7f554433c9c864ced816a81460",
+    "semantic_hash": ""
+  },
+  "src/app/internal/members/route.ts": {
+    "mtime": 1781796857.269118,
+    "ast_hash": "c8b865f7e808ace792e91d486690e7c0",
+    "semantic_hash": ""
+  },
+  "src/app/internal/uploads/[key]/route.ts": {
+    "mtime": 1781796857.3092952,
+    "ast_hash": "5b0b399a5456a3c27900b1934c4c5c93",
+    "semantic_hash": ""
+  },
+  "src/app/internal/uploads/route.ts": {
+    "mtime": 1781796857.3163252,
+    "ast_hash": "7c2100606f5250b13d9ac4f576798cea",
+    "semantic_hash": ""
+  },
+  "src/app/layout.tsx": {
+    "mtime": 1781802611.0510316,
+    "ast_hash": "75999a097591dc1ad1b179bc1258bf06",
+    "semantic_hash": ""
+  },
+  "src/app/page.tsx": {
+    "mtime": 1781801047.7226596,
+    "ast_hash": "76836ae830dfa9f7479641b380dbe1f1",
+    "semantic_hash": ""
+  },
+  "src/app/portal/layout.tsx": {
+    "mtime": 1781796857.3301601,
+    "ast_hash": "b7b683c88421628a3397f7d0dc122d26",
+    "semantic_hash": ""
+  },
+  "src/app/portal/page.tsx": {
+    "mtime": 1781796857.3372214,
+    "ast_hash": "852454c57d4d1a086c40465362255b2c",
+    "semantic_hash": ""
+  },
+  "src/app/portal/profile/actions.ts": {
+    "mtime": 1781796857.344975,
+    "ast_hash": "081ecf22d42e38f43d7cafad98164f39",
+    "semantic_hash": ""
+  },
+  "src/app/portal/profile/page.tsx": {
+    "mtime": 1781796857.3502555,
+    "ast_hash": "bd579fda0b50ec3984a78b09239b3c55",
+    "semantic_hash": ""
+  },
+  "src/app/signin/page.tsx": {
+    "mtime": 1781796857.357303,
+    "ast_hash": "fea6fb0aa0312d0e1d8849a5d8ea513b",
+    "semantic_hash": ""
+  },
+  "src/auth.ts": {
+    "mtime": 1781802626.641962,
+    "ast_hash": "2a04aefc76e1b1aacc60df8f7914a21e",
+    "semantic_hash": ""
+  },
+  "src/components/portal-workspace.tsx": {
+    "mtime": 1780664021.6433876,
+    "ast_hash": "1c4fe313771505cdacada5f1c1dd6874",
+    "semantic_hash": ""
+  },
+  "src/components/ui/badge.tsx": {
+    "mtime": 1780663901.1024613,
+    "ast_hash": "c928196f66ed80bccc011b92aed4d1db",
+    "semantic_hash": ""
+  },
+  "src/components/ui/button.tsx": {
+    "mtime": 1780655155.8653908,
+    "ast_hash": "76887cc462e3253c767c1c95065bfeca",
+    "semantic_hash": ""
+  },
+  "src/components/ui/card.tsx": {
+    "mtime": 1780664077.2807355,
+    "ast_hash": "3ef44c401ec28db7a2543b2c5cdcad59",
+    "semantic_hash": ""
+  },
+  "src/components/ui/checkbox.tsx": {
+    "mtime": 1781796857.370444,
+    "ast_hash": "f7cf52fff84b85470d2bd7cbb8cac34a",
+    "semantic_hash": ""
+  },
+  "src/components/ui/input.tsx": {
+    "mtime": 1780655498.2531247,
+    "ast_hash": "771078bbece06abd687943b060c57979",
+    "semantic_hash": ""
+  },
+  "src/components/ui/select.tsx": {
+    "mtime": 1780655498.2551272,
+    "ast_hash": "1c73262660970360439cacee83c28019",
+    "semantic_hash": ""
+  },
+  "src/components/ui/tabs.tsx": {
+    "mtime": 1780655155.8743923,
+    "ast_hash": "d621860aa079baca59ac0259f914a2a0",
+    "semantic_hash": ""
+  },
+  "src/components/ui/textarea.tsx": {
+    "mtime": 1780655498.2571263,
+    "ast_hash": "f38b910fa737d12859355dc62eb8f343",
+    "semantic_hash": ""
+  },
+  "src/db/adapters/d1.ts": {
+    "mtime": 1781796857.3757656,
+    "ast_hash": "d80ac1fe37443f208fdcb535ff1c1806",
+    "semantic_hash": ""
+  },
+  "src/db/adapters/local-sqlite.ts": {
+    "mtime": 1781796857.3817754,
+    "ast_hash": "bf6fdb7a8011593e0d4c95b4bff4353f",
+    "semantic_hash": ""
+  },
+  "src/db/adapters/shared-api.ts": {
+    "mtime": 1781796857.3873017,
+    "ast_hash": "2922eaa7755161aa1b1be61d2a08f748",
+    "semantic_hash": ""
+  },
+  "src/db/client.ts": {
+    "mtime": 1781796857.393328,
+    "ast_hash": "54d8dfda1dc3fbf4719f220dda6da1ca",
+    "semantic_hash": ""
+  },
+  "src/db/contract/auth.ts": {
+    "mtime": 1781796857.4007382,
+    "ast_hash": "ccce202f14f88ffe5c9b344e7a796417",
+    "semantic_hash": ""
+  },
+  "src/db/contract/common.ts": {
+    "mtime": 1781720243.9959865,
+    "ast_hash": "6f01d2ca424372cce57363edca9b11c6",
+    "semantic_hash": ""
+  },
+  "src/db/contract/index.ts": {
+    "mtime": 1781796857.4062705,
+    "ast_hash": "fa9211ed4e17df8a04a2a3cd43123da6",
+    "semantic_hash": ""
+  },
+  "src/db/contract/members.ts": {
+    "mtime": 1781798381.5293555,
+    "ast_hash": "0acfd1d80b902eb27ed8061a792bd93d",
+    "semantic_hash": ""
+  },
+  "src/db/contract/uploads.ts": {
+    "mtime": 1781796857.417624,
+    "ast_hash": "ed901c96ee84b3d5179fb7fc4d9c4c03",
+    "semantic_hash": ""
+  },
+  "src/db/index.ts": {
+    "mtime": 1781720669.5164402,
+    "ast_hash": "33caee1254603173b900d855fb071702",
+    "semantic_hash": ""
+  },
+  "src/db/migrate-local-sqlite.ts": {
+    "mtime": 1781720478.463694,
+    "ast_hash": "5aaced8241c0d55e4b4961b4d02ebe81",
+    "semantic_hash": ""
+  },
+  "src/db/repositories/audit.ts": {
+    "mtime": 1781798380.2856228,
+    "ast_hash": "bb07f798c2d4ce78ec0b955819f407b1",
+    "semantic_hash": ""
+  },
+  "src/db/repositories/calendar.ts": {
+    "mtime": 1781720243.9924836,
+    "ast_hash": "218cde2248b62d4e95c77d144722204e",
+    "semantic_hash": ""
+  },
+  "src/db/repositories/events.ts": {
+    "mtime": 1781720243.9889715,
+    "ast_hash": "c7fe3bc0d2d1f5bc6281cc84b1f48ee0",
+    "semantic_hash": ""
+  },
+  "src/db/repositories/index.ts": {
+    "mtime": 1781798580.193774,
+    "ast_hash": "c51dd5011a77898249e344c4bd40c480",
+    "semantic_hash": ""
+  },
+  "src/db/repositories/links.ts": {
+    "mtime": 1781796857.43701,
+    "ast_hash": "4b8336d746be6d65789c8e1166f8424a",
+    "semantic_hash": ""
+  },
+  "src/db/repositories/members.integration.test.ts": {
+    "mtime": 1781796857.4435258,
+    "ast_hash": "bb44252a7a7b5af0c6883fd7d2fab595",
+    "semantic_hash": ""
+  },
+  "src/db/repositories/members.ts": {
+    "mtime": 1781796857.4495406,
+    "ast_hash": "79b7d2b9f3cb7b82eb0bc0fa80e90496",
+    "semantic_hash": ""
+  },
+  "src/db/repositories/notifications.ts": {
+    "mtime": 1781720243.991481,
+    "ast_hash": "084723384e1e1dab4f709c30879c4c64",
+    "semantic_hash": ""
+  },
+  "src/db/repositories/retention.ts": {
+    "mtime": 1781798571.925297,
+    "ast_hash": "b83b9024f77d68ddf929bfdeeaa940d6",
+    "semantic_hash": ""
+  },
+  "src/db/repositories/sessions.ts": {
+    "mtime": 1781720243.9939816,
+    "ast_hash": "1b5ca580a4fc5220f4e901edc1085fff",
+    "semantic_hash": ""
+  },
+  "src/db/repositories/surveys.ts": {
+    "mtime": 1781720243.9899764,
+    "ast_hash": "6b10cb057a3483e6d5a85f62783e9a28",
+    "semantic_hash": ""
+  },
+  "src/db/repositories/types.ts": {
+    "mtime": 1781720243.9849617,
+    "ast_hash": "80c06aaa0f6d564a3b4b85d6eebe5331",
+    "semantic_hash": ""
+  },
+  "src/db/schema.ts": {
+    "mtime": 1781797890.790804,
+    "ast_hash": "fc731881b9aa6fd587d1edb0dc81510d",
+    "semantic_hash": ""
+  },
+  "src/db/seed/data.ts": {
+    "mtime": 1781800765.7260697,
+    "ast_hash": "674b8a645b1261f0d5e468208621e775",
+    "semantic_hash": ""
+  },
+  "src/db/seed/run.ts": {
+    "mtime": 1781800776.818038,
+    "ast_hash": "314116d405302eed8c35adddcfc5fa15",
+    "semantic_hash": ""
+  },
+  "src/db/shared-parity.integration.test.ts": {
+    "mtime": 1781796857.4625132,
+    "ast_hash": "d5fef166e35d9ea3616de3af7842eea4",
+    "semantic_hash": ""
+  },
+  "src/db/types.ts": {
+    "mtime": 1781802616.8025784,
+    "ast_hash": "ca4086a2728d7039c532dedabeed565d",
+    "semantic_hash": ""
+  },
+  "src/lib/ids.ts": {
+    "mtime": 1781056540.888593,
+    "ast_hash": "f7cc2b8092af1225d2726bf94e92338e",
+    "semantic_hash": ""
+  },
+  "src/lib/utils.ts": {
+    "mtime": 1780655155.862413,
+    "ast_hash": "bb36ea825a37986c69eae74eefe688d3",
+    "semantic_hash": ""
+  },
+  "src/server/auth/access.test.ts": {
+    "mtime": 1781796857.4754589,
+    "ast_hash": "39e475ce06fe2739c00f2c69a2712131",
+    "semantic_hash": ""
+  },
+  "src/server/auth/access.ts": {
+    "mtime": 1781796857.4833283,
+    "ast_hash": "d85d5f91ad4e78e43f43d121a86f9328",
+    "semantic_hash": ""
+  },
+  "src/server/auth/actor.ts": {
+    "mtime": 1781796857.4908438,
+    "ast_hash": "2997a1b265abae2bb4064c1e4402d95e",
+    "semantic_hash": ""
+  },
+  "src/server/auth/permissions.test.ts": {
+    "mtime": 1781798163.5750685,
+    "ast_hash": "0bb08eb174af021c00075a3ecbafdcf6",
+    "semantic_hash": ""
+  },
+  "src/server/auth/permissions.ts": {
+    "mtime": 1781798179.6447537,
+    "ast_hash": "2a64d765a7f24354a4b4864f904ae8cb",
+    "semantic_hash": ""
+  },
+  "src/server/auth/roster.integration.test.ts": {
+    "mtime": 1781800167.5497859,
+    "ast_hash": "6ca333cd3e4d9d9ec380d5907b49afb4",
+    "semantic_hash": ""
+  },
+  "src/server/auth/roster.ts": {
+    "mtime": 1781800639.5706043,
+    "ast_hash": "b2c858752f8f3e7e2bfe5803512736af",
+    "semantic_hash": ""
+  },
+  "src/server/cloudflare.ts": {
+    "mtime": 1781796857.5077434,
+    "ast_hash": "f346361c94a487fd83d21a1ee301df11",
+    "semantic_hash": ""
+  },
+  "src/server/env.test.ts": {
+    "mtime": 1781796857.5087368,
+    "ast_hash": "95b3e2fb191015da10696d63e312aaa1",
+    "semantic_hash": ""
+  },
+  "src/server/env.ts": {
+    "mtime": 1781796857.5161612,
+    "ast_hash": "ef515a75a89b2e178bf57d138b548874",
+    "semantic_hash": ""
+  },
+  "src/server/http/origin.test.ts": {
+    "mtime": 1781796857.5236728,
+    "ast_hash": "63ac73d6a2e539553061aab563abf130",
+    "semantic_hash": ""
+  },
+  "src/server/http/origin.ts": {
+    "mtime": 1781796857.5317202,
+    "ast_hash": "ed122222f7b501c2d4f98c5480bde324",
+    "semantic_hash": ""
+  },
+  "src/server/internal/auth.ts": {
+    "mtime": 1781796857.5382512,
+    "ast_hash": "0aa98ebcc1cc1769f36bc06a6ef7ac5e",
+    "semantic_hash": ""
+  },
+  "src/server/internal/cors.ts": {
+    "mtime": 1781796857.544284,
+    "ast_hash": "d2ef07312a1e104c49c9fbb8e0bc3043",
+    "semantic_hash": ""
+  },
+  "src/server/internal/members.ts": {
+    "mtime": 1781796857.5505705,
+    "ast_hash": "b653d7920cf6362cd31517e9026e491d",
+    "semantic_hash": ""
+  },
+  "src/server/internal/shared-actor.ts": {
+    "mtime": 1781796857.5566308,
+    "ast_hash": "2c577fa047dd5ad869034e617dc76546",
+    "semantic_hash": ""
+  },
+  "src/server/internal/uploads.ts": {
+    "mtime": 1781796857.5626302,
+    "ast_hash": "b2d9cdb3635d1df7aa0cbb4384ed992e",
+    "semantic_hash": ""
+  },
+  "src/server/shared-api.ts": {
+    "mtime": 1781796857.5678318,
+    "ast_hash": "b901b4ede7c4c3b2559bd50a34f1039b",
+    "semantic_hash": ""
+  },
+  "src/server/uploads.test.ts": {
+    "mtime": 1781796857.5718324,
+    "ast_hash": "b76cf99f5b2d6b2bde6a201d49b5b0c6",
+    "semantic_hash": ""
+  },
+  "src/server/uploads.ts": {
+    "mtime": 1781796857.5788164,
+    "ast_hash": "a00da444bfb94e5f52a9f1ace1fc23da",
+    "semantic_hash": ""
+  },
+  "src/storage/adapters/local-fs.ts": {
+    "mtime": 1781056540.9265976,
+    "ast_hash": "203a0c19bc03d644be678ca1a741c37e",
+    "semantic_hash": ""
+  },
+  "src/storage/adapters/r2-binding.ts": {
+    "mtime": 1781056540.9245956,
+    "ast_hash": "a6019e26be1e8964188bb3e5896395ff",
+    "semantic_hash": ""
+  },
+  "src/storage/adapters/r2-s3.ts": {
+    "mtime": 1781056540.925596,
+    "ast_hash": "a129e8669ac0a9f578c00989d6ab2225",
+    "semantic_hash": ""
+  },
+  "src/storage/adapters/shared-api.ts": {
+    "mtime": 1781796857.584365,
+    "ast_hash": "219b78763b0ffdc84d3304ef86e40033",
+    "semantic_hash": ""
+  },
+  "src/storage/body.ts": {
+    "mtime": 1781056540.9205968,
+    "ast_hash": "cf08750197c172727dfbe0ff2ce842ca",
+    "semantic_hash": ""
+  },
+  "src/storage/index.ts": {
+    "mtime": 1781056540.928598,
+    "ast_hash": "3439ed0bb294bc0472dc135f3d0851e0",
+    "semantic_hash": ""
+  },
+  "src/storage/types.ts": {
+    "mtime": 1781056540.9195957,
+    "ast_hash": "57d7d58c643e9affd076414b467d063e",
+    "semantic_hash": ""
+  },
+  "src/test-worker.ts": {
+    "mtime": 1781760984.143567,
+    "ast_hash": "49c49c85b125877d7ad2635a481dc3d8",
+    "semantic_hash": ""
+  },
+  "src/test/cloudflare-test.d.ts": {
+    "mtime": 1781761152.6211765,
+    "ast_hash": "cf1693c1867a6c2e1d5d0c1e55de68f7",
+    "semantic_hash": ""
+  },
+  "src/test/setup-d1.ts": {
+    "mtime": 1781758680.8650274,
+    "ast_hash": "220f52a0c2901277193cedbd51a59509",
+    "semantic_hash": ""
+  },
+  "src/types/next-auth.d.ts": {
+    "mtime": 1781796857.5904517,
+    "ast_hash": "e3b927fadc50a0621e78dbf14ca8b0d0",
+    "semantic_hash": ""
+  },
+  "tsconfig.json": {
+    "mtime": 1781760984.1383371,
+    "ast_hash": "31c1e65b6e7722dc5d5faefffdd11b84",
+    "semantic_hash": ""
+  },
+  ".remember/archive.md": {
+    "mtime": 1781756805.5930269,
+    "ast_hash": "afa6e717d956f4f23971000d799a74b6",
+    "semantic_hash": ""
+  },
+  ".remember/now.md": {
+    "mtime": 1781804725.5293806,
+    "ast_hash": "4722ece9f74f5eebb9d074e98838b35a",
+    "semantic_hash": ""
+  },
+  ".remember/recent.md": {
+    "mtime": 1781756805.5750253,
+    "ast_hash": "3ab80212b3fc263bd3fef8eda9b908b1",
+    "semantic_hash": ""
+  },
+  ".remember/today-2026-06-17.done.md": {
+    "mtime": 1781713603.4770122,
+    "ast_hash": "6adce43994cec064b613e90c4e9ee4d4",
+    "semantic_hash": ""
+  },
+  ".remember/today-2026-06-18.md": {
+    "mtime": 1781802083.8624177,
+    "ast_hash": "dcc66ca3031f455766d47724cf989cd8",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1781720372.3423834,
+    "ast_hash": "de2c8a13830434f77bc4d24b2b12dd74",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1781720372.343882,
+    "ast_hash": "e07cea2f4e8bd90e9f5fb82226edcd85",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1781720372.343382,
+    "ast_hash": "dbb078a4d9813dd156369e1c5942e3c9",
+    "semantic_hash": ""
+  },
+  "design.md": {
+    "mtime": 1780664035.3273203,
+    "ast_hash": "568258680735604d9c6000ac70204b21",
+    "semantic_hash": ""
+  },
+  "design/Design System.html": {
+    "mtime": 1781710832.8103085,
+    "ast_hash": "ba342a3bac6b9bad0f29f15eec7be6d2",
+    "semantic_hash": ""
+  },
+  "design/Member Portal.html": {
+    "mtime": 1781710832.8173695,
+    "ast_hash": "80b01612b3447749f6361e5f6556afbb",
+    "semantic_hash": ""
+  },
+  "design/index.html": {
+    "mtime": 1781710832.930161,
+    "ast_hash": "53a18456bc7da76a1ca0e0a3176f8704",
+    "semantic_hash": ""
+  },
+  "docs/README.md": {
+    "mtime": 1781056764.3601413,
+    "ast_hash": "8b81fe6fbb6712f160ad9a61aa8406b1",
+    "semantic_hash": ""
+  },
+  "docs/architecture/adapters.md": {
+    "mtime": 1781720372.3448822,
+    "ast_hash": "2f32244ba846cb28b73d9abbc6eb677f",
+    "semantic_hash": ""
+  },
+  "docs/architecture/auth.md": {
+    "mtime": 1781719764.986859,
+    "ast_hash": "11bc7124adb988821faaec3e6690aa06",
+    "semantic_hash": ""
+  },
+  "docs/architecture/database.md": {
+    "mtime": 1781720372.3443823,
+    "ast_hash": "8aba035bf021a683ec3309be71355cc2",
+    "semantic_hash": ""
+  },
+  "docs/architecture/overview.md": {
+    "mtime": 1781056764.3766682,
+    "ast_hash": "9e60eeae7617e90ba0d1a7b0ecd4ac2b",
+    "semantic_hash": ""
+  },
+  "docs/architecture/security.md": {
+    "mtime": 1781056764.3796701,
+    "ast_hash": "81488c331ca02932b52f3eb3733de375",
+    "semantic_hash": ""
+  },
+  "docs/architecture/storage.md": {
+    "mtime": 1781056764.3796701,
+    "ast_hash": "0467564932f10b538c5d0b7f5815d53f",
+    "semantic_hash": ""
+  },
+  "docs/operations/migrations.md": {
+    "mtime": 1781720372.3458824,
+    "ast_hash": "ba5472af9181bfaf0949b0a416ac09ef",
+    "semantic_hash": ""
+  },
+  "docs/operations/secrets-and-env.md": {
+    "mtime": 1781056764.3846896,
+    "ast_hash": "08b57d1f618b2056e7e3287439cdd80a",
+    "semantic_hash": ""
+  },
+  "docs/operations/shared-dev-deploy-note.md": {
+    "mtime": 1781720342.9395492,
+    "ast_hash": "0ce6dfba462bae79f2c558ff6239586a",
+    "semantic_hash": ""
+  },
+  "docs/operations/troubleshooting.md": {
+    "mtime": 1781056764.3856685,
+    "ast_hash": "a65efdb544564a923e16bb8d48b93ce1",
+    "semantic_hash": ""
+  },
+  "docs/reference/commands.md": {
+    "mtime": 1781059480.1941316,
+    "ast_hash": "5e6a9f2ff7caf6a0a46e4ac991042551",
+    "semantic_hash": ""
+  },
+  "docs/reference/env-vars.md": {
+    "mtime": 1781056764.3882003,
+    "ast_hash": "22d8dfae355a8395fde9957fc0ebb771",
+    "semantic_hash": ""
+  },
+  "docs/setup/cloudflare-resources.md": {
+    "mtime": 1781059108.4325812,
+    "ast_hash": "60239e8255cd357e2fb4e2816bdc3c94",
+    "semantic_hash": ""
+  },
+  "docs/setup/environment-modes.md": {
+    "mtime": 1781056764.3671608,
+    "ast_hash": "3f3e5884f618f096859f16c633321b93",
+    "semantic_hash": ""
+  },
+  "docs/setup/local-development.md": {
+    "mtime": 1781056764.3690567,
+    "ast_hash": "dd4e9e2655c9dbb724b4320b27280f1f",
+    "semantic_hash": ""
+  },
+  "docs/setup/overview.md": {
+    "mtime": 1781056764.3651729,
+    "ast_hash": "f111f453be973da3996946c3c99df837",
+    "semantic_hash": ""
+  },
+  "docs/setup/production-deploy.md": {
+    "mtime": 1781059480.1931312,
+    "ast_hash": "78597a617a58ecd2be4c36460fa28913",
+    "semantic_hash": ""
+  },
+  "docs/setup/shared-dev-onboarding.md": {
+    "mtime": 1781720372.3458824,
+    "ast_hash": "b04fddc917421bd9c9211b01eeaee1a2",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-06-18-code-portal-master-plan.md": {
+    "mtime": 1781796857.1906252,
+    "ast_hash": "e09a8b51c4635194f9f3227cc262b54e",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-06-18-v5-foundation-migration.md": {
+    "mtime": 1781797313.049664,
+    "ast_hash": "0de2302b6ce3a48724801090f65a9d8e",
+    "semantic_hash": ""
+  },
+  "design/uploads/[OSG 2425] Official Brand Manual Ateneo CODE 2425.pdf": {
+    "mtime": 1781710833.2939932,
+    "ast_hash": "df78860a1bab5b0a6464f5ec141b0fe7",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/[OSG 2425] Official Brand Manual Ateneo CODE 2425.pdf": {
+    "mtime": 1780505355.6496663,
+    "ast_hash": "df78860a1bab5b0a6464f5ec141b0fe7",
+    "semantic_hash": ""
+  },
+  "design/assets/falcon-blue.png": {
+    "mtime": 1781710832.8605528,
+    "ast_hash": "8606df0a0439556df4fb55b7c29271ee",
+    "semantic_hash": ""
+  },
+  "design/assets/falcon-lightblue.png": {
+    "mtime": 1781710832.86456,
+    "ast_hash": "0825bd6a4edaa938c284b4d56d86869d",
+    "semantic_hash": ""
+  },
+  "design/assets/falcon-navy.png": {
+    "mtime": 1781710832.8685732,
+    "ast_hash": "2fefe04898e7beb87d0627345e5c43ab",
+    "semantic_hash": ""
+  },
+  "design/assets/falcon-paleblue-t.png": {
+    "mtime": 1781710832.87308,
+    "ast_hash": "aab4a26283e6d86a2f5402d824aa6b9a",
+    "semantic_hash": ""
+  },
+  "design/assets/falcon-transparent.png": {
+    "mtime": 1781710832.8780775,
+    "ast_hash": "074427143adc32e3aac324a46c41b9e0",
+    "semantic_hash": ""
+  },
+  "design/assets/falcon-white-t.png": {
+    "mtime": 1781710832.882584,
+    "ast_hash": "695667eb80ea7cc3f8f6659711289841",
+    "semantic_hash": ""
+  },
+  "design/assets/falcon-white.png": {
+    "mtime": 1781710832.886585,
+    "ast_hash": "64308b3091d85b5cee6e24e53e4dd66d",
+    "semantic_hash": ""
+  },
+  "design/assets/falcon-whitegray.png": {
+    "mtime": 1781710832.8911111,
+    "ast_hash": "b4517911b95239da4c40f1eeafb646f6",
+    "semantic_hash": ""
+  },
+  "design/assets/logo-full-navy.png": {
+    "mtime": 1781710832.8961122,
+    "ast_hash": "69f04c2c196eaef9610cf4036f748ee6",
+    "semantic_hash": ""
+  },
+  "design/assets/logo-full-white-transparent.png": {
+    "mtime": 1781710832.901624,
+    "ast_hash": "6a23c20b0e2bb26c8f7aa1e27034a233",
+    "semantic_hash": ""
+  },
+  "design/assets/logo-full-white.png": {
+    "mtime": 1781710832.9056277,
+    "ast_hash": "ef4ce3d6d8ee4ade255d500081a83798",
+    "semantic_hash": ""
+  },
+  "design/screens/01-check.png": {
+    "mtime": 1781710833.062201,
+    "ast_hash": "f30bc9ef8f1ea1d2f2ef02766ad92384",
+    "semantic_hash": ""
+  },
+  "design/screens/01-ds2.png": {
+    "mtime": 1781710833.0672007,
+    "ast_hash": "d3a6d086d653f7d2ddbb60e4525aaace",
+    "semantic_hash": ""
+  },
+  "design/screens/01-land.png": {
+    "mtime": 1781710833.072718,
+    "ast_hash": "17363b45bc780759d88406330fe043b8",
+    "semantic_hash": ""
+  },
+  "design/screens/01-svc.png": {
+    "mtime": 1781710833.0767176,
+    "ast_hash": "c2c4b7a8eb267b887d2d0d0256a9096f",
+    "semantic_hash": ""
+  },
+  "design/screens/01-v.png": {
+    "mtime": 1781710833.0812266,
+    "ast_hash": "380cce6726f15eadf2418fef9edd0017",
+    "semantic_hash": ""
+  },
+  "design/screens/02-check.png": {
+    "mtime": 1781710833.0862317,
+    "ast_hash": "b02b76e22c2a7fcd955a6c8697a97167",
+    "semantic_hash": ""
+  },
+  "design/screens/02-ds2.png": {
+    "mtime": 1781710833.0907426,
+    "ast_hash": "4043ca72fd2f8ab4d7f29e5d6e67720c",
+    "semantic_hash": ""
+  },
+  "design/screens/02-land.png": {
+    "mtime": 1781710833.095749,
+    "ast_hash": "6b0f822d646b555518c0f2fd825faca5",
+    "semantic_hash": ""
+  },
+  "design/screens/02-svc.png": {
+    "mtime": 1781710833.1012578,
+    "ast_hash": "51a028034b514b2bbf93460450107fc0",
+    "semantic_hash": ""
+  },
+  "design/screens/02-v.png": {
+    "mtime": 1781710833.1062627,
+    "ast_hash": "b02b76e22c2a7fcd955a6c8697a97167",
+    "semantic_hash": ""
+  },
+  "design/screens/03-check.png": {
+    "mtime": 1781710833.1117797,
+    "ast_hash": "9b7375871b4d0dde113dc6970aecc1b5",
+    "semantic_hash": ""
+  },
+  "design/screens/03-ds2.png": {
+    "mtime": 1781710833.1177883,
+    "ast_hash": "4a0bf5386c6934e6c0d53906bcea748c",
+    "semantic_hash": ""
+  },
+  "design/screens/03-land.png": {
+    "mtime": 1781710833.122188,
+    "ast_hash": "1d6e3c913175388a5f6b56496017a5b2",
+    "semantic_hash": ""
+  },
+  "design/screens/04-check.png": {
+    "mtime": 1781710833.127186,
+    "ast_hash": "b02b76e22c2a7fcd955a6c8697a97167",
+    "semantic_hash": ""
+  },
+  "design/screens/04-ds2.png": {
+    "mtime": 1781710833.1316926,
+    "ast_hash": "e2c1e20a2b9c305bf9d2049720249ced",
+    "semantic_hash": ""
+  },
+  "design/screens/04-land.png": {
+    "mtime": 1781710833.136695,
+    "ast_hash": "b02b76e22c2a7fcd955a6c8697a97167",
+    "semantic_hash": ""
+  },
+  "design/screens/ds.png": {
+    "mtime": 1781710833.1412046,
+    "ast_hash": "f395a4261e71136a7c965f0e0cb86a37",
+    "semantic_hash": ""
+  },
+  "design/screens/mp-desk.png": {
+    "mtime": 1781710833.146209,
+    "ast_hash": "3643d16f0a4de531924f0903daf8143c",
+    "semantic_hash": ""
+  },
+  "design/screens/mp.png": {
+    "mtime": 1781710833.1517348,
+    "ast_hash": "9a7a49e7c29cd18079b59b5ab0ac19a1",
+    "semantic_hash": ""
+  },
+  "design/screens/s5.png": {
+    "mtime": 1781710833.1562462,
+    "ast_hash": "e463fd12cf1185fe6799dcf55c06c137",
+    "semantic_hash": ""
+  },
+  "design/screens/signin.png": {
+    "mtime": 1781710833.1607578,
+    "ast_hash": "5daac600d4f13a78ea5b75ec080c8049",
+    "semantic_hash": ""
+  },
+  "design/uploads/00 CODE_Logo-Falcon-White.png": {
+    "mtime": 1781710833.1817722,
+    "ast_hash": "64308b3091d85b5cee6e24e53e4dd66d",
+    "semantic_hash": ""
+  },
+  "design/uploads/00 CODE_Logo-Full-White.png": {
+    "mtime": 1781710833.1877723,
+    "ast_hash": "ef4ce3d6d8ee4ade255d500081a83798",
+    "semantic_hash": ""
+  },
+  "design/uploads/01 CODE_Logo-Falcon-Navy.png": {
+    "mtime": 1781710833.1922798,
+    "ast_hash": "2fefe04898e7beb87d0627345e5c43ab",
+    "semantic_hash": ""
+  },
+  "design/uploads/01 CODE_Logo-Full-Navy.png": {
+    "mtime": 1781710833.1982796,
+    "ast_hash": "69f04c2c196eaef9610cf4036f748ee6",
+    "semantic_hash": ""
+  },
+  "design/uploads/02 Google Sheets - Sample Header.png": {
+    "mtime": 1781710833.2027879,
+    "ast_hash": "6fd472ac891e6c5bc970fd76b9a47b16",
+    "semantic_hash": ""
+  },
+  "design/uploads/03 Google Docs - Cover.png": {
+    "mtime": 1781710833.208788,
+    "ast_hash": "29aa34420882a7dc7bd53426e711f6e5",
+    "semantic_hash": ""
+  },
+  "design/uploads/04 Google Form - Cover-1.png": {
+    "mtime": 1781710833.215298,
+    "ast_hash": "93d92a036591d9a7ba3828a963181b78",
+    "semantic_hash": ""
+  },
+  "design/uploads/04 Google Form - Cover.png": {
+    "mtime": 1781710833.2208085,
+    "ast_hash": "f190d3c983dd4cb16ab03ba3c6161eb9",
+    "semantic_hash": ""
+  },
+  "design/uploads/04 Google Form - Full Details Cover-1.png": {
+    "mtime": 1781710833.2268138,
+    "ast_hash": "9f5ba7a25a933d76b7917f3ba956bb37",
+    "semantic_hash": ""
+  },
+  "design/uploads/04 Google Form - Full Details Cover.png": {
+    "mtime": 1781710833.232327,
+    "ast_hash": "c24d8462c23eda6459b499cb85caf2b2",
+    "semantic_hash": ""
+  },
+  "design/uploads/CODE Logo Full White TransparentBG.png": {
+    "mtime": 1781710833.2383275,
+    "ast_hash": "6a23c20b0e2bb26c8f7aa1e27034a233",
+    "semantic_hash": ""
+  },
+  "design/uploads/CODE Logo-01.png": {
+    "mtime": 1781710833.2438471,
+    "ast_hash": "29d90b425e85319f292594b5c4de0b58",
+    "semantic_hash": ""
+  },
+  "design/uploads/CODE_Logo-Falcon-Blue.png": {
+    "mtime": 1781710833.2488472,
+    "ast_hash": "8606df0a0439556df4fb55b7c29271ee",
+    "semantic_hash": ""
+  },
+  "design/uploads/CODE_Logo-Falcon-DarkGray.png": {
+    "mtime": 1781710833.2528944,
+    "ast_hash": "c5d05c3d19635e7616e7bbc42c9815c8",
+    "semantic_hash": ""
+  },
+  "design/uploads/CODE_Logo-Falcon-LightBlue.png": {
+    "mtime": 1781710833.2579358,
+    "ast_hash": "0825bd6a4edaa938c284b4d56d86869d",
+    "semantic_hash": ""
+  },
+  "design/uploads/CODE_Logo-Falcon-Transparent.png": {
+    "mtime": 1781710833.262446,
+    "ast_hash": "074427143adc32e3aac324a46c41b9e0",
+    "semantic_hash": ""
+  },
+  "design/uploads/CODE_Logo-Falcon-WhiteGray.png": {
+    "mtime": 1781710833.267447,
+    "ast_hash": "b4517911b95239da4c40f1eeafb646f6",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/00 Full (Logo + Text)/00 CODE_Logo-Full-White.png": {
+    "mtime": 1780505355.6675887,
+    "ast_hash": "ef4ce3d6d8ee4ade255d500081a83798",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/00 Full (Logo + Text)/01 CODE_Logo-Full-Navy.png": {
+    "mtime": 1780505355.6620367,
+    "ast_hash": "69f04c2c196eaef9610cf4036f748ee6",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/00 Full (Logo + Text)/CODE Logo Full White TransparentBG.png": {
+    "mtime": 1780505355.657686,
+    "ast_hash": "6a23c20b0e2bb26c8f7aa1e27034a233",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/01 Falcon (Logo Only)/00 CODE_Logo-Falcon-White.png": {
+    "mtime": 1780505355.72022,
+    "ast_hash": "64308b3091d85b5cee6e24e53e4dd66d",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/01 Falcon (Logo Only)/01 CODE_Logo-Falcon-Navy.png": {
+    "mtime": 1780505355.7358317,
+    "ast_hash": "2fefe04898e7beb87d0627345e5c43ab",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/01 Falcon (Logo Only)/CODE Logo-01.png": {
+    "mtime": 1780505355.7242396,
+    "ast_hash": "29d90b425e85319f292594b5c4de0b58",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/01 Falcon (Logo Only)/CODE_Logo-Falcon-Blue.png": {
+    "mtime": 1780505355.7157443,
+    "ast_hash": "8606df0a0439556df4fb55b7c29271ee",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/01 Falcon (Logo Only)/CODE_Logo-Falcon-DarkGray.png": {
+    "mtime": 1780505355.701696,
+    "ast_hash": "c5d05c3d19635e7616e7bbc42c9815c8",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/01 Falcon (Logo Only)/CODE_Logo-Falcon-LightBlue.png": {
+    "mtime": 1780505355.7318318,
+    "ast_hash": "0825bd6a4edaa938c284b4d56d86869d",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/01 Falcon (Logo Only)/CODE_Logo-Falcon-Transparent.png": {
+    "mtime": 1780505355.728279,
+    "ast_hash": "074427143adc32e3aac324a46c41b9e0",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/01 Falcon (Logo Only)/CODE_Logo-Falcon-WhiteGray.png": {
+    "mtime": 1780505355.7117684,
+    "ast_hash": "b4517911b95239da4c40f1eeafb646f6",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/02 Google Sheets - Sample Header.png": {
+    "mtime": 1780505355.5884316,
+    "ast_hash": "6fd472ac891e6c5bc970fd76b9a47b16",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/03 Google Docs - Cover.png": {
+    "mtime": 1780505355.598724,
+    "ast_hash": "29aa34420882a7dc7bd53426e711f6e5",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/04 Google Form - Cover-1.png": {
+    "mtime": 1780505355.604751,
+    "ast_hash": "93d92a036591d9a7ba3828a963181b78",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/04 Google Form - Cover.png": {
+    "mtime": 1780505355.621164,
+    "ast_hash": "f190d3c983dd4cb16ab03ba3c6161eb9",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/04 Google Form - Full Details Cover-1.png": {
+    "mtime": 1780505355.6105697,
+    "ast_hash": "9f5ba7a25a933d76b7917f3ba956bb37",
+    "semantic_hash": ""
+  },
+  "docs/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001/[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts/04 Google Form - Full Details Cover.png": {
+    "mtime": 1780505355.6155863,
+    "ast_hash": "c24d8462c23eda6459b499cb85caf2b2",
+    "semantic_hash": ""
+  },
+  "public/code-doc-cover.png": {
+    "mtime": 1780505355.598724,
+    "ast_hash": "29aa34420882a7dc7bd53426e711f6e5",
+    "semantic_hash": ""
+  },
+  "public/code-falcon-transparent.png": {
+    "mtime": 1780505355.728279,
+    "ast_hash": "074427143adc32e3aac324a46c41b9e0",
+    "semantic_hash": ""
+  },
+  "public/code-form-cover.png": {
+    "mtime": 1780505355.621164,
+    "ast_hash": "f190d3c983dd4cb16ab03ba3c6161eb9",
+    "semantic_hash": ""
+  },
+  "public/code-logo-full-navy.png": {
+    "mtime": 1780505355.6620367,
+    "ast_hash": "69f04c2c196eaef9610cf4036f748ee6",
+    "semantic_hash": ""
+  },
+  "public/code-logo-full-white.png": {
+    "mtime": 1780505355.6675887,
+    "ast_hash": "ef4ce3d6d8ee4ade255d500081a83798",
+    "semantic_hash": ""
+  },
+  "public/favicon.svg": {
+    "mtime": 1780663015.2110412,
+    "ast_hash": "cfb6723224140bf6b687589972f96ccf",
+    "semantic_hash": ""
+  },
+  "public/file.svg": {
+    "mtime": 1779196829.0,
+    "ast_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71",
+    "semantic_hash": ""
+  },
+  "public/globe.svg": {
+    "mtime": 1779196829.0,
+    "ast_hash": "2aaafa6a49b6563925fe440891e32717",
+    "semantic_hash": ""
+  },
+  "public/next.svg": {
+    "mtime": 1779196829.0,
+    "ast_hash": "8e061864f388b47f33a1c3780831193e",
+    "semantic_hash": ""
+  },
+  "public/window.svg": {
+    "mtime": 1779196829.0,
+    "ast_hash": "a2760511c65806022ad20adf74370ff3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\.codex\\hooks.json": {
+    "mtime": 1781805196.277522,
+    "ast_hash": "cea1b2898510771dd6936d28c0f35d4d",
+    "semantic_hash": "cea1b2898510771dd6936d28c0f35d4d"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\.remember\\tmp\\last-ndc.ts": {
+    "mtime": 1781802041.5957406,
+    "ast_hash": "e26f685d5e78b3eb0fb7df254a8f5d59",
+    "semantic_hash": "e26f685d5e78b3eb0fb7df254a8f5d59"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\.remember\\tmp\\last-save.json": {
+    "mtime": 1781804725.7619605,
+    "ast_hash": "515206b9307a2fe729b56ed80a5a8cf4",
+    "semantic_hash": "515206b9307a2fe729b56ed80a5a8cf4"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\.vscode\\settings.json": {
+    "mtime": 1779196829.0,
+    "ast_hash": "8eafd3f9d5a688fa610be394746d0557",
+    "semantic_hash": "8eafd3f9d5a688fa610be394746d0557"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\cloudflare-env.d.ts": {
+    "mtime": 1781059039.3463879,
+    "ast_hash": "6b3319f6dbdd498eee3d5dd11794aa23",
+    "semantic_hash": "6b3319f6dbdd498eee3d5dd11794aa23"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\components.json": {
+    "mtime": 1780655380.1660373,
+    "ast_hash": "cbc0c2624f4b21a8805b90caa2b9516c",
+    "semantic_hash": "cbc0c2624f4b21a8805b90caa2b9516c"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\admin-data.jsx": {
+    "mtime": 1781710832.8217711,
+    "ast_hash": "88141ce7a0f739bc1411dfc196dd42f2",
+    "semantic_hash": "88141ce7a0f739bc1411dfc196dd42f2"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\admin-events-audit.jsx": {
+    "mtime": 1781710832.8297691,
+    "ast_hash": "9d6bb1bfeeabecb1a3b17a28f022d13c",
+    "semantic_hash": "9d6bb1bfeeabecb1a3b17a28f022d13c"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\admin-module.jsx": {
+    "mtime": 1781710832.8350265,
+    "ast_hash": "bfd2dc858ceb25bf7996ef581f207a7d",
+    "semantic_hash": "bfd2dc858ceb25bf7996ef581f207a7d"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\admin-roles.jsx": {
+    "mtime": 1781710832.8395364,
+    "ast_hash": "d655a1c8a868889fd210365bbf4fefe8",
+    "semantic_hash": "d655a1c8a868889fd210365bbf4fefe8"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\admin-survey.jsx": {
+    "mtime": 1781710832.844545,
+    "ast_hash": "75327754ceb9cda14ffde85455287f77",
+    "semantic_hash": "75327754ceb9cda14ffde85455287f77"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\admin-tour-settings.jsx": {
+    "mtime": 1781710832.8485444,
+    "ast_hash": "2059d836789a5defa9a81fe848e8cc5c",
+    "semantic_hash": "2059d836789a5defa9a81fe848e8cc5c"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\app.jsx": {
+    "mtime": 1781710832.8528647,
+    "ast_hash": "0df9a662bc3f4aa828961ebeb854adaa",
+    "semantic_hash": "0df9a662bc3f4aa828961ebeb854adaa"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\data.jsx": {
+    "mtime": 1781710832.910135,
+    "ast_hash": "3df460e80a3d1147f3f1f21ff9772939",
+    "semantic_hash": "3df460e80a3d1147f3f1f21ff9772939"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\ds-sheet.jsx": {
+    "mtime": 1781710832.9141462,
+    "ast_hash": "cf69eda3de2681fcb6611da2c314418d",
+    "semantic_hash": "cf69eda3de2681fcb6611da2c314418d"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\frames\\browser-window.jsx": {
+    "mtime": 1781710832.9196515,
+    "ast_hash": "012473bf2dadc37459f85def9606449c",
+    "semantic_hash": "012473bf2dadc37459f85def9606449c"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\frames\\ios-frame.jsx": {
+    "mtime": 1781710832.9236841,
+    "ast_hash": "2663a8fee17b7b6f58bf4ba48a26cc60",
+    "semantic_hash": "2663a8fee17b7b6f58bf4ba48a26cc60"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\kit.jsx": {
+    "mtime": 1781710832.9341645,
+    "ast_hash": "ea2313512079e233bca9e10b463a2daa",
+    "semantic_hash": "ea2313512079e233bca9e10b463a2daa"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-announcements.jsx": {
+    "mtime": 1781710832.9381661,
+    "ast_hash": "055c999d2041e58b63e563bafd1520c6",
+    "semantic_hash": "055c999d2041e58b63e563bafd1520c6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-app.jsx": {
+    "mtime": 1781710832.942684,
+    "ast_hash": "ae6cd9a9027c56b06a1417b9f6906913",
+    "semantic_hash": "ae6cd9a9027c56b06a1417b9f6906913"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-calendar.jsx": {
+    "mtime": 1781710832.9466848,
+    "ast_hash": "dfd9ea178ac7f04e0b64146b21da5e54",
+    "semantic_hash": "dfd9ea178ac7f04e0b64146b21da5e54"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-dashboard.jsx": {
+    "mtime": 1781710832.9511957,
+    "ast_hash": "1620e16227995f6673ca83736e591656",
+    "semantic_hash": "1620e16227995f6673ca83736e591656"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-data.jsx": {
+    "mtime": 1781710832.955803,
+    "ast_hash": "46a8c9cf978d91be3e9d60197dc551a6",
+    "semantic_hash": "46a8c9cf978d91be3e9d60197dc551a6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-events-data.jsx": {
+    "mtime": 1781710832.9598446,
+    "ast_hash": "42b8545e7c5cb577b18670bcd5f2f2b3",
+    "semantic_hash": "42b8545e7c5cb577b18670bcd5f2f2b3"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-events-detail.jsx": {
+    "mtime": 1781710832.9648535,
+    "ast_hash": "5ab7539cb557bf1d36d50cf673f68823",
+    "semantic_hash": "5ab7539cb557bf1d36d50cf673f68823"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-events-module.jsx": {
+    "mtime": 1781710832.9688535,
+    "ast_hash": "c3e90a69e69687be3f88282e96383083",
+    "semantic_hash": "c3e90a69e69687be3f88282e96383083"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-events-scan.jsx": {
+    "mtime": 1781710832.9723809,
+    "ast_hash": "6f8c455fa1a4126a8b755964e7b612b9",
+    "semantic_hash": "6f8c455fa1a4126a8b755964e7b612b9"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-events.jsx": {
+    "mtime": 1781710832.9773653,
+    "ast_hash": "638ad9c399cf44fb379dca1f2f9fd86a",
+    "semantic_hash": "638ad9c399cf44fb379dca1f2f9fd86a"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-library-data.jsx": {
+    "mtime": 1781710832.981878,
+    "ast_hash": "7366deda15a7d0eafc401a77fe467524",
+    "semantic_hash": "7366deda15a7d0eafc401a77fe467524"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-library-detail.jsx": {
+    "mtime": 1781710832.987877,
+    "ast_hash": "0f575eb1c52d2417cbbf510b6099aa14",
+    "semantic_hash": "0f575eb1c52d2417cbbf510b6099aa14"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-library-lists.jsx": {
+    "mtime": 1781710832.9930294,
+    "ast_hash": "ab7fe0255c573678840e92d9bebce9b2",
+    "semantic_hash": "ab7fe0255c573678840e92d9bebce9b2"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-library.jsx": {
+    "mtime": 1781710832.998028,
+    "ast_hash": "c9c69d95a307e7261477c7424225c7eb",
+    "semantic_hash": "c9c69d95a307e7261477c7424225c7eb"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-links-data.jsx": {
+    "mtime": 1781710833.0028532,
+    "ast_hash": "cb5009985ecc1586b57f8e9dfa1b8968",
+    "semantic_hash": "cb5009985ecc1586b57f8e9dfa1b8968"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-links-detail.jsx": {
+    "mtime": 1781710833.0073607,
+    "ast_hash": "75d9104e7e842f3191a1555fbec24887",
+    "semantic_hash": "75d9104e7e842f3191a1555fbec24887"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-links.jsx": {
+    "mtime": 1781710833.0118797,
+    "ast_hash": "28953b44b52126673b9a223fc51c2745",
+    "semantic_hash": "28953b44b52126673b9a223fc51c2745"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-more-data.jsx": {
+    "mtime": 1781710833.015885,
+    "ast_hash": "12a027b11e507d935e7bdf6b023f5b18",
+    "semantic_hash": "12a027b11e507d935e7bdf6b023f5b18"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-profile.jsx": {
+    "mtime": 1781710833.0203855,
+    "ast_hash": "b8f8321e737af76aacd378a34a185931",
+    "semantic_hash": "b8f8321e737af76aacd378a34a185931"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-shell.jsx": {
+    "mtime": 1781710833.0249045,
+    "ast_hash": "638c2ca431d0262bf225d4e2c552a8b7",
+    "semantic_hash": "638c2ca431d0262bf225d4e2c552a8b7"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\member-survey.jsx": {
+    "mtime": 1781710833.0289047,
+    "ast_hash": "304e338bf7f0e803e62d77ec333782e0",
+    "semantic_hash": "304e338bf7f0e803e62d77ec333782e0"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\page-contact-signin.jsx": {
+    "mtime": 1781710833.0361502,
+    "ast_hash": "66e944eb746dd1876e3d963e557a9e59",
+    "semantic_hash": "66e944eb746dd1876e3d963e557a9e59"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\page-landing.jsx": {
+    "mtime": 1781710833.0416594,
+    "ast_hash": "624dde4c253d5498cdc631fc5ad00694",
+    "semantic_hash": "624dde4c253d5498cdc631fc5ad00694"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\page-product.jsx": {
+    "mtime": 1781710833.0466654,
+    "ast_hash": "226d9d29fc78a7b3620d182add329672",
+    "semantic_hash": "226d9d29fc78a7b3620d182add329672"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\page-services-projects.jsx": {
+    "mtime": 1781710833.052682,
+    "ast_hash": "bb94470a03676f77f403215e0a35c8c2",
+    "semantic_hash": "bb94470a03676f77f403215e0a35c8c2"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\ui.jsx": {
+    "mtime": 1781710833.1752632,
+    "ast_hash": "2a43cd9176e98a31f76c28f43b70497a",
+    "semantic_hash": "2a43cd9176e98a31f76c28f43b70497a"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\drizzle.config.ts": {
+    "mtime": 1781056643.7805436,
+    "ast_hash": "7b0307d3774d642c3b2532d8964cb836",
+    "semantic_hash": "7b0307d3774d642c3b2532d8964cb836"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\drizzle\\migrations\\0000_young_bullseye.sql": {
+    "mtime": 1781720174.8898435,
+    "ast_hash": "66f5e844ea0715861258ce7db32a3710",
+    "semantic_hash": "66f5e844ea0715861258ce7db32a3710"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\drizzle\\migrations\\0001_v5_drop_deferred.sql": {
+    "mtime": 1781799814.395093,
+    "ast_hash": "536f197006b840ab88afa23a0c0df884",
+    "semantic_hash": "536f197006b840ab88afa23a0c0df884"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\drizzle\\migrations\\0002_v5_add_foundation.sql": {
+    "mtime": 1781799835.433525,
+    "ast_hash": "dfd582fb32ffe0d29972b5ae2d3527c2",
+    "semantic_hash": "dfd582fb32ffe0d29972b5ae2d3527c2"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\drizzle\\migrations\\meta\\0000_snapshot.json": {
+    "mtime": 1781720174.888844,
+    "ast_hash": "c76fb8102011bf136a4308513a28725e",
+    "semantic_hash": "c76fb8102011bf136a4308513a28725e"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\drizzle\\migrations\\meta\\0001_snapshot.json": {
+    "mtime": 1781799814.395093,
+    "ast_hash": "cfdd6adbf4c16435e6317bcdbbfcc810",
+    "semantic_hash": "cfdd6adbf4c16435e6317bcdbbfcc810"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\drizzle\\migrations\\meta\\0002_snapshot.json": {
+    "mtime": 1781799835.434531,
+    "ast_hash": "4401b2b35fca305e0d2ee5ba356e476f",
+    "semantic_hash": "4401b2b35fca305e0d2ee5ba356e476f"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\drizzle\\migrations\\meta\\_journal.json": {
+    "mtime": 1781799835.4352753,
+    "ast_hash": "ec3a01c9da4507d077f9baa6facf56d6",
+    "semantic_hash": "ec3a01c9da4507d077f9baa6facf56d6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\eslint.config.mjs": {
+    "mtime": 1781802057.610132,
+    "ast_hash": "38c3f604a467edd0daf219ea95c4f198",
+    "semantic_hash": "38c3f604a467edd0daf219ea95c4f198"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\next.config.ts": {
+    "mtime": 1781056864.8961346,
+    "ast_hash": "35cfbf106037b38186c9a497317f7de7",
+    "semantic_hash": "35cfbf106037b38186c9a497317f7de7"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\open-next.config.ts": {
+    "mtime": 1779196829.0,
+    "ast_hash": "55fe345dc034d0932d2d55c138ed4e98",
+    "semantic_hash": "55fe345dc034d0932d2d55c138ed4e98"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\package.json": {
+    "mtime": 1781796857.1968908,
+    "ast_hash": "abe11c97a2416f52d5d649753af63032",
+    "semantic_hash": "abe11c97a2416f52d5d649753af63032"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\postcss.config.mjs": {
+    "mtime": 1779196829.0,
+    "ast_hash": "50cdf299c0baa82eedb9cebe33c2ade0",
+    "semantic_hash": "50cdf299c0baa82eedb9cebe33c2ade0"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\scripts\\check-shared-dev-note.ts": {
+    "mtime": 1781720342.939049,
+    "ast_hash": "f8c907834495314b1a6c4f4eaea9b15e",
+    "semantic_hash": "f8c907834495314b1a6c4f4eaea9b15e"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\api\\auth\\[...nextauth]\\route.ts": {
+    "mtime": 1781796857.2108972,
+    "ast_hash": "c1cf280752702b4e4a109c1c0acfcfd5",
+    "semantic_hash": "c1cf280752702b4e4a109c1c0acfcfd5"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\api\\health\\route.ts": {
+    "mtime": 1781056569.0548222,
+    "ast_hash": "32b5ad380765f5b1a9394a932694e2ed",
+    "semantic_hash": "32b5ad380765f5b1a9394a932694e2ed"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\api\\members\\route.ts": {
+    "mtime": 1781796857.2194357,
+    "ast_hash": "e1e18b4f57172029e3932e4a06bfd1b4",
+    "semantic_hash": "e1e18b4f57172029e3932e4a06bfd1b4"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\api\\uploads\\[key]\\route.ts": {
+    "mtime": 1781796857.22816,
+    "ast_hash": "cc28a4c98a65c937af7abfb7d1e8beac",
+    "semantic_hash": "cc28a4c98a65c937af7abfb7d1e8beac"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\api\\uploads\\route.ts": {
+    "mtime": 1781796857.2349677,
+    "ast_hash": "28638e3d5205cddf340f3f24c210112a",
+    "semantic_hash": "28638e3d5205cddf340f3f24c210112a"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\internal\\auth\\route.ts": {
+    "mtime": 1781796857.2552924,
+    "ast_hash": "c551a2d1076be19bcf15b701cd1d5a31",
+    "semantic_hash": "c551a2d1076be19bcf15b701cd1d5a31"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\internal\\members\\[id]\\route.ts": {
+    "mtime": 1781796857.2623448,
+    "ast_hash": "6d08cf7f554433c9c864ced816a81460",
+    "semantic_hash": "6d08cf7f554433c9c864ced816a81460"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\internal\\members\\route.ts": {
+    "mtime": 1781796857.269118,
+    "ast_hash": "c8b865f7e808ace792e91d486690e7c0",
+    "semantic_hash": "c8b865f7e808ace792e91d486690e7c0"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\internal\\uploads\\[key]\\route.ts": {
+    "mtime": 1781796857.3092952,
+    "ast_hash": "5b0b399a5456a3c27900b1934c4c5c93",
+    "semantic_hash": "5b0b399a5456a3c27900b1934c4c5c93"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\internal\\uploads\\route.ts": {
+    "mtime": 1781796857.3163252,
+    "ast_hash": "7c2100606f5250b13d9ac4f576798cea",
+    "semantic_hash": "7c2100606f5250b13d9ac4f576798cea"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\layout.tsx": {
+    "mtime": 1781802611.0510316,
+    "ast_hash": "75999a097591dc1ad1b179bc1258bf06",
+    "semantic_hash": "75999a097591dc1ad1b179bc1258bf06"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\page.tsx": {
+    "mtime": 1781801047.7226596,
+    "ast_hash": "76836ae830dfa9f7479641b380dbe1f1",
+    "semantic_hash": "76836ae830dfa9f7479641b380dbe1f1"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\portal\\layout.tsx": {
+    "mtime": 1781796857.3301601,
+    "ast_hash": "b7b683c88421628a3397f7d0dc122d26",
+    "semantic_hash": "b7b683c88421628a3397f7d0dc122d26"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\portal\\page.tsx": {
+    "mtime": 1781796857.3372214,
+    "ast_hash": "852454c57d4d1a086c40465362255b2c",
+    "semantic_hash": "852454c57d4d1a086c40465362255b2c"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\portal\\profile\\actions.ts": {
+    "mtime": 1781796857.344975,
+    "ast_hash": "081ecf22d42e38f43d7cafad98164f39",
+    "semantic_hash": "081ecf22d42e38f43d7cafad98164f39"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\portal\\profile\\page.tsx": {
+    "mtime": 1781796857.3502555,
+    "ast_hash": "bd579fda0b50ec3984a78b09239b3c55",
+    "semantic_hash": "bd579fda0b50ec3984a78b09239b3c55"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\app\\signin\\page.tsx": {
+    "mtime": 1781796857.357303,
+    "ast_hash": "fea6fb0aa0312d0e1d8849a5d8ea513b",
+    "semantic_hash": "fea6fb0aa0312d0e1d8849a5d8ea513b"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\auth.ts": {
+    "mtime": 1781802626.641962,
+    "ast_hash": "2a04aefc76e1b1aacc60df8f7914a21e",
+    "semantic_hash": "2a04aefc76e1b1aacc60df8f7914a21e"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\components\\portal-workspace.tsx": {
+    "mtime": 1780664021.6433876,
+    "ast_hash": "1c4fe313771505cdacada5f1c1dd6874",
+    "semantic_hash": "1c4fe313771505cdacada5f1c1dd6874"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\components\\ui\\badge.tsx": {
+    "mtime": 1780663901.1024613,
+    "ast_hash": "c928196f66ed80bccc011b92aed4d1db",
+    "semantic_hash": "c928196f66ed80bccc011b92aed4d1db"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\components\\ui\\button.tsx": {
+    "mtime": 1780655155.8653908,
+    "ast_hash": "76887cc462e3253c767c1c95065bfeca",
+    "semantic_hash": "76887cc462e3253c767c1c95065bfeca"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\components\\ui\\card.tsx": {
+    "mtime": 1780664077.2807355,
+    "ast_hash": "3ef44c401ec28db7a2543b2c5cdcad59",
+    "semantic_hash": "3ef44c401ec28db7a2543b2c5cdcad59"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\components\\ui\\checkbox.tsx": {
+    "mtime": 1781796857.370444,
+    "ast_hash": "f7cf52fff84b85470d2bd7cbb8cac34a",
+    "semantic_hash": "f7cf52fff84b85470d2bd7cbb8cac34a"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\components\\ui\\input.tsx": {
+    "mtime": 1780655498.2531247,
+    "ast_hash": "771078bbece06abd687943b060c57979",
+    "semantic_hash": "771078bbece06abd687943b060c57979"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\components\\ui\\select.tsx": {
+    "mtime": 1780655498.2551272,
+    "ast_hash": "1c73262660970360439cacee83c28019",
+    "semantic_hash": "1c73262660970360439cacee83c28019"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\components\\ui\\tabs.tsx": {
+    "mtime": 1780655155.8743923,
+    "ast_hash": "d621860aa079baca59ac0259f914a2a0",
+    "semantic_hash": "d621860aa079baca59ac0259f914a2a0"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\components\\ui\\textarea.tsx": {
+    "mtime": 1780655498.2571263,
+    "ast_hash": "f38b910fa737d12859355dc62eb8f343",
+    "semantic_hash": "f38b910fa737d12859355dc62eb8f343"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\adapters\\d1.ts": {
+    "mtime": 1781796857.3757656,
+    "ast_hash": "d80ac1fe37443f208fdcb535ff1c1806",
+    "semantic_hash": "d80ac1fe37443f208fdcb535ff1c1806"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\adapters\\local-sqlite.ts": {
+    "mtime": 1781796857.3817754,
+    "ast_hash": "bf6fdb7a8011593e0d4c95b4bff4353f",
+    "semantic_hash": "bf6fdb7a8011593e0d4c95b4bff4353f"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\adapters\\shared-api.ts": {
+    "mtime": 1781796857.3873017,
+    "ast_hash": "2922eaa7755161aa1b1be61d2a08f748",
+    "semantic_hash": "2922eaa7755161aa1b1be61d2a08f748"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\client.ts": {
+    "mtime": 1781796857.393328,
+    "ast_hash": "54d8dfda1dc3fbf4719f220dda6da1ca",
+    "semantic_hash": "54d8dfda1dc3fbf4719f220dda6da1ca"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\contract\\auth.ts": {
+    "mtime": 1781796857.4007382,
+    "ast_hash": "ccce202f14f88ffe5c9b344e7a796417",
+    "semantic_hash": "ccce202f14f88ffe5c9b344e7a796417"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\contract\\common.ts": {
+    "mtime": 1781720243.9959865,
+    "ast_hash": "6f01d2ca424372cce57363edca9b11c6",
+    "semantic_hash": "6f01d2ca424372cce57363edca9b11c6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\contract\\index.ts": {
+    "mtime": 1781796857.4062705,
+    "ast_hash": "fa9211ed4e17df8a04a2a3cd43123da6",
+    "semantic_hash": "fa9211ed4e17df8a04a2a3cd43123da6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\contract\\members.ts": {
+    "mtime": 1781798381.5293555,
+    "ast_hash": "0acfd1d80b902eb27ed8061a792bd93d",
+    "semantic_hash": "0acfd1d80b902eb27ed8061a792bd93d"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\contract\\uploads.ts": {
+    "mtime": 1781796857.417624,
+    "ast_hash": "ed901c96ee84b3d5179fb7fc4d9c4c03",
+    "semantic_hash": "ed901c96ee84b3d5179fb7fc4d9c4c03"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\index.ts": {
+    "mtime": 1781720669.5164402,
+    "ast_hash": "33caee1254603173b900d855fb071702",
+    "semantic_hash": "33caee1254603173b900d855fb071702"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\migrate-local-sqlite.ts": {
+    "mtime": 1781720478.463694,
+    "ast_hash": "5aaced8241c0d55e4b4961b4d02ebe81",
+    "semantic_hash": "5aaced8241c0d55e4b4961b4d02ebe81"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\repositories\\audit.ts": {
+    "mtime": 1781798380.2856228,
+    "ast_hash": "bb07f798c2d4ce78ec0b955819f407b1",
+    "semantic_hash": "bb07f798c2d4ce78ec0b955819f407b1"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\repositories\\calendar.ts": {
+    "mtime": 1781720243.9924836,
+    "ast_hash": "218cde2248b62d4e95c77d144722204e",
+    "semantic_hash": "218cde2248b62d4e95c77d144722204e"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\repositories\\events.ts": {
+    "mtime": 1781720243.9889715,
+    "ast_hash": "c7fe3bc0d2d1f5bc6281cc84b1f48ee0",
+    "semantic_hash": "c7fe3bc0d2d1f5bc6281cc84b1f48ee0"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\repositories\\index.ts": {
+    "mtime": 1781798580.193774,
+    "ast_hash": "c51dd5011a77898249e344c4bd40c480",
+    "semantic_hash": "c51dd5011a77898249e344c4bd40c480"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\repositories\\links.ts": {
+    "mtime": 1781796857.43701,
+    "ast_hash": "4b8336d746be6d65789c8e1166f8424a",
+    "semantic_hash": "4b8336d746be6d65789c8e1166f8424a"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\repositories\\members.integration.test.ts": {
+    "mtime": 1781796857.4435258,
+    "ast_hash": "bb44252a7a7b5af0c6883fd7d2fab595",
+    "semantic_hash": "bb44252a7a7b5af0c6883fd7d2fab595"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\repositories\\members.ts": {
+    "mtime": 1781796857.4495406,
+    "ast_hash": "79b7d2b9f3cb7b82eb0bc0fa80e90496",
+    "semantic_hash": "79b7d2b9f3cb7b82eb0bc0fa80e90496"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\repositories\\notifications.ts": {
+    "mtime": 1781720243.991481,
+    "ast_hash": "084723384e1e1dab4f709c30879c4c64",
+    "semantic_hash": "084723384e1e1dab4f709c30879c4c64"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\repositories\\retention.ts": {
+    "mtime": 1781798571.925297,
+    "ast_hash": "b83b9024f77d68ddf929bfdeeaa940d6",
+    "semantic_hash": "b83b9024f77d68ddf929bfdeeaa940d6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\repositories\\sessions.ts": {
+    "mtime": 1781720243.9939816,
+    "ast_hash": "1b5ca580a4fc5220f4e901edc1085fff",
+    "semantic_hash": "1b5ca580a4fc5220f4e901edc1085fff"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\repositories\\surveys.ts": {
+    "mtime": 1781720243.9899764,
+    "ast_hash": "6b10cb057a3483e6d5a85f62783e9a28",
+    "semantic_hash": "6b10cb057a3483e6d5a85f62783e9a28"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\repositories\\types.ts": {
+    "mtime": 1781720243.9849617,
+    "ast_hash": "80c06aaa0f6d564a3b4b85d6eebe5331",
+    "semantic_hash": "80c06aaa0f6d564a3b4b85d6eebe5331"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\schema.ts": {
+    "mtime": 1781797890.790804,
+    "ast_hash": "fc731881b9aa6fd587d1edb0dc81510d",
+    "semantic_hash": "fc731881b9aa6fd587d1edb0dc81510d"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\seed\\data.ts": {
+    "mtime": 1781800765.7260697,
+    "ast_hash": "674b8a645b1261f0d5e468208621e775",
+    "semantic_hash": "674b8a645b1261f0d5e468208621e775"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\seed\\run.ts": {
+    "mtime": 1781800776.818038,
+    "ast_hash": "314116d405302eed8c35adddcfc5fa15",
+    "semantic_hash": "314116d405302eed8c35adddcfc5fa15"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\shared-parity.integration.test.ts": {
+    "mtime": 1781796857.4625132,
+    "ast_hash": "d5fef166e35d9ea3616de3af7842eea4",
+    "semantic_hash": "d5fef166e35d9ea3616de3af7842eea4"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\db\\types.ts": {
+    "mtime": 1781802616.8025784,
+    "ast_hash": "ca4086a2728d7039c532dedabeed565d",
+    "semantic_hash": "ca4086a2728d7039c532dedabeed565d"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\lib\\ids.ts": {
+    "mtime": 1781056540.888593,
+    "ast_hash": "f7cc2b8092af1225d2726bf94e92338e",
+    "semantic_hash": "f7cc2b8092af1225d2726bf94e92338e"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\lib\\utils.ts": {
+    "mtime": 1780655155.862413,
+    "ast_hash": "bb36ea825a37986c69eae74eefe688d3",
+    "semantic_hash": "bb36ea825a37986c69eae74eefe688d3"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\auth\\access.test.ts": {
+    "mtime": 1781796857.4754589,
+    "ast_hash": "39e475ce06fe2739c00f2c69a2712131",
+    "semantic_hash": "39e475ce06fe2739c00f2c69a2712131"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\auth\\access.ts": {
+    "mtime": 1781796857.4833283,
+    "ast_hash": "d85d5f91ad4e78e43f43d121a86f9328",
+    "semantic_hash": "d85d5f91ad4e78e43f43d121a86f9328"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\auth\\actor.ts": {
+    "mtime": 1781796857.4908438,
+    "ast_hash": "2997a1b265abae2bb4064c1e4402d95e",
+    "semantic_hash": "2997a1b265abae2bb4064c1e4402d95e"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\auth\\permissions.test.ts": {
+    "mtime": 1781798163.5750685,
+    "ast_hash": "0bb08eb174af021c00075a3ecbafdcf6",
+    "semantic_hash": "0bb08eb174af021c00075a3ecbafdcf6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\auth\\permissions.ts": {
+    "mtime": 1781798179.6447537,
+    "ast_hash": "2a64d765a7f24354a4b4864f904ae8cb",
+    "semantic_hash": "2a64d765a7f24354a4b4864f904ae8cb"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\auth\\roster.integration.test.ts": {
+    "mtime": 1781800167.5497859,
+    "ast_hash": "6ca333cd3e4d9d9ec380d5907b49afb4",
+    "semantic_hash": "6ca333cd3e4d9d9ec380d5907b49afb4"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\auth\\roster.ts": {
+    "mtime": 1781800639.5706043,
+    "ast_hash": "b2c858752f8f3e7e2bfe5803512736af",
+    "semantic_hash": "b2c858752f8f3e7e2bfe5803512736af"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\cloudflare.ts": {
+    "mtime": 1781796857.5077434,
+    "ast_hash": "f346361c94a487fd83d21a1ee301df11",
+    "semantic_hash": "f346361c94a487fd83d21a1ee301df11"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\env.test.ts": {
+    "mtime": 1781796857.5087368,
+    "ast_hash": "95b3e2fb191015da10696d63e312aaa1",
+    "semantic_hash": "95b3e2fb191015da10696d63e312aaa1"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\env.ts": {
+    "mtime": 1781796857.5161612,
+    "ast_hash": "ef515a75a89b2e178bf57d138b548874",
+    "semantic_hash": "ef515a75a89b2e178bf57d138b548874"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\http\\origin.test.ts": {
+    "mtime": 1781796857.5236728,
+    "ast_hash": "63ac73d6a2e539553061aab563abf130",
+    "semantic_hash": "63ac73d6a2e539553061aab563abf130"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\http\\origin.ts": {
+    "mtime": 1781796857.5317202,
+    "ast_hash": "ed122222f7b501c2d4f98c5480bde324",
+    "semantic_hash": "ed122222f7b501c2d4f98c5480bde324"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\internal\\auth.ts": {
+    "mtime": 1781796857.5382512,
+    "ast_hash": "0aa98ebcc1cc1769f36bc06a6ef7ac5e",
+    "semantic_hash": "0aa98ebcc1cc1769f36bc06a6ef7ac5e"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\internal\\cors.ts": {
+    "mtime": 1781796857.544284,
+    "ast_hash": "d2ef07312a1e104c49c9fbb8e0bc3043",
+    "semantic_hash": "d2ef07312a1e104c49c9fbb8e0bc3043"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\internal\\members.ts": {
+    "mtime": 1781796857.5505705,
+    "ast_hash": "b653d7920cf6362cd31517e9026e491d",
+    "semantic_hash": "b653d7920cf6362cd31517e9026e491d"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\internal\\shared-actor.ts": {
+    "mtime": 1781796857.5566308,
+    "ast_hash": "2c577fa047dd5ad869034e617dc76546",
+    "semantic_hash": "2c577fa047dd5ad869034e617dc76546"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\internal\\uploads.ts": {
+    "mtime": 1781796857.5626302,
+    "ast_hash": "b2d9cdb3635d1df7aa0cbb4384ed992e",
+    "semantic_hash": "b2d9cdb3635d1df7aa0cbb4384ed992e"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\shared-api.ts": {
+    "mtime": 1781796857.5678318,
+    "ast_hash": "b901b4ede7c4c3b2559bd50a34f1039b",
+    "semantic_hash": "b901b4ede7c4c3b2559bd50a34f1039b"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\uploads.test.ts": {
+    "mtime": 1781796857.5718324,
+    "ast_hash": "b76cf99f5b2d6b2bde6a201d49b5b0c6",
+    "semantic_hash": "b76cf99f5b2d6b2bde6a201d49b5b0c6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\server\\uploads.ts": {
+    "mtime": 1781796857.5788164,
+    "ast_hash": "a00da444bfb94e5f52a9f1ace1fc23da",
+    "semantic_hash": "a00da444bfb94e5f52a9f1ace1fc23da"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\storage\\adapters\\local-fs.ts": {
+    "mtime": 1781056540.9265976,
+    "ast_hash": "203a0c19bc03d644be678ca1a741c37e",
+    "semantic_hash": "203a0c19bc03d644be678ca1a741c37e"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\storage\\adapters\\r2-binding.ts": {
+    "mtime": 1781056540.9245956,
+    "ast_hash": "a6019e26be1e8964188bb3e5896395ff",
+    "semantic_hash": "a6019e26be1e8964188bb3e5896395ff"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\storage\\adapters\\r2-s3.ts": {
+    "mtime": 1781056540.925596,
+    "ast_hash": "a129e8669ac0a9f578c00989d6ab2225",
+    "semantic_hash": "a129e8669ac0a9f578c00989d6ab2225"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\storage\\adapters\\shared-api.ts": {
+    "mtime": 1781796857.584365,
+    "ast_hash": "219b78763b0ffdc84d3304ef86e40033",
+    "semantic_hash": "219b78763b0ffdc84d3304ef86e40033"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\storage\\body.ts": {
+    "mtime": 1781056540.9205968,
+    "ast_hash": "cf08750197c172727dfbe0ff2ce842ca",
+    "semantic_hash": "cf08750197c172727dfbe0ff2ce842ca"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\storage\\index.ts": {
+    "mtime": 1781056540.928598,
+    "ast_hash": "3439ed0bb294bc0472dc135f3d0851e0",
+    "semantic_hash": "3439ed0bb294bc0472dc135f3d0851e0"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\storage\\types.ts": {
+    "mtime": 1781056540.9195957,
+    "ast_hash": "57d7d58c643e9affd076414b467d063e",
+    "semantic_hash": "57d7d58c643e9affd076414b467d063e"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\test-worker.ts": {
+    "mtime": 1781760984.143567,
+    "ast_hash": "49c49c85b125877d7ad2635a481dc3d8",
+    "semantic_hash": "49c49c85b125877d7ad2635a481dc3d8"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\test\\cloudflare-test.d.ts": {
+    "mtime": 1781761152.6211765,
+    "ast_hash": "cf1693c1867a6c2e1d5d0c1e55de68f7",
+    "semantic_hash": "cf1693c1867a6c2e1d5d0c1e55de68f7"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\test\\setup-d1.ts": {
+    "mtime": 1781758680.8650274,
+    "ast_hash": "220f52a0c2901277193cedbd51a59509",
+    "semantic_hash": "220f52a0c2901277193cedbd51a59509"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\src\\types\\next-auth.d.ts": {
+    "mtime": 1781796857.5904517,
+    "ast_hash": "e3b927fadc50a0621e78dbf14ca8b0d0",
+    "semantic_hash": "e3b927fadc50a0621e78dbf14ca8b0d0"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\tsconfig.json": {
+    "mtime": 1781760984.1383371,
+    "ast_hash": "31c1e65b6e7722dc5d5faefffdd11b84",
+    "semantic_hash": "31c1e65b6e7722dc5d5faefffdd11b84"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\.remember\\archive.md": {
+    "mtime": 1781756805.5930269,
+    "ast_hash": "afa6e717d956f4f23971000d799a74b6",
+    "semantic_hash": "afa6e717d956f4f23971000d799a74b6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\.remember\\now.md": {
+    "mtime": 1781804725.5293806,
+    "ast_hash": "4722ece9f74f5eebb9d074e98838b35a",
+    "semantic_hash": "4722ece9f74f5eebb9d074e98838b35a"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\.remember\\recent.md": {
+    "mtime": 1781756805.5750253,
+    "ast_hash": "3ab80212b3fc263bd3fef8eda9b908b1",
+    "semantic_hash": "3ab80212b3fc263bd3fef8eda9b908b1"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\.remember\\today-2026-06-17.done.md": {
+    "mtime": 1781713603.4770122,
+    "ast_hash": "6adce43994cec064b613e90c4e9ee4d4",
+    "semantic_hash": "6adce43994cec064b613e90c4e9ee4d4"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\.remember\\today-2026-06-18.md": {
+    "mtime": 1781802083.8624177,
+    "ast_hash": "dcc66ca3031f455766d47724cf989cd8",
+    "semantic_hash": "dcc66ca3031f455766d47724cf989cd8"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\AGENTS.md": {
+    "mtime": 1781805196.2727864,
+    "ast_hash": "98455fed8dd6485492c4b14fca96fd1a",
+    "semantic_hash": "98455fed8dd6485492c4b14fca96fd1a"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\CLAUDE.md": {
+    "mtime": 1781805196.3813486,
+    "ast_hash": "5dd257d73997cbce593c5013683ce968",
+    "semantic_hash": "5dd257d73997cbce593c5013683ce968"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\README.md": {
+    "mtime": 1781720372.343382,
+    "ast_hash": "dbb078a4d9813dd156369e1c5942e3c9",
+    "semantic_hash": "dbb078a4d9813dd156369e1c5942e3c9"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design.md": {
+    "mtime": 1780664035.3273203,
+    "ast_hash": "568258680735604d9c6000ac70204b21",
+    "semantic_hash": "568258680735604d9c6000ac70204b21"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\Design System.html": {
+    "mtime": 1781710832.8103085,
+    "ast_hash": "ba342a3bac6b9bad0f29f15eec7be6d2",
+    "semantic_hash": "ba342a3bac6b9bad0f29f15eec7be6d2"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\Member Portal.html": {
+    "mtime": 1781710832.8173695,
+    "ast_hash": "80b01612b3447749f6361e5f6556afbb",
+    "semantic_hash": "80b01612b3447749f6361e5f6556afbb"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\index.html": {
+    "mtime": 1781710832.930161,
+    "ast_hash": "53a18456bc7da76a1ca0e0a3176f8704",
+    "semantic_hash": "53a18456bc7da76a1ca0e0a3176f8704"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\README.md": {
+    "mtime": 1781056764.3601413,
+    "ast_hash": "8b81fe6fbb6712f160ad9a61aa8406b1",
+    "semantic_hash": "8b81fe6fbb6712f160ad9a61aa8406b1"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\architecture\\adapters.md": {
+    "mtime": 1781720372.3448822,
+    "ast_hash": "2f32244ba846cb28b73d9abbc6eb677f",
+    "semantic_hash": "2f32244ba846cb28b73d9abbc6eb677f"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\architecture\\auth.md": {
+    "mtime": 1781719764.986859,
+    "ast_hash": "11bc7124adb988821faaec3e6690aa06",
+    "semantic_hash": "11bc7124adb988821faaec3e6690aa06"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\architecture\\database.md": {
+    "mtime": 1781720372.3443823,
+    "ast_hash": "8aba035bf021a683ec3309be71355cc2",
+    "semantic_hash": "8aba035bf021a683ec3309be71355cc2"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\architecture\\overview.md": {
+    "mtime": 1781056764.3766682,
+    "ast_hash": "9e60eeae7617e90ba0d1a7b0ecd4ac2b",
+    "semantic_hash": "9e60eeae7617e90ba0d1a7b0ecd4ac2b"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\architecture\\security.md": {
+    "mtime": 1781056764.3796701,
+    "ast_hash": "81488c331ca02932b52f3eb3733de375",
+    "semantic_hash": "81488c331ca02932b52f3eb3733de375"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\architecture\\storage.md": {
+    "mtime": 1781056764.3796701,
+    "ast_hash": "0467564932f10b538c5d0b7f5815d53f",
+    "semantic_hash": "0467564932f10b538c5d0b7f5815d53f"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\operations\\migrations.md": {
+    "mtime": 1781720372.3458824,
+    "ast_hash": "ba5472af9181bfaf0949b0a416ac09ef",
+    "semantic_hash": "ba5472af9181bfaf0949b0a416ac09ef"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\operations\\secrets-and-env.md": {
+    "mtime": 1781056764.3846896,
+    "ast_hash": "08b57d1f618b2056e7e3287439cdd80a",
+    "semantic_hash": "08b57d1f618b2056e7e3287439cdd80a"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\operations\\shared-dev-deploy-note.md": {
+    "mtime": 1781720342.9395492,
+    "ast_hash": "0ce6dfba462bae79f2c558ff6239586a",
+    "semantic_hash": "0ce6dfba462bae79f2c558ff6239586a"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\operations\\troubleshooting.md": {
+    "mtime": 1781056764.3856685,
+    "ast_hash": "a65efdb544564a923e16bb8d48b93ce1",
+    "semantic_hash": "a65efdb544564a923e16bb8d48b93ce1"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\reference\\commands.md": {
+    "mtime": 1781059480.1941316,
+    "ast_hash": "5e6a9f2ff7caf6a0a46e4ac991042551",
+    "semantic_hash": "5e6a9f2ff7caf6a0a46e4ac991042551"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\reference\\env-vars.md": {
+    "mtime": 1781056764.3882003,
+    "ast_hash": "22d8dfae355a8395fde9957fc0ebb771",
+    "semantic_hash": "22d8dfae355a8395fde9957fc0ebb771"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\setup\\cloudflare-resources.md": {
+    "mtime": 1781059108.4325812,
+    "ast_hash": "60239e8255cd357e2fb4e2816bdc3c94",
+    "semantic_hash": "60239e8255cd357e2fb4e2816bdc3c94"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\setup\\environment-modes.md": {
+    "mtime": 1781056764.3671608,
+    "ast_hash": "3f3e5884f618f096859f16c633321b93",
+    "semantic_hash": "3f3e5884f618f096859f16c633321b93"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\setup\\local-development.md": {
+    "mtime": 1781056764.3690567,
+    "ast_hash": "dd4e9e2655c9dbb724b4320b27280f1f",
+    "semantic_hash": "dd4e9e2655c9dbb724b4320b27280f1f"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\setup\\overview.md": {
+    "mtime": 1781056764.3651729,
+    "ast_hash": "f111f453be973da3996946c3c99df837",
+    "semantic_hash": "f111f453be973da3996946c3c99df837"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\setup\\production-deploy.md": {
+    "mtime": 1781059480.1931312,
+    "ast_hash": "78597a617a58ecd2be4c36460fa28913",
+    "semantic_hash": "78597a617a58ecd2be4c36460fa28913"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\setup\\shared-dev-onboarding.md": {
+    "mtime": 1781720372.3458824,
+    "ast_hash": "b04fddc917421bd9c9211b01eeaee1a2",
+    "semantic_hash": "b04fddc917421bd9c9211b01eeaee1a2"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\superpowers\\plans\\2026-06-18-code-portal-master-plan.md": {
+    "mtime": 1781796857.1906252,
+    "ast_hash": "e09a8b51c4635194f9f3227cc262b54e",
+    "semantic_hash": "e09a8b51c4635194f9f3227cc262b54e"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\superpowers\\plans\\2026-06-18-v5-foundation-migration.md": {
+    "mtime": 1781797313.049664,
+    "ast_hash": "0de2302b6ce3a48724801090f65a9d8e",
+    "semantic_hash": "0de2302b6ce3a48724801090f65a9d8e"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\[OSG 2425] Official Brand Manual Ateneo CODE 2425.pdf": {
+    "mtime": 1781710833.2939932,
+    "ast_hash": "df78860a1bab5b0a6464f5ec141b0fe7",
+    "semantic_hash": "df78860a1bab5b0a6464f5ec141b0fe7"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\[OSG 2425] Official Brand Manual Ateneo CODE 2425.pdf": {
+    "mtime": 1780505355.6496663,
+    "ast_hash": "df78860a1bab5b0a6464f5ec141b0fe7",
+    "semantic_hash": "df78860a1bab5b0a6464f5ec141b0fe7"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\assets\\falcon-blue.png": {
+    "mtime": 1781710832.8605528,
+    "ast_hash": "8606df0a0439556df4fb55b7c29271ee",
+    "semantic_hash": "8606df0a0439556df4fb55b7c29271ee"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\assets\\falcon-lightblue.png": {
+    "mtime": 1781710832.86456,
+    "ast_hash": "0825bd6a4edaa938c284b4d56d86869d",
+    "semantic_hash": "0825bd6a4edaa938c284b4d56d86869d"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\assets\\falcon-navy.png": {
+    "mtime": 1781710832.8685732,
+    "ast_hash": "2fefe04898e7beb87d0627345e5c43ab",
+    "semantic_hash": "2fefe04898e7beb87d0627345e5c43ab"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\assets\\falcon-paleblue-t.png": {
+    "mtime": 1781710832.87308,
+    "ast_hash": "aab4a26283e6d86a2f5402d824aa6b9a",
+    "semantic_hash": "aab4a26283e6d86a2f5402d824aa6b9a"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\assets\\falcon-transparent.png": {
+    "mtime": 1781710832.8780775,
+    "ast_hash": "074427143adc32e3aac324a46c41b9e0",
+    "semantic_hash": "074427143adc32e3aac324a46c41b9e0"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\assets\\falcon-white-t.png": {
+    "mtime": 1781710832.882584,
+    "ast_hash": "695667eb80ea7cc3f8f6659711289841",
+    "semantic_hash": "695667eb80ea7cc3f8f6659711289841"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\assets\\falcon-white.png": {
+    "mtime": 1781710832.886585,
+    "ast_hash": "64308b3091d85b5cee6e24e53e4dd66d",
+    "semantic_hash": "64308b3091d85b5cee6e24e53e4dd66d"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\assets\\falcon-whitegray.png": {
+    "mtime": 1781710832.8911111,
+    "ast_hash": "b4517911b95239da4c40f1eeafb646f6",
+    "semantic_hash": "b4517911b95239da4c40f1eeafb646f6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\assets\\logo-full-navy.png": {
+    "mtime": 1781710832.8961122,
+    "ast_hash": "69f04c2c196eaef9610cf4036f748ee6",
+    "semantic_hash": "69f04c2c196eaef9610cf4036f748ee6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\assets\\logo-full-white-transparent.png": {
+    "mtime": 1781710832.901624,
+    "ast_hash": "6a23c20b0e2bb26c8f7aa1e27034a233",
+    "semantic_hash": "6a23c20b0e2bb26c8f7aa1e27034a233"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\assets\\logo-full-white.png": {
+    "mtime": 1781710832.9056277,
+    "ast_hash": "ef4ce3d6d8ee4ade255d500081a83798",
+    "semantic_hash": "ef4ce3d6d8ee4ade255d500081a83798"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\01-check.png": {
+    "mtime": 1781710833.062201,
+    "ast_hash": "f30bc9ef8f1ea1d2f2ef02766ad92384",
+    "semantic_hash": "f30bc9ef8f1ea1d2f2ef02766ad92384"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\01-ds2.png": {
+    "mtime": 1781710833.0672007,
+    "ast_hash": "d3a6d086d653f7d2ddbb60e4525aaace",
+    "semantic_hash": "d3a6d086d653f7d2ddbb60e4525aaace"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\01-land.png": {
+    "mtime": 1781710833.072718,
+    "ast_hash": "17363b45bc780759d88406330fe043b8",
+    "semantic_hash": "17363b45bc780759d88406330fe043b8"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\01-svc.png": {
+    "mtime": 1781710833.0767176,
+    "ast_hash": "c2c4b7a8eb267b887d2d0d0256a9096f",
+    "semantic_hash": "c2c4b7a8eb267b887d2d0d0256a9096f"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\01-v.png": {
+    "mtime": 1781710833.0812266,
+    "ast_hash": "380cce6726f15eadf2418fef9edd0017",
+    "semantic_hash": "380cce6726f15eadf2418fef9edd0017"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\02-check.png": {
+    "mtime": 1781710833.0862317,
+    "ast_hash": "b02b76e22c2a7fcd955a6c8697a97167",
+    "semantic_hash": "b02b76e22c2a7fcd955a6c8697a97167"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\02-ds2.png": {
+    "mtime": 1781710833.0907426,
+    "ast_hash": "4043ca72fd2f8ab4d7f29e5d6e67720c",
+    "semantic_hash": "4043ca72fd2f8ab4d7f29e5d6e67720c"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\02-land.png": {
+    "mtime": 1781710833.095749,
+    "ast_hash": "6b0f822d646b555518c0f2fd825faca5",
+    "semantic_hash": "6b0f822d646b555518c0f2fd825faca5"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\02-svc.png": {
+    "mtime": 1781710833.1012578,
+    "ast_hash": "51a028034b514b2bbf93460450107fc0",
+    "semantic_hash": "51a028034b514b2bbf93460450107fc0"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\02-v.png": {
+    "mtime": 1781710833.1062627,
+    "ast_hash": "b02b76e22c2a7fcd955a6c8697a97167",
+    "semantic_hash": "b02b76e22c2a7fcd955a6c8697a97167"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\03-check.png": {
+    "mtime": 1781710833.1117797,
+    "ast_hash": "9b7375871b4d0dde113dc6970aecc1b5",
+    "semantic_hash": "9b7375871b4d0dde113dc6970aecc1b5"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\03-ds2.png": {
+    "mtime": 1781710833.1177883,
+    "ast_hash": "4a0bf5386c6934e6c0d53906bcea748c",
+    "semantic_hash": "4a0bf5386c6934e6c0d53906bcea748c"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\03-land.png": {
+    "mtime": 1781710833.122188,
+    "ast_hash": "1d6e3c913175388a5f6b56496017a5b2",
+    "semantic_hash": "1d6e3c913175388a5f6b56496017a5b2"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\04-check.png": {
+    "mtime": 1781710833.127186,
+    "ast_hash": "b02b76e22c2a7fcd955a6c8697a97167",
+    "semantic_hash": "b02b76e22c2a7fcd955a6c8697a97167"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\04-ds2.png": {
+    "mtime": 1781710833.1316926,
+    "ast_hash": "e2c1e20a2b9c305bf9d2049720249ced",
+    "semantic_hash": "e2c1e20a2b9c305bf9d2049720249ced"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\04-land.png": {
+    "mtime": 1781710833.136695,
+    "ast_hash": "b02b76e22c2a7fcd955a6c8697a97167",
+    "semantic_hash": "b02b76e22c2a7fcd955a6c8697a97167"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\ds.png": {
+    "mtime": 1781710833.1412046,
+    "ast_hash": "f395a4261e71136a7c965f0e0cb86a37",
+    "semantic_hash": "f395a4261e71136a7c965f0e0cb86a37"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\mp-desk.png": {
+    "mtime": 1781710833.146209,
+    "ast_hash": "3643d16f0a4de531924f0903daf8143c",
+    "semantic_hash": "3643d16f0a4de531924f0903daf8143c"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\mp.png": {
+    "mtime": 1781710833.1517348,
+    "ast_hash": "9a7a49e7c29cd18079b59b5ab0ac19a1",
+    "semantic_hash": "9a7a49e7c29cd18079b59b5ab0ac19a1"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\s5.png": {
+    "mtime": 1781710833.1562462,
+    "ast_hash": "e463fd12cf1185fe6799dcf55c06c137",
+    "semantic_hash": "e463fd12cf1185fe6799dcf55c06c137"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\screens\\signin.png": {
+    "mtime": 1781710833.1607578,
+    "ast_hash": "5daac600d4f13a78ea5b75ec080c8049",
+    "semantic_hash": "5daac600d4f13a78ea5b75ec080c8049"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\00 CODE_Logo-Falcon-White.png": {
+    "mtime": 1781710833.1817722,
+    "ast_hash": "64308b3091d85b5cee6e24e53e4dd66d",
+    "semantic_hash": "64308b3091d85b5cee6e24e53e4dd66d"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\00 CODE_Logo-Full-White.png": {
+    "mtime": 1781710833.1877723,
+    "ast_hash": "ef4ce3d6d8ee4ade255d500081a83798",
+    "semantic_hash": "ef4ce3d6d8ee4ade255d500081a83798"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\01 CODE_Logo-Falcon-Navy.png": {
+    "mtime": 1781710833.1922798,
+    "ast_hash": "2fefe04898e7beb87d0627345e5c43ab",
+    "semantic_hash": "2fefe04898e7beb87d0627345e5c43ab"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\01 CODE_Logo-Full-Navy.png": {
+    "mtime": 1781710833.1982796,
+    "ast_hash": "69f04c2c196eaef9610cf4036f748ee6",
+    "semantic_hash": "69f04c2c196eaef9610cf4036f748ee6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\02 Google Sheets - Sample Header.png": {
+    "mtime": 1781710833.2027879,
+    "ast_hash": "6fd472ac891e6c5bc970fd76b9a47b16",
+    "semantic_hash": "6fd472ac891e6c5bc970fd76b9a47b16"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\03 Google Docs - Cover.png": {
+    "mtime": 1781710833.208788,
+    "ast_hash": "29aa34420882a7dc7bd53426e711f6e5",
+    "semantic_hash": "29aa34420882a7dc7bd53426e711f6e5"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\04 Google Form - Cover-1.png": {
+    "mtime": 1781710833.215298,
+    "ast_hash": "93d92a036591d9a7ba3828a963181b78",
+    "semantic_hash": "93d92a036591d9a7ba3828a963181b78"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\04 Google Form - Cover.png": {
+    "mtime": 1781710833.2208085,
+    "ast_hash": "f190d3c983dd4cb16ab03ba3c6161eb9",
+    "semantic_hash": "f190d3c983dd4cb16ab03ba3c6161eb9"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\04 Google Form - Full Details Cover-1.png": {
+    "mtime": 1781710833.2268138,
+    "ast_hash": "9f5ba7a25a933d76b7917f3ba956bb37",
+    "semantic_hash": "9f5ba7a25a933d76b7917f3ba956bb37"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\04 Google Form - Full Details Cover.png": {
+    "mtime": 1781710833.232327,
+    "ast_hash": "c24d8462c23eda6459b499cb85caf2b2",
+    "semantic_hash": "c24d8462c23eda6459b499cb85caf2b2"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\CODE Logo Full White TransparentBG.png": {
+    "mtime": 1781710833.2383275,
+    "ast_hash": "6a23c20b0e2bb26c8f7aa1e27034a233",
+    "semantic_hash": "6a23c20b0e2bb26c8f7aa1e27034a233"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\CODE Logo-01.png": {
+    "mtime": 1781710833.2438471,
+    "ast_hash": "29d90b425e85319f292594b5c4de0b58",
+    "semantic_hash": "29d90b425e85319f292594b5c4de0b58"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\CODE_Logo-Falcon-Blue.png": {
+    "mtime": 1781710833.2488472,
+    "ast_hash": "8606df0a0439556df4fb55b7c29271ee",
+    "semantic_hash": "8606df0a0439556df4fb55b7c29271ee"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\CODE_Logo-Falcon-DarkGray.png": {
+    "mtime": 1781710833.2528944,
+    "ast_hash": "c5d05c3d19635e7616e7bbc42c9815c8",
+    "semantic_hash": "c5d05c3d19635e7616e7bbc42c9815c8"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\CODE_Logo-Falcon-LightBlue.png": {
+    "mtime": 1781710833.2579358,
+    "ast_hash": "0825bd6a4edaa938c284b4d56d86869d",
+    "semantic_hash": "0825bd6a4edaa938c284b4d56d86869d"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\CODE_Logo-Falcon-Transparent.png": {
+    "mtime": 1781710833.262446,
+    "ast_hash": "074427143adc32e3aac324a46c41b9e0",
+    "semantic_hash": "074427143adc32e3aac324a46c41b9e0"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\design\\uploads\\CODE_Logo-Falcon-WhiteGray.png": {
+    "mtime": 1781710833.267447,
+    "ast_hash": "b4517911b95239da4c40f1eeafb646f6",
+    "semantic_hash": "b4517911b95239da4c40f1eeafb646f6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\00 Full (Logo + Text)\\00 CODE_Logo-Full-White.png": {
+    "mtime": 1780505355.6675887,
+    "ast_hash": "ef4ce3d6d8ee4ade255d500081a83798",
+    "semantic_hash": "ef4ce3d6d8ee4ade255d500081a83798"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\00 Full (Logo + Text)\\01 CODE_Logo-Full-Navy.png": {
+    "mtime": 1780505355.6620367,
+    "ast_hash": "69f04c2c196eaef9610cf4036f748ee6",
+    "semantic_hash": "69f04c2c196eaef9610cf4036f748ee6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\00 Full (Logo + Text)\\CODE Logo Full White TransparentBG.png": {
+    "mtime": 1780505355.657686,
+    "ast_hash": "6a23c20b0e2bb26c8f7aa1e27034a233",
+    "semantic_hash": "6a23c20b0e2bb26c8f7aa1e27034a233"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\01 Falcon (Logo Only)\\00 CODE_Logo-Falcon-White.png": {
+    "mtime": 1780505355.72022,
+    "ast_hash": "64308b3091d85b5cee6e24e53e4dd66d",
+    "semantic_hash": "64308b3091d85b5cee6e24e53e4dd66d"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\01 Falcon (Logo Only)\\01 CODE_Logo-Falcon-Navy.png": {
+    "mtime": 1780505355.7358317,
+    "ast_hash": "2fefe04898e7beb87d0627345e5c43ab",
+    "semantic_hash": "2fefe04898e7beb87d0627345e5c43ab"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\01 Falcon (Logo Only)\\CODE Logo-01.png": {
+    "mtime": 1780505355.7242396,
+    "ast_hash": "29d90b425e85319f292594b5c4de0b58",
+    "semantic_hash": "29d90b425e85319f292594b5c4de0b58"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\01 Falcon (Logo Only)\\CODE_Logo-Falcon-Blue.png": {
+    "mtime": 1780505355.7157443,
+    "ast_hash": "8606df0a0439556df4fb55b7c29271ee",
+    "semantic_hash": "8606df0a0439556df4fb55b7c29271ee"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\01 Falcon (Logo Only)\\CODE_Logo-Falcon-DarkGray.png": {
+    "mtime": 1780505355.701696,
+    "ast_hash": "c5d05c3d19635e7616e7bbc42c9815c8",
+    "semantic_hash": "c5d05c3d19635e7616e7bbc42c9815c8"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\01 Falcon (Logo Only)\\CODE_Logo-Falcon-LightBlue.png": {
+    "mtime": 1780505355.7318318,
+    "ast_hash": "0825bd6a4edaa938c284b4d56d86869d",
+    "semantic_hash": "0825bd6a4edaa938c284b4d56d86869d"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\01 Falcon (Logo Only)\\CODE_Logo-Falcon-Transparent.png": {
+    "mtime": 1780505355.728279,
+    "ast_hash": "074427143adc32e3aac324a46c41b9e0",
+    "semantic_hash": "074427143adc32e3aac324a46c41b9e0"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\01 Falcon (Logo Only)\\CODE_Logo-Falcon-WhiteGray.png": {
+    "mtime": 1780505355.7117684,
+    "ast_hash": "b4517911b95239da4c40f1eeafb646f6",
+    "semantic_hash": "b4517911b95239da4c40f1eeafb646f6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\02 Google Sheets - Sample Header.png": {
+    "mtime": 1780505355.5884316,
+    "ast_hash": "6fd472ac891e6c5bc970fd76b9a47b16",
+    "semantic_hash": "6fd472ac891e6c5bc970fd76b9a47b16"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\03 Google Docs - Cover.png": {
+    "mtime": 1780505355.598724,
+    "ast_hash": "29aa34420882a7dc7bd53426e711f6e5",
+    "semantic_hash": "29aa34420882a7dc7bd53426e711f6e5"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\04 Google Form - Cover-1.png": {
+    "mtime": 1780505355.604751,
+    "ast_hash": "93d92a036591d9a7ba3828a963181b78",
+    "semantic_hash": "93d92a036591d9a7ba3828a963181b78"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\04 Google Form - Cover.png": {
+    "mtime": 1780505355.621164,
+    "ast_hash": "f190d3c983dd4cb16ab03ba3c6161eb9",
+    "semantic_hash": "f190d3c983dd4cb16ab03ba3c6161eb9"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\04 Google Form - Full Details Cover-1.png": {
+    "mtime": 1780505355.6105697,
+    "ast_hash": "9f5ba7a25a933d76b7917f3ba956bb37",
+    "semantic_hash": "9f5ba7a25a933d76b7917f3ba956bb37"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\docs\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts-20260603T140636Z-3-001\\[OSG 2425] Brand Manual \u2014 Logos, Colors, Fonts\\04 Google Form - Full Details Cover.png": {
+    "mtime": 1780505355.6155863,
+    "ast_hash": "c24d8462c23eda6459b499cb85caf2b2",
+    "semantic_hash": "c24d8462c23eda6459b499cb85caf2b2"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\public\\code-doc-cover.png": {
+    "mtime": 1780505355.598724,
+    "ast_hash": "29aa34420882a7dc7bd53426e711f6e5",
+    "semantic_hash": "29aa34420882a7dc7bd53426e711f6e5"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\public\\code-falcon-transparent.png": {
+    "mtime": 1780505355.728279,
+    "ast_hash": "074427143adc32e3aac324a46c41b9e0",
+    "semantic_hash": "074427143adc32e3aac324a46c41b9e0"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\public\\code-form-cover.png": {
+    "mtime": 1780505355.621164,
+    "ast_hash": "f190d3c983dd4cb16ab03ba3c6161eb9",
+    "semantic_hash": "f190d3c983dd4cb16ab03ba3c6161eb9"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\public\\code-logo-full-navy.png": {
+    "mtime": 1780505355.6620367,
+    "ast_hash": "69f04c2c196eaef9610cf4036f748ee6",
+    "semantic_hash": "69f04c2c196eaef9610cf4036f748ee6"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\public\\code-logo-full-white.png": {
+    "mtime": 1780505355.6675887,
+    "ast_hash": "ef4ce3d6d8ee4ade255d500081a83798",
+    "semantic_hash": "ef4ce3d6d8ee4ade255d500081a83798"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\public\\favicon.svg": {
+    "mtime": 1780663015.2110412,
+    "ast_hash": "cfb6723224140bf6b687589972f96ccf",
+    "semantic_hash": "cfb6723224140bf6b687589972f96ccf"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\public\\file.svg": {
+    "mtime": 1779196829.0,
+    "ast_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71",
+    "semantic_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\public\\globe.svg": {
+    "mtime": 1779196829.0,
+    "ast_hash": "2aaafa6a49b6563925fe440891e32717",
+    "semantic_hash": "2aaafa6a49b6563925fe440891e32717"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\public\\next.svg": {
+    "mtime": 1779196829.0,
+    "ast_hash": "8e061864f388b47f33a1c3780831193e",
+    "semantic_hash": "8e061864f388b47f33a1c3780831193e"
+  },
+  "C:\\Users\\charl\\Documents\\GitHub\\code nest\\public\\window.svg": {
+    "mtime": 1779196829.0,
+    "ast_hash": "a2760511c65806022ad20adf74370ff3",
+    "semantic_hash": "a2760511c65806022ad20adf74370ff3"
+  }
+}
