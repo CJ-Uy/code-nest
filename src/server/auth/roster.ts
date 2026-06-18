@@ -57,11 +57,14 @@ async function getCurrentTermId(db: Db, now: Date): Promise<string | null> {
 }
 
 async function isMemberSuperAdmin(db: Db, memberId: string): Promise<boolean> {
-	const rows = (await db
+	const rows = await db
 		.select({ key: roles.key })
 		.from(memberRoles)
 		.innerJoin(roles, eq(roles.id, memberRoles.roleId))
-		.where(eq(memberRoles.memberId, memberId))) as { key: string }[];
+		.where(eq(memberRoles.memberId, memberId));
+	if (!Array.isArray(rows) || !rows.every((row): row is { key: string } => typeof (row as { key?: unknown })?.key === "string")) {
+		throw new Error("isMemberSuperAdmin: unexpected row shape from role join query");
+	}
 	return rows.some((row) => row.key === "super");
 }
 
