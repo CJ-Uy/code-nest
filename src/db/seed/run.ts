@@ -6,23 +6,20 @@ import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import * as schema from "@/db/schema";
 import {
-	seedAnnouncements,
-	seedArticleSections,
-	seedArticles,
 	seedAuditLogs,
 	seedEvents,
 	seedLinkDailyStats,
 	seedMemberRoles,
 	seedMembers,
 	seedReservedSlugs,
+	seedRetentionRecords,
 	seedRoles,
 	seedSharedDevTokens,
 	seedShortLinks,
 	seedSurveyAssignments,
 	seedSurveyQuestions,
 	seedSurveys,
-	seedTeamMembers,
-	seedTeams,
+	seedTermMemberRoster,
 	seedTerms,
 } from "./data";
 
@@ -58,19 +55,16 @@ async function seedLocal() {
 	await insertChunks(db, schema.roles, seedRoles);
 	await insertChunks(db, schema.members, seedMembers);
 	await insertChunks(db, schema.memberRoles, seedMemberRoles);
-	await insertChunks(db, schema.consultancyTeams, seedTeams);
-	await insertChunks(db, schema.teamMembers, seedTeamMembers);
-	await insertChunks(db, schema.articles, seedArticles);
-	await insertChunks(db, schema.articleSections, seedArticleSections);
+	await insertChunks(db, schema.terms, seedTerms);
+	await insertChunks(db, schema.termMemberRoster, seedTermMemberRoster);
 	await insertChunks(db, schema.reservedSlugs, seedReservedSlugs);
 	await insertChunks(db, schema.shortLinks, seedShortLinks);
 	await insertChunks(db, schema.linkDailyStats, seedLinkDailyStats);
 	await insertChunks(db, schema.crsEvents, seedEvents);
-	await insertChunks(db, schema.terms, seedTerms);
+	await insertChunks(db, schema.retentionRecords, seedRetentionRecords);
 	await insertChunks(db, schema.surveys, seedSurveys);
 	await insertChunks(db, schema.surveyQuestions, seedSurveyQuestions);
 	await insertChunks(db, schema.surveyAssignments, seedSurveyAssignments);
-	await insertChunks(db, schema.announcements, seedAnnouncements);
 	await insertChunks(db, schema.auditLogs, seedAuditLogs);
 	await insertChunks(db, schema.sharedDevTokens, seedSharedDevTokens);
 

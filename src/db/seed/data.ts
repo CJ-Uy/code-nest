@@ -1,22 +1,19 @@
 import type { InferInsertModel } from "drizzle-orm";
 import {
-	announcements,
-	articleSections,
-	articles,
 	auditLogs,
-	consultancyTeams,
 	crsEvents,
 	linkDailyStats,
 	members,
 	memberRoles,
 	reservedSlugs,
+	retentionRecords,
 	roles,
 	sharedDevTokens,
 	shortLinks,
 	surveyAssignments,
 	surveyQuestions,
 	surveys,
-	teamMembers,
+	termMemberRoster,
 	terms,
 } from "@/db/schema";
 
@@ -26,10 +23,9 @@ const later = new Date("2026-07-10T10:00:00.000Z");
 export const seedRoles: InferInsertModel<typeof roles>[] = [
 	{ id: "role_super", key: "super", label: "Super admin", description: "Full portal access.", kind: "admin" },
 	{ id: "role_calendar", key: "calendar", label: "Calendar", description: "Manages shared dates.", kind: "admin" },
-	{ id: "role_publishing", key: "publishing", label: "Publishing", description: "Publishes public and member content.", kind: "admin" },
 	{ id: "role_link", key: "link", label: "Links", description: "Moderates short links.", kind: "admin" },
-	{ id: "role_crs", key: "crs", label: "CRS", description: "Approves events and points.", kind: "admin" },
-	{ id: "role_member_admin", key: "member_admin", label: "Member admin", description: "Manages member profiles and roles.", kind: "admin" },
+	{ id: "role_retention", key: "retention", label: "Retention", description: "Approves events and logs retention records.", kind: "admin" },
+	{ id: "role_member_admin", key: "member_admin", label: "Member admin", description: "Manages member profiles, roles, roster, and nav pins.", kind: "admin" },
 ];
 
 export const seedMembers: InferInsertModel<typeof members>[] = [
@@ -41,48 +37,13 @@ export const seedMemberRoles: InferInsertModel<typeof memberRoles>[] = [
 	{ memberId: "mem_demo_admin", roleId: "role_super", assignedBy: "mem_demo_admin" },
 ];
 
-export const seedTeams: InferInsertModel<typeof consultancyTeams>[] = [{ id: "team_blue", name: "Blue Team", createdAt: now }];
-
-export const seedTeamMembers: InferInsertModel<typeof teamMembers>[] = [{ teamId: "team_blue", memberId: "mem_demo_member" }];
-
-export const seedArticles: InferInsertModel<typeof articles>[] = [
-	{
-		id: "art_public_intro",
-		slug: "member-formation-through-practice",
-		kind: "article",
-		confidentiality: "public",
-		category: "Practice",
-		title: "Member Formation Through Practice",
-		dek: "How CODE turns consulting practice into member growth.",
-		abstract: "A short public article for the publishing home.",
-		author: "Ateneo CODE",
-		readTime: "4 min",
-		locked: false,
-		dateSort: 20260618,
-		publishedAt: now,
-		createdBy: "mem_demo_admin",
-	},
-	{
-		id: "art_member_points",
-		slug: "what-retention-points-are-for",
-		kind: "article",
-		confidentiality: "members",
-		category: "Membership",
-		title: "What Retention Points Are For",
-		dek: "A member-only explainer for CRS points.",
-		abstract: "A private resource preview used by the library.",
-		author: "Ateneo CODE",
-		readTime: "3 min",
-		locked: true,
-		dateSort: 20260617,
-		publishedAt: now,
-		createdBy: "mem_demo_admin",
-	},
+export const seedTerms: InferInsertModel<typeof terms>[] = [
+	{ id: "term_2026_1", name: "Term 1 2026", retainedAt: 20, probationBelow: 10, startsAt: now, endsAt: new Date("2026-10-31T00:00:00.000Z") },
 ];
 
-export const seedArticleSections: InferInsertModel<typeof articleSections>[] = [
-	{ id: "sec_public_intro_1", articleId: "art_public_intro", position: 1, heading: "Practice first", body: "CODE members learn by doing focused consulting work." },
-	{ id: "sec_member_points_1", articleId: "art_member_points", position: 1, heading: "Retention", body: "Points help members track steady participation." },
+export const seedTermMemberRoster: InferInsertModel<typeof termMemberRoster>[] = [
+	{ termId: "term_2026_1", email: "admin@example.com", memberId: "mem_demo_admin", addedBy: "mem_demo_admin", addedAt: now },
+	{ termId: "term_2026_1", email: "member@example.com", memberId: "mem_demo_member", addedBy: "mem_demo_admin", addedAt: now },
 ];
 
 export const seedReservedSlugs: InferInsertModel<typeof reservedSlugs>[] = [{ slug: "portal" }, { slug: "admin" }, { slug: "api" }];
@@ -120,8 +81,29 @@ export const seedEvents: InferInsertModel<typeof crsEvents>[] = [
 	},
 ];
 
-export const seedTerms: InferInsertModel<typeof terms>[] = [
-	{ id: "term_2026_1", name: "Term 1 2026", retainedAt: 20, probationBelow: 10, startsAt: now, endsAt: new Date("2026-10-31T00:00:00.000Z") },
+export const seedRetentionRecords: InferInsertModel<typeof retentionRecords>[] = [
+	{
+		id: "ret_demo_event",
+		memberId: "mem_demo_member",
+		termId: "term_2026_1",
+		eventId: "evt_demo",
+		points: 5,
+		reason: "Attended Consulting Practice Night",
+		source: "event_attendance",
+		recordedBy: "mem_demo_admin",
+		recordedAt: later,
+	},
+	{
+		id: "ret_demo_manual",
+		memberId: "mem_demo_member",
+		termId: "term_2026_1",
+		eventId: null,
+		points: null,
+		reason: "Submitted the required medical waiver",
+		source: "manual",
+		recordedBy: "mem_demo_admin",
+		recordedAt: now,
+	},
 ];
 
 export const seedSurveys: InferInsertModel<typeof surveys>[] = [
@@ -134,10 +116,6 @@ export const seedSurveyQuestions: InferInsertModel<typeof surveyQuestions>[] = [
 
 export const seedSurveyAssignments: InferInsertModel<typeof surveyAssignments>[] = [
 	{ surveyId: "srv_demo", memberId: "mem_demo_member", responseTokenHash: "demo-response-token-hash" },
-];
-
-export const seedAnnouncements: InferInsertModel<typeof announcements>[] = [
-	{ id: "ann_demo", title: "Welcome to the portal", body: "Use the portal to follow CODE work and member updates.", audienceKind: "all", authorMemberId: "mem_demo_admin", publishedAt: now },
 ];
 
 export const seedAuditLogs: InferInsertModel<typeof auditLogs>[] = [
