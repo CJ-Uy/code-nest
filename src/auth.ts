@@ -8,6 +8,7 @@ import { createAuditRepository } from "@/db/repositories/audit";
 import { getAppConfig } from "@/server/env";
 import { isGoogleSignInAllowed, splitAuthList } from "@/server/auth/access";
 import { roleKeys, type RoleKey } from "@/server/auth/permissions";
+import { isRosterSignInAllowed } from "@/server/auth/roster";
 
 export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 	const config = getAppConfig();
@@ -33,7 +34,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 		trustHost: true,
 		callbacks: {
 			async signIn({ account, profile }) {
-				return isGoogleSignInAllowed(
+				const allowed = isGoogleSignInAllowed(
 					{
 						provider: account?.provider,
 						email: profile?.email,
@@ -44,6 +45,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 						allowlistEmails: splitAuthList(config.AUTH_ALLOWLIST_EMAILS),
 					},
 				);
+				if (!allowed) return false;
+				if (!profile?.email) return false;
+
+				return isRosterSignInAllowed(db, profile.email);
 			},
 			async session({ session, user }) {
 				const [member] = await db.select().from(members).where(eq(members.id, user.id)).limit(1);
