@@ -8,6 +8,20 @@
       "when": 1781720174889,
       "tag": "0000_young_bullseye",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1781799814395,
+      "tag": "0001_v5_drop_deferred",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1781799835434,
+      "tag": "0002_v5_add_foundation",
+      "breakpoints": true
     }
   ]
 }
