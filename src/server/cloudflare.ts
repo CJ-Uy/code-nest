@@ -12,6 +12,7 @@ export type CloudflareRuntimeEnv = CloudflareEnv & {
 	AUTH_ALLOWLIST_EMAILS?: string;
 	SHARED_API_BASE_URL?: string;
 	SHARED_API_TOKEN?: string;
+	SHARED_API_ALLOWED_ORIGINS?: string;
 };
 
 export function getCloudflareEnv(): CloudflareRuntimeEnv {

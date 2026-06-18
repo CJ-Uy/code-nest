@@ -5,7 +5,21 @@ import { operation } from "./common";
 export const memberOutputSchema = z.object({
 	id: z.string(),
 	email: z.string().email(),
+	emailVerified: z.coerce.date().nullable(),
 	name: z.string().nullable(),
+	image: z.string().nullable(),
+	fullName: z.string().nullable(),
+	nickname: z.string().nullable(),
+	pronouns: z.string().nullable(),
+	batch: z.string().nullable(),
+	birthday: z.string().nullable(),
+	birthdayPrivate: z.boolean(),
+	avatarKey: z.string().nullable(),
+	status: z.enum(["active", "pending", "inactive"]),
+	tourMemberDone: z.boolean(),
+	tourAdminDone: z.boolean(),
+	createdAt: z.coerce.date(),
+	updatedAt: z.coerce.date(),
 });
 
 export const membersContract = {
