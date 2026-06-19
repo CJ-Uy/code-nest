@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import { createId } from "@/lib/ids";
 import { members, retentionRecords, terms } from "@/db/schema";
@@ -30,12 +30,30 @@ export type RetentionSummary = {
 export type LeaderboardInput = { termId: string; limit?: number; offset?: number };
 export type LeaderboardRow = { memberId: string; fullName: string | null; name: string | null; totalPoints: number };
 
+export type MyHistorySummary = {
+	termId: string;
+	termName: string;
+	totalPoints: number;
+	retainedAt: number;
+	probationBelow: number;
+	status: RetentionStatus;
+	recordCount: number;
+};
+
+export type TermOption = { id: string; name: string; isCurrent: boolean };
+
 export type RetentionRepository = {
 	recordEventAttendance(actor: Actor, input: RecordEventAttendanceInput): Promise<RetentionRecord>;
 	listForMember(actor: Actor, input: ListForMemberInput): Promise<RetentionRecord[]>;
 	getMemberTermSummary(actor: Actor, input: MemberTermSummaryInput): Promise<RetentionSummary>;
 	leaderboard(actor: Actor, input: LeaderboardInput): Promise<LeaderboardRow[]>;
 	createManual(actor: Actor, input: CreateManualRetentionRecordInput): Promise<{ recordIds: string[] }>;
+	myHistory(
+		actor: Actor,
+		input: { termId?: string },
+		now?: Date,
+	): Promise<{ summary: MyHistorySummary | null; records: RetentionRecord[] }>;
+	listTerms(actor: Actor, now?: Date): Promise<TermOption[]>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -45,6 +63,16 @@ function statusFor(totalPoints: number, retainedAt: number, probationBelow: numb
 	if (totalPoints >= retainedAt) return "retained";
 	if (totalPoints < probationBelow) return "probation";
 	return "on_track";
+}
+
+async function getCurrentTermId(db: Db, now: Date): Promise<string | null> {
+	const [term] = await db
+		.select({ id: terms.id })
+		.from(terms)
+		.where(and(lte(terms.startsAt, now), gte(terms.endsAt, now)))
+		.orderBy(desc(terms.startsAt))
+		.limit(1);
+	return term?.id ?? null;
 }
 
 export function createRetentionRepository(db: Db, audit: AuditRepository): RetentionRepository {
@@ -176,6 +204,46 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 			}
 
 			return { recordIds: rows.map((row) => row.id) };
+		},
+
+		async myHistory(actor, input, now = new Date()) {
+			const termId = input.termId ?? (await getCurrentTermId(db, now));
+			if (!termId) return { summary: null, records: [] };
+
+			const [term] = await db
+				.select({ id: terms.id, name: terms.name, retainedAt: terms.retainedAt, probationBelow: terms.probationBelow })
+				.from(terms)
+				.where(eq(terms.id, termId))
+				.limit(1);
+			if (!term) return { summary: null, records: [] };
+
+			const rows: RetentionRecord[] = await db
+				.select()
+				.from(retentionRecords)
+				.where(and(eq(retentionRecords.memberId, actor.memberId), eq(retentionRecords.termId, termId)))
+				.orderBy(desc(retentionRecords.recordedAt));
+
+			const totalPoints = rows.reduce((sum: number, row: RetentionRecord) => sum + (row.points ?? 0), 0);
+			const summary: MyHistorySummary = {
+				termId: term.id,
+				termName: term.name,
+				totalPoints,
+				retainedAt: term.retainedAt,
+				probationBelow: term.probationBelow,
+				status: statusFor(totalPoints, term.retainedAt, term.probationBelow),
+				recordCount: rows.length,
+			};
+			return { summary, records: rows };
+		},
+
+		async listTerms(actor, now = new Date()) {
+			const currentTermId = await getCurrentTermId(db, now);
+			const rows = await db.select({ id: terms.id, name: terms.name }).from(terms).orderBy(desc(terms.startsAt));
+			return rows.map((row: { id: string; name: string }) => ({
+				id: row.id,
+				name: row.name,
+				isCurrent: row.id === currentTermId,
+			}));
 		},
 	};
 }

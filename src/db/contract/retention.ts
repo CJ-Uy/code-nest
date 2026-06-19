@@ -29,6 +29,22 @@ export const leaderboardRowOutputSchema = z.object({
 	totalPoints: z.number().int(),
 });
 
+export const myHistorySummaryOutputSchema = z.object({
+	termId: z.string(),
+	termName: z.string(),
+	totalPoints: z.number().int(),
+	retainedAt: z.number().int(),
+	probationBelow: z.number().int(),
+	status: z.enum(["retained", "on_track", "probation"]),
+	recordCount: z.number().int(),
+});
+
+export const termOptionOutputSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	isCurrent: z.boolean(),
+});
+
 export const retentionContract = {
 	listForMember: operation({
 		input: z.object({
@@ -63,5 +79,20 @@ export const retentionContract = {
 		auth: "admin",
 		permission: "retention:record",
 		sharedDev: "deny",
+	}),
+	myHistory: operation({
+		input: z.object({ termId: z.string().min(1).optional() }),
+		output: z.object({
+			summary: myHistorySummaryOutputSchema.nullable(),
+			records: z.array(retentionRecordOutputSchema),
+		}),
+		auth: "member",
+		sharedDev: "allow",
+	}),
+	myTerms: operation({
+		input: z.object({}),
+		output: z.object({ terms: z.array(termOptionOutputSchema) }),
+		auth: "member",
+		sharedDev: "allow",
 	}),
 };

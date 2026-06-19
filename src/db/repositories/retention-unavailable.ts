@@ -9,6 +9,8 @@ export function createUnavailableRetentionRepository(): RetentionRepository {
 		listForMember: unavailable,
 		getMemberTermSummary: unavailable,
 		leaderboard: unavailable,
+		myHistory: unavailable,
+		listTerms: unavailable,
 		async createManual() {
 			throw new Error("Manual retention records are not available in shared mode.");
 		},

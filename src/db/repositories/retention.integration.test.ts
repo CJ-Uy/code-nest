@@ -212,4 +212,69 @@ describe("retention repository on D1", () => {
 		).rejects.toThrow("Term not found");
 		expect(await db.select().from(schema.retentionRecords)).toHaveLength(0);
 	});
+
+	describe("myHistory and listTerms", () => {
+		const NOW = new Date("2026-07-01T00:00:00.000Z");
+
+		beforeEach(async () => {
+			await env.DB.prepare(
+				"INSERT INTO terms (id, name, retained_at, probation_below, starts_at, ends_at) VALUES (?, ?, ?, ?, ?, ?)",
+			)
+				.bind("term_past", "Past Term", 20, 10, Date.UTC(2025, 4, 1), Date.UTC(2025, 6, 30))
+				.run();
+		});
+
+		it("summarizes the current term and excludes past-term and other members' records", async () => {
+			const { repo } = makeRepo();
+			await repo.recordEventAttendance(retentionAdmin, {
+				memberId: "mem_a",
+				termId: "term_1",
+				eventId: null as unknown as string,
+				points: 5,
+				reason: "Attended",
+			});
+			await repo.createManual(retentionAdmin, {
+				memberIds: ["mem_a"],
+				termId: "term_1",
+				eventId: null,
+				points: -2,
+				reason: "Violation",
+			});
+			await repo.recordEventAttendance(retentionAdmin, {
+				memberId: "mem_a",
+				termId: "term_past",
+				eventId: null as unknown as string,
+				points: 50,
+				reason: "Old points",
+			});
+			await repo.recordEventAttendance(retentionAdmin, {
+				memberId: "mem_b",
+				termId: "term_1",
+				eventId: null as unknown as string,
+				points: 99,
+				reason: "Theirs",
+			});
+
+			const { summary, records } = await repo.myHistory(plainMember, { termId: "term_1" }, NOW);
+			expect(summary?.totalPoints).toBe(3);
+			expect(summary?.recordCount).toBe(2);
+			expect(summary?.status).toBe("probation");
+			expect(records).toHaveLength(2);
+			expect(records.every((record) => record.memberId === "mem_a")).toBe(true);
+		});
+
+		it("defaults to the current term when no termId is given", async () => {
+			const { repo } = makeRepo();
+			const { summary } = await repo.myHistory(plainMember, {}, NOW);
+			expect(summary?.termId).toBe("term_1");
+		});
+
+		it("lists the member's terms with the current one flagged", async () => {
+			const { repo } = makeRepo();
+			const terms = await repo.listTerms(plainMember, NOW);
+			const current = terms.find((term) => term.isCurrent);
+			expect(current?.id).toBe("term_1");
+			expect(terms.map((term) => term.id)).toContain("term_past");
+		});
+	});
 });
