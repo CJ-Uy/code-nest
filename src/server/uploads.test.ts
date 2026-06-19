@@ -98,6 +98,36 @@ describe("upload handlers", () => {
 		expect(getResponse.status).toBe(200);
 		expect(deleteResponse.status).toBe(403);
 	});
+
+	it("assigns a server key for a link preview image the actor may edit", async () => {
+		const handlers = createHandlers(memberActor, { canEditLink: async (_actor, id) => id === "lnk_ok" });
+		const form = imageForm();
+		form.set("purpose", "link_preview");
+		form.set("linkId", "lnk_ok");
+		const res = await handlers.collection(new Request("https://example.com/api/uploads", { method: "POST", body: form }));
+		expect(res.status).toBe(201);
+		expect((await res.json() as { key: string }).key).toMatch(/^links\/lnk_ok\/mem_upload\/.+/);
+	});
+
+	it("rejects a link preview upload the actor may not edit", async () => {
+		const handlers = createHandlers(memberActor, { canEditLink: async () => false });
+		const form = imageForm();
+		form.set("purpose", "link_preview");
+		form.set("linkId", "lnk_no");
+		const res = await handlers.collection(new Request("https://example.com/api/uploads", { method: "POST", body: form }));
+		expect(res.status).toBe(403);
+	});
+
+	it("serves a link preview image without authentication", async () => {
+		const storage = new MemoryStorage();
+		await storage.putObject({ key: "links/lnk_ok/mem_upload/img.png", body: "image", contentType: "image/png" });
+		const handlers = createHandlers(null, storage);
+		const res = await handlers.object(
+			new Request("https://example.com/api/uploads/links%2Flnk_ok%2Fmem_upload%2Fimg.png", { method: "GET" }),
+			"links/lnk_ok/mem_upload/img.png",
+		);
+		expect(res.status).toBe(200);
+	});
 });
 
 function imageForm(): FormData {
@@ -107,11 +137,19 @@ function imageForm(): FormData {
 	return form;
 }
 
-function createHandlers(actor: Actor | null, storage = new MemoryStorage()) {
+type HandlerOptions = {
+	storage?: MemoryStorage;
+	canEditLink?: (actor: Actor, linkId: string) => Promise<boolean>;
+};
+
+function createHandlers(actor: Actor | null, options: MemoryStorage | HandlerOptions = {}) {
+	const storage = options instanceof MemoryStorage ? options : options.storage ?? new MemoryStorage();
+	const canEditLink = options instanceof MemoryStorage ? async () => false : options.canEditLink ?? (async () => false);
 	return createUploadHandlers({
 		getActor: async () => actor,
 		storage,
 		canPostEvent: async () => true,
+		canEditLink,
 	});
 }
 

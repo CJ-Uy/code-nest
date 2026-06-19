@@ -16,6 +16,7 @@ type UploadHandlerDependencies = {
 	getActor(request: Request): Promise<Actor | null>;
 	storage: StorageAdapter;
 	canPostEvent(actor: Actor, eventId: string): Promise<boolean>;
+	canEditLink(actor: Actor, linkId: string): Promise<boolean>;
 };
 
 export function createUploadHandlers(dependencies: UploadHandlerDependencies) {
@@ -67,6 +68,15 @@ export function createUploadHandlers(dependencies: UploadHandlerDependencies) {
 					return Response.json({ error: "Not authorized to upload media for this event." }, { status: 403 });
 				}
 				key = `events/${eventId}/${actor.memberId}/${createId("media")}.${extension}`;
+			} else if (purpose === "link_preview") {
+				const linkId = form.get("linkId");
+				if (typeof linkId !== "string" || !isSafeSegment(linkId)) {
+					return Response.json({ error: "A valid link is required." }, { status: 400 });
+				}
+				if (!(await dependencies.canEditLink(actor, linkId))) {
+					return Response.json({ error: "Not authorized to upload a preview for this link." }, { status: 403 });
+				}
+				key = `links/${linkId}/${actor.memberId}/${createId("preview")}.${extension}`;
 			} else {
 				return Response.json({ error: "Unknown upload purpose." }, { status: 400 });
 			}
@@ -76,19 +86,23 @@ export function createUploadHandlers(dependencies: UploadHandlerDependencies) {
 		},
 
 		async object(request: Request, key: string): Promise<Response> {
-			const actor = await dependencies.getActor(request);
-			if (!actor) return Response.json({ error: "Authentication required." }, { status: 401 });
-
 			const namespace = parseNamespace(key);
 			if (!namespace) return Response.json({ error: "Object not found." }, { status: 404 });
 
 			if (request.method === "GET") {
+				if (!namespace.public) {
+					const actor = await dependencies.getActor(request);
+					if (!actor) return Response.json({ error: "Authentication required." }, { status: 401 });
+				}
 				const object = await dependencies.storage.getObject(key);
 				if (!object.body) return Response.json({ error: "Object not found." }, { status: 404 });
 				return new Response(object.body, {
 					headers: { "Content-Type": object.contentType ?? "application/octet-stream" },
 				});
 			}
+
+			const actor = await dependencies.getActor(request);
+			if (!actor) return Response.json({ error: "Authentication required." }, { status: 401 });
 
 			if (request.method === "DELETE") {
 				const ownsObject = namespace.ownerMemberId === actor.memberId;
@@ -104,14 +118,17 @@ export function createUploadHandlers(dependencies: UploadHandlerDependencies) {
 	};
 }
 
-function parseNamespace(key: string): { ownerMemberId: string } | null {
+function parseNamespace(key: string): { ownerMemberId: string; public: boolean } | null {
 	if (key.includes("..") || key.startsWith("/")) return null;
 	const parts = key.split("/");
 	if (parts[0] === "avatars" && parts.length === 3 && parts.every(isSafeSegment)) {
-		return { ownerMemberId: parts[1] };
+		return { ownerMemberId: parts[1], public: false };
 	}
 	if (parts[0] === "events" && parts.length === 4 && parts.every(isSafeSegment)) {
-		return { ownerMemberId: parts[2] };
+		return { ownerMemberId: parts[2], public: false };
+	}
+	if (parts[0] === "links" && parts.length === 4 && parts.every(isSafeSegment)) {
+		return { ownerMemberId: parts[2], public: true };
 	}
 	return null;
 }

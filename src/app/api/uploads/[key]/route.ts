@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { getRepositories } from "@/db";
 import { getDb } from "@/db/client";
 import { crsEvents } from "@/db/schema";
 import { getActor } from "@/server/auth/actor";
@@ -49,6 +50,14 @@ function createHandlers() {
 				.where(eq(crsEvents.id, eventId))
 				.limit(1);
 			return event?.status === "approved";
+		},
+		canEditLink: async (actor, linkId) => {
+			const { links } = await getRepositories();
+			try {
+				return Boolean(await links.getById(actor, linkId));
+			} catch {
+				return false;
+			}
 		},
 	});
 }

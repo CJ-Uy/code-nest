@@ -3,6 +3,8 @@ import type { DrizzleD1Database } from "drizzle-orm/d1";
 import * as schema from "@/db/schema";
 import { crsEvents } from "@/db/schema";
 import { uploadsContract } from "@/db/contract/uploads";
+import { createAuditRepository } from "@/db/repositories/audit";
+import { createLinksRepository } from "@/db/repositories/links";
 import type { DeployEnv } from "@/server/env";
 import type { StorageAdapter } from "@/storage/types";
 import { createUploadHandlers } from "@/server/uploads";
@@ -22,6 +24,7 @@ export function createUploadsInternalHandlers({
 	storage,
 	allowedOrigins = [],
 }: UploadsInternalDependencies) {
+	const linksRepository = createLinksRepository(db, createAuditRepository(db));
 	const uploads = createUploadHandlers({
 		getActor: (request) => resolveSharedActor(db, request),
 		storage,
@@ -32,6 +35,13 @@ export function createUploadsInternalHandlers({
 				.where(eq(crsEvents.id, eventId))
 				.limit(1);
 			return event?.status === "approved";
+		},
+		canEditLink: async (actor, linkId) => {
+			try {
+				return Boolean(await linksRepository.getById(actor, linkId));
+			} catch {
+				return false;
+			}
 		},
 	});
 
