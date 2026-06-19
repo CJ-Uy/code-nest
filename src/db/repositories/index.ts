@@ -1,7 +1,7 @@
 import { createAuditRepository, createUnavailableAuditRepository } from "./audit";
 import { createCalendarRepository } from "./calendar";
 import { createEventsRepository } from "./events";
-import { createLinksRepository } from "./links";
+import { createLinksRepository, createUnavailableLinksRepository, type LinkDb } from "./links";
 import { createMembersRepository } from "./members";
 import { createNotificationsRepository, type NotificationsRepository } from "./notifications";
 import { createOverviewRepository, type OverviewRepository } from "./overview";
@@ -28,7 +28,7 @@ export function createDrizzleRepositories(db: DrizzleDb) {
 	return {
 		members: createMembersRepository(db as unknown as MemberDb & AuditDb, audit),
 		sessions: createSessionsRepository(),
-		links: createLinksRepository(),
+		links: createLinksRepository(db as unknown as LinkDb, audit),
 		events: createEventsRepository(),
 		retention: createRetentionRepository(),
 		surveys: createSurveysRepository(),
@@ -71,7 +71,7 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 			updateProfile: async (_actor, id, input) => adapter.updateMemberProfile(id, input),
 		},
 		sessions: createSessionsRepository(),
-		links: createLinksRepository(),
+		links: createUnavailableLinksRepository(),
 		events: createEventsRepository(),
 		retention: createRetentionRepository(),
 		surveys: createSurveysRepository(),
