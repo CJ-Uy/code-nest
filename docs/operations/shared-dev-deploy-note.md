@@ -9,3 +9,14 @@ Shared-mode developers depend on the deployed dev Worker staying current. After 
 3. Deploy `code-nest-dev`.
 
 Exact Wrangler commands must be shown for approval before any D1 reset, migration, seed, or production database operation.
+
+## Phase 3 short links
+
+Phase 3 adds the short-link contract, internal `/internal/links` routes, public redirect behavior, public link-preview uploads, and richer link seed data.
+
+After review, update the deployed dev Worker so shared-mode developers receive the new internal links API:
+
+1. Deploy `code-nest-dev`.
+2. Seed dev again only if the refreshed reserved slugs and demo link stats are needed in shared dev.
+
+No schema migration is expected for Phase 3 because the v5 short-link tables already exist.
