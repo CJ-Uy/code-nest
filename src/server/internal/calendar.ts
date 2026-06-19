@@ -1,20 +1,19 @@
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import * as schema from "@/db/schema";
-import { retentionContract } from "@/db/contract/retention";
-import { createAuditRepository } from "@/db/repositories/audit";
-import { createRetentionRepository } from "@/db/repositories/retention";
+import { calendarContract } from "@/db/contract/calendar";
+import { createCalendarRepository } from "@/db/repositories/calendar";
 import type { DeployEnv } from "@/server/env";
 import { getInternalCorsHeaders } from "./cors";
 import { resolveSharedActor } from "./shared-actor";
 
-type RetentionInternalDependencies = {
+type CalendarInternalDependencies = {
 	db: DrizzleD1Database<typeof schema>;
 	deployEnv: DeployEnv;
 	allowedOrigins?: string[];
 };
 
-export function createRetentionInternalHandlers({ db, deployEnv, allowedOrigins = [] }: RetentionInternalDependencies) {
-	const repository = createRetentionRepository(db, createAuditRepository(db));
+export function createCalendarInternalHandlers({ db, deployEnv, allowedOrigins = [] }: CalendarInternalDependencies) {
+	const repository = createCalendarRepository(db);
 
 	return {
 		async fetch(request: Request): Promise<Response> {
@@ -37,32 +36,21 @@ export function createRetentionInternalHandlers({ db, deployEnv, allowedOrigins 
 			try {
 				if (request.method === "GET") {
 					const url = new URL(request.url);
-					if (url.searchParams.get("terms")) {
-						const terms = await repository.listTerms(actor);
-						const output = retentionContract.myTerms.output.parse({ terms });
-						return Response.json(output, { headers: responseHeaders });
+					const eventId = url.searchParams.get("eventId");
+					if (eventId) {
+						const input = calendarContract.getEvent.input.parse({ eventId });
+						const event = await repository.getEvent(actor, input.eventId);
+						const output = calendarContract.getEvent.output.parse({ event });
+						return Response.json(output, { status: event ? 200 : 404, headers: responseHeaders });
 					}
-					const input = retentionContract.myHistory.input.parse({
-						termId: url.searchParams.get("termId") ?? undefined,
+					const input = calendarContract.getMonth.input.parse({
+						year: Number(url.searchParams.get("year")),
+						month: Number(url.searchParams.get("month")),
 					});
-					const result = await repository.myHistory(actor, input);
-					const output = retentionContract.myHistory.output.parse(result);
+					const items = await repository.getMonth(actor, input);
+					const output = calendarContract.getMonth.output.parse({ items });
 					return Response.json(output, { headers: responseHeaders });
 				}
-
-				if (request.method === "POST") {
-					if (retentionContract.createManual.sharedDev === "deny") {
-						return Response.json(
-							{ error: "Operation is disabled in shared development." },
-							{ status: 403, headers: responseHeaders },
-						);
-					}
-					const input = retentionContract.createManual.input.parse(await request.json());
-					const result = await repository.createManual(actor, input);
-					const output = retentionContract.createManual.output.parse(result);
-					return Response.json(output, { status: 201, headers: responseHeaders });
-				}
-
 				return new Response("Method not allowed", { status: 405, headers: responseHeaders });
 			} catch (error) {
 				const message = error instanceof Error ? error.message : "Internal request failed.";

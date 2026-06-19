@@ -1,11 +1,11 @@
 import { getD1Db } from "@/db/client";
 import { getAppConfig } from "@/server/env";
 import { splitAllowedOrigins } from "@/server/internal/cors";
-import { createRetentionInternalHandlers } from "@/server/internal/retention";
+import { createNotificationsInternalHandlers } from "@/server/internal/notifications";
 
 function getHandlers() {
 	const config = getAppConfig();
-	return createRetentionInternalHandlers({
+	return createNotificationsInternalHandlers({
 		db: getD1Db(),
 		deployEnv: config.DEPLOY_ENV ?? "prod",
 		allowedOrigins: splitAllowedOrigins(config.SHARED_API_ALLOWED_ORIGINS),

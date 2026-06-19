@@ -1,20 +1,26 @@
 import type { DrizzleD1Database } from "drizzle-orm/d1";
+import { z } from "zod";
 import * as schema from "@/db/schema";
-import { retentionContract } from "@/db/contract/retention";
-import { createAuditRepository } from "@/db/repositories/audit";
-import { createRetentionRepository } from "@/db/repositories/retention";
+import { createNotificationsRepository } from "@/db/repositories/notifications";
 import type { DeployEnv } from "@/server/env";
 import { getInternalCorsHeaders } from "./cors";
 import { resolveSharedActor } from "./shared-actor";
 
-type RetentionInternalDependencies = {
+type NotificationsInternalDependencies = {
 	db: DrizzleD1Database<typeof schema>;
 	deployEnv: DeployEnv;
 	allowedOrigins?: string[];
 };
 
-export function createRetentionInternalHandlers({ db, deployEnv, allowedOrigins = [] }: RetentionInternalDependencies) {
-	const repository = createRetentionRepository(db, createAuditRepository(db));
+const markReadInputSchema = z.object({ action: z.literal("markRead"), id: z.string().min(1) });
+const markAllReadInputSchema = z.object({ action: z.literal("markAllRead") });
+
+export function createNotificationsInternalHandlers({
+	db,
+	deployEnv,
+	allowedOrigins = [],
+}: NotificationsInternalDependencies) {
+	const repository = createNotificationsRepository(db);
 
 	return {
 		async fetch(request: Request): Promise<Response> {
@@ -37,30 +43,23 @@ export function createRetentionInternalHandlers({ db, deployEnv, allowedOrigins 
 			try {
 				if (request.method === "GET") {
 					const url = new URL(request.url);
-					if (url.searchParams.get("terms")) {
-						const terms = await repository.listTerms(actor);
-						const output = retentionContract.myTerms.output.parse({ terms });
-						return Response.json(output, { headers: responseHeaders });
-					}
-					const input = retentionContract.myHistory.input.parse({
-						termId: url.searchParams.get("termId") ?? undefined,
-					});
-					const result = await repository.myHistory(actor, input);
-					const output = retentionContract.myHistory.output.parse(result);
-					return Response.json(output, { headers: responseHeaders });
+					const limitParam = url.searchParams.get("limit");
+					const [items, unreadCount] = await Promise.all([
+						repository.listFeed(actor, limitParam ? { limit: Number(limitParam) } : undefined),
+						repository.unreadCount(actor),
+					]);
+					return Response.json({ items, unreadCount }, { headers: responseHeaders });
 				}
 
 				if (request.method === "POST") {
-					if (retentionContract.createManual.sharedDev === "deny") {
-						return Response.json(
-							{ error: "Operation is disabled in shared development." },
-							{ status: 403, headers: responseHeaders },
-						);
+					const body = await request.json();
+					if (markAllReadInputSchema.safeParse(body).success) {
+						await repository.markAllRead(actor);
+						return Response.json({ ok: true }, { headers: responseHeaders });
 					}
-					const input = retentionContract.createManual.input.parse(await request.json());
-					const result = await repository.createManual(actor, input);
-					const output = retentionContract.createManual.output.parse(result);
-					return Response.json(output, { status: 201, headers: responseHeaders });
+					const input = markReadInputSchema.parse(body);
+					await repository.markRead(actor, input.id);
+					return Response.json({ ok: true }, { headers: responseHeaders });
 				}
 
 				return new Response("Method not allowed", { status: 405, headers: responseHeaders });
