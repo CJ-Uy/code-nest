@@ -10,7 +10,7 @@ import { createOverviewRepository, type OverviewRepository } from "./overview";
 import { createRetentionRepository } from "./retention";
 import { createUnavailableRetentionRepository } from "./retention-unavailable";
 import { createSessionsRepository } from "./sessions";
-import { createSurveysRepository } from "./surveys";
+import { createSurveysRepository, createUnavailableSurveysRepository } from "./surveys";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type { MemberDb } from "./members";
 import type { AuditDb } from "./audit";
@@ -37,7 +37,7 @@ export function createDrizzleRepositories(db: DrizzleDb) {
 		eventMedia: createEventMediaRepository(db, audit),
 		eventForum: createEventForumRepository(db, audit),
 		retention,
-		surveys: createSurveysRepository(),
+		surveys: createSurveysRepository(d1, audit),
 		notifications: createNotificationsRepository(d1),
 		overview: createOverviewRepository(d1),
 		calendar: createCalendarRepository(),
@@ -85,7 +85,7 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 		eventMedia: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createEventMediaRepository>,
 		eventForum: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createEventForumRepository>,
 		retention: createUnavailableRetentionRepository(),
-		surveys: createSurveysRepository(),
+		surveys: createUnavailableSurveysRepository(),
 		notifications: createUnavailableNotificationsRepository(),
 		overview: createUnavailableOverviewRepository(),
 		calendar: createCalendarRepository(),

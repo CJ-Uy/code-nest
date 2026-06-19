@@ -1,6 +1,15 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { z } from "zod";
-import type { members } from "./schema";
+import type {
+	members,
+	surveyAnswers,
+	surveyAssignments,
+	surveyQuestions,
+	surveyResponses,
+	surveys,
+	SurveyQuestionType,
+	SurveyStatus,
+} from "./schema";
 
 export type Member = InferSelectModel<typeof members>;
 export type NewMember = InferInsertModel<typeof members>;
@@ -44,3 +53,72 @@ export interface DatabaseAdapter {
 	getMemberById(id: string): Promise<Member | null>;
 	updateMemberProfile(id: string, input: UpdateMemberProfileInput): Promise<Member>;
 }
+
+export type Survey = InferSelectModel<typeof surveys>;
+export type SurveyQuestion = InferSelectModel<typeof surveyQuestions>;
+export type SurveyAssignment = InferSelectModel<typeof surveyAssignments>;
+export type SurveyResponse = InferSelectModel<typeof surveyResponses>;
+export type SurveyAnswer = InferSelectModel<typeof surveyAnswers>;
+
+// A survey is created together with its ordered questions in one call so the
+// admin form is a single submit. Choice/scale questions carry their options.
+export const surveyQuestionInputSchema = z.object({
+	type: z.enum(["scale", "text", "choice"]),
+	prompt: z.string().trim().min(1).max(500),
+	options: z.array(z.string().trim().min(1).max(200)).max(20).optional(),
+});
+
+export type SurveyQuestionInput = z.infer<typeof surveyQuestionInputSchema>;
+
+export const createSurveyInputSchema = z.object({
+	title: z.string().trim().min(1).max(200),
+	eventId: z.string().trim().min(1).nullable().optional(),
+	questions: z.array(surveyQuestionInputSchema).min(1).max(30),
+});
+
+export type CreateSurveyInput = z.infer<typeof createSurveyInputSchema>;
+
+// Drawing the sample also flips the survey to running. sampleSize is the number
+// of members to draw; seed makes the draw deterministic and testable.
+export const sampleSurveyInputSchema = z.object({
+	surveyId: z.string().trim().min(1),
+	sampleSize: z.number().int().min(1).max(1000),
+	seed: z.string().trim().min(1).max(120).optional(),
+});
+
+export type SampleSurveyInput = z.infer<typeof sampleSurveyInputSchema>;
+
+export const surveyAnswerInputSchema = z.object({
+	questionId: z.string().trim().min(1),
+	value: z.string().trim().min(1).max(2000),
+});
+
+// The raw token travels in the body; the server hashes it and never stores it.
+export const submitSurveyResponseInputSchema = z.object({
+	surveyId: z.string().trim().min(1),
+	token: z.string().trim().min(1).max(200),
+	answers: z.array(surveyAnswerInputSchema).min(1).max(30),
+});
+
+export type SubmitSurveyResponseInput = z.infer<typeof submitSurveyResponseInputSchema>;
+
+// Aggregated, identity-free results. Per question we expose only counts.
+export type SurveyResultsQuestion = {
+	questionId: string;
+	prompt: string;
+	type: SurveyQuestionType;
+	answerCount: number;
+	// For scale/choice: value -> count. For text: omitted.
+	valueCounts?: Record<string, number>;
+	// For text: the raw answer strings, with no ordering tie to any member.
+	textAnswers?: string[];
+};
+
+export type SurveyResults = {
+	surveyId: string;
+	title: string;
+	status: SurveyStatus;
+	assignedCount: number;
+	completedCount: number;
+	questions: SurveyResultsQuestion[];
+};

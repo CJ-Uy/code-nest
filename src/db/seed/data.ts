@@ -148,7 +148,9 @@ export const seedSurveyQuestions: InferInsertModel<typeof surveyQuestions>[] = [
 ];
 
 export const seedSurveyAssignments: InferInsertModel<typeof surveyAssignments>[] = [
-	{ surveyId: "srv_demo", memberId: "mem_demo_member", responseTokenHash: "demo-response-token-hash" },
+	// Raw token for local walkthrough: "demo-survey-token" (open
+	// /portal/surveys/srv_demo?t=demo-survey-token). Only the hash is stored.
+	{ surveyId: "srv_demo", memberId: "mem_demo_member", responseTokenHash: "e9bcf50bf9ddbf8980915113b56e639d69ee87c88828c8a05e04d4c0ffbcdf2d" },
 ];
 
 export const seedAuditLogs: InferInsertModel<typeof auditLogs>[] = [
