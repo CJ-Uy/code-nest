@@ -1,5 +1,5 @@
 import { createAuditRepository, createUnavailableAuditRepository } from "./audit";
-import { createCalendarRepository } from "./calendar";
+import { createCalendarRepository, type CalendarRepository } from "./calendar";
 import { createEventForumRepository } from "./event-forum";
 import { createEventMediaRepository } from "./event-media";
 import { createEventsRepository } from "./events";
@@ -40,7 +40,7 @@ export function createDrizzleRepositories(db: DrizzleDb) {
 		surveys: createSurveysRepository(d1, audit),
 		notifications: createNotificationsRepository(d1),
 		overview: createOverviewRepository(d1),
-		calendar: createCalendarRepository(),
+		calendar: createCalendarRepository(d1),
 		audit,
 	};
 }
@@ -67,6 +67,14 @@ function createUnavailableOverviewRepository(): OverviewRepository {
 	};
 }
 
+// ponytail: shared-mode parity for calendar reads lands with adapter wiring, not here.
+function createUnavailableCalendarRepository(): CalendarRepository {
+	const unavailable = () => {
+		throw new Error("Calendar is unavailable through this repository adapter.");
+	};
+	return { getMonth: unavailable, getEvent: unavailable };
+}
+
 export function createSharedRepositories(adapter: DatabaseAdapter): Repositories {
 	const audit = createUnavailableAuditRepository();
 	const unavailable = () => {
@@ -88,7 +96,7 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 		surveys: createUnavailableSurveysRepository(),
 		notifications: createUnavailableNotificationsRepository(),
 		overview: createUnavailableOverviewRepository(),
-		calendar: createCalendarRepository(),
+		calendar: createUnavailableCalendarRepository(),
 		audit,
 	};
 }
