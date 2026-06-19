@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
 import { CalendarDays, ClipboardCheck, Link2, MessageSquare } from "lucide-react";
 import { getRepositories } from "@/db";
+import { EventScanPanel } from "@/components/event-scan-panel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard, RetentionProgress } from "@/components/portal/overview-metrics";
 import { getActor } from "@/server/auth/actor";
+import { can } from "@/server/auth/permissions";
 import type { OverviewSummary } from "@/db/repositories/overview";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +26,18 @@ export default async function PortalOverviewPage() {
 	// phase wires an internal proxy route for it; degrade to zeroed metrics
 	// instead of crashing the page.
 	const summary = await repositories.overview.getSummary(actor).catch(() => EMPTY_SUMMARY);
+	const canScanAttendance = can(actor, "points:assign");
+	let scanEvent: Awaited<ReturnType<typeof repositories.events.listApproved>>[number] | null = null;
+	if (canScanAttendance) {
+		try {
+			const [event] = await repositories.events.listApproved(actor, { limit: 1 });
+			scanEvent = event ?? null;
+		} catch {
+			scanEvent = null;
+		}
+	}
+	// TODO(term-resolution): pass the active term id from the calendar/event-detail loader in Phase 7.
+	const currentTermId = "term_2026_1";
 
 	return (
 		<div className="grid gap-5">
@@ -71,6 +85,8 @@ export default async function PortalOverviewPage() {
 					<RetentionProgress points={summary.retention.points} retainedAt={summary.retention.retainedAt} />
 				</CardContent>
 			</Card>
+
+			{scanEvent ? <EventScanPanel eventId={scanEvent.id} termId={currentTermId} /> : null}
 		</div>
 	);
 }

@@ -1,5 +1,7 @@
 import { createAuditRepository, createUnavailableAuditRepository } from "./audit";
 import { createCalendarRepository } from "./calendar";
+import { createEventForumRepository } from "./event-forum";
+import { createEventMediaRepository } from "./event-media";
 import { createEventsRepository } from "./events";
 import { createLinksRepository, createUnavailableLinksRepository, type LinkDb } from "./links";
 import { createMembersRepository } from "./members";
@@ -25,12 +27,15 @@ export function createDrizzleRepositories(db: DrizzleDb) {
 	// mirroring the existing members cast. The local handle stays compatible at
 	// runtime.
 	const d1 = db as unknown as DrizzleD1Database<typeof schema>;
+	const retention = createRetentionRepository(db, audit);
 	return {
 		members: createMembersRepository(db as unknown as MemberDb & AuditDb, audit),
 		sessions: createSessionsRepository(),
 		links: createLinksRepository(db as unknown as LinkDb, audit),
-		events: createEventsRepository(),
-		retention: createRetentionRepository(),
+		events: createEventsRepository(db, audit, retention),
+		eventMedia: createEventMediaRepository(db, audit),
+		eventForum: createEventForumRepository(db, audit),
+		retention,
 		surveys: createSurveysRepository(),
 		notifications: createNotificationsRepository(d1),
 		overview: createOverviewRepository(d1),
@@ -63,6 +68,9 @@ function createUnavailableOverviewRepository(): OverviewRepository {
 
 export function createSharedRepositories(adapter: DatabaseAdapter): Repositories {
 	const audit = createUnavailableAuditRepository();
+	const unavailable = () => {
+		throw new Error("This operation is only available through the shared /internal API.");
+	};
 	return {
 		members: {
 			list: async (_actor, input) => adapter.listMembers().then((members) => members.slice(0, input?.limit ?? 25)),
@@ -72,8 +80,10 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 		},
 		sessions: createSessionsRepository(),
 		links: createUnavailableLinksRepository(),
-		events: createEventsRepository(),
-		retention: createRetentionRepository(),
+		events: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createEventsRepository>,
+		eventMedia: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createEventMediaRepository>,
+		eventForum: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createEventForumRepository>,
+		retention: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createRetentionRepository>,
 		surveys: createSurveysRepository(),
 		notifications: createUnavailableNotificationsRepository(),
 		overview: createUnavailableOverviewRepository(),

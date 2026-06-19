@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { MemberCodeCard } from "@/components/member-code-card";
 import { getActor } from "@/server/auth/actor";
 import { updateProfileAction } from "./actions";
 
@@ -49,6 +50,9 @@ export default async function ProfilePage() {
 					</form>
 				</CardContent>
 			</Card>
+			<div className="mt-6">
+				<MemberCodeCard memberId={actor.memberId} />
+			</div>
 			<form
 				className="mt-6"
 				action={async () => {

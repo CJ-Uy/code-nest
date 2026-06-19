@@ -7,7 +7,9 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import * as schema from "@/db/schema";
 import {
 	seedAuditLogs,
+	seedAttendance,
 	seedEvents,
+	seedForumPosts,
 	seedLinkDailyStats,
 	seedMemberRoles,
 	seedMembers,
@@ -62,6 +64,8 @@ async function seedLocal() {
 	await insertChunks(db, schema.linkDailyStats, seedLinkDailyStats);
 	await insertChunks(db, schema.crsEvents, seedEvents);
 	await insertChunks(db, schema.retentionRecords, seedRetentionRecords);
+	await insertChunks(db, schema.crsAttendance, seedAttendance);
+	await insertChunks(db, schema.eventForumPosts, seedForumPosts);
 	await insertChunks(db, schema.surveys, seedSurveys);
 	await insertChunks(db, schema.surveyQuestions, seedSurveyQuestions);
 	await insertChunks(db, schema.surveyAssignments, seedSurveyAssignments);

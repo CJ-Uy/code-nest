@@ -1,7 +1,9 @@
 import type { InferInsertModel } from "drizzle-orm";
 import {
 	auditLogs,
+	crsAttendance,
 	crsEvents,
+	eventForumPosts,
 	linkDailyStats,
 	members,
 	memberRoles,
@@ -109,6 +111,31 @@ export const seedRetentionRecords: InferInsertModel<typeof retentionRecords>[] =
 		source: "manual",
 		recordedBy: "mem_demo_admin",
 		recordedAt: now,
+	},
+];
+
+export const seedAttendance: InferInsertModel<typeof crsAttendance>[] = [
+	{ eventId: "evt_demo", memberId: "mem_demo_member", scannedAt: later, scannedBy: "mem_demo_admin" },
+];
+
+export const seedForumPosts: InferInsertModel<typeof eventForumPosts>[] = [
+	{
+		id: "post_demo_open",
+		eventId: "evt_demo",
+		memberId: "mem_demo_member",
+		anonymous: false,
+		parentId: null,
+		body: "Great session, thanks!",
+		createdAt: later,
+	},
+	{
+		id: "post_demo_anon",
+		eventId: "evt_demo",
+		memberId: "mem_demo_member",
+		anonymous: true,
+		parentId: null,
+		body: "Could we get more practice cases?",
+		createdAt: later,
 	},
 ];
 
