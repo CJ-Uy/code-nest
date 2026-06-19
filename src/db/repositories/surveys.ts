@@ -17,6 +17,7 @@ import { generateResponseToken, hashResponseToken } from "@/lib/survey-token";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
 import type { AuditRepository } from "./audit";
+import { notify } from "./notifications";
 import { pageLimit } from "./types";
 
 type SurveyDb = DrizzleD1Database<typeof schema>;
@@ -118,6 +119,15 @@ export function createSurveysRepository(db: SurveyDb, audit: AuditRepository): S
 				category: "survey",
 				detail: `Assigned ${assignmentRows.length} members.`,
 			});
+			for (const memberId of drawn) {
+				await notify(db, {
+					memberId,
+					kind: "survey_assigned",
+					title: "Survey assigned",
+					body: "You were selected for a survey.",
+					href: `/portal/surveys/${input.surveyId}`,
+				});
+			}
 			return { assigned: assignmentRows.length, tokens };
 		},
 
