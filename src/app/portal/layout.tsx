@@ -1,45 +1,48 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LogOut, UserRound } from "lucide-react";
-import { signOut } from "@/auth";
-import { Button } from "@/components/ui/button";
+import { getRepositories } from "@/db";
+import { NotificationBell } from "@/components/portal/notification-bell";
+import { PortalShell } from "@/components/portal/portal-shell";
 import { getActor } from "@/server/auth/actor";
+import { markAllNotificationsReadAction, markNotificationReadAction } from "./notifications/actions";
 
 export const dynamic = "force-dynamic";
+
+function initialsFrom(name: string): string {
+	const parts = name.trim().split(/\s+/).slice(0, 2);
+	return parts.map((part) => part[0]?.toUpperCase() ?? "").join("") || "M";
+}
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
 	const actor = await getActor();
 	if (!actor) redirect("/signin");
 
+	const repositories = await getRepositories();
+	const [member, feed, unreadCount] = await Promise.all([
+		repositories.members.getById(actor, actor.memberId),
+		repositories.notifications.listFeed(actor, { limit: 10 }),
+		repositories.notifications.unreadCount(actor),
+	]);
+	if (!member) redirect("/signin");
+
+	const displayName = member.nickname ?? member.fullName ?? member.name ?? member.email;
+
+	// TODO(phase-8): load nav_pins via a navPins repository once Phase 8 adds it.
+	const navPins: { id: string; label: string; url: string }[] = [];
+
 	return (
-		<div className="min-h-screen bg-background text-foreground">
-			<header className="border-b border-border bg-card text-card-foreground">
-				<div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-					<Link className="font-heading text-2xl" href="/portal">
-						CODE Portal
-					</Link>
-					<div className="flex items-center gap-2">
-						<Button asChild size="sm" variant="ghost">
-							<Link href="/portal/profile">
-								<UserRound />
-								Profile
-							</Link>
-						</Button>
-						<form
-							action={async () => {
-								"use server";
-								await signOut({ redirectTo: "/" });
-							}}
-						>
-							<Button size="sm" type="submit" variant="outline">
-								<LogOut />
-								Sign out
-							</Button>
-						</form>
-					</div>
-				</div>
-			</header>
+		<PortalShell
+			member={{ displayName, initials: initialsFrom(displayName) }}
+			navPins={navPins}
+			bell={
+				<NotificationBell
+					items={feed}
+					unreadCount={unreadCount}
+					onMarkRead={markNotificationReadAction}
+					onMarkAllRead={markAllNotificationsReadAction}
+				/>
+			}
+		>
 			{children}
-		</div>
+		</PortalShell>
 	);
 }

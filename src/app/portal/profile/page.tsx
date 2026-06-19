@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { Save } from "lucide-react";
+import { LogOut, Save } from "lucide-react";
+import { signOut } from "@/auth";
 import { getRepositories } from "@/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,6 +49,18 @@ export default async function ProfilePage() {
 					</form>
 				</CardContent>
 			</Card>
+			<form
+				className="mt-6"
+				action={async () => {
+					"use server";
+					await signOut({ redirectTo: "/" });
+				}}
+			>
+				<Button type="submit" variant="outline">
+					<LogOut />
+					Sign out
+				</Button>
+			</form>
 		</main>
 	);
 }
