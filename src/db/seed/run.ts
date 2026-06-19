@@ -75,7 +75,8 @@ async function seedLocal() {
 async function main() {
 	if (target === "dev") {
 		console.log("Dev D1 seeding requires an explicit reviewed Wrangler command after migrations are applied.");
-		console.log("Use: pnpm exec wrangler d1 execute DB --env dev --remote --file <seed-sql-file>");
+		console.log("Run `pnpm db:seed:dev:export` to build .local/dev-seed.sql, then:");
+		console.log("pnpm exec wrangler d1 execute DB --env dev --remote --file .local/dev-seed.sql");
 		return;
 	}
 

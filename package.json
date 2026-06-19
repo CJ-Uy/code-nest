@@ -26,6 +26,7 @@
 		"db:migrate:prod": "wrangler d1 migrations apply code-nest-prod-db --remote",
 		"db:seed:local": "tsx src/db/seed/run.ts local",
 		"db:seed:dev": "tsx src/db/seed/run.ts dev",
+		"db:seed:dev:export": "tsx scripts/export-seed-sql.ts",
 		"db:studio": "drizzle-kit studio",
 		"check:shared-dev-note": "tsx scripts/check-shared-dev-note.ts",
 		"cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
