@@ -6,6 +6,7 @@ import type { EventType, RsvpState } from "@/db/schema";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
 import type { AuditRepository } from "./audit";
+import { notify } from "./notifications";
 import type { RetentionRepository } from "./retention";
 
 export type EventRecord = InferSelectModel<typeof crsEvents>;
@@ -132,6 +133,13 @@ export function createEventsRepository(db: Db, audit: AuditRepository, retention
 				.returning();
 			if (!event) throw new Error("Event not found.");
 			await audit.record(actor, { action: "event:approve", targetType: "event", targetId: eventId, category: "event" });
+			await notify(db, {
+				memberId: event.createdBy,
+				kind: "event_approved",
+				title: "Event approved",
+				body: `${event.title} is now on the calendar.`,
+				href: `/portal/calendar/${event.id}`,
+			});
 			return event;
 		},
 
@@ -189,6 +197,15 @@ export function createEventsRepository(db: Db, audit: AuditRepository, retention
 				points: event.points,
 				reason: `Attended ${event.title}`,
 			});
+			if (event.points) {
+				await notify(db, {
+					memberId: input.memberId,
+					kind: "points_awarded",
+					title: "Points awarded",
+					body: `You earned ${event.points} points for attending ${event.title}.`,
+					href: `/portal/events`,
+				});
+			}
 			await audit.record(actor, {
 				action: "event:scan_attendance",
 				targetType: "event",
