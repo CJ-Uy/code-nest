@@ -17,10 +17,13 @@ export default async function PortalLayout({ children }: { children: React.React
 	if (!actor) redirect("/signin");
 
 	const repositories = await getRepositories();
+	// notifications is unavailable through the shared-dev adapter until a future
+	// phase wires an internal proxy route for it; degrade to an empty feed
+	// instead of crashing every authed page.
 	const [member, feed, unreadCount] = await Promise.all([
 		repositories.members.getById(actor, actor.memberId),
-		repositories.notifications.listFeed(actor, { limit: 10 }),
-		repositories.notifications.unreadCount(actor),
+		repositories.notifications.listFeed(actor, { limit: 10 }).catch(() => []),
+		repositories.notifications.unreadCount(actor).catch(() => 0),
 	]);
 	if (!member) redirect("/signin");
 

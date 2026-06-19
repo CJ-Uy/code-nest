@@ -4,15 +4,26 @@ import { getRepositories } from "@/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard, RetentionProgress } from "@/components/portal/overview-metrics";
 import { getActor } from "@/server/auth/actor";
+import type { OverviewSummary } from "@/db/repositories/overview";
 
 export const dynamic = "force-dynamic";
+
+const EMPTY_SUMMARY: OverviewSummary = {
+	retention: { points: 0, retainedAt: null, termName: null },
+	pendingSurveys: 0,
+	upcomingEvents: 0,
+	linkClicks: 0,
+};
 
 export default async function PortalOverviewPage() {
 	const actor = await getActor();
 	if (!actor) redirect("/signin");
 
 	const repositories = await getRepositories();
-	const summary = await repositories.overview.getSummary(actor);
+	// overview is unavailable through the shared-dev adapter until a future
+	// phase wires an internal proxy route for it; degrade to zeroed metrics
+	// instead of crashing the page.
+	const summary = await repositories.overview.getSummary(actor).catch(() => EMPTY_SUMMARY);
 
 	return (
 		<div className="grid gap-5">
