@@ -49,12 +49,34 @@ export type LinksRepository = {
 };
 
 export type LinkDb = DrizzleD1Database<typeof schema>;
+export type LinkErrorCode = "not_found" | "not_authorized" | "validation";
+
+export class LinkRepositoryError extends Error {
+	constructor(
+		readonly code: LinkErrorCode,
+		message: string,
+	) {
+		super(message);
+		this.name = "LinkRepositoryError";
+	}
+}
+
+export function linkErrorStatus(error: unknown): number {
+	if (!(error instanceof LinkRepositoryError)) return 400;
+	if (error.code === "not_authorized") return 403;
+	if (error.code === "not_found") return 404;
+	return 400;
+}
+
+function linkError(code: LinkErrorCode, message: string): LinkRepositoryError {
+	return new LinkRepositoryError(code, message);
+}
 
 async function loadOwned(db: LinkDb, actor: Actor, id: string): Promise<ShortLink> {
 	const [link] = await db.select().from(shortLinks).where(eq(shortLinks.id, id)).limit(1);
-	if (!link) throw new Error("Link not found.");
+	if (!link) throw linkError("not_found", "Link not found.");
 	if (link.ownerMemberId !== actor.memberId && !can(actor, "link:moderate")) {
-		throw new Error("Not authorized to access this link.");
+		throw linkError("not_authorized", "Not authorized to access this link.");
 	}
 	return link;
 }
@@ -83,7 +105,7 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository): Links
 		},
 
 		async listAll(actor, input) {
-			if (!can(actor, "link:moderate")) throw new Error("Not authorized to list all links.");
+			if (!can(actor, "link:moderate")) throw linkError("not_authorized", "Not authorized to list all links.");
 			const page = ensurePage(input);
 			return db.select().from(shortLinks).orderBy(desc(shortLinks.createdAt)).limit(page.limit).offset(page.offset);
 		},
@@ -92,23 +114,23 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository): Links
 			const [link] = await db.select().from(shortLinks).where(eq(shortLinks.id, id)).limit(1);
 			if (!link) return null;
 			if (link.ownerMemberId !== actor.memberId && !can(actor, "link:moderate")) {
-				throw new Error("Not authorized to read this link.");
+				throw linkError("not_authorized", "Not authorized to read this link.");
 			}
 			return link;
 		},
 
 		async create(actor, input) {
 			const slug = normalizeSlug(input.slug);
-			if (!isValidSlugFormat(slug)) throw new Error("Invalid slug format.");
-			if (!isValidDestinationUrl(input.destinationUrl)) throw new Error("Invalid destination URL.");
+			if (!isValidSlugFormat(slug)) throw linkError("validation", "Invalid slug format.");
+			if (!isValidDestinationUrl(input.destinationUrl)) throw linkError("validation", "Invalid destination URL.");
 			const title = input.title.trim();
-			if (!title) throw new Error("A link title is required.");
+			if (!title) throw linkError("validation", "A link title is required.");
 
 			const defaultReserved: readonly string[] = RESERVED_SLUG_DEFAULTS;
 			const [reserved] = await db.select().from(reservedSlugs).where(eq(reservedSlugs.slug, slug)).limit(1);
-			if (defaultReserved.includes(slug) || reserved) throw new Error("That slug is reserved.");
+			if (defaultReserved.includes(slug) || reserved) throw linkError("validation", "That slug is reserved.");
 			const [existing] = await db.select().from(shortLinks).where(eq(shortLinks.slug, slug)).limit(1);
-			if (existing) throw new Error("That slug is already taken.");
+			if (existing) throw linkError("validation", "That slug is already taken.");
 
 			const [link] = await db
 				.insert(shortLinks)
@@ -122,12 +144,12 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository): Links
 			const current = await loadOwned(db, actor, id);
 			const patch: UpdateLinkInput & { updatedAt: Date } = { updatedAt: new Date() };
 			if (input.destinationUrl !== undefined) {
-				if (!isValidDestinationUrl(input.destinationUrl)) throw new Error("Invalid destination URL.");
+				if (!isValidDestinationUrl(input.destinationUrl)) throw linkError("validation", "Invalid destination URL.");
 				patch.destinationUrl = input.destinationUrl;
 			}
 			if (input.title !== undefined) {
 				const title = input.title.trim();
-				if (!title) throw new Error("A link title is required.");
+				if (!title) throw linkError("validation", "A link title is required.");
 				patch.title = title;
 			}
 			if (input.previewTitle !== undefined) patch.previewTitle = input.previewTitle;

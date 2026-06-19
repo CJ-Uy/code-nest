@@ -1,4 +1,5 @@
 import { linksContract } from "@/db/contract/links";
+import { linkErrorStatus } from "@/db/repositories/links";
 import type { Repositories } from "@/db/repositories";
 import type { Actor } from "@/server/auth/permissions";
 
@@ -9,8 +10,7 @@ type LinksHandlerDependencies = {
 
 function fail(error: unknown): Response {
 	const message = error instanceof Error ? error.message : "Request failed.";
-	const status = message.startsWith("Not authorized") ? 403 : 400;
-	return Response.json({ error: message }, { status });
+	return Response.json({ error: message }, { status: linkErrorStatus(error) });
 }
 
 export function createLinksHandlers(deps: LinksHandlerDependencies) {

@@ -2,8 +2,9 @@ import type { DrizzleD1Database } from "drizzle-orm/d1";
 import * as schema from "@/db/schema";
 import { linksContract } from "@/db/contract/links";
 import { createAuditRepository } from "@/db/repositories/audit";
-import { createLinksRepository } from "@/db/repositories/links";
+import { createLinksRepository, linkErrorStatus } from "@/db/repositories/links";
 import type { DeployEnv } from "@/server/env";
+import { buildRedirectResponse } from "@/server/links/redirect";
 import { getInternalCorsHeaders } from "./cors";
 import { resolveSharedActor } from "./shared-actor";
 
@@ -44,7 +45,7 @@ export function createLinksInternalHandlers({ db, deployEnv, allowedOrigins = []
 
 	function fail(error: unknown, headers: Headers | undefined): Response {
 		const message = error instanceof Error ? error.message : "Internal request failed.";
-		return Response.json({ error: message }, { status: message.startsWith("Not authorized") ? 403 : 400, headers });
+		return Response.json({ error: message }, { status: linkErrorStatus(error), headers });
 	}
 
 	return {
@@ -115,6 +116,28 @@ export function createLinksInternalHandlers({ db, deployEnv, allowedOrigins = []
 			} catch (error) {
 				return fail(error, headers);
 			}
+		},
+
+		async redirect(request: Request, slug: string): Promise<Response> {
+			if (deployEnv !== "dev") return new Response("Not found", { status: 404 });
+			const { early } = await guard(request);
+			if (early) return early;
+			const url = new URL(request.url);
+			const redirectRequest = new Request(new URL(`/l/${encodeURIComponent(slug)}`, url.origin), request);
+			let background: Promise<unknown> = Promise.resolve();
+			const response = await buildRedirectResponse(
+				{
+					resolveForRedirect: (value) => repository.resolveForRedirect(value),
+					recordClick: (linkId, input) => repository.recordClick(linkId, input),
+					scheduleBackground: (task) => {
+						background = task;
+					},
+					previewImageBaseUrl: url.origin,
+				},
+				redirectRequest,
+			);
+			await background;
+			return response;
 		},
 	};
 }

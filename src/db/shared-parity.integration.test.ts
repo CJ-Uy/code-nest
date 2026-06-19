@@ -1,4 +1,5 @@
 import { env } from "cloudflare:test";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { beforeEach, describe, expect, it } from "vitest";
 import * as schema from "@/db/schema";
@@ -249,6 +250,38 @@ describe("shared links parity", () => {
 		const handlers = createLinksInternalHandlers({ db, deployEnv: "prod" });
 		const response = await handlers.collection(new Request("https://prod.example/internal/links"));
 		expect(response.status).toBe(404);
+	});
+
+	it("returns 404 for missing link stats over the internal proxy", async () => {
+		const db = drizzle(env.DB, { schema });
+		const handlers = createLinksInternalHandlers({ db, deployEnv: "dev" });
+		const response = await handlers.stats(
+			new Request("https://dev.example/internal/links/missing/stats", { headers: { authorization: "Bearer links-token" } }),
+			"missing",
+		);
+		expect(response.status).toBe(404);
+	});
+
+	it("resolves shared redirect requests and records clicks through the internal links handler", async () => {
+		const db = drizzle(env.DB, { schema });
+		await db.insert(schema.shortLinks).values({
+			id: "lnk_shared_redirect",
+			slug: "welcome",
+			destinationUrl: "https://example.com/dest",
+			title: "Welcome",
+			ownerMemberId: "mem_links_owner",
+		});
+		const handlers = createLinksInternalHandlers({ db, deployEnv: "dev" });
+
+		const response = await handlers.redirect(
+			new Request("https://dev.example/internal/links/redirect/welcome", { headers: { authorization: "Bearer links-token" } }),
+			"welcome",
+		);
+
+		expect(response.status).toBe(302);
+		expect(response.headers.get("location")).toBe("https://example.com/dest");
+		const [link] = await db.select().from(schema.shortLinks).where(eq(schema.shortLinks.id, "lnk_shared_redirect"));
+		expect(link.clickCount).toBe(1);
 	});
 });
 

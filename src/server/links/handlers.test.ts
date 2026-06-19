@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { LinkRepositoryError } from "@/db/repositories/links";
 import type { Actor } from "@/server/auth/permissions";
 import { createLinksHandlers } from "./handlers";
 
@@ -47,7 +48,7 @@ describe("links handlers", () => {
 	it("returns 403 when the repository rejects on authorization", async () => {
 		const deps = depsWith({
 			update: vi.fn(async () => {
-				throw new Error("Not authorized to access this link.");
+				throw new LinkRepositoryError("not_authorized", "Not authorized to access this link.");
 			}),
 		});
 		const handlers = createLinksHandlers(deps);
@@ -60,6 +61,24 @@ describe("links handlers", () => {
 			"lnk_1",
 		);
 		expect(res.status).toBe(403);
+	});
+
+	it("returns 404 when the repository reports a missing link", async () => {
+		const deps = depsWith({
+			update: vi.fn(async () => {
+				throw new LinkRepositoryError("not_found", "Link not found.");
+			}),
+		});
+		const handlers = createLinksHandlers(deps);
+		const res = await handlers.item(
+			new Request("https://app/api/links/missing", {
+				method: "PATCH",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({ title: "x" }),
+			}),
+			"missing",
+		);
+		expect(res.status).toBe(404);
 	});
 
 	it("deletes via the item handler", async () => {
