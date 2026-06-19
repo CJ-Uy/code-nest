@@ -1,0 +1,79 @@
+"use client";
+
+import { useActionState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { recordRetentionAction, type RecordRetentionResult } from "./actions";
+import { MemberChecklist, type MemberOption } from "./member-checklist";
+
+type Option = { id: string; label: string };
+
+export function RetentionForm({
+	members,
+	termOptions,
+	eventOptions,
+}: {
+	members: MemberOption[];
+	termOptions: Option[];
+	eventOptions: Option[];
+}) {
+	const [state, formAction, pending] = useActionState<RecordRetentionResult | null, FormData>(
+		recordRetentionAction,
+		null,
+	);
+
+	return (
+		<form action={formAction} className="grid gap-6">
+			<fieldset className="grid gap-2">
+				<legend className="text-sm font-medium">Members</legend>
+				<MemberChecklist members={members} />
+			</fieldset>
+
+			<label className="grid gap-2 text-sm font-medium">
+				Term
+				<Select name="termId" defaultValue={termOptions[0]?.id ?? ""} required>
+					{termOptions.map((term) => (
+						<option key={term.id} value={term.id}>
+							{term.label}
+						</option>
+					))}
+				</Select>
+			</label>
+
+			<label className="grid gap-2 text-sm font-medium">
+				Event (optional)
+				<Select name="eventId" defaultValue="">
+					<option value="">No event</option>
+					{eventOptions.map((event) => (
+						<option key={event.id} value={event.id}>
+							{event.label}
+						</option>
+					))}
+				</Select>
+			</label>
+
+			<label className="grid gap-2 text-sm font-medium">
+				Points (optional, may be negative)
+				<Input name="points" type="number" inputMode="numeric" step="1" placeholder="Leave blank for none" />
+			</label>
+
+			<label className="grid gap-2 text-sm font-medium">
+				Reason
+				<Textarea name="reason" required maxLength={500} placeholder="Submitted the required medical waiver" />
+			</label>
+
+			{state && !state.ok ? <p className="text-sm text-destructive">{state.error}</p> : null}
+			{state && state.ok ? (
+				<p className="text-sm text-emerald-600">Recorded {state.count} retention record(s).</p>
+			) : null}
+
+			<div>
+				<Button type="submit" disabled={pending}>
+					{pending ? "Recording..." : "Record retention"}
+				</Button>
+			</div>
+		</form>
+	);
+}

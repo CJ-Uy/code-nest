@@ -8,6 +8,7 @@ import { createMembersRepository } from "./members";
 import { createNotificationsRepository, type NotificationsRepository } from "./notifications";
 import { createOverviewRepository, type OverviewRepository } from "./overview";
 import { createRetentionRepository } from "./retention";
+import { createUnavailableRetentionRepository } from "./retention-unavailable";
 import { createSessionsRepository } from "./sessions";
 import { createSurveysRepository } from "./surveys";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
@@ -83,7 +84,7 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 		events: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createEventsRepository>,
 		eventMedia: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createEventMediaRepository>,
 		eventForum: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createEventForumRepository>,
-		retention: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createRetentionRepository>,
+		retention: createUnavailableRetentionRepository(),
 		surveys: createSurveysRepository(),
 		notifications: createUnavailableNotificationsRepository(),
 		overview: createUnavailableOverviewRepository(),

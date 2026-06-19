@@ -19,6 +19,7 @@ function makeRepo() {
 
 describe("retention repository on D1", () => {
 	beforeEach(async () => {
+		await env.DB.prepare("DELETE FROM audit_logs").run();
 		await env.DB.prepare("DELETE FROM retention_records").run();
 		await env.DB.prepare("DELETE FROM crs_events").run();
 		await env.DB.prepare("DELETE FROM terms").run();
@@ -128,5 +129,87 @@ describe("retention repository on D1", () => {
 		const board = await repo.leaderboard(retentionAdmin, { termId: "term_1" });
 		expect(board.map((row) => row.memberId)).toEqual(["mem_b", "mem_a"]);
 		expect(board[0].totalPoints).toBe(15);
+	});
+
+	it("records one manual entry across multiple members in a single batch", async () => {
+		const { db, repo } = makeRepo();
+
+		const result = await repo.createManual(retentionAdmin, {
+			memberIds: ["mem_a", "mem_b"],
+			termId: "term_1",
+			eventId: null,
+			points: null,
+			reason: "Submitted the required medical waiver",
+		});
+
+		const rows = await db.select().from(schema.retentionRecords);
+		expect(result.recordIds).toHaveLength(2);
+		expect(rows).toHaveLength(2);
+		expect(rows.every((row) => row.source === "manual")).toBe(true);
+		expect(rows.every((row) => row.points === null)).toBe(true);
+		expect(rows.every((row) => row.recordedBy === "mem_admin")).toBe(true);
+		expect(rows.map((row) => row.memberId).sort()).toEqual(["mem_a", "mem_b"]);
+	});
+
+	it("stores a negative manual point value as a deduction", async () => {
+		const { db, repo } = makeRepo();
+
+		await repo.createManual(retentionAdmin, {
+			memberIds: ["mem_a"],
+			termId: "term_1",
+			eventId: null,
+			points: -5,
+			reason: "Logged violation",
+		});
+
+		const [row] = await db.select().from(schema.retentionRecords);
+		expect(row.points).toBe(-5);
+	});
+
+	it("writes one manual retention audit row per member", async () => {
+		const { db, repo } = makeRepo();
+
+		await repo.createManual(retentionAdmin, {
+			memberIds: ["mem_a", "mem_b"],
+			termId: "term_1",
+			eventId: null,
+			points: 3,
+			reason: "Attended makeup session",
+		});
+
+		const audits = await db.select().from(schema.auditLogs);
+		expect(audits).toHaveLength(2);
+		expect(audits.every((row) => row.category === "retention")).toBe(true);
+		expect(audits.every((row) => row.action === "retention:record_manual")).toBe(true);
+	});
+
+	it("rejects a manual entry from an actor without the retention:record permission", async () => {
+		const { db, repo } = makeRepo();
+
+		await expect(
+			repo.createManual(plainMember, {
+				memberIds: ["mem_a"],
+				termId: "term_1",
+				eventId: null,
+				points: null,
+				reason: "Nope",
+			}),
+		).rejects.toThrow("Not authorized");
+		expect(await db.select().from(schema.retentionRecords)).toHaveLength(0);
+	});
+
+	it("rejects an unknown manual term and writes nothing", async () => {
+		const { db, repo } = makeRepo();
+
+		await expect(
+			repo.createManual(retentionAdmin, {
+				memberIds: ["mem_a"],
+				termId: "term_missing",
+				eventId: null,
+				points: null,
+				reason: "Bad term",
+			}),
+		).rejects.toThrow("Term not found");
+		expect(await db.select().from(schema.retentionRecords)).toHaveLength(0);
 	});
 });

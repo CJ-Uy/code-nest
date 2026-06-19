@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { createManualRetentionRecordInputSchema } from "@/db/types";
 import { operation } from "./common";
 
 export const retentionRecordOutputSchema = z.object({
@@ -55,5 +56,12 @@ export const retentionContract = {
 		output: z.object({ rows: z.array(leaderboardRowOutputSchema) }),
 		auth: "member",
 		sharedDev: "allow",
+	}),
+	createManual: operation({
+		input: createManualRetentionRecordInputSchema,
+		output: z.object({ recordIds: z.array(z.string()) }),
+		auth: "admin",
+		permission: "retention:record",
+		sharedDev: "deny",
 	}),
 };

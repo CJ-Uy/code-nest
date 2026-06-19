@@ -4,6 +4,7 @@ import { createId } from "@/lib/ids";
 import { members, retentionRecords, terms } from "@/db/schema";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
+import type { CreateManualRetentionRecordInput } from "../types";
 import type { AuditRepository } from "./audit";
 
 export type RetentionRecord = InferSelectModel<typeof retentionRecords>;
@@ -34,6 +35,7 @@ export type RetentionRepository = {
 	listForMember(actor: Actor, input: ListForMemberInput): Promise<RetentionRecord[]>;
 	getMemberTermSummary(actor: Actor, input: MemberTermSummaryInput): Promise<RetentionSummary>;
 	leaderboard(actor: Actor, input: LeaderboardInput): Promise<LeaderboardRow[]>;
+	createManual(actor: Actor, input: CreateManualRetentionRecordInput): Promise<{ recordIds: string[] }>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -134,6 +136,46 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				.orderBy(desc(sql`coalesce(sum(${retentionRecords.points}), 0)`))
 				.limit(Math.min(input.limit ?? 50, 100))
 				.offset(input.offset ?? 0);
+		},
+
+		async createManual(actor, input) {
+			if (!can(actor, "retention:record")) {
+				throw new Error("Not authorized to record retention records.");
+			}
+
+			const [term] = await db.select().from(terms).where(eq(terms.id, input.termId)).limit(1);
+			if (!term) {
+				throw new Error("Term not found.");
+			}
+
+			const recordedAt = new Date();
+			const rows = input.memberIds.map((memberId) => ({
+				id: createId("ret"),
+				memberId,
+				termId: input.termId,
+				eventId: input.eventId,
+				points: input.points,
+				reason: input.reason,
+				source: "manual" as const,
+				recordedBy: actor.memberId,
+				recordedAt,
+			}));
+
+			const inserts = rows.map((row) => db.insert(retentionRecords).values(row));
+			await db.batch(inserts);
+
+			const pointsLabel = input.points === null ? "no points" : `${input.points} points`;
+			for (const row of rows) {
+				await audit.record(actor, {
+					action: "retention:record_manual",
+					targetType: "member",
+					targetId: row.memberId,
+					category: "retention",
+					detail: `${pointsLabel}: ${input.reason}`,
+				});
+			}
+
+			return { recordIds: rows.map((row) => row.id) };
 		},
 	};
 }
