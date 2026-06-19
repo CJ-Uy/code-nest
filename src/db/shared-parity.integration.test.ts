@@ -10,6 +10,7 @@ import { createMembersRepository } from "./repositories/members";
 import { createMembersInternalHandlers } from "@/server/internal/members";
 import type { Actor } from "@/server/auth/permissions";
 import { createAuthInternalHandlers } from "@/server/internal/auth";
+import { createLinksInternalHandlers } from "@/server/internal/links";
 import { createUploadsInternalHandlers } from "@/server/internal/uploads";
 import type { StorageAdapter } from "@/storage/types";
 
@@ -200,6 +201,54 @@ describe("shared members parity", () => {
 
 		expect(unauthenticated.status).toBe(401);
 		expect(authenticated.status).toBe(403);
+	});
+});
+
+describe("shared links parity", () => {
+	beforeEach(async () => {
+		await env.DB.batch([
+			env.DB.prepare("DELETE FROM link_daily_stats"),
+			env.DB.prepare("DELETE FROM short_links"),
+			env.DB.prepare("DELETE FROM shared_dev_tokens"),
+			env.DB.prepare("DELETE FROM member_roles"),
+			env.DB.prepare("DELETE FROM roles"),
+			env.DB.prepare("DELETE FROM members"),
+		]);
+		const db = drizzle(env.DB, { schema });
+		await db.insert(members).values({ id: "mem_links_owner", email: "links@example.com", name: "Links Owner" });
+		await db.insert(sharedDevTokens).values({
+			tokenHash: await hashToken("links-token"),
+			memberId: "mem_links_owner",
+			label: "Links token",
+		});
+	});
+
+	it("lists a member's own links over the proxy and refuses create in shared mode", async () => {
+		const db = drizzle(env.DB, { schema });
+		const handlers = createLinksInternalHandlers({ db, deployEnv: "dev" });
+
+		const created = await handlers.collection(
+			new Request("https://dev.example/internal/links", {
+				method: "POST",
+				headers: { authorization: "Bearer links-token", "content-type": "application/json" },
+				body: JSON.stringify({ slug: "welcome", destinationUrl: "https://example.com", title: "Welcome" }),
+			}),
+		);
+		expect(created.status).toBe(403);
+		expect(await created.json()).toEqual({ error: "Operation is disabled in shared development." });
+
+		const listed = await handlers.collection(
+			new Request("https://dev.example/internal/links", { headers: { authorization: "Bearer links-token" } }),
+		);
+		expect(listed.status).toBe(200);
+		expect(await listed.json()).toEqual({ links: [] });
+	});
+
+	it("returns 404 outside the dev Worker", async () => {
+		const db = drizzle(env.DB, { schema });
+		const handlers = createLinksInternalHandlers({ db, deployEnv: "prod" });
+		const response = await handlers.collection(new Request("https://prod.example/internal/links"));
+		expect(response.status).toBe(404);
 	});
 });
 
