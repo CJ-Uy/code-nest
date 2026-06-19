@@ -1,0 +1,72 @@
+import { describe, expect, it, vi } from "vitest";
+import type { Actor } from "@/server/auth/permissions";
+import { createLinksHandlers } from "./handlers";
+
+const owner: Actor = { memberId: "mem_owner", roles: ["member"] };
+
+function depsWith(overrides: Record<string, unknown>) {
+	const repo = {
+		listOwn: vi.fn(async () => []),
+		listAll: vi.fn(async () => []),
+		getById: vi.fn(async () => null),
+		create: vi.fn(async () => ({ id: "lnk_1", slug: "welcome" })),
+		update: vi.fn(async () => ({ id: "lnk_1", slug: "welcome", title: "Updated" })),
+		remove: vi.fn(async () => {}),
+		getStats: vi.fn(async () => ({ link: { id: "lnk_1" }, series: [], referrers: [], devices: [] })),
+		...overrides,
+	};
+	return {
+		getActor: async () => owner as Actor | null,
+		getRepositories: async () => ({ links: repo }) as never,
+		repo,
+	};
+}
+
+describe("links handlers", () => {
+	it("rejects an unauthenticated collection request", async () => {
+		const deps = depsWith({});
+		const handlers = createLinksHandlers({ getActor: async () => null, getRepositories: deps.getRepositories });
+		const res = await handlers.collection(new Request("https://app/api/links", { method: "GET" }));
+		expect(res.status).toBe(401);
+	});
+
+	it("creates a link from a POST body", async () => {
+		const deps = depsWith({});
+		const handlers = createLinksHandlers(deps);
+		const res = await handlers.collection(
+			new Request("https://app/api/links", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({ slug: "welcome", destinationUrl: "https://example.com", title: "Welcome" }),
+			}),
+		);
+		expect(res.status).toBe(201);
+		expect(deps.repo.create).toHaveBeenCalledOnce();
+	});
+
+	it("returns 403 when the repository rejects on authorization", async () => {
+		const deps = depsWith({
+			update: vi.fn(async () => {
+				throw new Error("Not authorized to access this link.");
+			}),
+		});
+		const handlers = createLinksHandlers(deps);
+		const res = await handlers.item(
+			new Request("https://app/api/links/lnk_1", {
+				method: "PATCH",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({ title: "x" }),
+			}),
+			"lnk_1",
+		);
+		expect(res.status).toBe(403);
+	});
+
+	it("deletes via the item handler", async () => {
+		const deps = depsWith({});
+		const handlers = createLinksHandlers(deps);
+		const res = await handlers.item(new Request("https://app/api/links/lnk_1", { method: "DELETE" }), "lnk_1");
+		expect(res.status).toBe(204);
+		expect(deps.repo.remove).toHaveBeenCalledWith(owner, "lnk_1");
+	});
+});
