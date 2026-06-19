@@ -16,6 +16,7 @@ import {
 	termMemberRoster,
 	terms,
 } from "@/db/schema";
+import { RESERVED_SLUG_DEFAULTS } from "@/lib/links";
 
 const now = new Date("2026-06-18T00:00:00.000Z");
 const later = new Date("2026-07-10T10:00:00.000Z");
@@ -46,7 +47,7 @@ export const seedTermMemberRoster: InferInsertModel<typeof termMemberRoster>[] =
 	{ termId: "term_2026_1", email: "member@example.com", memberId: "mem_demo_member", addedBy: "mem_demo_admin", addedAt: now },
 ];
 
-export const seedReservedSlugs: InferInsertModel<typeof reservedSlugs>[] = [{ slug: "portal" }, { slug: "admin" }, { slug: "api" }];
+export const seedReservedSlugs: InferInsertModel<typeof reservedSlugs>[] = RESERVED_SLUG_DEFAULTS.map((slug) => ({ slug }));
 
 export const seedShortLinks: InferInsertModel<typeof shortLinks>[] = [
 	{
@@ -55,12 +56,17 @@ export const seedShortLinks: InferInsertModel<typeof shortLinks>[] = [
 		destinationUrl: "https://example.com/code",
 		title: "Welcome link",
 		ownerMemberId: "mem_demo_admin",
-		clickCount: 5,
+		clickCount: 9,
+		previewTitle: "Welcome to CODE",
+		previewDescription: "Ateneo CODE member resources and sign-in.",
+		previewImageKey: null,
 	},
 ];
 
 export const seedLinkDailyStats: InferInsertModel<typeof linkDailyStats>[] = [
-	{ linkId: "lnk_demo", date: "2026-06-18", referrerBucket: "direct", deviceBucket: "desktop", count: 5 },
+	{ linkId: "lnk_demo", date: "2026-06-17", referrerBucket: "direct", deviceBucket: "desktop", count: 3 },
+	{ linkId: "lnk_demo", date: "2026-06-18", referrerBucket: "www.facebook.com", deviceBucket: "mobile", count: 4 },
+	{ linkId: "lnk_demo", date: "2026-06-18", referrerBucket: "direct", deviceBucket: "desktop", count: 2 },
 ];
 
 export const seedEvents: InferInsertModel<typeof crsEvents>[] = [
