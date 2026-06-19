@@ -18,6 +18,39 @@ export const eventOutputSchema = z.object({
 	createdAt: z.coerce.date(),
 });
 
+export const attendanceOutputSchema = z.object({
+	memberId: z.string(),
+	fullName: z.string().nullable(),
+	name: z.string().nullable(),
+	scannedAt: z.coerce.date(),
+	scannedBy: z.string(),
+});
+
+const forumAuthorOutputSchema = z.object({
+	memberId: z.string(),
+	fullName: z.string().nullable(),
+	name: z.string().nullable(),
+});
+
+export const forumPostOutputSchema = z.object({
+	id: z.string(),
+	eventId: z.string(),
+	parentId: z.string().nullable(),
+	body: z.string(),
+	anonymous: z.boolean(),
+	createdAt: z.coerce.date(),
+	author: forumAuthorOutputSchema.nullable(),
+});
+
+export const mediaOutputSchema = z.object({
+	id: z.string(),
+	eventId: z.string(),
+	r2Key: z.string(),
+	caption: z.string().nullable(),
+	uploadedBy: z.string(),
+	createdAt: z.coerce.date(),
+});
+
 export const createEventInputSchema = z.object({
 	title: z.string().trim().min(1).max(160),
 	type: z.enum(["official", "casual", "birthday"]),
@@ -27,6 +60,19 @@ export const createEventInputSchema = z.object({
 	endsAt: z.coerce.date().nullable().default(null),
 	points: z.number().int().min(-100).max(100).nullable().default(null),
 	capacity: z.number().int().min(1).max(100000).nullable().default(null),
+});
+
+export const postForumInputSchema = z.object({
+	eventId: z.string().min(1),
+	body: z.string().trim().min(1).max(4000),
+	anonymous: z.boolean().default(false),
+	parentId: z.string().min(1).nullable().default(null),
+});
+
+export const addMediaInputSchema = z.object({
+	eventId: z.string().min(1),
+	r2Key: z.string().min(1).max(512),
+	caption: z.string().trim().max(280).nullable().default(null),
 });
 
 export const eventsContract = {
@@ -90,6 +136,49 @@ export const eventsContract = {
 		}),
 		auth: "admin",
 		permission: "points:assign",
+		sharedDev: "allow",
+	}),
+	listAttendance: operation({
+		input: z.object({ eventId: z.string().min(1) }),
+		output: z.object({ attendance: z.array(attendanceOutputSchema) }),
+		auth: "admin",
+		permission: "points:assign",
+		sharedDev: "allow",
+	}),
+	post: operation({
+		input: postForumInputSchema,
+		output: z.object({ post: forumPostOutputSchema }),
+		auth: "member",
+		sharedDev: "allow",
+	}),
+	listForumPosts: operation({
+		input: z.object({
+			eventId: z.string().min(1),
+			limit: z.number().int().min(1).max(100).default(100),
+			offset: z.number().int().min(0).default(0),
+		}),
+		output: z.object({ posts: z.array(forumPostOutputSchema) }),
+		auth: "member",
+		sharedDev: "allow",
+	}),
+	revealAuthor: operation({
+		input: z.object({ postId: z.string().min(1) }),
+		output: z.object({ author: forumAuthorOutputSchema }),
+		auth: "admin",
+		permission: "member:manage",
+		sharedDev: "deny",
+	}),
+	addMedia: operation({
+		input: addMediaInputSchema,
+		output: z.object({ media: mediaOutputSchema }),
+		auth: "admin",
+		permission: "event:approve",
+		sharedDev: "deny",
+	}),
+	listMedia: operation({
+		input: z.object({ eventId: z.string().min(1) }),
+		output: z.object({ media: z.array(mediaOutputSchema) }),
+		auth: "member",
 		sharedDev: "allow",
 	}),
 };

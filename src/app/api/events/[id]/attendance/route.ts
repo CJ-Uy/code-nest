@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
 import { getRepositories } from "@/db";
 import { getActor } from "@/server/auth/actor";
+import { getAppConfig } from "@/server/env";
+import { proxySharedApiRequest } from "@/server/shared-api";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+	const config = getAppConfig();
+	const { id } = await params;
+	if (config.APP_ENV === "shared") {
+		return proxySharedApiRequest(request, `/internal/events?op=listAttendance&eventId=${encodeURIComponent(id)}`);
+	}
 	const actor = await getActor();
 	if (!actor) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-	const { id } = await params;
 	try {
 		const repositories = await getRepositories();
 		const attendance = await repositories.events.listAttendance(actor, id);

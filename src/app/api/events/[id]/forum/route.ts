@@ -4,6 +4,7 @@ import { getRepositories } from "@/db";
 import { getActor } from "@/server/auth/actor";
 import { getAppConfig } from "@/server/env";
 import { assertSameOrigin } from "@/server/http/origin";
+import { proxySharedApiRequest } from "@/server/shared-api";
 
 const bodySchema = z.object({
 	body: z.string().trim().min(1).max(4000),
@@ -11,10 +12,14 @@ const bodySchema = z.object({
 	parentId: z.string().min(1).nullable().default(null),
 });
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+	const config = getAppConfig();
+	const { id } = await params;
+	if (config.APP_ENV === "shared") {
+		return proxySharedApiRequest(request, `/internal/events?op=listForumPosts&eventId=${encodeURIComponent(id)}`);
+	}
 	const actor = await getActor();
 	if (!actor) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-	const { id } = await params;
 	try {
 		const repositories = await getRepositories();
 		const posts = await repositories.eventForum.listForEvent(actor, id);
@@ -32,9 +37,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 	} catch {
 		return NextResponse.json({ error: "Cross-origin request rejected." }, { status: 403 });
 	}
+	const { id } = await params;
+	if (config.APP_ENV === "shared") {
+		return proxySharedApiRequest(request, `/internal/events?op=post&eventId=${encodeURIComponent(id)}`);
+	}
 	const actor = await getActor();
 	if (!actor) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-	const { id } = await params;
 	try {
 		const input = bodySchema.parse(await request.json());
 		const repositories = await getRepositories();

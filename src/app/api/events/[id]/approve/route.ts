@@ -14,7 +14,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 	}
 	const { id } = await params;
 	if (config.APP_ENV === "shared") {
-		return proxySharedApiRequest(request, "/internal/events?op=approve");
+		return proxySharedApiRequest(request, `/internal/events?op=approve&eventId=${encodeURIComponent(id)}`);
 	}
 	const actor = await getActor();
 	if (!actor) return NextResponse.json({ error: "Authentication required." }, { status: 401 });

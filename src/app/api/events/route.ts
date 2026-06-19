@@ -6,7 +6,9 @@ import { getAppConfig } from "@/server/env";
 import { assertSameOrigin } from "@/server/http/origin";
 import { proxySharedApiRequest } from "@/server/shared-api";
 
-export async function GET() {
+export async function GET(request: Request) {
+	const config = getAppConfig();
+	if (config.APP_ENV === "shared") return proxySharedApiRequest(request, "/internal/events");
 	const actor = await getActor();
 	if (!actor) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 	try {
