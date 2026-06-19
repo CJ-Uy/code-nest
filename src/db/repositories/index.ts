@@ -3,30 +3,63 @@ import { createCalendarRepository } from "./calendar";
 import { createEventsRepository } from "./events";
 import { createLinksRepository } from "./links";
 import { createMembersRepository } from "./members";
-import { createNotificationsRepository } from "./notifications";
+import { createNotificationsRepository, type NotificationsRepository } from "./notifications";
+import { createOverviewRepository, type OverviewRepository } from "./overview";
 import { createRetentionRepository } from "./retention";
 import { createSessionsRepository } from "./sessions";
 import { createSurveysRepository } from "./surveys";
+import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type { MemberDb } from "./members";
 import type { AuditDb } from "./audit";
+import type { getDb } from "../client";
+import type * as schema from "../schema";
 import type { DatabaseAdapter } from "../types";
 
-export function createDrizzleRepositories(db: MemberDb & AuditDb) {
+type DrizzleDb = ReturnType<typeof getDb>;
+
+export function createDrizzleRepositories(db: DrizzleDb) {
 	const audit = createAuditRepository(db);
+	// getDb() is typed as the union of the sync better-sqlite3 and async D1
+	// Drizzle clients. The notifications/overview repos type their handle as the
+	// async D1 client (what production and the tests run on); narrow once here,
+	// mirroring the existing members cast. The local handle stays compatible at
+	// runtime.
+	const d1 = db as unknown as DrizzleD1Database<typeof schema>;
 	return {
-		members: createMembersRepository(db, audit),
+		members: createMembersRepository(db as unknown as MemberDb & AuditDb, audit),
 		sessions: createSessionsRepository(),
 		links: createLinksRepository(),
 		events: createEventsRepository(),
 		retention: createRetentionRepository(),
 		surveys: createSurveysRepository(),
-		notifications: createNotificationsRepository(),
+		notifications: createNotificationsRepository(d1),
+		overview: createOverviewRepository(d1),
 		calendar: createCalendarRepository(),
 		audit,
 	};
 }
 
 export type Repositories = ReturnType<typeof createDrizzleRepositories>;
+
+function createUnavailableNotificationsRepository(): NotificationsRepository {
+	const unavailable = () => {
+		throw new Error("Notifications are unavailable through this repository adapter.");
+	};
+	return {
+		listFeed: unavailable,
+		unreadCount: unavailable,
+		markRead: unavailable,
+		markAllRead: unavailable,
+	};
+}
+
+function createUnavailableOverviewRepository(): OverviewRepository {
+	return {
+		getSummary() {
+			throw new Error("Overview is unavailable through this repository adapter.");
+		},
+	};
+}
 
 export function createSharedRepositories(adapter: DatabaseAdapter): Repositories {
 	const audit = createUnavailableAuditRepository();
@@ -42,7 +75,8 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 		events: createEventsRepository(),
 		retention: createRetentionRepository(),
 		surveys: createSurveysRepository(),
-		notifications: createNotificationsRepository(),
+		notifications: createUnavailableNotificationsRepository(),
+		overview: createUnavailableOverviewRepository(),
 		calendar: createCalendarRepository(),
 		audit,
 	};

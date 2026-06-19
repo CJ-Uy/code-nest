@@ -1,10 +1,16 @@
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { notifications } from "@/db/schema";
 import { createId } from "@/lib/ids";
+import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type { Actor } from "@/server/auth/permissions";
-import type { getDb } from "@/db/client";
+import type * as schema from "@/db/schema";
 
-type Db = ReturnType<typeof getDb>;
+// The repository registry passes the getDb() handle, whose static type is the
+// union of the sync better-sqlite3 and async D1 Drizzle databases. That union
+// does not unify the query-builder overloads, so we narrow to the async D1
+// shape (what production and the tests run on); the local better-sqlite3 handle
+// is structurally compatible at runtime, matching the existing members repo.
+type Db = DrizzleD1Database<typeof schema>;
 
 export type NotificationKind = "event_approved" | "survey_assigned" | "forum_reply" | "points_awarded";
 
