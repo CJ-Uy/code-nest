@@ -187,9 +187,15 @@ export function createEventsRepository(db: Db, audit: AuditRepository, retention
 				return { eventId: input.eventId, memberId: input.memberId, scannedAt, alreadyPresent: true };
 			}
 
-			await db
-				.insert(crsAttendance)
-				.values({ eventId: input.eventId, memberId: input.memberId, scannedAt, scannedBy: actor.memberId });
+			try {
+				await db
+					.insert(crsAttendance)
+					.values({ eventId: input.eventId, memberId: input.memberId, scannedAt, scannedBy: actor.memberId });
+			} catch {
+				// ponytail: select-then-insert race on concurrent double-scan; the composite PK
+				// rejects the duplicate, treat that as already-present instead of crashing.
+				return { eventId: input.eventId, memberId: input.memberId, scannedAt, alreadyPresent: true };
+			}
 			await retention.recordEventAttendance(actor, {
 				memberId: input.memberId,
 				termId: input.termId,

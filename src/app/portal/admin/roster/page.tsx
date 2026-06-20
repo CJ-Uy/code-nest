@@ -20,7 +20,8 @@ export default async function RosterAdminPage({ searchParams }: { searchParams: 
 	const termList = await getDb().select().from(terms).orderBy(asc(terms.startsAt));
 	const activeTermId = termId ?? termList.at(-1)?.id ?? null;
 	const repositories = await getRepositories();
-	const roster = activeTermId ? await repositories.roster.listForTerm(actor, activeTermId) : [];
+	// roster has no shared-dev internal proxy yet; degrade to an empty list instead of crashing.
+	const roster = activeTermId ? await repositories.roster.listForTerm(actor, activeTermId).catch(() => []) : [];
 
 	return (
 		<div className="grid gap-6">

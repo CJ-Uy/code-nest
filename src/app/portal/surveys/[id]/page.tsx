@@ -23,7 +23,8 @@ export default async function MemberSurveyPage({
 	const { id } = await params;
 	const { t: token, done } = await searchParams;
 	const repositories = await getRepositories();
-	const detail = await repositories.surveys.getForRespondent(id);
+	// surveys has no shared-dev internal proxy yet; degrade to not-found instead of crashing.
+	const detail = await repositories.surveys.getForRespondent(id).catch(() => null);
 	if (!detail) notFound();
 
 	if (done) {

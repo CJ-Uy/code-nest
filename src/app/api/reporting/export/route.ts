@@ -33,28 +33,33 @@ export async function GET(request: Request): Promise<Response> {
 	const kind = url.searchParams.get("kind");
 	const repositories = await getRepositories();
 
-	if (kind === "term") {
-		const termId = url.searchParams.get("termId");
-		if (!termId) return Response.json({ error: "termId is required." }, { status: 400 });
-		const rows = await repositories.retention.listForTerm(actor, termId);
-		return fileResponse(buildTermMasterWorkbook(rows, termId), `retention-master-${termId}.xlsx`);
-	}
-
-	if (kind === "member") {
-		const termId = url.searchParams.get("termId");
-		const memberId = url.searchParams.get("memberId");
-		if (!termId || !memberId) {
-			return Response.json({ error: "termId and memberId are required." }, { status: 400 });
+	try {
+		if (kind === "term") {
+			const termId = url.searchParams.get("termId");
+			if (!termId) return Response.json({ error: "termId is required." }, { status: 400 });
+			const rows = await repositories.retention.listForTerm(actor, termId);
+			return fileResponse(buildTermMasterWorkbook(rows, termId), `retention-master-${termId}.xlsx`);
 		}
-		const rows = await repositories.retention.listMemberTermHistory(actor, memberId, termId);
-		return fileResponse(buildMemberHistoryWorkbook(rows, memberId, termId), `retention-${memberId}-${termId}.xlsx`);
-	}
 
-	if (kind === "event") {
-		const eventId = url.searchParams.get("eventId");
-		if (!eventId) return Response.json({ error: "eventId is required." }, { status: 400 });
-		const rows = await repositories.retention.listForEvent(actor, eventId);
-		return fileResponse(buildEventRosterWorkbook(rows, eventId), `roster-${eventId}.xlsx`);
+		if (kind === "member") {
+			const termId = url.searchParams.get("termId");
+			const memberId = url.searchParams.get("memberId");
+			if (!termId || !memberId) {
+				return Response.json({ error: "termId and memberId are required." }, { status: 400 });
+			}
+			const rows = await repositories.retention.listMemberTermHistory(actor, memberId, termId);
+			return fileResponse(buildMemberHistoryWorkbook(rows, memberId, termId), `retention-${memberId}-${termId}.xlsx`);
+		}
+
+		if (kind === "event") {
+			const eventId = url.searchParams.get("eventId");
+			if (!eventId) return Response.json({ error: "eventId is required." }, { status: 400 });
+			const rows = await repositories.retention.listForEvent(actor, eventId);
+			return fileResponse(buildEventRosterWorkbook(rows, eventId), `roster-${eventId}.xlsx`);
+		}
+	} catch {
+		// retention exports have no shared-dev internal proxy yet; report unavailable instead of crashing.
+		return Response.json({ error: "Reporting export is not available in shared dev mode." }, { status: 503 });
 	}
 
 	return Response.json({ error: "Unknown export kind." }, { status: 400 });

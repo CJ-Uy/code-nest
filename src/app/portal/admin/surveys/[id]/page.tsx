@@ -18,9 +18,20 @@ export default async function AdminSurveyDetailPage({ params }: { params: Promis
 
 	const { id } = await params;
 	const repositories = await getRepositories();
-	const detail = await repositories.surveys.getById(actor, id);
+	// surveys has no shared-dev internal proxy yet; degrade to not-found instead of crashing.
+	const detail = await repositories.surveys.getById(actor, id).catch(() => null);
 	if (!detail) notFound();
-	const results = await repositories.surveys.getResults(actor, id);
+	const results = await repositories.surveys.getResults(actor, id).catch(
+		() =>
+			({
+				surveyId: id,
+				title: detail.survey.title,
+				status: detail.survey.status,
+				assignedCount: 0,
+				completedCount: 0,
+				questions: [],
+			}) satisfies Awaited<ReturnType<typeof repositories.surveys.getResults>>,
+	);
 
 	return (
 		<main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">

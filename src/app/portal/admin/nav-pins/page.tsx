@@ -14,7 +14,8 @@ export default async function NavPinsAdminPage() {
 	const actor = await requireActor();
 	if (!can(actor, "nav:configure")) redirect("/portal/admin");
 	const repositories = await getRepositories();
-	const pins = await repositories.navPins.list(actor);
+	// nav pins has no shared-dev internal proxy yet; degrade to an empty list instead of crashing.
+	const pins = await repositories.navPins.list(actor).catch(() => []);
 
 	return (
 		<div className="grid gap-6">

@@ -3,6 +3,7 @@ import { getRepositories } from "@/db";
 import { crsEvents } from "@/db/schema";
 import { getDb } from "@/db/client";
 import { getActor } from "@/server/auth/actor";
+import { can } from "@/server/auth/permissions";
 import { getAppConfig } from "@/server/env";
 import { assertSameOrigin } from "@/server/http/origin";
 import { proxySharedApiRequest } from "@/server/shared-api";
@@ -27,7 +28,8 @@ function createHandlers() {
 	return createUploadHandlers({
 		getActor: async () => getActor(),
 		storage: getStorageAdapter(),
-		canPostEvent: async (_actor, eventId) => {
+		canPostEvent: async (actor, eventId) => {
+			if (!can(actor, "event:approve")) return false;
 			const [event] = await getDb()
 				.select()
 				.from(crsEvents)

@@ -20,7 +20,8 @@ export default async function AdminSurveysPage() {
 	if (!can(actor, "survey:configure")) redirect("/portal");
 
 	const repositories = await getRepositories();
-	const surveys = await repositories.surveys.list(actor, { limit: 50 });
+	// surveys has no shared-dev internal proxy yet; degrade to an empty list instead of crashing.
+	const surveys = await repositories.surveys.list(actor, { limit: 50 }).catch(() => []);
 
 	return (
 		<main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">

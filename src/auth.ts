@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { getDb } from "@/db/client";
-import { accounts, memberRoles, members, roles, sessions, verificationToken } from "@/db/schema";
+import { accounts, memberRoles, members, roles, sessions, termMemberRoster, verificationToken } from "@/db/schema";
 import { createAuditRepository } from "@/db/repositories/audit";
 import { getAppConfig } from "@/server/env";
 import { isGoogleSignInAllowed, splitAuthList } from "@/server/auth/access";
@@ -89,6 +89,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 			async createUser({ user }) {
 				if (!user.id) return;
 				await db.update(members).set({ status: "active", updatedAt: new Date() }).where(eq(members.id, user.id));
+				// admins can add a roster row by email before the member ever signs in;
+				// backfill the link now so reporting joins find this member.
+				if (user.email) {
+					await db
+						.update(termMemberRoster)
+						.set({ memberId: user.id })
+						.where(eq(termMemberRoster.email, user.email.toLowerCase()));
+				}
 				await createAuditRepository(db).record(
 					{ memberId: user.id, roles: ["member"], context: "session" },
 					{

@@ -10,7 +10,10 @@ export const dynamic = "force-dynamic";
 export default async function AdminDashboardPage() {
 	const actor = await requireActor();
 	const repositories = await getRepositories();
-	const quickLinks = can(actor, "nav:configure") ? await repositories.quickLinks.list(actor) : [];
+	// quick links has no shared-dev internal proxy yet; degrade to an empty list instead of crashing.
+	const quickLinks = can(actor, "nav:configure")
+		? await repositories.quickLinks.list(actor).catch(() => [])
+		: [];
 	const modules = [
 		{ href: "/portal/admin/reporting", label: "Reporting", show: can(actor, "retention:record") },
 		{ href: "/portal/admin/roster", label: "Roster", show: can(actor, "roster:manage") },

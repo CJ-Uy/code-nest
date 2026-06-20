@@ -14,7 +14,8 @@ export default async function NotificationsPage() {
 	if (!actor) redirect("/signin");
 
 	const repositories = await getRepositories();
-	const items = await repositories.notifications.listFeed(actor, { limit: 50 });
+	// notifications has no shared-dev internal proxy yet; degrade to an empty feed instead of crashing.
+	const items = await repositories.notifications.listFeed(actor, { limit: 50 }).catch(() => []);
 
 	return (
 		<div className="grid gap-5">

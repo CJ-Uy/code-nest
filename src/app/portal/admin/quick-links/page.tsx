@@ -14,7 +14,8 @@ export default async function QuickLinksAdminPage() {
 	const actor = await requireActor();
 	if (!can(actor, "nav:configure")) redirect("/portal/admin");
 	const repositories = await getRepositories();
-	const links = await repositories.quickLinks.list(actor);
+	// quick links has no shared-dev internal proxy yet; degrade to an empty list instead of crashing.
+	const links = await repositories.quickLinks.list(actor).catch(() => []);
 
 	return (
 		<div className="grid gap-6">
