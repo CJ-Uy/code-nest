@@ -1,16 +1,16 @@
 # Graph Report - code nest  (2026-06-20)
 
 ## Corpus Check
-- 310 files · ~396,860 words
+- 314 files · ~397,798 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3432 nodes · 5437 edges · 299 communities (186 shown, 113 thin omitted)
+- 3454 nodes · 5495 edges · 302 communities (189 shown, 113 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 164 edges (avg confidence: 0.83)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `fb46f30a`
+- Built from commit: `c737cd82`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -304,14 +304,17 @@
 - [[_COMMUNITY_Community 296|Community 296]]
 - [[_COMMUNITY_Community 297|Community 297]]
 - [[_COMMUNITY_Community 298|Community 298]]
+- [[_COMMUNITY_Community 299|Community 299]]
+- [[_COMMUNITY_Community 300|Community 300]]
+- [[_COMMUNITY_Community 301|Community 301]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `getAppConfig()` - 97 edges
-2. `getRepositories()` - 95 edges
-3. `getActor()` - 53 edges
+1. `getRepositories()` - 97 edges
+2. `getAppConfig()` - 97 edges
+3. `getActor()` - 55 edges
 4. `requireActor()` - 43 edges
-5. `Actor` - 41 edges
-6. `can()` - 40 edges
+5. `Actor` - 42 edges
+6. `can()` - 42 edges
 7. `proxySharedApiRequest()` - 40 edges
 8. `createAuditRepository()` - 34 edges
 9. `cn()` - 34 edges
@@ -371,43 +374,43 @@
 - **Ateneo CODE White Identity Lockup** — public_code_logo_full_white_falcon_mark, public_code_logo_full_white_ateneo_code_wordmark, public_code_logo_full_white_organization_name [EXTRACTED 1.00]
 - **Next.js Visual Identity** — public_next_nextjs, public_next_next_lettering, public_next_js_suffix [EXTRACTED 1.00]
 
-## Communities (299 total, 113 thin omitted)
+## Communities (302 total, 113 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.00
 Nodes (939): AbortController, AgentMemoryGetSummaryOptions, AgentMemoryGetSummaryResponse, AgentMemoryIncomingMemory, AgentMemoryIngestOptions, AgentMemoryListMemoriesOptions, AgentMemoryListMemoriesResult, AgentMemoryMemory (+931 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.18
-Nodes (18): getSharedActor, createAuthInternalHandlers, roleKeys, getInternalCorsHeaders, memoryStorage, updateMemberProfileInputSchema, shared-dev destructive-operation gate pattern, createMembersInternalHandlers (+10 more)
+Cohesion: 0.23
+Nodes (14): createAuthInternalHandlers, getInternalCorsHeaders, memoryStorage, updateMemberProfileInputSchema, shared-dev destructive-operation gate pattern, createMembersInternalHandlers, hashSharedToken, resolveSharedActor (+6 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.09
-Nodes (28): cn(), NavItem, primaryNav, sheetNav, NotificationBell(), NotificationBellProps, PortalShell(), PortalShellProps (+20 more)
+Cohesion: 0.08
+Nodes (29): cn(), NavItem, primaryNav, sheetNav, NotificationBell(), NotificationBellProps, PortalShell(), PortalShellProps (+21 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.20
-Nodes (10): eventMedia, AddMediaInput, createEventMediaRepository(), Db, EventMediaRepository, makeRepo(), member, retentionAdmin (+2 more)
+Cohesion: 0.10
+Nodes (23): createAuditRepository(), END, makeApprovedEvent(), makeRepos(), member, retentionAdmin, START, TERM_END (+15 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.18
-Nodes (7): createHandlers(), HandlerOptions, memberActor, MemoryStorage, arrayBufferToStream(), bodyToArrayBuffer(), StorageBody
+Cohesion: 0.19
+Nodes (7): allowedContentTypes, createHandlers(), HandlerOptions, memberActor, arrayBufferToStream(), bodyToArrayBuffer(), StorageBody
 
 ### Community 5 - "Community 5"
 Cohesion: 0.05
 Nodes (46): Focused adapter extension pattern, Adapters, Adding An Adapter, D1, SQLite, and shared API database adapters, Database Interface, R2, local file, and shared API storage adapters, Storage Interface, Auth.js v5 Google OAuth and database sessions (+38 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.11
-Nodes (21): AdminDashboardPage(), can(), terms, AdminSurveyDetailPage(), NavPinsAdminPage(), PortalOverviewPage(), QuickLinksAdminPage(), ReportingAdminPage() (+13 more)
+Cohesion: 0.16
+Nodes (11): terms, ReportingAdminPage(), MemberChecklist(), MemberOption, Option, RetentionForm(), AdminSurveysPage(), Select (+3 more)
 
 ### Community 8 - "Community 8"
-Cohesion: 0.08
-Nodes (32): nullableText, updateProfileAction, D1DatabaseAdapter, LocalDatabase, LocalSqliteDatabaseAdapter, deserializeMember(), SharedApiDatabaseAdapter, Lowercased-email Drizzle adapter override (+24 more)
+Cohesion: 0.17
+Nodes (11): D1DatabaseAdapter, LocalDatabase, LocalSqliteDatabaseAdapter, deserializeMember(), SharedApiDatabaseAdapter, DatabaseAdapter interface, CreateMemberInput, DatabaseAdapter (+3 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.08
-Nodes (30): members, surveyAnswers, surveyAssignments, surveyQuestions, SurveyQuestionType, surveyResponses, surveys, SurveyStatus (+22 more)
+Cohesion: 0.09
+Nodes (27): surveyAnswers, surveyAssignments, surveyQuestions, SurveyQuestionType, surveyResponses, surveys, SurveyStatus, CreateManualRetentionRecordInput (+19 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.15
@@ -426,12 +429,12 @@ Cohesion: 0.07
 Nodes (5): CONF_META, LibDetail(), KIND_META, libItem(), NL_SUGGESTIONS
 
 ### Community 14 - "Community 14"
-Cohesion: 0.11
-Nodes (31): AuditDb, createUnavailableAuditRepository(), createCalendarRepository(), createEventsRepository(), END, makeApprovedEvent(), makeRepos(), member (+23 more)
+Cohesion: 0.16
+Nodes (22): createUnavailableAuditRepository(), createCalendarRepository(), createEventsRepository(), createDrizzleRepositories(), createSharedRepositories(), createUnavailableCalendarRepository(), createUnavailableNotificationsRepository(), createUnavailableOverviewRepository() (+14 more)
 
 ### Community 15 - "Community 15"
-Cohesion: 0.08
-Nodes (27): AuditActorContext, AuditCategory, crsAttendance, crsEvents, eventRsvps, EventStatus, EventType, linkDailyStats (+19 more)
+Cohesion: 0.07
+Nodes (29): AuditActorContext, AuditCategory, crsAttendance, crsEvents, eventMedia, eventRsvps, EventStatus, EventType (+21 more)
 
 ### Community 16 - "Community 16"
 Cohesion: 0.09
@@ -442,24 +445,24 @@ Cohesion: 0.10
 Nodes (8): CreateLink(), LINK_RESERVED, linkAnalytics(), LINKS, LinkDetail(), LinkCard(), shortUrl(), slugStatus()
 
 ### Community 18 - "Community 18"
-Cohesion: 0.05
-Nodes (42): Actor, PermissionAction, RoleKey, rolePermissions, actions, cases, auditLogs, MemberStatus (+34 more)
+Cohesion: 0.07
+Nodes (38): Actor, auditLogs, navPins, notifications, createId(), createObjectKey(), AuditDb, AuditInsert (+30 more)
 
 ### Community 19 - "Community 19"
 Cohesion: 0.07
 Nodes (33): Public and portal route boundary, CODE brand palette and typography, CODE Portal design, Current prototype, Design sheet script bundle, Unna and Source Sans 3 web fonts, Ateneo CODE design system page, React 18 and Babel browser runtime (+25 more)
 
 ### Community 20 - "Community 20"
-Cohesion: 0.13
-Nodes (21): GET (list members), 0000_snapshot.json (drizzle schema snapshot), 0001_snapshot.json (drizzle schema snapshot), 0002_snapshot.json (drizzle schema snapshot), _journal.json (drizzle migration journal), 0000_young_bullseye.sql (initial schema migration), 0001_v5_drop_deferred.sql (drop deferred v1 tables), 0002_v5_add_foundation.sql (add foundation tables) (+13 more)
+Cohesion: 0.09
+Nodes (30): createHandlers() (uploads [key] route), DELETE (single upload object route), DELETE (internal upload object route), GET (single upload object route), GET (internal upload object route), handle(request, context) (internal upload object route), handleObject(request, context), OPTIONS (internal upload object route) (+22 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.18
-Nodes (10): Token to Seeded Actor Model, audit_logs Table, D1 Query Budget, getActor() Unified Actor Accessor, permissions.can() RBAC, Repository Layer (src/db/repositories), shared_dev_tokens Table, Survey True Anonymity (token-hash only) (+2 more)
+Cohesion: 0.15
+Nodes (12): audit_logs Table, D1 Query Budget, getDb() Driver Selector, getRepositories(), Repository Layer (src/db/repositories), Survey True Anonymity (token-hash only), db:generate Command, db:migrate:local Command (+4 more)
 
 ### Community 22 - "Community 22"
-Cohesion: 0.12
-Nodes (18): AuthAccessPolicy, GoogleSignInProfile, isGoogleSignInAllowed(), splitAuthList(), policy, Db, deactivateMemberByEmail(), getCurrentTermId() (+10 more)
+Cohesion: 0.08
+Nodes (27): AuthAccessPolicy, GoogleSignInProfile, isGoogleSignInAllowed(), splitAuthList(), policy, roleKeys, Db, deactivateMemberByEmail() (+19 more)
 
 ### Community 23 - "Community 23"
 Cohesion: 0.10
@@ -470,16 +473,16 @@ Cohesion: 0.11
 Nodes (17): aliases, components, hooks, lib, ui, utils, iconLibrary, rsc (+9 more)
 
 ### Community 25 - "Community 25"
-Cohesion: 0.08
-Nodes (22): RetentionRecordSource, CreateManualRetentionRecordInput, Db, EventRosterRow, makeRepo(), plainMember, retentionAdmin, TERM_END (+14 more)
+Cohesion: 0.10
+Nodes (18): RetentionRecordSource, rosterRows, termRows, Db, EventRosterRow, LeaderboardInput, LeaderboardRow, ListForMemberInput (+10 more)
 
 ### Community 26 - "Community 26"
 Cohesion: 0.10
-Nodes (20): dependencies, @auth/drizzle-adapter, @aws-sdk/client-s3, @aws-sdk/s3-request-presigner, better-sqlite3, class-variance-authority, clsx, drizzle-orm (+12 more)
+Nodes (21): dependencies, @auth/drizzle-adapter, @aws-sdk/client-s3, @aws-sdk/s3-request-presigner, better-sqlite3, class-variance-authority, clsx, drizzle-orm (+13 more)
 
 ### Community 27 - "Community 27"
-Cohesion: 0.33
-Nodes (6): assertSameOrigin CSRF Guard, getRepositories(), Shared-Dev Internal API Contract, Per-Domain Typed Internal Modules (not one dispatcher), Internal API Endpoints (/internal/users), Outside Devs Get No Cloudflare Access
+Cohesion: 0.29
+Nodes (7): assertSameOrigin CSRF Guard, Shared Dev Worker Lifecycle & Redeploy Obligations, Shared-Dev Internal API Contract, Per-Domain Typed Internal Modules (not one dispatcher), deploy:dev Command, Internal API Endpoints (/internal/users), Outside Devs Get No Cloudflare Access
 
 ### Community 28 - "Community 28"
 Cohesion: 0.11
@@ -490,24 +493,24 @@ Cohesion: 0.15
 Nodes (12): initOpenNextCloudflareForDev() call, nextConfig, defineCloudflareConfig (OpenNext Cloudflare config), package.json (code-nest project manifest), config, changedFiles(), deployNotePaths, files (+4 more)
 
 ### Community 30 - "Community 30"
-Cohesion: 0.15
-Nodes (12): reservedSlugs, CreateLinkInput, ensurePage(), LinkDb, linkError(), LinkErrorCode, LinkRepositoryError, LinksRepository (+4 more)
+Cohesion: 0.10
+Nodes (18): reservedSlugs, fail(), owner, CreateLinkInput, ensurePage(), LinkDb, linkError(), LinkErrorCode (+10 more)
 
 ### Community 31 - "Community 31"
 Cohesion: 0.06
 Nodes (35): 10. Security Considerations, 11. Explicitly Deferred (recorded so they resurface), 12. Phased Build Sequence, 13. Caching (OpenNext) — note, 14. Revision Log & Review Resolutions, 15. Shared Dev Worker Lifecycle & Ops Docs, 1. Product Scope & Route Map, 2.1 Two axes (resolves the prior "shared mode is muddled" defect) (+27 more)
 
 ### Community 32 - "Community 32"
-Cohesion: 0.09
-Nodes (39): memberRoles, roles, sharedDevTokens, adminActor, SurveyRouteContext, AuthInternalDependencies, CalendarInternalDependencies, getInternalCorsHeaders() (+31 more)
+Cohesion: 0.12
+Nodes (24): memberRoles, roles, sharedDevTokens, adminActor, AuthInternalDependencies, getInternalCorsHeaders(), GuardResult, LinksInternalDependencies (+16 more)
 
 ### Community 34 - "Community 34"
 Cohesion: 0.17
 Nodes (12): CloseEvent, CustomEvent, EmailEvent, ErrorEvent, Event, ExtendableEvent, FetchEvent, MessageEvent (+4 more)
 
 ### Community 35 - "Community 35"
-Cohesion: 0.12
-Nodes (16): code-nest Project Slug / Worker, wrangler.jsonc, DEPLOY_ENV Axis (prod/dev), Two Orthogonal Environment Axes, Upload Hardening (server-assigned keys), ALLOW_PRODUCTION_STORAGE_MODE_OVERRIDE, R2 S3 Credentials (R2_*), STORAGE_MODE (+8 more)
+Cohesion: 0.40
+Nodes (5): Upload Hardening (server-assigned keys), ALLOW_PRODUCTION_STORAGE_MODE_OVERRIDE, R2 S3 Credentials (R2_*), STORAGE_MODE, Production Storage Adapter (r2-binding)
 
 ### Community 36 - "Community 36"
 Cohesion: 0.24
@@ -534,16 +537,16 @@ Cohesion: 0.24
 Nodes (10): GuidedTour component (coachmarks), Line component, SettingsCard component, SettingsModule component, ToggleLine component, TOUR_MEMBER (member guided-tour steps), EmptyTab component (placeholder screens), LABELS (nav id-to-title map) (+2 more)
 
 ### Community 44 - "Community 44"
-Cohesion: 0.13
-Nodes (17): code-nest-dev-db (D1 Shared/Dev), code-nest-dev-uploads (R2 Shared/Dev), Shared Dev Worker Lifecycle & Redeploy Obligations, Command Reference, deploy:dev Command, deploy:prod Command, pnpm dev (Local Next dev), pnpm dev:cf (Cloudflare preview dev) (+9 more)
+Cohesion: 0.14
+Nodes (15): code-nest-dev-db (D1 Shared/Dev), code-nest-dev-uploads (R2 Shared/Dev), Command Reference, deploy:prod Command, pnpm dev (Local Next dev), pnpm dev:cf (Cloudflare preview dev), upload:prod Command, Wrangler CLI (+7 more)
 
 ### Community 45 - "Community 45"
 Cohesion: 0.27
 Nodes (7): DesktopShell(), MobileShell(), NAV_FOOT, NAV_PRIMARY, NAV_SECONDARY, NotifPanel(), unreadCount()
 
 ### Community 47 - "Community 47"
-Cohesion: 0.23
-Nodes (13): LinkView, linkModerationPageUrl(), Button, ButtonProps, buttonVariants, Input, InputProps, Table (+5 more)
+Cohesion: 0.30
+Nodes (11): LinkModeration(), LinkView, linkModerationPageUrl(), Input, InputProps, Table, TableBody, TableCell (+3 more)
 
 ### Community 48 - "Community 48"
 Cohesion: 0.22
@@ -554,12 +557,12 @@ Cohesion: 0.33
 Nodes (9): ANN_TAG (announcement tag colors), AnnCard component, AnnCompose component (publishing-admin composer), AnnDetail component, ANNOUNCEMENTS_FULL (referenced full announcement dataset), AnnouncementsModule component, VIEWER_IS_PUBLISHING_ADMIN (referenced viewer flag), AnnouncementsDigest component (+1 more)
 
 ### Community 50 - "Community 50"
-Cohesion: 0.19
-Nodes (16): SOURCE_LABEL, EventScanPanel(), FoundMember, ScanResult, MemberCodeCard(), STATUS_LABEL, decodeMemberCode(), encodeMemberCode() (+8 more)
+Cohesion: 0.18
+Nodes (18): CalendarMonth(), SOURCE_LABEL, EventScanPanel(), MemberCodeCard(), RetentionHistory(), STATUS_LABEL, MetricCard(), RetentionProgress() (+10 more)
 
 ### Community 51 - "Community 51"
-Cohesion: 0.22
-Nodes (11): BUCKET Binding, code-nest-prod-db (D1 Production), DB Binding, code-nest-prod-uploads (R2 Production), Dev/Prod Resource Isolation Safety, pnpm build, Production Storage Lock to BUCKET, db:migrate:prod Command (+3 more)
+Cohesion: 0.16
+Nodes (14): BUCKET Binding, code-nest-prod-db (D1 Production), DB Binding, code-nest-prod-uploads (R2 Production), Dev/Prod Resource Isolation Safety, pnpm build, Production Storage Lock to BUCKET, db:migrate:prod Command (+6 more)
 
 ### Community 52 - "Community 52"
 Cohesion: 0.25
@@ -578,8 +581,8 @@ Cohesion: 0.25
 Nodes (8): deactivateMemberByEmail, getCurrentTermId, isRosterSignInAllowed test suite, isEmailOnRoster, isMemberSuperAdmin, isRosterSignInAllowed, normalizeEmail, v5 roster sign-in gate
 
 ### Community 60 - "Community 60"
-Cohesion: 0.07
-Nodes (39): getSharedActor(), requireActor(), CalendarPage(), MONTH_NAMES, CalendarMonth(), RetentionHistory(), EventDetailPage(), RetentionHistoryPage() (+31 more)
+Cohesion: 0.08
+Nodes (44): getSharedActor(), requireActor(), CalendarPage(), MONTH_NAMES, getRepositories(), submitSurveyResponseInputSchema, EventDetailPage(), RetentionHistoryPage() (+36 more)
 
 ### Community 61 - "Community 61"
 Cohesion: 0.11
@@ -883,7 +886,7 @@ Nodes (15): Global Constraints, Phase 3 — Short Links Implementation Plan, Sel
 
 ### Community 205 - "Community 205"
 Cohesion: 0.08
-Nodes (41): GET(), handle(), OPTIONS(), GET(), getHandlers(), OPTIONS(), getD1Db(), getHandlers() (+33 more)
+Nodes (45): GET(), handle(), OPTIONS(), GET(), getHandlers(), OPTIONS(), getD1Db(), getHandlers() (+37 more)
 
 ### Community 235 - "Community 235"
 Cohesion: 0.12
@@ -891,11 +894,11 @@ Nodes (15): Global Constraints, Phase 8 — Admin, Reporting, Nav/Quick Links, R
 
 ### Community 236 - "Community 236"
 Cohesion: 0.05
-Nodes (63): escapeHtml(), isCrawlerUserAgent(), renderPreviewHtml(), deviceBucket(), isValidDestinationUrl(), isValidSlugFormat(), normalizeSlug(), referrerBucket() (+55 more)
+Nodes (64): quickLinks, escapeHtml(), isCrawlerUserAgent(), renderPreviewHtml(), deviceBucket(), isValidDestinationUrl(), isValidSlugFormat(), normalizeSlug() (+56 more)
 
 ### Community 237 - "Community 237"
-Cohesion: 0.16
-Nodes (32): POST(), GET(), getActor(), getRepositories(), submitSurveyResponseInputSchema, bodySchema, GET(), POST() (+24 more)
+Cohesion: 0.14
+Nodes (35): POST(), GET(), getActor(), bodySchema, GET(), POST(), assertSameOrigin(), handlers() (+27 more)
 
 ### Community 238 - "Community 238"
 Cohesion: 0.24
@@ -926,32 +929,32 @@ Cohesion: 0.14
 Nodes (13): Global Constraints, Phase 9 Hardening Implementation Plan, Self-review notes (for the implementer, not a step to execute), Sequencing & Dependency Gate, Task 1: Rate-limit core — D1 fixed-window counter + interface, Task 2: Rate-limit the auth routes, Task 3: Rate-limit link creation and scan submission, Task 4: Playwright harness + mocked-OAuth sign-in E2E (Phase 1) (+5 more)
 
 ### Community 245 - "Community 245"
-Cohesion: 0.14
-Nodes (13): eventForumPosts, createEventForumRepository(), Db, EventForumRepository, ForumAuthor, ForumPostView, ForumRow, author (+5 more)
+Cohesion: 0.10
+Nodes (21): eventForumPosts, createEventsInternalHandlers(), EventsInternalDependencies, handlers(), createEventForumRepository(), Db, EventForumRepository, ForumAuthor (+13 more)
 
 ### Community 246 - "Community 246"
 Cohesion: 0.17
 Nodes (11): Global Constraints, Self-review notes (for the implementer, not a step to execute), Task 1: Schema — drop deferred subsystems, rename points to retention, add v5 tables, Task 2: Permissions — rename `crs` to `retention`, drop `publishing`, add v5 actions, Task 3: Audit category and contract — drop `content`, add `retention`; drop tour fields, Task 4: Repositories — delete deferred stubs, rename points to retention, Task 5: Auth roster gate — `term_member_roster` becomes a real sign-in gate, Task 6: Seed data — drop teams/articles/announcements, add roster + retention records (+3 more)
 
 ### Community 247 - "Community 247"
-Cohesion: 0.16
-Nodes (13): APP_ENV, SHARED_API_BASE_URL, SHARED_API_TOKEN, d1-binding Database Adapter, Post-Deploy Health Verification, .env.local, Shared Dev Token Rotation, Backend freshness (+5 more)
+Cohesion: 0.14
+Nodes (16): code-nest Project Slug / Worker, wrangler.jsonc, DEPLOY_ENV Axis (prod/dev), Two Orthogonal Environment Axes, APP_ENV, SHARED_API_BASE_URL, SHARED_API_TOKEN, APP_ENV Modes (local/shared/production) (+8 more)
 
 ### Community 248 - "Community 248"
-Cohesion: 0.13
-Nodes (13): LinkQr(), LinksWorkspace(), LinksWorkspaceProps, LinkView, StatsView, shortLinkUrl(), ShortLink, Badge() (+5 more)
+Cohesion: 0.16
+Nodes (10): LinkQr(), LinksWorkspace(), LinksWorkspaceProps, LinkView, StatsView, shortLinkUrl(), ShortLink, TabButton() (+2 more)
 
 ### Community 249 - "Community 249"
-Cohesion: 0.09
-Nodes (20): notifications, AttendableMember, AttendanceRow, CreateEventInput, Db, EventRecord, EventsRepository, ListEventsInput (+12 more)
+Cohesion: 0.14
+Nodes (12): AttendableMember, AttendanceRow, CreateEventInput, Db, EventRecord, EventsRepository, ListEventsInput, MemberSearchInput (+4 more)
 
 ### Community 250 - "Community 250"
 Cohesion: 0.22
 Nodes (8): Cloudflare, CODE Portal prototype, Deploy, Design, Develop, Next build phases, Preview, Shared dev backend
 
 ### Community 251 - "Community 251"
-Cohesion: 0.24
-Nodes (11): getActor, requireActor, getOptionalCloudflareEnv, hasCloudflareBinding, runInBackground, APP_ENV/DEPLOY_ENV validation invariants, getAppConfig, getPublicEnvStatus (+3 more)
+Cohesion: 0.21
+Nodes (12): getActor, requireActor, getOptionalCloudflareEnv, hasCloudflareBinding, runInBackground, APP_ENV/DEPLOY_ENV validation invariants, getAppConfig, getPublicEnvStatus (+4 more)
 
 ### Community 252 - "Community 252"
 Cohesion: 0.25
@@ -970,8 +973,8 @@ Cohesion: 0.29
 Nodes (6): Common Mistakes, Install, Local Development, Reset Local State, Run With Cloudflare Preview, Run With Next
 
 ### Community 256 - "Community 256"
-Cohesion: 0.23
-Nodes (11): handlers(), createLinksHandlers(), fail(), LinksHandlerDependencies, linkErrorStatus(), Context, DELETE(), GET() (+3 more)
+Cohesion: 0.22
+Nodes (13): fileResponse(), GET(), getActor, listForEvent, listForTerm, listMemberTermHistory, plainMember, retentionAdmin (+5 more)
 
 ### Community 257 - "Community 257"
 Cohesion: 0.22
@@ -1006,8 +1009,8 @@ Cohesion: 0.50
 Nodes (3): Runtime Shape, Setup Overview, Stack
 
 ### Community 271 - "Community 271"
-Cohesion: 0.20
-Nodes (10): Auth.js v5 + Drizzle Adapter, D1 FK Choreography (defer_foreign_keys), getDb() Driver Selector, members Table (Auth.js user), users to members Reconciliation, db:generate Command, db:migrate:local Command, Drizzle Schema (src/db/schema.ts) (+2 more)
+Cohesion: 0.22
+Nodes (9): Token to Seeded Actor Model, Auth.js v5 + Drizzle Adapter, D1 FK Choreography (defer_foreign_keys), getActor() Unified Actor Accessor, members Table (Auth.js user), permissions.can() RBAC, shared_dev_tokens Table, users to members Reconciliation (+1 more)
 
 ### Community 272 - "Community 272"
 Cohesion: 0.32
@@ -1026,24 +1029,24 @@ Cohesion: 0.48
 Nodes (7): createAuditRepository, createMembersRepository, members repository D1 integration tests, AuditRecordInput, auditLogs table, members table, pageLimit
 
 ### Community 276 - "Community 276"
-Cohesion: 0.18
-Nodes (12): AdminLayout(), assertAdminScope(), hasAnyAdminScope(), linkAdmin, memberOnly, retentionAdmin, rosterAdmin, superAdmin (+4 more)
+Cohesion: 0.10
+Nodes (27): AdminLayout(), AdminDashboardPage(), assertAdminScope(), hasAnyAdminScope(), linkAdmin, memberOnly, retentionAdmin, rosterAdmin (+19 more)
 
 ### Community 277 - "Community 277"
-Cohesion: 0.29
-Nodes (7): DELETE (single upload object route), DELETE (internal upload object route), GET (single upload object route), GET (internal upload object route), handle(request, context) (internal upload object route), handleObject(request, context), OPTIONS (internal upload object route)
+Cohesion: 0.14
+Nodes (16): nullableText, updateProfileAction, Lowercased-email Drizzle adapter override, createUser event handler, NextAuth configuration (handlers, auth, signIn, signOut), session callback, signIn callback, Button component (+8 more)
 
 ### Community 278 - "Community 278"
 Cohesion: 0.43
 Nodes (3): R2BindingStorageAdapter, CloudflareRuntimeEnv type, getCloudflareEnv
 
 ### Community 279 - "Community 279"
-Cohesion: 0.15
-Nodes (14): LocalFileStorageAdapter, arrayBufferToStream, bodyToArrayBuffer, createId, createObjectKey, UploadHandlerDependencies, StorageAdapter interface, StorageBody type (+6 more)
+Cohesion: 0.24
+Nodes (8): LocalFileStorageAdapter, arrayBufferToStream, bodyToArrayBuffer, StorageAdapter interface, StorageBody type, createHandlers (test helper), imageForm (test helper), MemoryStorage (test double)
 
 ### Community 286 - "Community 286"
-Cohesion: 0.18
-Nodes (9): eventRosterRowOutputSchema, leaderboardRowOutputSchema, myHistorySummaryOutputSchema, retentionContract, retentionRecordOutputSchema, retentionSummaryOutputSchema, termMasterRowOutputSchema, termOptionOutputSchema (+1 more)
+Cohesion: 0.22
+Nodes (8): eventRosterRowOutputSchema, leaderboardRowOutputSchema, myHistorySummaryOutputSchema, retentionContract, retentionRecordOutputSchema, retentionSummaryOutputSchema, termMasterRowOutputSchema, termOptionOutputSchema
 
 ### Community 287 - "Community 287"
 Cohesion: 0.20
@@ -1051,23 +1054,23 @@ Nodes (9): addMediaInputSchema, attendanceOutputSchema, createEventInputSchema, 
 
 ### Community 289 - "Community 289"
 Cohesion: 0.20
-Nodes (13): environment schemas test suite, getHandlers(), OPTIONS(), PATCH(), AppConfig, AppEnv, appEnvSchema, deployEnvSchema (+5 more)
+Nodes (13): environment schemas test suite, createNotificationsInternalHandlers(), GET(), getHandlers(), OPTIONS(), POST(), AppConfig, AppEnv (+5 more)
 
 ### Community 290 - "Community 290"
 Cohesion: 0.28
 Nodes (7): calendarContract, calendarItemSchema, eventDetailSchema, getMonthInputSchema, InternalOperation, operationAuthSchema, sharedDevModeSchema
 
 ### Community 291 - "Community 291"
-Cohesion: 0.13
-Nodes (25): createHandlers() (uploads [key] route), getDb(), getDatabaseAdapter(), GET(), createHandlers(), handleObject(), crs_events table, CloudflareRuntimeEnv (+17 more)
+Cohesion: 0.19
+Nodes (18): getDb(), getDatabaseAdapter(), GET(), createHandlers(), handleObject(), CloudflareRuntimeEnv, getCloudflareEnv(), getOptionalCloudflareEnv() (+10 more)
 
 ### Community 292 - "Community 292"
 Cohesion: 0.29
 Nodes (7): COMPETENCIES (org core competencies), CONTACTS (org contact roles), MISSION statement, ORG (Ateneo CODE org info), PROJECTS (Youth Huddle, XChange), SERVICES (CODE service offerings), VISION statement
 
 ### Community 293 - "Community 293"
-Cohesion: 0.48
-Nodes (6): getHandlers(), OPTIONS(), Context, DELETE(), GET(), PATCH()
+Cohesion: 0.21
+Nodes (13): getD1Db, getDb, Deploy-environment-aware adapter selection, createUploadsInternalHandlers(), handle(), OPTIONS(), DELETE(), GET() (+5 more)
 
 ### Community 294 - "Community 294"
 Cohesion: 0.60
@@ -1077,6 +1080,18 @@ Nodes (5): createRetentionInternalHandlers(), GET(), getHandlers(), OPTIONS(), P
 Cohesion: 0.53
 Nodes (4): hashSeed(), mulberry32(), seededSample(), ITEMS
 
+### Community 296 - "Community 296"
+Cohesion: 0.22
+Nodes (7): FoundMember, ScanResult, decodeMemberCode(), encodeMemberCode(), Button, ButtonProps, buttonVariants
+
+### Community 299 - "Community 299"
+Cohesion: 0.25
+Nodes (8): getSharedActor, createId, createObjectKey, Actor type, UploadHandlerDependencies, createUploadHandlers, isSafeSegment, parseNamespace
+
+### Community 300 - "Community 300"
+Cohesion: 0.40
+Nodes (5): Drizzle ORM and Drizzle Kit, Next.js App Router, @opennextjs/cloudflare, CODE Nest Setup Overview, Zod Environment Validation
+
 ## Ambiguous Edges - Review These
 - `check-shared-dev-note.ts` → `handle()`  [AMBIGUOUS]
   src/app/internal/auth/route.ts · relation: conceptually_related_to
@@ -1084,7 +1099,7 @@ Nodes (4): hashSeed(), mulberry32(), seededSample(), ITEMS
   src/app/api/health/route.ts · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **1931 isolated node(s):** `GlobalProps`, `DevEnv`, `DOMException`, `WorkerGlobalScopeEventMap`, `Console` (+1926 more)
+- **1937 isolated node(s):** `GlobalProps`, `DevEnv`, `DOMException`, `WorkerGlobalScopeEventMap`, `Console` (+1932 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **113 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -1095,13 +1110,13 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `GET()` and `package.json (code-nest project manifest)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
+- **Why does `CODE Portal Master Design & Build Plan` connect `Community 37` to `Community 247`, `Community 271`?**
+  _High betweenness centrality (0.028) - this node is a cross-community bridge._
 - **Why does `SharedApiStorageAdapter` connect `Community 288` to `Community 291`, `Community 251`, `Community 37`, `Community 279`?**
-  _High betweenness centrality (0.024) - this node is a cross-community bridge._
+  _High betweenness centrality (0.027) - this node is a cross-community bridge._
 - **Why does `Shared dev Worker (code-nest-dev)` connect `Community 37` to `Community 288`?**
-  _High betweenness centrality (0.024) - this node is a cross-community bridge._
-- **Why does `CODE Portal Master Design & Build Plan` connect `Community 37` to `Community 35`, `Community 271`?**
-  _High betweenness centrality (0.021) - this node is a cross-community bridge._
-- **Are the 15 inferred relationships involving `getAppConfig()` (e.g. with `.request()` and `.request()`) actually correct?**
-  _`getAppConfig()` has 15 INFERRED edges - model-reasoned connections that need verification._
+  _High betweenness centrality (0.027) - this node is a cross-community bridge._
 - **Are the 10 inferred relationships involving `getRepositories()` (e.g. with `getDb()` and `AdminSurveyDetailPage()`) actually correct?**
   _`getRepositories()` has 10 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 15 inferred relationships involving `getAppConfig()` (e.g. with `.request()` and `.request()`) actually correct?**
+  _`getAppConfig()` has 15 INFERRED edges - model-reasoned connections that need verification._

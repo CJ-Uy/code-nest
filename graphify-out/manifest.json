@@ -270,8 +270,8 @@
     "semantic_hash": "55fe345dc034d0932d2d55c138ed4e98"
   },
   "package.json": {
-    "mtime": 1781887448.8167887,
-    "ast_hash": "c292ddaa76739f8d8de2a052c4d615ae",
+    "mtime": 1781944163.2223065,
+    "ast_hash": "c569d179fa817fe0cb26d36953c90d13",
     "semantic_hash": ""
   },
   "postcss.config.mjs": {
@@ -1885,8 +1885,8 @@
     "semantic_hash": ""
   },
   "src/app/portal/admin/reporting/page.tsx": {
-    "mtime": 1781931258.8405762,
-    "ast_hash": "5579ca7f0b561d77ab69b24dd535f7f6",
+    "mtime": 1781944584.0851614,
+    "ast_hash": "628f0b93681019ae3e307af0114cfe14",
     "semantic_hash": ""
   },
   "src/app/portal/admin/roster/actions.ts": {
@@ -1952,6 +1952,26 @@
   ".remember/today-2026-06-20.md": {
     "mtime": 1781930419.5765185,
     "ast_hash": "03496d88da64f26ee3de3aa6a9a5e02a",
+    "semantic_hash": ""
+  },
+  "src/app/api/reporting/export/route.test.ts": {
+    "mtime": 1781944454.1374614,
+    "ast_hash": "378a712685fa79d158a68c4eca00e0e1",
+    "semantic_hash": ""
+  },
+  "src/app/api/reporting/export/route.ts": {
+    "mtime": 1781944584.0336478,
+    "ast_hash": "6aa9de042e47ceae5e79f08de10e6245",
+    "semantic_hash": ""
+  },
+  "src/server/reporting/xlsx.test.ts": {
+    "mtime": 1781944454.0221212,
+    "ast_hash": "929441c77ce0c69d763937ee6c0fda8d",
+    "semantic_hash": ""
+  },
+  "src/server/reporting/xlsx.ts": {
+    "mtime": 1781944662.6067543,
+    "ast_hash": "88939e9f3cf4a2570a3a029ad8b2a890",
     "semantic_hash": ""
   }
 }
