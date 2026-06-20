@@ -18,6 +18,7 @@
 		"upload:prod": "wrangler deploy --env=\"\"",
 		"preview": "pnpm build && opennextjs-cloudflare preview",
 		"test": "vitest run",
+		"test:e2e": "playwright test",
 		"test:watch": "vitest",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate:local": "wrangler d1 migrations apply DB --local",
@@ -28,7 +29,7 @@
 		"db:seed:dev": "tsx src/db/seed/run.ts dev",
 		"db:seed:dev:export": "tsx scripts/export-seed-sql.ts",
 		"db:studio": "drizzle-kit studio",
-		"check:shared-dev-note": "tsx scripts/check-shared-dev-note.ts",
+		"check:shared-dev-note": "node scripts/check-shared-dev-note.mjs",
 		"cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
 		"cf-typegen:dev": "wrangler types --env dev --env-interface CloudflareEnv ./cloudflare-env.d.ts",
 		"cf-typegen:prod": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
@@ -58,6 +59,7 @@
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.16.16",
 		"@eslint/eslintrc": "^3",
+		"@playwright/test": "^1.59.1",
 		"@tailwindcss/postcss": "^4",
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/node": "^20",

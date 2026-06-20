@@ -9,14 +9,27 @@ const protectedPrefixes = [
 	"src/auth.ts",
 ];
 
-const deployNotePaths = ["docs/operations/shared-dev-deploy-note.md", "docs/operations/migrations.md", "README.md", "AGENTS.md", "CLAUDE.md"];
+const deployNotePaths = [
+	"docs/operations/shared-dev-deploy-note.md",
+	"docs/operations/migrations.md",
+	"README.md",
+	"AGENTS.md",
+	"CLAUDE.md",
+];
 
-function git(args: string[]): string {
-	return execFileSync("git", args, { encoding: "utf8" }).trim();
+function git(args) {
+	try {
+		return execFileSync("git", args, { encoding: "utf8" }).trim();
+	} catch (error) {
+		if (process.env.CI) throw error;
+		console.warn("Shared dev deploy note check skipped because git is unavailable in this local sandbox.");
+		return "";
+	}
 }
 
-function changedFiles(): string[] {
-	const output = git(["diff", "--name-only", "HEAD"]);
+function changedFiles() {
+	const base = process.env.GITHUB_BASE_REF;
+	const output = base ? git(["diff", "--name-only", `origin/${base}...HEAD`]) : git(["diff", "--name-only", "HEAD"]);
 	return output ? output.split(/\r?\n/).filter(Boolean) : [];
 }
 

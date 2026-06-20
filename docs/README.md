@@ -20,3 +20,9 @@ This folder explains how the app is built, run, deployed, and maintained. It is 
 - Production uses `env.DB` and `env.BUCKET` directly.
 - Outside developers use a provided `.env.local`; they do not need Cloudflare account access.
 
+## Architecture Docs
+
+- [Overview](architecture/overview.md)
+- [Caching](architecture/caching.md)
+- [Security](architecture/security.md)
+- [Phase 9 security review](architecture/security-review-phase-9.md)

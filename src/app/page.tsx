@@ -4,6 +4,8 @@ import { ArrowRight, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+export const dynamic = "force-static";
+
 export default function Home() {
 	return (
 		<main className="min-h-screen bg-background text-foreground">

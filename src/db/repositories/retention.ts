@@ -230,8 +230,10 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				recordedAt,
 			}));
 
-			const inserts = rows.map((row) => db.insert(retentionRecords).values(row));
-			await db.batch(inserts);
+			// ponytail: sequential inserts keep local better-sqlite and D1 paths compatible; batch if bulk volume matters.
+			for (const row of rows) {
+				await db.insert(retentionRecords).values(row);
+			}
 
 			const pointsLabel = input.points === null ? "no points" : `${input.points} points`;
 			for (const row of rows) {

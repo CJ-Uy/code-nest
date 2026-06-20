@@ -20,3 +20,14 @@ After review, update the deployed dev Worker so shared-mode developers receive t
 2. Seed dev again only if the refreshed reserved slugs and demo link stats are needed in shared dev.
 
 No schema migration is expected for Phase 3 because the v5 short-link tables already exist.
+
+## Phase 9 hardening
+
+Phase 9 adds the `rate_limit_counters` table, wraps the auth POST route with rate limiting, and wires rate limits into link-create and scan-submit paths.
+
+After review, update the deployed dev Worker so shared-mode developers receive the new table and route behavior:
+
+1. Apply dev D1 migrations with `pnpm db:migrate:dev`.
+2. Deploy `code-nest-dev` with `pnpm deploy:dev`.
+
+Do not run either command without approval from the orchestrating session.

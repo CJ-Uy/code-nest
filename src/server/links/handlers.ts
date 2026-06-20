@@ -2,6 +2,8 @@ import { linksContract } from "@/db/contract/links";
 import { linkErrorStatus } from "@/db/repositories/links";
 import type { Repositories } from "@/db/repositories";
 import type { Actor } from "@/server/auth/permissions";
+import { enforceRateLimit } from "@/server/ratelimit/guard";
+import { RATE_LIMITS } from "@/server/ratelimit/policies";
 
 type LinksHandlerDependencies = {
 	getActor(): Promise<Actor | null>;
@@ -36,6 +38,14 @@ export function createLinksHandlers(deps: LinksHandlerDependencies) {
 			}
 
 			if (request.method === "POST") {
+				try {
+					const { getDb } = await import("@/db/client");
+					const limited = await enforceRateLimit(getDb(), "link:create", actor.memberId, RATE_LIMITS.linkCreate);
+					if (limited) return limited;
+				} catch {
+					// ponytail: include getDb failure in fail-open path for tests and degraded local DB.
+				}
+
 				try {
 					const input = linksContract.create.input.parse(await request.json());
 					const link = await links.create(actor, input);

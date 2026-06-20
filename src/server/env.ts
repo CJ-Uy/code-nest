@@ -36,6 +36,7 @@ export type StorageMode = AppConfig["STORAGE_MODE"];
 
 function runtimeEnvValue(key: keyof AppConfig): string | undefined {
 	const cloudflareEnv = getOptionalCloudflareEnv() as Partial<Record<keyof AppConfig, string>> | null;
+	if (process.env.APP_ENV === "local") return process.env[key];
 	return cloudflareEnv?.[key] ?? process.env[key];
 }
 

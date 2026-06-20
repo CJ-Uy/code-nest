@@ -30,7 +30,8 @@ export function EventScanPanel({ eventId, termId }: { eventId: string; termId: s
 			body: JSON.stringify({ memberId, termId }),
 		});
 		if (!response.ok) {
-			setError("Scan failed. Try the manual search.");
+			const body = (await response.json().catch(() => null)) as { error?: string } | null;
+			setError(body?.error ?? "Scan failed. Try the manual search.");
 			return;
 		}
 		const result = (await response.json()) as ScanResult;
