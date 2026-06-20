@@ -463,3 +463,17 @@ export const quickLinks = sqliteTable(
 	},
 	(table) => [index("quick_links_position_idx").on(table.position)],
 );
+
+export const rateLimitCounters = sqliteTable(
+	"rate_limit_counters",
+	{
+		bucketKey: text("bucket_key").notNull(),
+		windowStart: integer("window_start", { mode: "timestamp_ms" }).notNull(),
+		count: integer("count").notNull().default(0),
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+	},
+	(table) => [
+		primaryKey({ columns: [table.bucketKey, table.windowStart] }),
+		index("rate_limit_counters_window_start_idx").on(table.windowStart),
+	],
+);
