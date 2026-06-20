@@ -5,10 +5,13 @@ import { createEventMediaRepository } from "./event-media";
 import { createEventsRepository } from "./events";
 import { createLinksRepository, createUnavailableLinksRepository, type LinkDb } from "./links";
 import { createMembersRepository } from "./members";
+import { createNavPinsRepository } from "./navPins";
 import { createNotificationsRepository, type NotificationsRepository } from "./notifications";
 import { createOverviewRepository, type OverviewRepository } from "./overview";
+import { createQuickLinksRepository } from "./quickLinks";
 import { createRetentionRepository } from "./retention";
 import { createUnavailableRetentionRepository } from "./retention-unavailable";
+import { createRosterRepository } from "./roster";
 import { createSessionsRepository } from "./sessions";
 import { createSurveysRepository, createUnavailableSurveysRepository } from "./surveys";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
@@ -37,6 +40,9 @@ export function createDrizzleRepositories(db: DrizzleDb) {
 		eventMedia: createEventMediaRepository(db, audit),
 		eventForum: createEventForumRepository(db, audit),
 		retention,
+		navPins: createNavPinsRepository(db, audit),
+		quickLinks: createQuickLinksRepository(db, audit),
+		roster: createRosterRepository(db, audit),
 		surveys: createSurveysRepository(d1, audit),
 		notifications: createNotificationsRepository(d1),
 		overview: createOverviewRepository(d1),
@@ -93,6 +99,9 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 		eventMedia: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createEventMediaRepository>,
 		eventForum: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createEventForumRepository>,
 		retention: createUnavailableRetentionRepository(),
+		navPins: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createNavPinsRepository>,
+		quickLinks: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createQuickLinksRepository>,
+		roster: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createRosterRepository>,
 		surveys: createUnavailableSurveysRepository(),
 		notifications: createUnavailableNotificationsRepository(),
 		overview: createUnavailableOverviewRepository(),

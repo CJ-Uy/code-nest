@@ -9,6 +9,9 @@ export function createUnavailableRetentionRepository(): RetentionRepository {
 		listForMember: unavailable,
 		getMemberTermSummary: unavailable,
 		leaderboard: unavailable,
+		listForTerm: unavailable,
+		listMemberTermHistory: unavailable,
+		listForEvent: unavailable,
 		myHistory: unavailable,
 		listTerms: unavailable,
 		async createManual() {

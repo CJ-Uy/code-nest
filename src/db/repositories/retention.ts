@@ -1,13 +1,38 @@
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import { createId } from "@/lib/ids";
-import { members, retentionRecords, terms } from "@/db/schema";
+import { crsAttendance, crsEvents, eventRsvps, members, retentionRecords, terms } from "@/db/schema";
+import type { RetentionRecordSource } from "@/db/schema";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
 import type { CreateManualRetentionRecordInput } from "../types";
 import type { AuditRepository } from "./audit";
 
 export type RetentionRecord = InferSelectModel<typeof retentionRecords>;
+
+export type TermMasterRow = {
+	recordId: string;
+	memberId: string;
+	memberEmail: string;
+	memberName: string | null;
+	eventId: string | null;
+	eventTitle: string | null;
+	points: number | null;
+	reason: string;
+	source: RetentionRecordSource;
+	recordedAt: Date;
+};
+
+export type MemberHistoryRow = TermMasterRow;
+
+export type EventRosterRow = {
+	memberId: string;
+	memberEmail: string;
+	memberName: string | null;
+	rsvped: boolean;
+	attended: boolean;
+	scannedAt: Date | null;
+};
 
 export type RecordEventAttendanceInput = {
 	memberId: string;
@@ -48,6 +73,9 @@ export type RetentionRepository = {
 	getMemberTermSummary(actor: Actor, input: MemberTermSummaryInput): Promise<RetentionSummary>;
 	leaderboard(actor: Actor, input: LeaderboardInput): Promise<LeaderboardRow[]>;
 	createManual(actor: Actor, input: CreateManualRetentionRecordInput): Promise<{ recordIds: string[] }>;
+	listForTerm(actor: Actor, termId: string): Promise<TermMasterRow[]>;
+	listMemberTermHistory(actor: Actor, memberId: string, termId: string): Promise<MemberHistoryRow[]>;
+	listForEvent(actor: Actor, eventId: string): Promise<EventRosterRow[]>;
 	myHistory(
 		actor: Actor,
 		input: { termId?: string },
@@ -74,6 +102,19 @@ async function getCurrentTermId(db: Db, now: Date): Promise<string | null> {
 		.limit(1);
 	return term?.id ?? null;
 }
+
+const reportBaseColumns = {
+	recordId: retentionRecords.id,
+	memberId: retentionRecords.memberId,
+	memberEmail: members.email,
+	memberName: members.fullName,
+	eventId: retentionRecords.eventId,
+	eventTitle: crsEvents.title,
+	points: retentionRecords.points,
+	reason: retentionRecords.reason,
+	source: retentionRecords.source,
+	recordedAt: retentionRecords.recordedAt,
+};
 
 export function createRetentionRepository(db: Db, audit: AuditRepository): RetentionRepository {
 	return {
@@ -204,6 +245,73 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 			}
 
 			return { recordIds: rows.map((row) => row.id) };
+		},
+
+		async listForTerm(actor, termId) {
+			if (!can(actor, "retention:record")) {
+				throw new Error("Not authorized to read retention reports.");
+			}
+			return db
+				.select(reportBaseColumns)
+				.from(retentionRecords)
+				.innerJoin(members, eq(members.id, retentionRecords.memberId))
+				.leftJoin(crsEvents, eq(crsEvents.id, retentionRecords.eventId))
+				.where(eq(retentionRecords.termId, termId))
+				.orderBy(asc(retentionRecords.recordedAt)) as Promise<TermMasterRow[]>;
+		},
+
+		async listMemberTermHistory(actor, memberId, termId) {
+			if (!can(actor, "retention:record")) {
+				throw new Error("Not authorized to read retention reports.");
+			}
+			return db
+				.select(reportBaseColumns)
+				.from(retentionRecords)
+				.innerJoin(members, eq(members.id, retentionRecords.memberId))
+				.leftJoin(crsEvents, eq(crsEvents.id, retentionRecords.eventId))
+				.where(and(eq(retentionRecords.memberId, memberId), eq(retentionRecords.termId, termId)))
+				.orderBy(asc(retentionRecords.recordedAt)) as Promise<MemberHistoryRow[]>;
+		},
+
+		async listForEvent(actor, eventId) {
+			if (!can(actor, "retention:record")) {
+				throw new Error("Not authorized to read retention reports.");
+			}
+			const rsvps = await db
+				.select({
+					memberId: members.id,
+					memberEmail: members.email,
+					memberName: members.fullName,
+				})
+				.from(eventRsvps)
+				.innerJoin(members, eq(members.id, eventRsvps.memberId))
+				.where(and(eq(eventRsvps.eventId, eventId), eq(eventRsvps.state, "going")));
+			const attendance = await db
+				.select({
+					memberId: members.id,
+					memberEmail: members.email,
+					memberName: members.fullName,
+					scannedAt: crsAttendance.scannedAt,
+				})
+				.from(crsAttendance)
+				.innerJoin(members, eq(members.id, crsAttendance.memberId))
+				.where(eq(crsAttendance.eventId, eventId));
+
+			const rows = new Map<string, EventRosterRow>();
+			for (const row of rsvps) {
+				rows.set(row.memberId, { ...row, rsvped: true, attended: false, scannedAt: null });
+			}
+			for (const row of attendance) {
+				rows.set(row.memberId, {
+					memberId: row.memberId,
+					memberEmail: row.memberEmail,
+					memberName: row.memberName,
+					rsvped: rows.get(row.memberId)?.rsvped ?? false,
+					attended: true,
+					scannedAt: row.scannedAt,
+				});
+			}
+			return Array.from(rows.values()).sort((a, b) => a.memberEmail.localeCompare(b.memberEmail));
 		},
 
 		async myHistory(actor, input, now = new Date()) {

@@ -21,6 +21,8 @@ describe("retention repository on D1", () => {
 	beforeEach(async () => {
 		await env.DB.prepare("DELETE FROM audit_logs").run();
 		await env.DB.prepare("DELETE FROM retention_records").run();
+		await env.DB.prepare("DELETE FROM crs_attendance").run();
+		await env.DB.prepare("DELETE FROM event_rsvps").run();
 		await env.DB.prepare("DELETE FROM crs_events").run();
 		await env.DB.prepare("DELETE FROM terms").run();
 		await env.DB.prepare("DELETE FROM members").run();
@@ -129,6 +131,51 @@ describe("retention repository on D1", () => {
 		const board = await repo.leaderboard(retentionAdmin, { termId: "term_1" });
 		expect(board.map((row) => row.memberId)).toEqual(["mem_b", "mem_a"]);
 		expect(board[0].totalPoints).toBe(15);
+	});
+
+	it("lists term, member, and event reporting rows for retention admins", async () => {
+		const { repo } = makeRepo();
+		await env.DB.prepare(
+			"INSERT INTO crs_events (id, title, type, status, points, place, starts_at, description, created_by, checkin_secret) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		)
+			.bind("evt_report", "Practice Night", "official", "approved", 5, "SOM 111", 1000, "Practice", "mem_admin", "secret")
+			.run();
+		await env.DB.prepare(
+			"INSERT INTO retention_records (id, member_id, term_id, event_id, points, reason, source, recorded_by, recorded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		)
+			.bind("ret_report_1", "mem_a", "term_1", "evt_report", 5, "Attended Practice Night", "event_attendance", "mem_admin", 2000)
+			.run();
+		await env.DB.prepare(
+			"INSERT INTO retention_records (id, member_id, term_id, event_id, points, reason, source, recorded_by, recorded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		)
+			.bind("ret_report_2", "mem_a", "term_1", null, null, "Submitted waiver", "manual", "mem_admin", 3000)
+			.run();
+		await env.DB.prepare("INSERT INTO event_rsvps (event_id, member_id, state) VALUES (?, ?, ?)")
+			.bind("evt_report", "mem_a", "going")
+			.run();
+		await env.DB.prepare("INSERT INTO crs_attendance (event_id, member_id, scanned_at, scanned_by) VALUES (?, ?, ?, ?)")
+			.bind("evt_report", "mem_b", 2500, "mem_admin")
+			.run();
+
+		const termRows = await repo.listForTerm(retentionAdmin, "term_1");
+		expect(termRows).toHaveLength(2);
+		expect(termRows[0]).toMatchObject({ recordId: "ret_report_1", eventTitle: "Practice Night", points: 5 });
+
+		const memberRows = await repo.listMemberTermHistory(retentionAdmin, "mem_a", "term_1");
+		expect(memberRows.map((row) => row.recordId)).toEqual(["ret_report_1", "ret_report_2"]);
+
+		const eventRows = await repo.listForEvent(retentionAdmin, "evt_report");
+		expect(eventRows).toEqual([
+			expect.objectContaining({ memberEmail: "a@example.com", rsvped: true, attended: false }),
+			expect.objectContaining({ memberEmail: "b@example.com", rsvped: false, attended: true }),
+		]);
+	});
+
+	it("rejects reporting reads from actors without retention scope", async () => {
+		const { repo } = makeRepo();
+		await expect(repo.listForTerm(plainMember, "term_1")).rejects.toThrow("Not authorized");
+		await expect(repo.listMemberTermHistory(plainMember, "mem_a", "term_1")).rejects.toThrow("Not authorized");
+		await expect(repo.listForEvent(plainMember, "evt_missing")).rejects.toThrow("Not authorized");
 	});
 
 	it("records one manual entry across multiple members in a single batch", async () => {

@@ -42,6 +42,27 @@ export function createRetentionInternalHandlers({ db, deployEnv, allowedOrigins 
 						const output = retentionContract.myTerms.output.parse({ terms });
 						return Response.json(output, { headers: responseHeaders });
 					}
+					if (url.searchParams.get("report") === "term") {
+						const input = retentionContract.reportTerm.input.parse({ termId: url.searchParams.get("termId") });
+						const rows = await repository.listForTerm(actor, input.termId);
+						const output = retentionContract.reportTerm.output.parse({ rows });
+						return Response.json(output, { headers: responseHeaders });
+					}
+					if (url.searchParams.get("report") === "member") {
+						const input = retentionContract.reportMember.input.parse({
+							memberId: url.searchParams.get("memberId"),
+							termId: url.searchParams.get("termId"),
+						});
+						const rows = await repository.listMemberTermHistory(actor, input.memberId, input.termId);
+						const output = retentionContract.reportMember.output.parse({ rows });
+						return Response.json(output, { headers: responseHeaders });
+					}
+					if (url.searchParams.get("report") === "event") {
+						const input = retentionContract.reportEvent.input.parse({ eventId: url.searchParams.get("eventId") });
+						const rows = await repository.listForEvent(actor, input.eventId);
+						const output = retentionContract.reportEvent.output.parse({ rows });
+						return Response.json(output, { headers: responseHeaders });
+					}
 					const input = retentionContract.myHistory.input.parse({
 						termId: url.searchParams.get("termId") ?? undefined,
 					});

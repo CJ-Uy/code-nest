@@ -45,6 +45,30 @@ export const termOptionOutputSchema = z.object({
 	isCurrent: z.boolean(),
 });
 
+export const termMasterRowOutputSchema = z.object({
+	recordId: z.string(),
+	memberId: z.string(),
+	memberEmail: z.string(),
+	memberName: z.string().nullable(),
+	eventId: z.string().nullable(),
+	eventTitle: z.string().nullable(),
+	points: z.number().int().nullable(),
+	reason: z.string(),
+	source: z.enum(["event_attendance", "manual"]),
+	recordedAt: z.coerce.date(),
+});
+
+export const memberHistoryRowOutputSchema = termMasterRowOutputSchema;
+
+export const eventRosterRowOutputSchema = z.object({
+	memberId: z.string(),
+	memberEmail: z.string(),
+	memberName: z.string().nullable(),
+	rsvped: z.boolean(),
+	attended: z.boolean(),
+	scannedAt: z.coerce.date().nullable(),
+});
+
 export const retentionContract = {
 	listForMember: operation({
 		input: z.object({
@@ -93,6 +117,27 @@ export const retentionContract = {
 		input: z.object({}),
 		output: z.object({ terms: z.array(termOptionOutputSchema) }),
 		auth: "member",
+		sharedDev: "allow",
+	}),
+	reportTerm: operation({
+		input: z.object({ termId: z.string().min(1) }),
+		output: z.object({ rows: z.array(termMasterRowOutputSchema) }),
+		auth: "admin",
+		permission: "retention:record",
+		sharedDev: "allow",
+	}),
+	reportMember: operation({
+		input: z.object({ memberId: z.string().min(1), termId: z.string().min(1) }),
+		output: z.object({ rows: z.array(memberHistoryRowOutputSchema) }),
+		auth: "admin",
+		permission: "retention:record",
+		sharedDev: "allow",
+	}),
+	reportEvent: operation({
+		input: z.object({ eventId: z.string().min(1) }),
+		output: z.object({ rows: z.array(eventRosterRowOutputSchema) }),
+		auth: "admin",
+		permission: "retention:record",
 		sharedDev: "allow",
 	}),
 };
