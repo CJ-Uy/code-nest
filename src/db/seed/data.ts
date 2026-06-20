@@ -7,6 +7,8 @@ import {
 	linkDailyStats,
 	members,
 	memberRoles,
+	navPins,
+	quickLinks,
 	reservedSlugs,
 	retentionRecords,
 	roles,
@@ -160,4 +162,47 @@ export const seedAuditLogs: InferInsertModel<typeof auditLogs>[] = [
 export const seedSharedDevTokens: InferInsertModel<typeof sharedDevTokens>[] = [
 	{ tokenHash: "shared-dev-admin-token-hash", memberId: "mem_demo_admin", label: "Shared admin token" },
 	{ tokenHash: "shared-dev-member-token-hash", memberId: "mem_demo_member", label: "Shared member token" },
+];
+
+export const seedNavPins: InferInsertModel<typeof navPins>[] = [
+	{
+		id: "nav_master",
+		label: "Masterfile",
+		url: "https://example.com/masterfile",
+		icon: "file-spreadsheet",
+		position: 1,
+		createdBy: "mem_demo_admin",
+	},
+	{
+		id: "nav_guide",
+		label: "Admin guidebook",
+		url: "https://example.com/guidebook",
+		icon: "book-open",
+		position: 2,
+		createdBy: "mem_demo_admin",
+	},
+];
+
+export const seedQuickLinks: InferInsertModel<typeof quickLinks>[] = [
+	{
+		id: "qlk_directory",
+		label: "Member directory",
+		url: "https://example.com/directory",
+		position: 1,
+		createdBy: "mem_demo_admin",
+	},
+	{
+		id: "qlk_constitution",
+		label: "Constitution",
+		url: "https://example.com/constitution",
+		position: 2,
+		createdBy: "mem_demo_admin",
+	},
+	{
+		id: "qlk_finance",
+		label: "Finance guide",
+		url: "https://example.com/finance",
+		position: 3,
+		createdBy: "mem_demo_admin",
+	},
 ];
