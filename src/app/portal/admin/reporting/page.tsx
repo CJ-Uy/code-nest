@@ -1,12 +1,11 @@
-import { asc, desc } from "drizzle-orm";
+import { asc, desc, inArray } from "drizzle-orm";
 import { Download } from "lucide-react";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { getDb } from "@/db/client";
-import { crsEvents, terms } from "@/db/schema";
+import { crsEvents, members, terms } from "@/db/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { requireActor } from "@/server/auth/actor";
 import { can } from "@/server/auth/permissions";
@@ -17,42 +16,63 @@ export default async function ReportingAdminPage() {
 	const actor = await requireActor();
 	if (!can(actor, "retention:record")) redirect("/portal/admin");
 	const db = getDb();
-	const [termList, eventList] = await Promise.all([
+	const [termList, eventList, memberList] = await Promise.all([
 		db.select().from(terms).orderBy(asc(terms.startsAt)),
 		db.select().from(crsEvents).orderBy(desc(crsEvents.startsAt)).limit(50),
+		db
+			.select()
+			.from(members)
+			.where(inArray(members.status, ["active", "pending"]))
+			.orderBy(asc(members.email))
+			.limit(500),
 	]);
 
 	return (
 		<div className="grid gap-6 lg:grid-cols-3">
-			<ExportBlockedCard title="Whole-term master" description="Every retention record in a term, one row per record.">
-				<Select disabled>
+			<ExportCard title="Whole-term master" description="Every retention record in a term, one row per record.">
+				<input type="hidden" name="kind" value="term" />
+				<Select name="termId" required>
 					{termList.map((term) => (
-						<option key={term.id}>{term.name}</option>
+						<option key={term.id} value={term.id}>
+							{term.name}
+						</option>
 					))}
 				</Select>
-			</ExportBlockedCard>
+			</ExportCard>
 
-			<ExportBlockedCard title="Per-event roster" description="Who signed up and who was scanned in, per event.">
-				<Select disabled>
+			<ExportCard title="Per-event roster" description="Who signed up and who was scanned in, per event.">
+				<input type="hidden" name="kind" value="event" />
+				<Select name="eventId" required>
 					{eventList.map((event) => (
-						<option key={event.id}>{event.title}</option>
+						<option key={event.id} value={event.id}>
+							{event.title}
+						</option>
 					))}
 				</Select>
-			</ExportBlockedCard>
+			</ExportCard>
 
-			<ExportBlockedCard title="Per-member history" description="One member's full-year retention history for a selected term.">
-				<Select disabled>
+			<ExportCard title="Per-member history" description="One member's full-year retention history for a selected term.">
+				<input type="hidden" name="kind" value="member" />
+				<Select name="termId" required>
 					{termList.map((term) => (
-						<option key={term.id}>{term.name}</option>
+						<option key={term.id} value={term.id}>
+							{term.name}
+						</option>
 					))}
 				</Select>
-				<Input disabled placeholder="Member id" />
-			</ExportBlockedCard>
+				<Select name="memberId" required>
+					{memberList.map((member) => (
+						<option key={member.id} value={member.id}>
+							{member.fullName ?? member.name ?? member.email}
+						</option>
+					))}
+				</Select>
+			</ExportCard>
 		</div>
 	);
 }
 
-function ExportBlockedCard({
+function ExportCard({
 	title,
 	description,
 	children,
@@ -68,13 +88,13 @@ function ExportBlockedCard({
 				<CardDescription>{description}</CardDescription>
 			</CardHeader>
 			<CardContent className="grid gap-3">
-				{children}
-				{/* ponytail: export route stays unimplemented until xlsx install is approved. */}
-				<p className="text-sm text-muted-foreground">Xlsx export is pending dependency approval.</p>
-				<Button type="button" size="sm" variant="outline" disabled>
-					<Download className="size-4" />
-					Export xlsx
-				</Button>
+				<form action="/api/reporting/export" method="get" className="grid gap-3">
+					{children}
+					<Button type="submit" size="sm" variant="outline">
+						<Download className="size-4" />
+						Export xlsx
+					</Button>
+				</form>
 			</CardContent>
 		</Card>
 	);
