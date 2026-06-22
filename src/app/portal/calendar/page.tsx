@@ -1,6 +1,9 @@
+import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getRepositories } from "@/db";
-import { requireActor } from "@/server/auth/actor";
+import { Button } from "@/components/ui/button";
 import { CalendarMonth } from "@/components/calendar-month";
+import { requireActor } from "@/server/auth/actor";
 
 export const dynamic = "force-dynamic";
 
@@ -23,10 +26,33 @@ export default async function CalendarPage({
 	const repositories = await getRepositories();
 	const items = await repositories.calendar.getMonth(actor, { year, month }).catch(() => []);
 
+	const prev = month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+	const next = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
+
 	return (
-		<main className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-			<h1 className="mb-4 font-heading text-2xl">Calendar</h1>
+		<div className="grid gap-5">
+			<div className="flex items-center justify-between gap-4">
+				<div>
+					<p className="text-xs font-semibold uppercase text-primary">Member workspace</p>
+					<h1 className="font-heading text-3xl">Calendar</h1>
+				</div>
+				<div className="flex items-center gap-2">
+					<Button asChild variant="outline" size="icon" aria-label="Previous month">
+						<Link href={`/portal/calendar?year=${prev.year}&month=${prev.month}`}>
+							<ChevronLeft />
+						</Link>
+					</Button>
+					<span className="min-w-36 text-center text-sm font-semibold">
+						{MONTH_NAMES[month - 1]} {year}
+					</span>
+					<Button asChild variant="outline" size="icon" aria-label="Next month">
+						<Link href={`/portal/calendar?year=${next.year}&month=${next.month}`}>
+							<ChevronRight />
+						</Link>
+					</Button>
+				</div>
+			</div>
 			<CalendarMonth items={items} monthLabel={`${MONTH_NAMES[month - 1]} ${year}`} />
-		</main>
+		</div>
 	);
 }

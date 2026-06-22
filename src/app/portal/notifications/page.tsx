@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
 import { getRepositories } from "@/db";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/portal/empty-state";
 import { getActor } from "@/server/auth/actor";
 import { markAllNotificationsReadAction } from "./actions";
 
@@ -33,28 +34,23 @@ export default async function NotificationsPage() {
 			</div>
 
 			{items.length === 0 ? (
-				<Card>
-					<CardContent className="flex flex-col items-center gap-2 py-12 text-center">
-						<Bell className="h-8 w-8 text-muted-foreground" />
-						<p className="text-sm text-muted-foreground">You are all caught up.</p>
-					</CardContent>
-				</Card>
+				<EmptyState icon={Bell} title="You are all caught up" description="New notifications will show up here." />
 			) : (
 				<div className="grid gap-3">
 					{items.map((item) => {
 						const content = (
-							<Card className={item.readAt === null ? "border-primary/40" : undefined}>
+							<Card className={item.readAt === null ? "border-accent/40 bg-secondary/40 transition-colors" : "transition-colors"}>
 								<CardHeader>
 									<div className="flex items-center justify-between gap-3">
 										<CardTitle className="text-base">{item.title}</CardTitle>
-										{item.readAt === null ? <span className="h-2 w-2 rounded-full bg-primary" /> : null}
+										{item.readAt === null ? <span className="size-2 shrink-0 rounded-full bg-accent" /> : null}
 									</div>
 									<CardDescription>{item.body}</CardDescription>
 								</CardHeader>
 							</Card>
 						);
 						return item.href ? (
-							<Link key={item.id} href={item.href}>
+							<Link key={item.id} href={item.href} className="block">
 								{content}
 							</Link>
 						) : (

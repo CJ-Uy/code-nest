@@ -20,9 +20,15 @@ export default async function RetentionHistoryPage({
 	const selectedTermId = summary?.termId ?? params.termId ?? terms.find((term) => term.isCurrent)?.id ?? "";
 
 	return (
-		<main className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-			<h1 className="mb-4 font-heading text-2xl">My Retention History</h1>
+		<div className="grid gap-5">
+			<div>
+				<p className="text-xs font-semibold uppercase text-primary">Member workspace</p>
+				<h1 className="font-heading text-3xl">Retention history</h1>
+				<p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+					Your points, retained status, and the record behind every change this term.
+				</p>
+			</div>
 			<RetentionHistory summary={summary} records={records} terms={terms} selectedTermId={selectedTermId} />
-		</main>
+		</div>
 	);
 }

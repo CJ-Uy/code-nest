@@ -1,4 +1,4 @@
-import { CalendarDays, CircleUserRound, House, Bell, Link2, Ticket, ShieldCheck } from "lucide-react";
+import { CalendarDays, CircleUserRound, House, Bell, Link2, Award, ShieldCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export type NavItem = { id: string; label: string; href: string; icon: LucideIcon };
@@ -8,7 +8,8 @@ export type NavItem = { id: string; label: string; href: string; icon: LucideIco
 export const primaryNav: NavItem[] = [
 	{ id: "overview", label: "Overview", href: "/portal", icon: House },
 	{ id: "calendar", label: "Calendar", href: "/portal/calendar", icon: CalendarDays },
-	{ id: "events", label: "Events", href: "/portal/events", icon: Ticket },
+	// /portal/events currently renders the member retention-history page.
+	{ id: "retention", label: "Retention", href: "/portal/events", icon: Award },
 	{ id: "profile", label: "Profile", href: "/portal/profile", icon: CircleUserRound },
 ];
 
