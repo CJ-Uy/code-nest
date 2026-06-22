@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { Copy, ExternalLink, ImageUp, RefreshCw, Save, Trash2 } from "lucide-react";
+import { BarChart3, Copy, ExternalLink, ImageUp, RefreshCw, Save, Trash2 } from "lucide-react";
 import type { LinkStats, ShortLink } from "@/db/repositories/links";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -164,6 +165,11 @@ export function LinksWorkspace({ initialLinks, canModerate }: LinksWorkspaceProp
 								<div className="flex shrink-0 flex-wrap gap-2">
 									<Button variant="outline" size="sm" onClick={() => setActiveId(link.id)}>
 										Edit
+									</Button>
+									<Button asChild variant="outline" size="icon" aria-label="View analytics">
+										<Link href={`/portal/links/${link.id}`}>
+											<BarChart3 />
+										</Link>
 									</Button>
 									<Button variant="outline" size="icon" aria-label="Copy link" onClick={() => origin && navigator.clipboard.writeText(shortLinkUrl(origin, link.slug))}>
 										<Copy />
