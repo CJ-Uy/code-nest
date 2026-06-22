@@ -34,10 +34,17 @@ export type AppEnv = AppConfig["APP_ENV"];
 export type DeployEnv = NonNullable<AppConfig["DEPLOY_ENV"]>;
 export type StorageMode = AppConfig["STORAGE_MODE"];
 
+export function resolveRuntimeEnvValue(
+	key: keyof AppConfig,
+	cloudflareEnv: Partial<Record<keyof AppConfig, string>> | null,
+	processEnv: Partial<Record<keyof AppConfig, string | undefined>>,
+): string | undefined {
+	return cloudflareEnv ? cloudflareEnv[key] : processEnv[key];
+}
+
 function runtimeEnvValue(key: keyof AppConfig): string | undefined {
 	const cloudflareEnv = getOptionalCloudflareEnv() as Partial<Record<keyof AppConfig, string>> | null;
-	if (process.env.APP_ENV === "local") return process.env[key];
-	return cloudflareEnv?.[key] ?? process.env[key];
+	return resolveRuntimeEnvValue(key, cloudflareEnv, process.env);
 }
 
 export function getAppConfig(): AppConfig {
