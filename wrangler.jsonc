@@ -31,7 +31,8 @@
 		"DEPLOY_ENV": "prod",
 		"STORAGE_MODE": "binding",
 		"LOCAL_SQLITE_PATH": "./.local/dev.db",
-		"LOCAL_STORAGE_DIR": "./.local/uploads"
+		"LOCAL_STORAGE_DIR": "./.local/uploads",
+		"NEXT_PRIVATE_MINIMAL_MODE": "1"
 	},
 	"d1_databases": [
 		{
@@ -68,7 +69,8 @@
 				"DEPLOY_ENV": "dev",
 				"STORAGE_MODE": "binding",
 				"LOCAL_SQLITE_PATH": "./.local/dev.db",
-				"LOCAL_STORAGE_DIR": "./.local/uploads"
+				"LOCAL_STORAGE_DIR": "./.local/uploads",
+				"NEXT_PRIVATE_MINIMAL_MODE": "1"
 			},
 			"d1_databases": [
 				{
