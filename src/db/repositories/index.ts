@@ -25,13 +25,13 @@ import type { DatabaseAdapter } from "../types";
 type DrizzleDb = ReturnType<typeof getDb>;
 
 export function createDrizzleRepositories(db: DrizzleDb) {
-	const audit = createAuditRepository(db);
 	// getDb() is typed as the union of the sync better-sqlite3 and async D1
-	// Drizzle clients. The notifications/overview repos type their handle as the
-	// async D1 client (what production and the tests run on); narrow once here,
+	// Drizzle clients. The notifications/overview/audit repos type their handle as
+	// the async D1 client (what production and the tests run on); narrow once here,
 	// mirroring the existing members cast. The local handle stays compatible at
 	// runtime.
 	const d1 = db as unknown as DrizzleD1Database<typeof schema>;
+	const audit = createAuditRepository(d1);
 	const retention = createRetentionRepository(db, audit);
 	return {
 		members: createMembersRepository(db as unknown as MemberDb & AuditDb, audit),

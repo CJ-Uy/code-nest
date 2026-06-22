@@ -98,7 +98,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 						.set({ memberId: user.id })
 						.where(eq(termMemberRoster.email, user.email.toLowerCase()));
 				}
-				await createAuditRepository(db).record(
+				await createAuditRepository(db as unknown as Parameters<typeof createAuditRepository>[0]).record(
 					{ memberId: user.id, roles: ["member"], context: "session" },
 					{
 						action: "member:self_provision",
