@@ -399,6 +399,7 @@ export const memberFeedState = sqliteTable("member_feed_state", {
 		.references(() => members.id, { onDelete: "cascade" }),
 	surveysSeenAt: integer("surveys_seen_at", { mode: "timestamp_ms" }),
 	eventsSeenAt: integer("events_seen_at", { mode: "timestamp_ms" }),
+	tourSeenAt: integer("tour_seen_at", { mode: "timestamp_ms" }),
 });
 
 export const notifications = sqliteTable(
