@@ -8,7 +8,15 @@ export type RsvpState = "going" | "none";
 export type SurveyStatus = "draft" | "running" | "closed";
 export type SurveyQuestionType = "scale" | "text" | "choice";
 export type AuditActorContext = "session" | "shared_dev_token";
-export type AuditCategory = "role" | "event" | "retention" | "survey" | "link" | "member";
+export type AuditCategory =
+	| "role"
+	| "event"
+	| "retention"
+	| "survey"
+	| "link"
+	| "member"
+	| "announcement"
+	| "library";
 export type RetentionRecordSource = "event_attendance" | "manual";
 
 const nowMs = sql`(unixepoch() * 1000)`;
@@ -475,5 +483,41 @@ export const rateLimitCounters = sqliteTable(
 	(table) => [
 		primaryKey({ columns: [table.bucketKey, table.windowStart] }),
 		index("rate_limit_counters_window_start_idx").on(table.windowStart),
+	],
+);
+
+export const announcements = sqliteTable(
+	"announcements",
+	{
+		id: text("id").primaryKey(),
+		tag: text("tag").notNull().default("CODE"),
+		title: text("title").notNull(),
+		body: text("body").notNull(),
+		pinned: integer("pinned", { mode: "boolean" }).notNull().default(false),
+		// Free-text display label only (e.g. "All members"); not enforced as a
+		// permission filter — every signed-in member sees every announcement.
+		audience: text("audience").notNull().default("all"),
+		linkedEventId: text("linked_event_id").references(() => crsEvents.id, { onDelete: "set null" }),
+		createdBy: text("created_by").references(() => members.id, { onDelete: "set null" }),
+		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+	},
+	(table) => [index("announcements_pinned_idx").on(table.pinned, table.createdAt)],
+);
+
+export const announcementReads = sqliteTable(
+	"announcement_reads",
+	{
+		announcementId: text("announcement_id")
+			.notNull()
+			.references(() => announcements.id, { onDelete: "cascade" }),
+		memberId: text("member_id")
+			.notNull()
+			.references(() => members.id, { onDelete: "cascade" }),
+		readAt: integer("read_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+	},
+	(table) => [
+		primaryKey({ columns: [table.announcementId, table.memberId] }),
+		index("announcement_reads_member_id_idx").on(table.memberId),
 	],
 );

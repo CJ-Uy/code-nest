@@ -1,3 +1,4 @@
+import { createAnnouncementsRepository, createUnavailableAnnouncementsRepository } from "./announcements";
 import { createAuditRepository, createUnavailableAuditRepository } from "./audit";
 import { createCalendarRepository, type CalendarRepository } from "./calendar";
 import { createEventForumRepository } from "./event-forum";
@@ -47,6 +48,7 @@ export function createDrizzleRepositories(db: DrizzleDb) {
 		notifications: createNotificationsRepository(d1),
 		overview: createOverviewRepository(d1),
 		calendar: createCalendarRepository(d1),
+		announcements: createAnnouncementsRepository(d1, audit),
 		audit,
 	};
 }
@@ -106,6 +108,7 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 		notifications: createUnavailableNotificationsRepository(),
 		overview: createUnavailableOverviewRepository(),
 		calendar: createUnavailableCalendarRepository(),
+		announcements: createUnavailableAnnouncementsRepository(),
 		audit,
 	};
 }

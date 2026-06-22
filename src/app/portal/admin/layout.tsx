@@ -20,6 +20,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 		{ href: "/portal/admin/quick-links", label: "Quick links", show: can(actor, "nav:configure") },
 		{ href: "/portal/admin/links", label: "Links", show: can(actor, "link:moderate") },
 		{ href: "/portal/admin/surveys", label: "Surveys", show: can(actor, "survey:configure") },
+		{ href: "/portal/admin/announcements", label: "Announcements", show: can(actor, "announcement:manage") },
 	].filter((tab) => tab.show);
 
 	return (

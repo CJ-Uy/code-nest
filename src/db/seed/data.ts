@@ -31,6 +31,7 @@ export const seedRoles: InferInsertModel<typeof roles>[] = [
 	{ id: "role_link", key: "link", label: "Links", description: "Moderates short links.", kind: "admin" },
 	{ id: "role_retention", key: "retention", label: "Retention", description: "Approves events and logs retention records.", kind: "admin" },
 	{ id: "role_member_admin", key: "member_admin", label: "Member admin", description: "Manages member profiles, roles, roster, and nav pins.", kind: "admin" },
+	{ id: "role_publishing", key: "publishing", label: "Publishing", description: "Manages announcements and the content library.", kind: "admin" },
 ];
 
 export const seedMembers: InferInsertModel<typeof members>[] = [
