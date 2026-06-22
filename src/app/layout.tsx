@@ -18,6 +18,13 @@ const unna = Unna({
 export const metadata: Metadata = {
 	title: "CODE",
 	description: "Ateneo CODE public site and member portal.",
+	icons: {
+		icon: [
+			{ url: "/favicon.svg", type: "image/svg+xml" },
+			{ url: "/code-falcon-transparent.png", type: "image/png" },
+		],
+		apple: { url: "/favicon.svg" },
+	},
 };
 
 export default function RootLayout({
@@ -27,9 +34,6 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<head>
-				<link rel="icon" href="/favicon.svg" type="image/svg+xml"></link>
-			</head>
 			<body className={`${sourceSans.variable} ${unna.variable} antialiased`}>{children}</body>
 		</html>
 	);
