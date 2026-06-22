@@ -6,7 +6,7 @@
 		"dev": "next dev",
 		"dev:cf": "pnpm build && wrangler dev --env dev",
 		"clean:opennext": "node -e \"require('node:fs').rmSync('.open-next',{recursive:true,force:true})\"",
-		"build": "next build && pnpm clean:opennext && opennextjs-cloudflare build --skipNextBuild",
+		"build": "next build --webpack && pnpm clean:opennext && opennextjs-cloudflare build --skipNextBuild",
 		"start": "next start",
 		"lint": "eslint .",
 		"typecheck": "tsc --noEmit",
