@@ -173,6 +173,16 @@ goals/stats, article body) — normalizing each into its own child table would
 add five join tables for data that's never queried independently of its
 parent row.
 
+Indexes, matching the existing convention (e.g. `nav_pins_position_idx`,
+`quick_links_position_idx`):
+- `services_position_idx`, `projects_position_idx`, `contact_reps_position_idx`
+  on each table's `position` column (admin list ordering + public read order).
+- `articles_slug_idx` (unique, backs `getBySlug`) and
+  `articles_published_at_idx` (public list sort/filter).
+- `contact_submissions_created_at_idx` and
+  `article_feedback_article_id_idx` + `article_feedback_created_at_idx`
+  (admin submissions view sorts newest-first and filters by article).
+
 ### Permissions
 
 Add a new role `"public_content_admin"` to `roleKeys` in
@@ -183,24 +193,46 @@ getting roster/nav/submissions access. Display label in the admin UI:
 **"Public Content Admin"**.
 
 Add `"submission:view"` as well, granted to the existing `member_admin` role
-(the role that already owns roster/nav/quick-links admin) — unchanged from
-the previous revision of this design. `member_admin`'s permissions are not
-changing; only its display grouping in the admin UI gets a clearer label:
-**"Member Content Admin"** — it already controls portal-side content
-(roster, nav pins, quick links, surveys), this just names that explicitly
-alongside the new "Public Content Admin" group.
+(the role that already owns roster/nav/quick-links admin via
+`roster:manage`/`nav:configure`) — unchanged from the previous revision of
+this design. `member_admin`'s permissions are not changing.
+
+Correction from the first draft: surveys, reporting, and short-links admin
+are gated by `survey:configure`, `retention:record`, and `link:moderate`
+respectively (the `survey`/`retention`/`link` roles), **not** by
+`member_admin`. The "Member Content Admin" label in the Admin panel section
+below refers only to the modules `member_admin` actually owns
+(roster, nav pins, quick links, submissions) — it is a display label for
+that one role's existing grant, not a new grouping that spans roles it
+doesn't have.
+
+`roleKeys` in `permissions.ts` is a closed TypeScript union used by `can()`,
+but actual role *grants* are rows in the `roles` table (`src/db/schema.ts`)
+joined to members via `memberRoles` — adding `"public_content_admin"` to the
+union is necessary but not sufficient. The migration must also insert a
+`roles` row (`key: "public_content_admin"`, with a label/description) so it
+can be assigned to a member through the existing roster role-assignment UI
+the same way `member_admin` already is.
 
 ## Public write paths
 
-- `POST /api/contact` — public, unauthenticated. Validates body shape, rate
-  limits via the existing `checkRateLimit` helper (bucket keyed by IP),
-  inserts into `contactSubmissions`. No audit log entry — there's no actor to
-  attribute it to.
-- `POST /api/articles/[slug]/feedback` — same shape, inserts into
-  `articleFeedback`.
+- `POST /api/contact` — public, unauthenticated. `zod`-validates: `name`
+  (1-120 chars), `organization` (1-160), `email` (valid email, max 200),
+  `orgSegment` (enum), `message` (1-2000 chars). Rate-limited via the
+  existing `checkRateLimit` helper with bucket key `contact:<ip>` (limit:
+  5 per 10 minutes — generous for a real inquiry, tight enough to stop a
+  script). Inserts into `contactSubmissions`. No audit log entry — there's
+  no actor to attribute it to.
+- `POST /api/articles/[slug]/feedback` — same validation pattern: `rating`
+  (`z.number().int().min(1).max(5)`), `comment` (optional, max 1000 chars).
+  Bucket key `feedback:<ip>:<slug>` (limit: 3 per 10 minutes per article).
+  Inserts into `articleFeedback`.
 
 Both routes skip `Actor`-based authorization (they're intentionally public)
-and rely on rate limiting as the spam guard.
+and rely on rate limiting plus the length/shape caps above as the spam
+guard. IP comes from the same header Cloudflare Workers already populate
+for other rate-limited routes in this app (`CF-Connecting-IP`) — reuse
+whatever existing helper reads that, don't re-derive it.
 
 ## Repositories
 
@@ -226,10 +258,14 @@ Each list/create/update mutation calls `audit.record(actor, …)` the same way
 ## Admin panel
 
 `/portal/admin` groups its module cards under two headings: **"Public
-Content Admin"** (new — gated by `public_content:manage`) and **"Member
-Content Admin"** (existing `member_admin`-gated modules: roster, nav pins,
-quick links, surveys, reporting, short links — relabeled, not restructured)
-plus the new read-only **Submissions** card (`submission:view`).
+Content Admin"** (new — gated by `public_content:manage`: org profile,
+services, projects, contact reps, articles) and **"Member Content Admin"**
+(the existing `member_admin`-gated modules only: roster, nav pins, quick
+links), plus the new read-only **Submissions** card (`submission:view`,
+also `member_admin`). Surveys, reporting, and short-links keep their current
+gates (`survey:configure`, `retention:record`, `link:moderate`) and stay
+outside both headings — they aren't `member_admin` modules today and this
+design doesn't change that.
 
 Every new admin page follows the exact pattern already used by
 `/portal/admin/quick-links` (`page.tsx` + `actions.ts`): a server component
@@ -299,6 +335,16 @@ A shared `<PlaceholderBlock label ratio>` component (gray block + caption)
 replaces the mockups' `Placeholder` for photo/map slots — real assets swap in
 later with no layout change.
 
+**Rendering admin-edited content:** every field above (org profile, services,
+projects, contact reps, article bodies) renders as plain JSX text content
+(`{value}`), never `dangerouslySetInnerHTML` — React escapes it
+automatically. `public_content_admin` is a trusted officer role, not an
+untrusted-user input path, but there's no reason to introduce an XSS surface
+for a feature that has zero need for rich HTML. If a future revision wants
+bold/links in article bodies, that needs an explicit sanitizer (e.g. an
+allowlist via `rehype-sanitize`) added at that time — not implicit HTML
+rendering now.
+
 ## Testing
 
 - Repository tests: `*.integration.test.ts` per existing convention covering
@@ -315,14 +361,28 @@ later with no layout change.
 
 ## Migration & seeding
 
-- Drizzle migration adds the six new tables.
-- Dev seed data is updated to insert one `orgProfile` row, the 3 `services`,
-  2 `projects`, 3 `contactReps`, and 3 `articles` rows from the current
-  `design/data.jsx` content, so the public site renders the same copy it has
-  today immediately after migrating — only the source of truth moves.
+- Drizzle migration adds the seven new tables (`orgProfile`, `services`,
+  `projects`, `contactReps`, `articles`, `contactSubmissions`,
+  `articleFeedback`) plus a `roles` row for `public_content_admin`.
+- The migration itself inserts the one `orgProfile` singleton row (with the
+  current `design/data.jsx` org copy as defaults) — not just the dev seed
+  script. Every public page reads `orgProfile.get()` on every request; if
+  that row only existed via a dev-only seed script, any environment where
+  the seed didn't run (a fresh prod D1, a future env) would 500 on `/`.
+  Shipping the default row in the migration itself makes the table
+  self-sufficient.
+- Dev seed data additionally inserts the 3 `services`, 2 `projects`,
+  3 `contactReps`, and 3 `articles` rows from `design/data.jsx`, so the
+  public site renders the same copy it has today immediately after
+  migrating — only the source of truth moves.
 
 ## Deployment
 
-Per `CLAUDE.md`: after the schema migration, run `pnpm db:migrate:dev` then
-`pnpm deploy:dev`, with the exact `wrangler` command shown for approval
-before it runs.
+Per `CLAUDE.md`: show the exact command and wait for approval before
+running it against dev:
+
+```
+pnpm exec wrangler d1 migrations apply DB --env dev --remote
+```
+
+(this is what `pnpm db:migrate:dev` wraps). Then `pnpm deploy:dev`.
