@@ -3,6 +3,8 @@ import { getRepositories } from "@/db";
 import { NotificationBell } from "@/components/portal/notification-bell";
 import { PortalShell } from "@/components/portal/portal-shell";
 import { getActor } from "@/server/auth/actor";
+import { hasAnyAdminScope } from "@/server/auth/admin";
+import { signOutAction } from "./actions";
 import { markAllNotificationsReadAction, markNotificationReadAction } from "./notifications/actions";
 
 export const dynamic = "force-dynamic";
@@ -34,8 +36,11 @@ export default async function PortalLayout({ children }: { children: React.React
 
 	return (
 		<PortalShell
-			member={{ displayName, initials: initialsFrom(displayName) }}
+			member={{ displayName, initials: initialsFrom(displayName), subtitle: member.email }}
+			memberId={actor.memberId}
 			navPins={navPins}
+			showAdmin={hasAnyAdminScope(actor)}
+			signOutAction={signOutAction}
 			bell={
 				<NotificationBell
 					items={feed}
