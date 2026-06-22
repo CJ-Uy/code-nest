@@ -175,14 +175,20 @@ parent row.
 
 ### Permissions
 
-Add a new role `"content"` to `roleKeys` in `src/server/auth/permissions.ts`,
-with a new permission action `"content:manage"` granted to it — a dedicated
-role distinct from `member_admin`, so a comms/PR officer can edit the public
-site without also getting roster/nav/submissions access.
+Add a new role `"public_content_admin"` to `roleKeys` in
+`src/server/auth/permissions.ts`, with a new permission action
+`"public_content:manage"` granted to it — a dedicated role distinct from
+`member_admin`, so a comms/PR officer can edit the public site without also
+getting roster/nav/submissions access. Display label in the admin UI:
+**"Public Content Admin"**.
 
 Add `"submission:view"` as well, granted to the existing `member_admin` role
 (the role that already owns roster/nav/quick-links admin) — unchanged from
-the previous revision of this design.
+the previous revision of this design. `member_admin`'s permissions are not
+changing; only its display grouping in the admin UI gets a clearer label:
+**"Member Content Admin"** — it already controls portal-side content
+(roster, nav pins, quick links, surveys), this just names that explicitly
+alongside the new "Public Content Admin" group.
 
 ## Public write paths
 
@@ -203,8 +209,8 @@ Public reads (no actor check, used by the public pages):
 - `services.ts`, `projects.ts`, `contactReps.ts` — `list()` (ordered by `position`)
 - `articles.ts` — `list()`, `getBySlug(slug)`
 
-Admin writes (gated by `can(actor, "content:manage")`, following the existing
-repository pattern in e.g. `quickLinks.ts`):
+Admin writes (gated by `can(actor, "public_content:manage")`, following the
+existing repository pattern in e.g. `quickLinks.ts`):
 - `orgProfile.ts` — `update(actor, input)`
 - `services.ts`, `projects.ts`, `contactReps.ts`, `articles.ts` —
   `create(actor, input)`, `update(actor, id, input)`, `remove(actor, id)`,
@@ -219,16 +225,64 @@ Each list/create/update mutation calls `audit.record(actor, …)` the same way
 
 ## Admin panel
 
-Two new areas under `/portal/admin`, each its own module card on the
-dashboard, gated by their respective permission:
+`/portal/admin` groups its module cards under two headings: **"Public
+Content Admin"** (new — gated by `public_content:manage`) and **"Member
+Content Admin"** (existing `member_admin`-gated modules: roster, nav pins,
+quick links, surveys, reporting, short links — relabeled, not restructured)
+plus the new read-only **Submissions** card (`submission:view`).
 
-- **`/portal/admin/content`** (`content:manage`) — sub-pages `org-profile`
-  (single edit form), `services`, `projects`, `contact-reps`, `articles`
-  (each a list view with create/edit/delete and drag-or-arrow reordering,
-  following the list+form pattern already used by `roster`/`surveys`).
-- **`/portal/admin/submissions`** (`submission:view`) — two tabs (existing
-  `tabs.tsx`), "Contact" and "Article feedback", each a table (existing
-  `table.tsx`) of rows newest-first. Read-only.
+Every new admin page follows the exact pattern already used by
+`/portal/admin/quick-links` (`page.tsx` + `actions.ts`): a server component
+page with a "create" form at the top and a table below where each row is its
+own `<form action={updateXAction}>` (hidden fields for the unchanged columns,
+editable inputs for the rest) plus a one-button `<form action={deleteXAction}>`.
+Actions are `"use server"` functions that `requireActor()`, validate with
+`zod`, call the repository, then `revalidatePath()` both the sub-page and
+`/portal/admin`. No client-side state, no new form library — matches every
+other admin CRUD page in this app.
+
+**`/portal/admin/content/org-profile`** (single row, no list/delete) —
+one `page.tsx` + `actions.ts` with a single `updateOrgProfileAction`. Fields:
+`name`, `fullName`, `tagline`, `blurb`, `vision`, `mission`, `whatIsOd`,
+`servicesIntro` (textareas/inputs as appropriate), `email`, `facebookLabel`,
+`facebookUrl`, `room`, `campus`. The 3 hero stats and 3 competencies are
+fixed-count, rendered as 3 explicit `{value, label}` / `{title, body}` input
+pairs in the same form (not a generic add/remove list) and reassembled into
+the `heroStats`/`competencies` JSON columns on submit.
+
+**`/portal/admin/content/services`** — create form: `tag`, `title`,
+`summary`, `meta`, `position`, plus `points` as a textarea (one bullet per
+line, split on `\n` into the `points` JSON array). Table: one row per
+service with the same fields editable inline, "Save" + "Remove" per row —
+identical shape to quick-links.
+
+**`/portal/admin/content/projects`** — create form: `shortCode`, `name`,
+`kicker`, `theme`, `summary`, `position`, `goals` (textarea, one per line),
+`stats` (textarea, one `key|value` pair per line, e.g. `160+|partner
+organizations`, split on `|`). Table: same inline edit/remove shape.
+
+**`/portal/admin/content/contact-reps`** — create form: `role`, `scope`,
+`email`, `position`. Table: same inline edit/remove shape. Simplest of the
+five — flat fields only, no JSON columns.
+
+**`/portal/admin/content/articles`** — the richest form, still flat
+inputs/textareas (no nested array builder UI):
+- Flat fields: `slug`, `title`, `category`, `readMinutes`, `author`,
+  `publishedAt`, `dek`, `abstract`.
+- `sections`: one textarea, one section per line as
+  `heading ||| body ||| figure caption`, split on `|||`.
+- `components`: a `componentsTitle` input plus one textarea for items, one
+  per line as `name ||| definition ||| example`.
+- `questions`: textarea, one question per line.
+- `refs`: textarea, one reference per line.
+This delimiter-line convention keeps every new admin form a plain
+`<form>` of inputs/textareas — consistent with the rest of the app — instead
+of introducing a dynamic add-row JS component for a content type that gets
+edited rarely. The placeholder text on each textarea documents the delimiter.
+
+**`/portal/admin/submissions`** (`submission:view`) — two tabs (existing
+`tabs.tsx`), "Contact" and "Article feedback", each a table (existing
+`table.tsx`) of rows newest-first. Read-only, no actions.
 
 ## Visual conversion
 
@@ -248,7 +302,7 @@ later with no layout change.
 ## Testing
 
 - Repository tests: `*.integration.test.ts` per existing convention covering
-  create/update/remove/reorder and the `content:manage` / `submission:view`
+  create/update/remove/reorder and the `public_content:manage` / `submission:view`
   permission gates for each new repository.
 - API route tests: rate-limit behavior and validation for both public POST
   routes.
