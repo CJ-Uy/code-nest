@@ -86,6 +86,44 @@
 					"bucket_name": "code-nest-dev-uploads"
 				}
 			]
+		},
+		"beta": {
+			"name": "code-nest-beta",
+			"assets": {
+				"binding": "ASSETS",
+				"directory": ".open-next/assets"
+			},
+			"images": {
+				"binding": "IMAGES"
+			},
+			"services": [
+				{
+					"binding": "WORKER_SELF_REFERENCE",
+					"service": "code-nest-beta"
+				}
+			],
+			"vars": {
+				"APP_ENV": "production",
+				"DEPLOY_ENV": "beta",
+				"STORAGE_MODE": "binding",
+				"LOCAL_SQLITE_PATH": "./.local/dev.db",
+				"LOCAL_STORAGE_DIR": "./.local/uploads",
+				"NEXT_PRIVATE_MINIMAL_MODE": "1"
+			},
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "code-nest-dev-db",
+					"database_id": "f9d2b16f-3358-49c2-a88e-e72c9339a22b",
+					"migrations_dir": "drizzle/migrations"
+				}
+			],
+			"r2_buckets": [
+				{
+					"binding": "BUCKET",
+					"bucket_name": "code-nest-dev-uploads"
+				}
+			]
 		}
 	}
 }
