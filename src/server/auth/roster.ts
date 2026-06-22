@@ -88,8 +88,15 @@ async function deactivateMemberByEmail(db: Db, email: string): Promise<void> {
  * An existing member who falls off the roster is flipped to inactive so
  * admin reporting can see they were removed, not merely never seen.
  */
-export async function isRosterSignInAllowed(db: Db, email: string, now: Date = new Date()): Promise<boolean> {
+export async function isRosterSignInAllowed(
+	db: Db,
+	email: string,
+	now: Date = new Date(),
+	bootstrapEmail?: string,
+): Promise<boolean> {
 	const normalized = normalizeEmail(email);
+	if (bootstrapEmail && normalized === normalizeEmail(bootstrapEmail)) return true;
+
 	const [existing] = await db.select({ id: members.id }).from(members).where(eq(members.email, normalized)).limit(1);
 
 	if (existing && (await isMemberSuperAdmin(db, existing.id))) return true;

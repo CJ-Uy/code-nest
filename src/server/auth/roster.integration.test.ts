@@ -68,4 +68,17 @@ describe("isRosterSignInAllowed", () => {
 
 		await expect(isRosterSignInAllowed(db, "super@example.com", NOW)).resolves.toBe(true);
 	});
+
+	it("lets the configured bootstrap super admin sign in before a member row exists", async () => {
+		const db = drizzle(env.DB, { schema });
+
+		await expect(
+			isRosterSignInAllowed(
+				db,
+				" Bootstrap@Example.com ",
+				NOW,
+				"bootstrap@example.com",
+			),
+		).resolves.toBe(true);
+	});
 });

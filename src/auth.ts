@@ -7,6 +7,7 @@ import { accounts, memberRoles, members, roles, sessions, termMemberRoster, veri
 import { createAuditRepository } from "@/db/repositories/audit";
 import { getAppConfig } from "@/server/env";
 import { isGoogleSignInAllowed, splitAuthList } from "@/server/auth/access";
+import { grantBootstrapSuperRole } from "@/server/auth/bootstrap";
 import { roleKeys, type RoleKey } from "@/server/auth/permissions";
 import { isRosterSignInAllowed } from "@/server/auth/roster";
 
@@ -54,15 +55,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 						email: profile?.email,
 						emailVerified: profile?.email_verified === true,
 					},
-					{
-						allowedDomains,
-						allowlistEmails: splitAuthList(config.AUTH_ALLOWLIST_EMAILS),
-					},
+					{ allowedDomains, bootstrapEmail: config.AUTH_BOOTSTRAP_SUPER_ADMIN_EMAIL },
 				);
 				if (!allowed) return false;
 				if (!profile?.email) return false;
 
-				return isRosterSignInAllowed(db, profile.email);
+				return isRosterSignInAllowed(db, profile.email, new Date(), config.AUTH_BOOTSTRAP_SUPER_ADMIN_EMAIL);
 			},
 			async session({ session, user }) {
 				const [member] = await db.select().from(members).where(eq(members.id, user.id)).limit(1);
@@ -88,6 +86,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 		events: {
 			async createUser({ user }) {
 				if (!user.id) return;
+				if (user.email) {
+					await grantBootstrapSuperRole(db, user.id, user.email, config.AUTH_BOOTSTRAP_SUPER_ADMIN_EMAIL);
+				}
 				await db.update(members).set({ status: "active", updatedAt: new Date() }).where(eq(members.id, user.id));
 				// admins can add a roster row by email before the member ever signs in;
 				// backfill the link now so reporting joins find this member.

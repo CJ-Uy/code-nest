@@ -15224,7 +15224,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "health_route",
-      "community": 291,
+      "community": 303,
       "norm_label": "route.ts"
     },
     {
@@ -15234,7 +15234,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "health_route_get",
-      "community": 291,
+      "community": 303,
       "norm_label": "get()"
     },
     {
@@ -16024,7 +16024,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_internal_members_route_ts_members_route",
-      "community": 303,
+      "community": 205,
       "norm_label": "route.ts"
     },
     {
@@ -16034,7 +16034,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "members_route_gethandlers",
-      "community": 303,
+      "community": 205,
       "norm_label": "gethandlers()"
     },
     {
@@ -16044,7 +16044,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_app_internal_members_route_ts_members_route_get",
-      "community": 303,
+      "community": 205,
       "norm_label": "get()"
     },
     {
@@ -16054,7 +16054,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "src_app_internal_members_route_ts_members_route_post",
-      "community": 303,
+      "community": 205,
       "norm_label": "post()"
     },
     {
@@ -16064,7 +16064,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "members_route_patch",
-      "community": 303,
+      "community": 205,
       "norm_label": "patch()"
     },
     {
@@ -16074,7 +16074,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "members_route_options",
-      "community": 303,
+      "community": 205,
       "norm_label": "options()"
     },
     {
@@ -16134,7 +16134,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "retention_route",
-      "community": 205,
+      "community": 314,
       "norm_label": "route.ts"
     },
     {
@@ -16144,7 +16144,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "retention_route_gethandlers",
-      "community": 205,
+      "community": 314,
       "norm_label": "gethandlers()"
     },
     {
@@ -16154,7 +16154,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "retention_route_get",
-      "community": 205,
+      "community": 314,
       "norm_label": "get()"
     },
     {
@@ -16164,7 +16164,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "retention_route_post",
-      "community": 205,
+      "community": 314,
       "norm_label": "post()"
     },
     {
@@ -16174,7 +16174,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "retention_route_options",
-      "community": 205,
+      "community": 314,
       "norm_label": "options()"
     },
     {
@@ -16184,7 +16184,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_internal_surveys_id_route_ts_id_route",
-      "community": 307,
+      "community": 205,
       "norm_label": "route.ts"
     },
     {
@@ -16194,7 +16194,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "id_route_surveyroutecontext",
-      "community": 307,
+      "community": 205,
       "norm_label": "surveyroutecontext"
     },
     {
@@ -16204,7 +16204,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "src_app_internal_surveys_id_route_ts_id_route_get",
-      "community": 307,
+      "community": 205,
       "norm_label": "get()"
     },
     {
@@ -16214,7 +16214,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "surveys_route",
-      "community": 307,
+      "community": 205,
       "norm_label": "route.ts"
     },
     {
@@ -16224,7 +16224,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "surveys_route_gethandlers",
-      "community": 307,
+      "community": 205,
       "norm_label": "gethandlers()"
     },
     {
@@ -16234,7 +16234,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "surveys_route_get",
-      "community": 307,
+      "community": 205,
       "norm_label": "get()"
     },
     {
@@ -16244,7 +16244,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "surveys_route_post",
-      "community": 307,
+      "community": 205,
       "norm_label": "post()"
     },
     {
@@ -16254,7 +16254,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "surveys_route_options",
-      "community": 307,
+      "community": 205,
       "norm_label": "options()"
     },
     {
@@ -16694,7 +16694,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "reporting_page",
-      "community": 50,
+      "community": 6,
       "norm_label": "page.tsx"
     },
     {
@@ -16714,7 +16714,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "reporting_page_exportcard",
-      "community": 50,
+      "community": 6,
       "norm_label": "exportcard()"
     },
     {
@@ -17124,7 +17124,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_portal_links_page_tsx_links_page",
-      "community": 248,
+      "community": 237,
       "norm_label": "page.tsx"
     },
     {
@@ -17134,7 +17134,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "links_page_linkspage",
-      "community": 248,
+      "community": 237,
       "norm_label": "linkspage()"
     },
     {
@@ -17294,7 +17294,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "id_actions",
-      "community": 237,
+      "community": 303,
       "norm_label": "actions.ts"
     },
     {
@@ -17304,7 +17304,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "id_actions_submitresponseaction",
-      "community": 237,
+      "community": 303,
       "norm_label": "submitresponseaction()"
     },
     {
@@ -17334,7 +17334,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "signin_page",
-      "community": 50,
+      "community": 248,
       "norm_label": "page.tsx"
     },
     {
@@ -17344,7 +17344,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "signin_page_signinpage",
-      "community": 50,
+      "community": 248,
       "norm_label": "signinpage()"
     },
     {
@@ -17361,7 +17361,7 @@
       "label": "{ handlers, auth, signIn, signOut }",
       "file_type": "code",
       "source_file": "src/auth.ts",
-      "source_location": "L13",
+      "source_location": "L14",
       "_origin": "ast",
       "id": "src_auth_handlers_auth_signin_signout",
       "community": 15,
@@ -17714,7 +17714,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "portal_notification_bell_notificationbell",
-      "community": 2,
+      "community": 312,
       "norm_label": "notificationbell()"
     },
     {
@@ -17784,7 +17784,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "portal_portal_shell_portalshell",
-      "community": 2,
+      "community": 312,
       "norm_label": "portalshell()"
     },
     {
@@ -17864,7 +17864,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_button",
-      "community": 50,
+      "community": 248,
       "norm_label": "button.tsx"
     },
     {
@@ -17874,7 +17874,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "ui_button_buttonvariants",
-      "community": 50,
+      "community": 248,
       "norm_label": "buttonvariants"
     },
     {
@@ -17884,7 +17884,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "ui_button_buttonprops",
-      "community": 50,
+      "community": 248,
       "norm_label": "buttonprops"
     },
     {
@@ -17894,7 +17894,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "ui_button_button",
-      "community": 50,
+      "community": 248,
       "norm_label": "button"
     },
     {
@@ -18404,7 +18404,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_tabs",
-      "community": 248,
+      "community": 2,
       "norm_label": "tabs.tsx"
     },
     {
@@ -18414,7 +18414,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "ui_tabs_tabslist",
-      "community": 248,
+      "community": 2,
       "norm_label": "tabslist()"
     },
     {
@@ -18424,7 +18424,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "ui_tabs_tabbuttonprops",
-      "community": 248,
+      "community": 2,
       "norm_label": "tabbuttonprops"
     },
     {
@@ -18434,7 +18434,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "ui_tabs_tabbutton",
-      "community": 248,
+      "community": 2,
       "norm_label": "tabbutton()"
     },
     {
@@ -18714,7 +18714,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "db_client",
-      "community": 291,
+      "community": 205,
       "norm_label": "client.ts"
     },
     {
@@ -18754,7 +18754,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "contract_auth_actoroutputschema",
-      "community": 238,
+      "community": 289,
       "norm_label": "actoroutputschema"
     },
     {
@@ -18764,7 +18764,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "contract_auth_authcontract",
-      "community": 238,
+      "community": 289,
       "norm_label": "authcontract"
     },
     {
@@ -18864,7 +18864,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "contract_common_operation",
-      "community": 238,
+      "community": 289,
       "norm_label": "operation()"
     },
     {
@@ -18974,7 +18974,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "contract_index",
-      "community": 238,
+      "community": 289,
       "norm_label": "index.ts"
     },
     {
@@ -19064,7 +19064,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "contract_members",
-      "community": 304,
+      "community": 289,
       "norm_label": "members.ts"
     },
     {
@@ -19074,7 +19074,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "contract_members_memberoutputschema",
-      "community": 304,
+      "community": 289,
       "norm_label": "memberoutputschema"
     },
     {
@@ -19084,7 +19084,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "contract_members_memberscontract",
-      "community": 304,
+      "community": 289,
       "norm_label": "memberscontract"
     },
     {
@@ -19244,7 +19244,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "contract_uploads",
-      "community": 238,
+      "community": 289,
       "norm_label": "uploads.ts"
     },
     {
@@ -19254,7 +19254,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "contract_uploads_uploadscontract",
-      "community": 238,
+      "community": 289,
       "norm_label": "uploadscontract"
     },
     {
@@ -19264,7 +19264,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "db_index",
-      "community": 237,
+      "community": 303,
       "norm_label": "index.ts"
     },
     {
@@ -19274,7 +19274,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "db_index_getdatabaseadapter",
-      "community": 291,
+      "community": 303,
       "norm_label": "getdatabaseadapter()"
     },
     {
@@ -19374,7 +19374,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "repositories_audit_createauditrepository",
-      "community": 249,
+      "community": 32,
       "norm_label": "createauditrepository()"
     },
     {
@@ -19394,7 +19394,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_calendar_integration_test",
-      "community": 289,
+      "community": 245,
       "norm_label": "calendar.integration.test.ts"
     },
     {
@@ -19404,7 +19404,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "repositories_calendar_integration_test_memberactor",
-      "community": 289,
+      "community": 245,
       "norm_label": "memberactor"
     },
     {
@@ -19414,7 +19414,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "repositories_calendar_integration_test_adminactor",
-      "community": 289,
+      "community": 245,
       "norm_label": "adminactor"
     },
     {
@@ -19424,7 +19424,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "repositories_calendar_integration_test_db",
-      "community": 289,
+      "community": 245,
       "norm_label": "db()"
     },
     {
@@ -19434,7 +19434,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_calendar",
-      "community": 15,
+      "community": 25,
       "norm_label": "calendar.ts"
     },
     {
@@ -19444,7 +19444,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "repositories_calendar_db",
-      "community": 15,
+      "community": 25,
       "norm_label": "db"
     },
     {
@@ -19454,7 +19454,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "repositories_calendar_eventdetail",
-      "community": 15,
+      "community": 25,
       "norm_label": "eventdetail"
     },
     {
@@ -19464,7 +19464,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "repositories_calendar_birthdayinmonth",
-      "community": 15,
+      "community": 25,
       "norm_label": "birthdayinmonth()"
     },
     {
@@ -19474,7 +19474,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "repositories_calendar_calendarrepository",
-      "community": 14,
+      "community": 25,
       "norm_label": "calendarrepository"
     },
     {
@@ -19554,7 +19554,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_event_forum",
-      "community": 18,
+      "community": 249,
       "norm_label": "event-forum.ts"
     },
     {
@@ -19564,7 +19564,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "repositories_event_forum_forumrow",
-      "community": 18,
+      "community": 249,
       "norm_label": "forumrow"
     },
     {
@@ -19574,7 +19574,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "repositories_event_forum_forumauthor",
-      "community": 18,
+      "community": 249,
       "norm_label": "forumauthor"
     },
     {
@@ -19584,7 +19584,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "repositories_event_forum_forumpostview",
-      "community": 18,
+      "community": 249,
       "norm_label": "forumpostview"
     },
     {
@@ -19594,7 +19594,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "repositories_event_forum_postinput",
-      "community": 18,
+      "community": 249,
       "norm_label": "postinput"
     },
     {
@@ -19604,7 +19604,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "repositories_event_forum_eventforumrepository",
-      "community": 18,
+      "community": 249,
       "norm_label": "eventforumrepository"
     },
     {
@@ -19614,7 +19614,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "repositories_event_forum_db",
-      "community": 18,
+      "community": 249,
       "norm_label": "db"
     },
     {
@@ -19624,7 +19624,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "repositories_event_forum_toview",
-      "community": 18,
+      "community": 249,
       "norm_label": "toview()"
     },
     {
@@ -19634,7 +19634,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "repositories_event_forum_createeventforumrepository",
-      "community": 14,
+      "community": 249,
       "norm_label": "createeventforumrepository()"
     },
     {
@@ -19694,7 +19694,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_event_media",
-      "community": 18,
+      "community": 249,
       "norm_label": "event-media.ts"
     },
     {
@@ -19704,7 +19704,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "repositories_event_media_mediarecord",
-      "community": 18,
+      "community": 249,
       "norm_label": "mediarecord"
     },
     {
@@ -19714,7 +19714,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "repositories_event_media_addmediainput",
-      "community": 18,
+      "community": 249,
       "norm_label": "addmediainput"
     },
     {
@@ -19724,7 +19724,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "repositories_event_media_eventmediarepository",
-      "community": 18,
+      "community": 249,
       "norm_label": "eventmediarepository"
     },
     {
@@ -19734,7 +19734,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "repositories_event_media_db",
-      "community": 18,
+      "community": 249,
       "norm_label": "db"
     },
     {
@@ -19744,7 +19744,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "repositories_event_media_createeventmediarepository",
-      "community": 14,
+      "community": 249,
       "norm_label": "createeventmediarepository()"
     },
     {
@@ -20064,7 +20064,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_links_integration_test",
-      "community": 249,
+      "community": 32,
       "norm_label": "links.integration.test.ts"
     },
     {
@@ -20074,7 +20074,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "repositories_links_integration_test_owner",
-      "community": 249,
+      "community": 32,
       "norm_label": "owner"
     },
     {
@@ -20084,7 +20084,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "repositories_links_integration_test_other",
-      "community": 249,
+      "community": 32,
       "norm_label": "other"
     },
     {
@@ -20094,7 +20094,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "repositories_links_integration_test_moderator",
-      "community": 249,
+      "community": 32,
       "norm_label": "moderator"
     },
     {
@@ -20104,7 +20104,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "repositories_links_integration_test_repo",
-      "community": 249,
+      "community": 32,
       "norm_label": "repo()"
     },
     {
@@ -20124,7 +20124,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "repositories_links_shortlink",
-      "community": 30,
+      "community": 248,
       "norm_label": "shortlink"
     },
     {
@@ -20154,7 +20154,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "repositories_links_resolvedlink",
-      "community": 30,
+      "community": 236,
       "norm_label": "resolvedlink"
     },
     {
@@ -20274,7 +20274,7 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "repositories_links_createlinksrepository",
-      "community": 249,
+      "community": 32,
       "norm_label": "createlinksrepository()"
     },
     {
@@ -20354,7 +20354,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "repositories_members_membersrepository",
-      "community": 304,
+      "community": 289,
       "norm_label": "membersrepository"
     },
     {
@@ -20364,7 +20364,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "repositories_members_createmembersrepository",
-      "community": 245,
+      "community": 32,
       "norm_label": "createmembersrepository()"
     },
     {
@@ -20594,7 +20594,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_overview_integration_test",
-      "community": 289,
+      "community": 30,
       "norm_label": "overview.integration.test.ts"
     },
     {
@@ -20604,7 +20604,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "repositories_overview_integration_test_now",
-      "community": 289,
+      "community": 30,
       "norm_label": "now"
     },
     {
@@ -20614,7 +20614,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "repositories_overview_integration_test_memberactor",
-      "community": 289,
+      "community": 30,
       "norm_label": "memberactor"
     },
     {
@@ -20774,7 +20774,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "repositories_quicklinks_createquicklinksrepository",
-      "community": 14,
+      "community": 245,
       "norm_label": "createquicklinksrepository()"
     },
     {
@@ -20804,7 +20804,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_retention_integration_test",
-      "community": 249,
+      "community": 14,
       "norm_label": "retention.integration.test.ts"
     },
     {
@@ -20814,7 +20814,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "repositories_retention_integration_test_retentionadmin",
-      "community": 249,
+      "community": 14,
       "norm_label": "retentionadmin"
     },
     {
@@ -20824,7 +20824,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "repositories_retention_integration_test_plainmember",
-      "community": 249,
+      "community": 14,
       "norm_label": "plainmember"
     },
     {
@@ -20834,7 +20834,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "repositories_retention_integration_test_term_start",
-      "community": 249,
+      "community": 14,
       "norm_label": "term_start"
     },
     {
@@ -20844,7 +20844,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "repositories_retention_integration_test_term_end",
-      "community": 249,
+      "community": 14,
       "norm_label": "term_end"
     },
     {
@@ -20854,7 +20854,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "repositories_retention_integration_test_makerepo",
-      "community": 249,
+      "community": 14,
       "norm_label": "makerepo()"
     },
     {
@@ -21354,7 +21354,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "db_schema_memberstatus",
-      "community": 289,
+      "community": 15,
       "norm_label": "memberstatus"
     },
     {
@@ -21364,7 +21364,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "db_schema_eventtype",
-      "community": 15,
+      "community": 25,
       "norm_label": "eventtype"
     },
     {
@@ -21374,7 +21374,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "db_schema_eventstatus",
-      "community": 15,
+      "community": 25,
       "norm_label": "eventstatus"
     },
     {
@@ -21384,7 +21384,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "db_schema_rsvpstate",
-      "community": 15,
+      "community": 25,
       "norm_label": "rsvpstate"
     },
     {
@@ -21514,7 +21514,7 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "db_schema_shareddevtokens",
-      "community": 245,
+      "community": 15,
       "norm_label": "shareddevtokens"
     },
     {
@@ -21564,7 +21564,7 @@
       "source_location": "L189",
       "_origin": "ast",
       "id": "db_schema_eventrsvps",
-      "community": 15,
+      "community": 25,
       "norm_label": "eventrsvps"
     },
     {
@@ -21574,7 +21574,7 @@
       "source_location": "L204",
       "_origin": "ast",
       "id": "db_schema_crsattendance",
-      "community": 15,
+      "community": 25,
       "norm_label": "crsattendance"
     },
     {
@@ -21584,7 +21584,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "db_schema_eventmedia",
-      "community": 15,
+      "community": 249,
       "norm_label": "eventmedia"
     },
     {
@@ -21594,7 +21594,7 @@
       "source_location": "L238",
       "_origin": "ast",
       "id": "db_schema_eventforumposts",
-      "community": 18,
+      "community": 249,
       "norm_label": "eventforumposts"
     },
     {
@@ -22064,7 +22064,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "db_shared_parity_integration_test",
-      "community": 245,
+      "community": 32,
       "norm_label": "shared-parity.integration.test.ts"
     },
     {
@@ -22074,7 +22074,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "db_shared_parity_integration_test_adminactor",
-      "community": 245,
+      "community": 32,
       "norm_label": "adminactor"
     },
     {
@@ -22094,7 +22094,7 @@
       "source_location": "L299",
       "_origin": "ast",
       "id": "db_shared_parity_integration_test_hashtoken",
-      "community": 245,
+      "community": 32,
       "norm_label": "hashtoken()"
     },
     {
@@ -22104,7 +22104,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "db_types_test",
-      "community": 305,
+      "community": 9,
       "norm_label": "types.test.ts"
     },
     {
@@ -22144,7 +22144,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "db_types_creatememberinputschema",
-      "community": 304,
+      "community": 289,
       "norm_label": "creatememberinputschema"
     },
     {
@@ -22184,7 +22184,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "db_types_createmanualretentionrecordinputschema",
-      "community": 305,
+      "community": 9,
       "norm_label": "createmanualretentionrecordinputschema"
     },
     {
@@ -22194,7 +22194,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "db_types_createmanualretentionrecordinput",
-      "community": 25,
+      "community": 9,
       "norm_label": "createmanualretentionrecordinput"
     },
     {
@@ -22334,7 +22334,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "db_types_submitsurveyresponseinputschema",
-      "community": 237,
+      "community": 303,
       "norm_label": "submitsurveyresponseinputschema"
     },
     {
@@ -22374,7 +22374,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_calendar_test",
-      "community": 15,
+      "community": 25,
       "norm_label": "calendar.test.ts"
     },
     {
@@ -22384,7 +22384,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_calendar",
-      "community": 15,
+      "community": 25,
       "norm_label": "calendar.ts"
     },
     {
@@ -22394,7 +22394,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_calendar_calendarsource",
-      "community": 15,
+      "community": 25,
       "norm_label": "calendarsource"
     },
     {
@@ -22404,7 +22404,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "lib_calendar_calendaritem",
-      "community": 15,
+      "community": 25,
       "norm_label": "calendaritem"
     },
     {
@@ -22414,7 +22414,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "lib_calendar_monthrange",
-      "community": 15,
+      "community": 25,
       "norm_label": "monthrange()"
     },
     {
@@ -22424,7 +22424,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "lib_calendar_toisodate",
-      "community": 15,
+      "community": 25,
       "norm_label": "toisodate()"
     },
     {
@@ -22908,13 +22908,73 @@
       "norm_label": "assertadminscope()"
     },
     {
+      "label": "bootstrap.integration.test.ts",
+      "file_type": "code",
+      "source_file": "src/server/auth/bootstrap.integration.test.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "auth_bootstrap_integration_test",
+      "community": 15,
+      "norm_label": "bootstrap.integration.test.ts"
+    },
+    {
+      "label": "bootstrap.ts",
+      "file_type": "code",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "auth_bootstrap",
+      "community": 15,
+      "norm_label": "bootstrap.ts"
+    },
+    {
+      "label": "Db",
+      "file_type": "code",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "auth_bootstrap_db",
+      "community": 15,
+      "norm_label": "db"
+    },
+    {
+      "label": "normalizeEmail()",
+      "file_type": "code",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "auth_bootstrap_normalizeemail",
+      "community": 15,
+      "norm_label": "normalizeemail()"
+    },
+    {
+      "label": "isBootstrapEmail()",
+      "file_type": "code",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "auth_bootstrap_isbootstrapemail",
+      "community": 15,
+      "norm_label": "isbootstrapemail()"
+    },
+    {
+      "label": "grantBootstrapSuperRole()",
+      "file_type": "code",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "auth_bootstrap_grantbootstrapsuperrole",
+      "community": 15,
+      "norm_label": "grantbootstrapsuperrole()"
+    },
+    {
       "label": "permissions.test.ts",
       "file_type": "code",
       "source_file": "src/server/auth/permissions.test.ts",
       "source_location": "L1",
       "_origin": "ast",
       "id": "auth_permissions_test",
-      "community": 289,
+      "community": 245,
       "norm_label": "permissions.test.ts"
     },
     {
@@ -22924,7 +22984,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "auth_permissions_test_cases",
-      "community": 289,
+      "community": 245,
       "norm_label": "cases"
     },
     {
@@ -22934,7 +22994,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "auth_permissions_test_actions",
-      "community": 289,
+      "community": 245,
       "norm_label": "actions"
     },
     {
@@ -22944,7 +23004,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "auth_permissions",
-      "community": 289,
+      "community": 245,
       "norm_label": "permissions.ts"
     },
     {
@@ -22954,7 +23014,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "auth_permissions_rolekeys",
-      "community": 289,
+      "community": 1,
       "norm_label": "rolekeys"
     },
     {
@@ -22964,7 +23024,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "auth_permissions_rolekey",
-      "community": 289,
+      "community": 15,
       "norm_label": "rolekey"
     },
     {
@@ -22984,7 +23044,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "auth_permissions_permissionaction",
-      "community": 289,
+      "community": 245,
       "norm_label": "permissionaction"
     },
     {
@@ -23004,7 +23064,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "auth_permissions_rolepermissions",
-      "community": 289,
+      "community": 245,
       "norm_label": "rolepermissions"
     },
     {
@@ -23134,7 +23194,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_cloudflare",
-      "community": 291,
+      "community": 303,
       "norm_label": "cloudflare.ts"
     },
     {
@@ -23144,47 +23204,47 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "server_cloudflare_cloudflareruntimeenv",
-      "community": 291,
+      "community": 303,
       "norm_label": "cloudflareruntimeenv"
     },
     {
       "label": "getCloudflareEnv()",
       "file_type": "code",
       "source_file": "src/server/cloudflare.ts",
-      "source_location": "L18",
+      "source_location": "L20",
       "_origin": "ast",
       "id": "server_cloudflare_getcloudflareenv",
-      "community": 291,
+      "community": 205,
       "norm_label": "getcloudflareenv()"
     },
     {
       "label": "getOptionalCloudflareEnv()",
       "file_type": "code",
       "source_file": "src/server/cloudflare.ts",
-      "source_location": "L23",
+      "source_location": "L25",
       "_origin": "ast",
       "id": "server_cloudflare_getoptionalcloudflareenv",
-      "community": 291,
+      "community": 303,
       "norm_label": "getoptionalcloudflareenv()"
     },
     {
       "label": "hasCloudflareBinding()",
       "file_type": "code",
       "source_file": "src/server/cloudflare.ts",
-      "source_location": "L31",
+      "source_location": "L33",
       "_origin": "ast",
       "id": "server_cloudflare_hascloudflarebinding",
-      "community": 291,
+      "community": 303,
       "norm_label": "hascloudflarebinding()"
     },
     {
       "label": "runInBackground()",
       "file_type": "code",
       "source_file": "src/server/cloudflare.ts",
-      "source_location": "L36",
+      "source_location": "L38",
       "_origin": "ast",
       "id": "server_cloudflare_runinbackground",
-      "community": 291,
+      "community": 303,
       "norm_label": "runinbackground()"
     },
     {
@@ -23314,7 +23374,7 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "server_env_getpublicenvstatus",
-      "community": 291,
+      "community": 303,
       "norm_label": "getpublicenvstatus()"
     },
     {
@@ -23374,7 +23434,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "internal_auth_createauthinternalhandlers",
-      "community": 205,
+      "community": 32,
       "norm_label": "createauthinternalhandlers()"
     },
     {
@@ -23414,7 +23474,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "internal_cors",
-      "community": 32,
+      "community": 205,
       "norm_label": "cors.ts"
     },
     {
@@ -23444,7 +23504,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "internal_events_test",
-      "community": 32,
+      "community": 249,
       "norm_label": "events.test.ts"
     },
     {
@@ -23454,7 +23514,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "internal_events_test_handlers",
-      "community": 32,
+      "community": 249,
       "norm_label": "handlers()"
     },
     {
@@ -23464,7 +23524,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "internal_events",
-      "community": 32,
+      "community": 249,
       "norm_label": "events.ts"
     },
     {
@@ -23474,7 +23534,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "internal_events_eventsinternaldependencies",
-      "community": 32,
+      "community": 249,
       "norm_label": "eventsinternaldependencies"
     },
     {
@@ -23484,7 +23544,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "internal_events_createeventsinternalhandlers",
-      "community": 14,
+      "community": 249,
       "norm_label": "createeventsinternalhandlers()"
     },
     {
@@ -23494,7 +23554,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "internal_links",
-      "community": 249,
+      "community": 32,
       "norm_label": "links.ts"
     },
     {
@@ -23504,7 +23564,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "internal_links_linksinternaldependencies",
-      "community": 249,
+      "community": 32,
       "norm_label": "linksinternaldependencies"
     },
     {
@@ -23514,7 +23574,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "internal_links_guardresult",
-      "community": 249,
+      "community": 32,
       "norm_label": "guardresult"
     },
     {
@@ -23524,7 +23584,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "internal_links_createlinksinternalhandlers",
-      "community": 249,
+      "community": 205,
       "norm_label": "createlinksinternalhandlers()"
     },
     {
@@ -23534,7 +23594,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "internal_members",
-      "community": 245,
+      "community": 32,
       "norm_label": "members.ts"
     },
     {
@@ -23544,7 +23604,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "internal_members_membersinternaldependencies",
-      "community": 245,
+      "community": 32,
       "norm_label": "membersinternaldependencies"
     },
     {
@@ -23554,7 +23614,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "internal_members_createmembersinternalhandlers",
-      "community": 245,
+      "community": 32,
       "norm_label": "createmembersinternalhandlers()"
     },
     {
@@ -23634,7 +23694,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "internal_retention_createretentioninternalhandlers",
-      "community": 205,
+      "community": 314,
       "norm_label": "createretentioninternalhandlers()"
     },
     {
@@ -23644,7 +23704,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "internal_shared_actor",
-      "community": 32,
+      "community": 15,
       "norm_label": "shared-actor.ts"
     },
     {
@@ -23694,7 +23754,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "internal_surveys_integration_test_handlers",
-      "community": 307,
+      "community": 32,
       "norm_label": "handlers()"
     },
     {
@@ -23734,7 +23794,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "internal_surveys_createsurveysinternalhandlers",
-      "community": 307,
+      "community": 32,
       "norm_label": "createsurveysinternalhandlers()"
     },
     {
@@ -23764,7 +23824,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "internal_uploads_createuploadsinternalhandlers",
-      "community": 249,
+      "community": 32,
       "norm_label": "createuploadsinternalhandlers()"
     },
     {
@@ -23784,7 +23844,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "links_handlers_test",
-      "community": 30,
+      "community": 245,
       "norm_label": "handlers.test.ts"
     },
     {
@@ -23794,7 +23854,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "links_handlers_test_owner",
-      "community": 30,
+      "community": 245,
       "norm_label": "owner"
     },
     {
@@ -23804,7 +23864,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "links_handlers_test_depswith",
-      "community": 30,
+      "community": 245,
       "norm_label": "depswith()"
     },
     {
@@ -24354,7 +24414,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "server_uploads_uploadhandlerdependencies",
-      "community": 299,
+      "community": 279,
       "norm_label": "uploadhandlerdependencies"
     },
     {
@@ -24454,7 +24514,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "adapters_r2_binding",
-      "community": 291,
+      "community": 4,
       "norm_label": "r2-binding.ts"
     },
     {
@@ -24664,7 +24724,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "storage_index",
-      "community": 291,
+      "community": 4,
       "norm_label": "index.ts"
     },
     {
@@ -24674,7 +24734,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "storage_index_getstorageadapter",
-      "community": 291,
+      "community": 303,
       "norm_label": "getstorageadapter()"
     },
     {
@@ -24764,7 +24824,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "types_next_auth_d",
-      "community": 289,
+      "community": 15,
       "norm_label": "next-auth.d.ts"
     },
     {
@@ -24774,7 +24834,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "types_next_auth_d_session",
-      "community": 289,
+      "community": 15,
       "norm_label": "session"
     },
     {
@@ -24784,7 +24844,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "types_next_auth_d_user",
-      "community": 289,
+      "community": 15,
       "norm_label": "user"
     },
     {
@@ -25018,6 +25078,16 @@
       "norm_label": "archive"
     },
     {
+      "label": "Week of 2026-06-15",
+      "file_type": "document",
+      "source_file": ".remember/archive.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "remember_archive_week_of_2026_06_15",
+      "community": 206,
+      "norm_label": "week of 2026-06-15"
+    },
+    {
       "label": "now.md",
       "file_type": "document",
       "source_file": ".remember/now.md",
@@ -25026,16 +25096,6 @@
       "id": "remember_now",
       "community": 37,
       "norm_label": "now.md"
-    },
-    {
-      "label": "00:26 | beta",
-      "file_type": "document",
-      "source_file": ".remember/now.md",
-      "source_location": "L2",
-      "_origin": "ast",
-      "id": "remember_now_00_26_beta",
-      "community": 37,
-      "norm_label": "00:26 | beta"
     },
     {
       "label": "recent.md",
@@ -25338,114 +25398,134 @@
       "norm_label": "19:56 | beta"
     },
     {
-      "label": "today-2026-06-20.md",
+      "label": "today-2026-06-20.done.md",
       "file_type": "document",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "remember_today_2026_06_20",
+      "id": "remember_today_2026_06_20_done",
       "community": 297,
-      "norm_label": "today-2026-06-20.md"
+      "norm_label": "today-2026-06-20.done.md"
     },
     {
       "label": "20:42-23:48 | beta",
       "file_type": "document",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "remember_today_2026_06_20_20_42_23_48_beta",
+      "id": "remember_today_2026_06_20_done_20_42_23_48_beta",
       "community": 297,
       "norm_label": "20:42-23:48 | beta"
     },
     {
       "label": "04:39 | beta",
       "file_type": "document",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L4",
       "_origin": "ast",
-      "id": "remember_today_2026_06_20_04_39_beta",
+      "id": "remember_today_2026_06_20_done_04_39_beta",
       "community": 297,
       "norm_label": "04:39 | beta"
     },
     {
       "label": "05:10 | beta",
       "file_type": "document",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L6",
       "_origin": "ast",
-      "id": "remember_today_2026_06_20_05_10_beta",
+      "id": "remember_today_2026_06_20_done_05_10_beta",
       "community": 297,
       "norm_label": "05:10 | beta"
     },
     {
       "label": "14:30 | beta",
       "file_type": "document",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L9",
       "_origin": "ast",
-      "id": "remember_today_2026_06_20_14_30_beta",
+      "id": "remember_today_2026_06_20_done_14_30_beta",
       "community": 297,
       "norm_label": "14:30 | beta"
     },
     {
       "label": "23:16 | beta",
       "file_type": "document",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L12",
       "_origin": "ast",
-      "id": "remember_today_2026_06_20_23_16_beta",
+      "id": "remember_today_2026_06_20_done_23_16_beta",
       "community": 297,
       "norm_label": "23:16 | beta"
     },
     {
       "label": "18:45 | beta",
       "file_type": "document",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L14",
       "_origin": "ast",
-      "id": "remember_today_2026_06_20_18_45_beta",
+      "id": "remember_today_2026_06_20_done_18_45_beta",
       "community": 297,
       "norm_label": "18:45 | beta"
     },
     {
       "label": "12:38 | beta",
       "file_type": "document",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L17",
       "_origin": "ast",
-      "id": "remember_today_2026_06_20_12_38_beta",
+      "id": "remember_today_2026_06_20_done_12_38_beta",
       "community": 297,
       "norm_label": "12:38 | beta"
     },
     {
-      "label": "today-2026-06-22.md",
+      "label": "today-2026-06-22.done.md",
       "file_type": "document",
-      "source_file": ".remember/today-2026-06-22.md",
+      "source_file": ".remember/today-2026-06-22.done.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "remember_today_2026_06_22",
-      "community": 314,
-      "norm_label": "today-2026-06-22.md"
+      "id": "remember_today_2026_06_22_done",
+      "community": 317,
+      "norm_label": "today-2026-06-22.done.md"
     },
     {
       "label": "13:13 | beta",
       "file_type": "document",
-      "source_file": ".remember/today-2026-06-22.md",
+      "source_file": ".remember/today-2026-06-22.done.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "remember_today_2026_06_22_13_13_beta",
-      "community": 314,
+      "id": "remember_today_2026_06_22_done_13_13_beta",
+      "community": 317,
       "norm_label": "13:13 | beta"
     },
     {
       "label": "23:50 | main",
       "file_type": "document",
-      "source_file": ".remember/today-2026-06-22.md",
+      "source_file": ".remember/today-2026-06-22.done.md",
       "source_location": "L4",
       "_origin": "ast",
-      "id": "remember_today_2026_06_22_23_50_main",
-      "community": 314,
+      "id": "remember_today_2026_06_22_done_23_50_main",
+      "community": 317,
       "norm_label": "23:50 | main"
+    },
+    {
+      "label": "today-2026-06-23.md",
+      "file_type": "document",
+      "source_file": ".remember/today-2026-06-23.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "remember_today_2026_06_23",
+      "community": 318,
+      "norm_label": "today-2026-06-23.md"
+    },
+    {
+      "label": "00:26 | beta",
+      "file_type": "document",
+      "source_file": ".remember/today-2026-06-23.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "remember_today_2026_06_23_00_26_beta",
+      "community": 318,
+      "norm_label": "00:26 | beta"
     },
     {
       "label": "AGENTS.md",
@@ -28358,6 +28438,156 @@
       "norm_label": "self-review notes (for the implementer, not a step to execute)"
     },
     {
+      "label": "2026-06-23-bootstrap-super-admin-auth.md",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-06-23-bootstrap-super-admin-auth.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plans_2026_06_23_bootstrap_super_admin_auth",
+      "community": 307,
+      "norm_label": "2026-06-23-bootstrap-super-admin-auth.md"
+    },
+    {
+      "label": "Bootstrap Super Admin Authentication Implementation Plan",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-06-23-bootstrap-super-admin-auth.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plans_2026_06_23_bootstrap_super_admin_auth_bootstrap_super_admin_authentication_implementation_plan",
+      "community": 307,
+      "norm_label": "bootstrap super admin authentication implementation plan"
+    },
+    {
+      "label": "Global Constraints",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-06-23-bootstrap-super-admin-auth.md",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "plans_2026_06_23_bootstrap_super_admin_auth_global_constraints",
+      "community": 307,
+      "norm_label": "global constraints"
+    },
+    {
+      "label": "Task 1: Google Identity Gate",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-06-23-bootstrap-super-admin-auth.md",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "plans_2026_06_23_bootstrap_super_admin_auth_task_1_google_identity_gate",
+      "community": 307,
+      "norm_label": "task 1: google identity gate"
+    },
+    {
+      "label": "Task 2: Bootstrap Roster Bypass and Super Role",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-06-23-bootstrap-super-admin-auth.md",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "plans_2026_06_23_bootstrap_super_admin_auth_task_2_bootstrap_roster_bypass_and_super_role",
+      "community": 307,
+      "norm_label": "task 2: bootstrap roster bypass and super role"
+    },
+    {
+      "label": "Task 3: Auth.js and Environment Wiring",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-06-23-bootstrap-super-admin-auth.md",
+      "source_location": "L84",
+      "_origin": "ast",
+      "id": "plans_2026_06_23_bootstrap_super_admin_auth_task_3_auth_js_and_environment_wiring",
+      "community": 307,
+      "norm_label": "task 3: auth.js and environment wiring"
+    },
+    {
+      "label": "Task 4: Repository Verification",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-06-23-bootstrap-super-admin-auth.md",
+      "source_location": "L116",
+      "_origin": "ast",
+      "id": "plans_2026_06_23_bootstrap_super_admin_auth_task_4_repository_verification",
+      "community": 307,
+      "norm_label": "task 4: repository verification"
+    },
+    {
+      "label": "2026-06-23-bootstrap-super-admin-auth-design.md",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "specs_2026_06_23_bootstrap_super_admin_auth_design",
+      "community": 299,
+      "norm_label": "2026-06-23-bootstrap-super-admin-auth-design.md"
+    },
+    {
+      "label": "Bootstrap Super Admin Authentication",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "specs_2026_06_23_bootstrap_super_admin_auth_design_bootstrap_super_admin_authentication",
+      "community": 299,
+      "norm_label": "bootstrap super admin authentication"
+    },
+    {
+      "label": "Goal",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "specs_2026_06_23_bootstrap_super_admin_auth_design_goal",
+      "community": 299,
+      "norm_label": "goal"
+    },
+    {
+      "label": "Configuration",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "specs_2026_06_23_bootstrap_super_admin_auth_design_configuration",
+      "community": 299,
+      "norm_label": "configuration"
+    },
+    {
+      "label": "Sign-In Rules",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "specs_2026_06_23_bootstrap_super_admin_auth_design_sign_in_rules",
+      "community": 299,
+      "norm_label": "sign-in rules"
+    },
+    {
+      "label": "Bootstrap Role",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "specs_2026_06_23_bootstrap_super_admin_auth_design_bootstrap_role",
+      "community": 299,
+      "norm_label": "bootstrap role"
+    },
+    {
+      "label": "Local Environment",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "specs_2026_06_23_bootstrap_super_admin_auth_design_local_environment",
+      "community": 299,
+      "norm_label": "local environment"
+    },
+    {
+      "label": "Verification",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L40",
+      "_origin": "ast",
+      "id": "specs_2026_06_23_bootstrap_super_admin_auth_design_verification",
+      "community": 299,
+      "norm_label": "verification"
+    },
+    {
       "label": "README.md",
       "file_type": "document",
       "source_file": "e2e/README.md",
@@ -30045,7 +30275,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 271,
+      "community": 21,
       "norm_label": "drizzle schema (src/db/schema.ts)",
       "id": "migrations_drizzle_schema"
     },
@@ -30058,7 +30288,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 271,
+      "community": 21,
       "norm_label": "generated migrations (drizzle/migrations)",
       "id": "migrations_generated_migrations"
     },
@@ -30071,7 +30301,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 271,
+      "community": 21,
       "norm_label": "db:generate command",
       "id": "migrations_db_generate"
     },
@@ -30084,7 +30314,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 271,
+      "community": 21,
       "norm_label": "db:migrate:local command",
       "id": "migrations_db_migrate_local"
     },
@@ -30097,7 +30327,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 44,
+      "community": 271,
       "norm_label": "db:migrate:dev command",
       "id": "migrations_db_migrate_dev"
     },
@@ -30123,7 +30353,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 271,
+      "community": 51,
       "norm_label": "production migration discipline",
       "id": "migrations_production_migration_discipline"
     },
@@ -30149,7 +30379,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 247,
+      "community": 27,
       "norm_label": ".env.local",
       "id": "secrets_and_env_env_local"
     },
@@ -30175,7 +30405,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 247,
+      "community": 27,
       "norm_label": "shared dev token rotation",
       "id": "secrets_and_env_token_rotation"
     },
@@ -30188,7 +30418,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 51,
+      "community": 271,
       "norm_label": "production cloudflare bindings (no env secrets)",
       "id": "secrets_and_env_production_bindings"
     },
@@ -30201,7 +30431,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 247,
+      "community": 271,
       "norm_label": "/api/health endpoint",
       "id": "troubleshooting_api_health"
     },
@@ -30227,7 +30457,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 35,
+      "community": 316,
       "norm_label": "production storage adapter (r2-binding)",
       "id": "troubleshooting_production_storage_adapter"
     },
@@ -30266,7 +30496,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 44,
+      "community": 271,
       "norm_label": "pnpm dev:cf (cloudflare preview dev)",
       "id": "commands_pnpm_dev_cf"
     },
@@ -30279,7 +30509,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 44,
+      "community": 27,
       "norm_label": "deploy:dev command",
       "id": "commands_deploy_dev"
     },
@@ -30357,7 +30587,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 35,
+      "community": 316,
       "norm_label": "storage_mode",
       "id": "env_vars_storage_mode"
     },
@@ -30370,7 +30600,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 35,
+      "community": 316,
       "norm_label": "allow_production_storage_mode_override",
       "id": "env_vars_allow_production_storage_mode_override"
     },
@@ -30409,7 +30639,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 35,
+      "community": 316,
       "norm_label": "r2 s3 credentials (r2_*)",
       "id": "env_vars_r2_credentials"
     },
@@ -30474,7 +30704,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 44,
+      "community": 271,
       "norm_label": "code-nest-dev-db (d1 shared/dev)",
       "id": "cloudflare_resources_d1_dev"
     },
@@ -30500,7 +30730,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 44,
+      "community": 271,
       "norm_label": "code-nest-dev-uploads (r2 shared/dev)",
       "id": "cloudflare_resources_r2_dev"
     },
@@ -30513,7 +30743,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 51,
+      "community": 271,
       "norm_label": "code-nest-prod-uploads (r2 production)",
       "id": "cloudflare_resources_r2_prod"
     },
@@ -30526,7 +30756,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 51,
+      "community": 271,
       "norm_label": "db binding",
       "id": "cloudflare_resources_db_binding"
     },
@@ -30539,7 +30769,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 51,
+      "community": 271,
       "norm_label": "bucket binding",
       "id": "cloudflare_resources_bucket_binding"
     },
@@ -30591,7 +30821,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 51,
+      "community": 35,
       "norm_label": "production storage lock to bucket",
       "id": "environment_modes_production_storage_lock"
     },
@@ -30617,7 +30847,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 44,
+      "community": 271,
       "norm_label": "opennext build",
       "id": "local_development_opennext"
     },
@@ -30773,7 +31003,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 247,
+      "community": 271,
       "norm_label": "post-deploy health verification",
       "id": "production_deploy_verify_health"
     },
@@ -30786,7 +31016,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 247,
+      "community": 271,
       "norm_label": "d1-binding database adapter",
       "id": "production_deploy_d1_binding_adapter"
     },
@@ -30864,7 +31094,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 271,
+      "community": 21,
       "norm_label": "auth.js v5 + drizzle adapter",
       "id": "code_portal_master_plan_authjs"
     },
@@ -30903,7 +31133,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 271,
+      "community": 21,
       "norm_label": "getdb() driver selector",
       "id": "code_portal_master_plan_get_db"
     },
@@ -30994,7 +31224,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 271,
+      "community": 51,
       "norm_label": "d1 fk choreography (defer_foreign_keys)",
       "id": "code_portal_master_plan_fk_choreography"
     },
@@ -31007,7 +31237,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 271,
+      "community": 51,
       "norm_label": "users to members reconciliation",
       "id": "code_portal_master_plan_users_to_members"
     },
@@ -31020,7 +31250,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 271,
+      "community": 51,
       "norm_label": "members table (auth.js user)",
       "id": "code_portal_master_plan_members_table"
     },
@@ -31085,7 +31315,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 35,
+      "community": 316,
       "norm_label": "upload hardening (server-assigned keys)",
       "id": "code_portal_master_plan_upload_hardening"
     },
@@ -31137,7 +31367,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 44,
+      "community": 27,
       "norm_label": "shared dev worker lifecycle & redeploy obligations",
       "id": "code_portal_master_plan_dev_worker_lifecycle"
     },
@@ -32086,7 +32316,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 238,
+      "community": 289,
       "norm_label": "operation",
       "id": "common_operation"
     },
@@ -32762,7 +32992,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 304,
+      "community": 289,
       "norm_label": "newmember type",
       "id": "types_newmember"
     },
@@ -32788,7 +33018,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 299,
+      "community": 279,
       "norm_label": "createid",
       "id": "ids_createid"
     },
@@ -32801,7 +33031,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 299,
+      "community": 279,
       "norm_label": "createobjectkey",
       "id": "ids_createobjectkey"
     },
@@ -32918,7 +33148,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 299,
+      "community": 1,
       "norm_label": "getsharedactor",
       "id": "actor_getsharedactor"
     },
@@ -32957,7 +33187,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 299,
+      "community": 1,
       "norm_label": "actor type",
       "id": "permissions_actor"
     },
@@ -33349,7 +33579,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 251,
+      "community": 1,
       "norm_label": "proxysharedapirequest",
       "id": "shared_api_proxysharedapirequest"
     },
@@ -33376,7 +33606,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 299,
+      "community": 279,
       "norm_label": "createuploadhandlers",
       "id": "uploads_createuploadhandlers"
     },
@@ -33389,7 +33619,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 299,
+      "community": 279,
       "norm_label": "parsenamespace",
       "id": "uploads_parsenamespace"
     },
@@ -33402,7 +33632,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 299,
+      "community": 279,
       "norm_label": "issafesegment",
       "id": "uploads_issafesegment"
     },
@@ -56969,9 +57199,9 @@
       "source_file": "src/app/api/uploads/route.ts",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_api_uploads_route_ts_uploads_route",
-      "target": "auth_permissions",
-      "confidence_score": 1.0
+      "target": "auth_permissions"
     },
     {
       "relation": "imports",
@@ -56980,9 +57210,9 @@
       "source_file": "src/app/api/uploads/route.ts",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_api_uploads_route_ts_uploads_route",
-      "target": "auth_permissions_can",
-      "confidence_score": 1.0
+      "target": "auth_permissions_can"
     },
     {
       "relation": "imports_from",
@@ -57252,9 +57482,9 @@
       "source_file": "src/app/api/uploads/route.ts",
       "source_location": "L32",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "uploads_route_createhandlers",
-      "target": "auth_permissions_can",
-      "confidence_score": 1.0
+      "target": "auth_permissions_can"
     },
     {
       "relation": "calls",
@@ -66401,6 +66631,39 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_auth",
+      "target": "auth_bootstrap"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/auth.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_auth",
+      "target": "auth_bootstrap_grantbootstrapsuperrole"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/auth.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_auth",
+      "target": "auth_bootstrap_isbootstrapemail"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/auth.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_auth",
       "target": "auth_permissions"
     },
     {
@@ -66542,9 +66805,9 @@
       "source_file": "src/auth.ts",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_auth",
-      "target": "db_schema_termmemberroster",
-      "confidence_score": 1.0
+      "target": "db_schema_termmemberroster"
     },
     {
       "relation": "imports",
@@ -78723,6 +78986,28 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_bootstrap",
+      "target": "db_schema"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/bootstrap.integration.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_bootstrap_integration_test",
+      "target": "db_schema"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/server/auth/roster.ts",
       "source_location": "L3",
       "weight": 1.0,
@@ -79454,6 +79739,17 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_bootstrap",
+      "target": "db_schema_roles"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/server/auth/roster.ts",
       "source_location": "L3",
       "weight": 1.0,
@@ -79493,6 +79789,17 @@
       "confidence_score": 1.0,
       "source": "seed_data",
       "target": "db_schema_roles"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_bootstrap",
+      "target": "db_schema_memberroles"
     },
     {
       "relation": "imports",
@@ -82212,6 +82519,90 @@
       "confidence_score": 1.0,
       "source": "auth_admin_assertadminscope",
       "target": "auth_admin_hasanyadminscope"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/bootstrap.integration.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_bootstrap_integration_test",
+      "target": "auth_bootstrap"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/bootstrap.integration.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_bootstrap_integration_test",
+      "target": "auth_bootstrap_grantbootstrapsuperrole"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_bootstrap",
+      "target": "auth_bootstrap_db"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_bootstrap",
+      "target": "auth_bootstrap_grantbootstrapsuperrole"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_bootstrap",
+      "target": "auth_bootstrap_isbootstrapemail"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_bootstrap",
+      "target": "auth_bootstrap_normalizeemail"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_bootstrap_isbootstrapemail",
+      "target": "auth_bootstrap_normalizeemail"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/bootstrap.ts",
+      "source_location": "L22",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "auth_bootstrap_grantbootstrapsuperrole",
+      "target": "auth_bootstrap_isbootstrapemail"
     },
     {
       "relation": "imports_from",
@@ -86657,6 +87048,16 @@
       "target": "remember_archive_archive"
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".remember/archive.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "remember_archive_archive",
+      "target": "remember_archive_week_of_2026_06_15"
+    },
+    {
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -86665,16 +87066,6 @@
       "weight": 1.0,
       "source": "remember_now",
       "target": "code_portal_master_plan"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".remember/now.md",
-      "source_location": "L2",
-      "weight": 1.0,
-      "source": "remember_now",
-      "target": "remember_now_00_26_beta",
-      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -86959,92 +87350,102 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L4",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "remember_today_2026_06_20",
-      "target": "remember_today_2026_06_20_04_39_beta"
+      "source": "remember_today_2026_06_20_done",
+      "target": "remember_today_2026_06_20_done_04_39_beta"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L6",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "remember_today_2026_06_20",
-      "target": "remember_today_2026_06_20_05_10_beta"
+      "source": "remember_today_2026_06_20_done",
+      "target": "remember_today_2026_06_20_done_05_10_beta"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L17",
       "weight": 1.0,
-      "source": "remember_today_2026_06_20",
-      "target": "remember_today_2026_06_20_12_38_beta",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "remember_today_2026_06_20_done",
+      "target": "remember_today_2026_06_20_done_12_38_beta"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L9",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "remember_today_2026_06_20",
-      "target": "remember_today_2026_06_20_14_30_beta"
+      "source": "remember_today_2026_06_20_done",
+      "target": "remember_today_2026_06_20_done_14_30_beta"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L14",
       "weight": 1.0,
-      "source": "remember_today_2026_06_20",
-      "target": "remember_today_2026_06_20_18_45_beta",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "remember_today_2026_06_20_done",
+      "target": "remember_today_2026_06_20_done_18_45_beta"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L1",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "remember_today_2026_06_20",
-      "target": "remember_today_2026_06_20_20_42_23_48_beta"
+      "source": "remember_today_2026_06_20_done",
+      "target": "remember_today_2026_06_20_done_20_42_23_48_beta"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": ".remember/today-2026-06-20.md",
+      "source_file": ".remember/today-2026-06-20.done.md",
       "source_location": "L12",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "remember_today_2026_06_20",
-      "target": "remember_today_2026_06_20_23_16_beta"
+      "source": "remember_today_2026_06_20_done",
+      "target": "remember_today_2026_06_20_done_23_16_beta"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": ".remember/today-2026-06-22.md",
+      "source_file": ".remember/today-2026-06-22.done.md",
       "source_location": "L1",
       "weight": 1.0,
-      "source": "remember_today_2026_06_22",
-      "target": "remember_today_2026_06_22_13_13_beta",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "remember_today_2026_06_22_done",
+      "target": "remember_today_2026_06_22_done_13_13_beta"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": ".remember/today-2026-06-22.md",
+      "source_file": ".remember/today-2026-06-22.done.md",
       "source_location": "L4",
       "weight": 1.0,
-      "source": "remember_today_2026_06_22",
-      "target": "remember_today_2026_06_22_23_50_main",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "remember_today_2026_06_22_done",
+      "target": "remember_today_2026_06_22_done_23_50_main"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".remember/today-2026-06-23.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "remember_today_2026_06_23",
+      "target": "remember_today_2026_06_23_00_26_beta"
     },
     {
       "relation": "contains",
@@ -89845,6 +90246,136 @@
       "confidence_score": 1.0,
       "source": "plans_2026_06_19_phase_9_hardening_sequencing_dependency_gate",
       "target": "plans_2026_06_19_phase_9_hardening_task_9_shared_dev_onboarding_verification_ci_guard_wiring_dev_worker_redeploy"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-06-23-bootstrap-super-admin-auth.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_06_23_bootstrap_super_admin_auth",
+      "target": "plans_2026_06_23_bootstrap_super_admin_auth_bootstrap_super_admin_authentication_implementation_plan"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-06-23-bootstrap-super-admin-auth.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_06_23_bootstrap_super_admin_auth_bootstrap_super_admin_authentication_implementation_plan",
+      "target": "plans_2026_06_23_bootstrap_super_admin_auth_global_constraints"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-06-23-bootstrap-super-admin-auth.md",
+      "source_location": "L22",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_06_23_bootstrap_super_admin_auth_global_constraints",
+      "target": "plans_2026_06_23_bootstrap_super_admin_auth_task_1_google_identity_gate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-06-23-bootstrap-super-admin-auth.md",
+      "source_location": "L51",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_06_23_bootstrap_super_admin_auth_global_constraints",
+      "target": "plans_2026_06_23_bootstrap_super_admin_auth_task_2_bootstrap_roster_bypass_and_super_role"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-06-23-bootstrap-super-admin-auth.md",
+      "source_location": "L84",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_06_23_bootstrap_super_admin_auth_global_constraints",
+      "target": "plans_2026_06_23_bootstrap_super_admin_auth_task_3_auth_js_and_environment_wiring"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-06-23-bootstrap-super-admin-auth.md",
+      "source_location": "L116",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "plans_2026_06_23_bootstrap_super_admin_auth_global_constraints",
+      "target": "plans_2026_06_23_bootstrap_super_admin_auth_task_4_repository_verification"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "specs_2026_06_23_bootstrap_super_admin_auth_design",
+      "target": "specs_2026_06_23_bootstrap_super_admin_auth_design_bootstrap_super_admin_authentication"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L22",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "specs_2026_06_23_bootstrap_super_admin_auth_design_bootstrap_super_admin_authentication",
+      "target": "specs_2026_06_23_bootstrap_super_admin_auth_design_bootstrap_role"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "specs_2026_06_23_bootstrap_super_admin_auth_design_bootstrap_super_admin_authentication",
+      "target": "specs_2026_06_23_bootstrap_super_admin_auth_design_configuration"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "specs_2026_06_23_bootstrap_super_admin_auth_design_bootstrap_super_admin_authentication",
+      "target": "specs_2026_06_23_bootstrap_super_admin_auth_design_goal"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "specs_2026_06_23_bootstrap_super_admin_auth_design_bootstrap_super_admin_authentication",
+      "target": "specs_2026_06_23_bootstrap_super_admin_auth_design_local_environment"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "specs_2026_06_23_bootstrap_super_admin_auth_design_bootstrap_super_admin_authentication",
+      "target": "specs_2026_06_23_bootstrap_super_admin_auth_design_sign_in_rules"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "specs_2026_06_23_bootstrap_super_admin_auth_design_bootstrap_super_admin_authentication",
+      "target": "specs_2026_06_23_bootstrap_super_admin_auth_design_verification"
     },
     {
       "relation": "contains",
@@ -96830,5 +97361,5 @@
       "source_file": "public/next.svg"
     }
   ],
-  "built_at_commit": "37da68300fd1d699f951e6cac0a76ce0524b3cf7"
+  "built_at_commit": "2142e8ade6e2b4d5656fd0ed67b2a627ca9f7f94"
 }

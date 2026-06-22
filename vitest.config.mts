@@ -24,6 +24,7 @@ export default defineConfig({
 					AUTH_SECRET: "test-auth-secret",
 					AUTH_GOOGLE_ID: "test-google-id",
 					AUTH_GOOGLE_SECRET: "test-google-secret",
+					AUTH_BOOTSTRAP_SUPER_ADMIN_EMAIL: "bootstrap@example.com",
 					TEST_MIGRATIONS: await readD1Migrations(path.join(import.meta.dirname, "drizzle/migrations")),
 				},
 			},

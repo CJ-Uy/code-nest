@@ -6,7 +6,7 @@ export type GoogleSignInProfile = {
 
 export type AuthAccessPolicy = {
 	allowedDomains: string[];
-	allowlistEmails: string[];
+	bootstrapEmail?: string;
 };
 
 export function isGoogleSignInAllowed(
@@ -18,9 +18,9 @@ export function isGoogleSignInAllowed(
 	const email = profile.email.trim().toLowerCase();
 	const domain = email.split("@").at(1);
 	const allowedDomains = policy.allowedDomains.map((item) => item.trim().toLowerCase()).filter(Boolean);
-	const allowlistEmails = policy.allowlistEmails.map((item) => item.trim().toLowerCase()).filter(Boolean);
+	const bootstrapEmail = policy.bootstrapEmail?.trim().toLowerCase();
 
-	return Boolean(domain && allowedDomains.includes(domain)) || allowlistEmails.includes(email);
+	return email === bootstrapEmail || allowedDomains.length === 0 || Boolean(domain && allowedDomains.includes(domain));
 }
 
 export function splitAuthList(value?: string): string[] {
