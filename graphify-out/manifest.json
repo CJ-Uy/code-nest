@@ -5,8 +5,8 @@
     "semantic_hash": ""
   },
   ".remember/tmp/last-save.json": {
-    "mtime": 1782151858.3235102,
-    "ast_hash": "53ee1c0c84e8e4b633c9ac8659a251bb",
+    "mtime": 1782153536.9366803,
+    "ast_hash": "65f353e1729073b7a48c6e48c106e85c",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -600,13 +600,13 @@
     "semantic_hash": ""
   },
   "src/server/env.test.ts": {
-    "mtime": 1782144217.6881557,
-    "ast_hash": "95b3e2fb191015da10696d63e312aaa1",
-    "semantic_hash": "95b3e2fb191015da10696d63e312aaa1"
+    "mtime": 1782153802.4426615,
+    "ast_hash": "6e4f40c54d1ff53d30a8ba4956a4dbc5",
+    "semantic_hash": ""
   },
   "src/server/env.ts": {
-    "mtime": 1782152820.6015658,
-    "ast_hash": "1298e4aae604d3b9ff9a2b4ad493d420",
+    "mtime": 1782153815.7759278,
+    "ast_hash": "2363dfa6a57cd4a323394e880aa1e931",
     "semantic_hash": ""
   },
   "src/server/http/origin.test.ts": {
@@ -725,8 +725,8 @@
     "semantic_hash": ""
   },
   ".remember/now.md": {
-    "mtime": 1782151875.7076685,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "mtime": 1782153536.7158158,
+    "ast_hash": "1cd6a0765841b28001c4237d8f762541",
     "semantic_hash": ""
   },
   ".remember/recent.md": {
@@ -2097,6 +2097,11 @@
   "docs/superpowers/specs/2026-06-23-bootstrap-super-admin-auth-design.md": {
     "mtime": 1782152488.2253702,
     "ast_hash": "bb6ab89409565127e270c8a582d12878",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-06-23-public-marketing-pages-design.md": {
+    "mtime": 1782153888.293817,
+    "ast_hash": "0202ceba19439189e51feac4993f85bb",
     "semantic_hash": ""
   }
 }
