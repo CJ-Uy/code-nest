@@ -6,8 +6,8 @@
 	"workers_dev": true,
 	"routes": [
 		{
-			"pattern": "ateneocode.org/*",
-			"zone_name": "ateneocode.org"
+			"pattern": "ateneocode.org",
+			"custom_domain": true
 		}
 	],
 	"compatibility_date": "2026-06-10",
@@ -59,8 +59,8 @@
 			"name": "code-nest-dev",
 			"routes": [
 				{
-					"pattern": "beta.ateneocode.org/*",
-					"zone_name": "ateneocode.org"
+					"pattern": "beta.ateneocode.org",
+					"custom_domain": true
 				}
 			],
 			"assets": {
