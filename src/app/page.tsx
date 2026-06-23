@@ -1,146 +1,48 @@
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArticleCard } from "@/components/public/public-page";
+import { CtaBand } from "@/components/public/cta-band";
+import { PlaceholderBlock } from "@/components/public/placeholder-block";
 import { SiteFooter } from "@/components/public/site-footer";
 import { SiteHeader } from "@/components/public/site-header";
-import { ARTICLES, COMPETENCIES, HERO_STATS, MISSION, ORG, SERVICES_INTRO, VISION, WHAT_IS_OD } from "@/content/site";
+import { ARTICLES, COMPETENCIES, HERO_STATS, MISSION, ORG, VISION, WHAT_IS_OD } from "@/content/site";
 
 export const dynamic = "force-static";
 
 export default function Home() {
-	const featured = ARTICLES.slice(0, 3);
-
 	return (
 		<div className="min-h-screen bg-background text-foreground">
 			<SiteHeader />
-
-			<section className="relative isolate overflow-hidden bg-primary text-primary-foreground">
-				<div className="absolute inset-0 -z-10 bg-[radial-gradient(120%_120%_at_15%_0%,rgba(73,134,172,0.35)_0%,rgba(6,25,47,0)_55%)]" />
-				<div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28">
-					<div className="max-w-3xl">
-						<Image src="/code-logo-full-white.png" alt="CODE" width={168} height={57} priority style={{ height: "auto" }} />
-						<p className="mt-6 text-sm font-semibold uppercase tracking-[0.2em] text-white/70">{ORG.tagline}</p>
-						<h1 className="mt-3 font-heading text-4xl leading-tight sm:text-5xl lg:text-6xl">
-							We help youth organizations develop, endure, and serve the nation.
-						</h1>
-						<p className="mt-6 max-w-2xl text-lg leading-8 text-white/85">{ORG.blurb}</p>
-						<div className="mt-8 flex flex-wrap gap-3">
-							<Button asChild variant="secondary">
-								<Link href="/services">
-									Our services
-									<ArrowRight />
-								</Link>
-							</Button>
-							<Button asChild variant="outline" className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white">
-								<Link href="/contact">Work with us</Link>
-							</Button>
+			<main>
+				<header className="relative isolate overflow-hidden bg-primary text-white">
+					<div className="absolute inset-0 -z-20 bg-[radial-gradient(120%_90%_at_12%_0%,rgba(144,180,204,0.28),transparent_55%)]" />
+					<div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
+						<div className="max-w-4xl">
+							<p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#90B4CC]">Youth-led · Non-profit · Jesuit-formed</p>
+							<h1 className="mt-5 text-balance font-heading text-4xl leading-[1.08] sm:text-6xl lg:text-7xl">Organization Development<br /><span className="font-normal italic text-[#90B4CC]">for the youth who will build the nation.</span></h1>
+							<p className="mt-7 max-w-2xl text-lg leading-8 text-white/75 sm:text-xl">{ORG.blurb}</p>
+							<div className="mt-9 flex flex-wrap gap-3"><Button asChild variant="secondary"><Link href="/services">Explore our services <ArrowRight /></Link></Button><Button asChild variant="outline" className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"><Link href="/product">Read the Product Center</Link></Button></div>
+							<dl className="mt-14 flex flex-wrap gap-x-12 gap-y-6 sm:gap-x-16">{HERO_STATS.map((stat) => <div key={stat.label}><dt className="font-heading text-4xl leading-none">{stat.value}</dt><dd className="mt-2 max-w-36 text-sm text-white/55">{stat.label}</dd></div>)}</dl>
 						</div>
 					</div>
+				</header>
 
-					<dl className="mt-14 grid max-w-2xl grid-cols-3 gap-6 border-t border-white/15 pt-8">
-						{HERO_STATS.map((stat) => (
-							<div key={stat.label}>
-								<dt className="font-heading text-3xl text-white sm:text-4xl">{stat.value}</dt>
-								<dd className="mt-1 text-sm text-white/70">{stat.label}</dd>
-							</div>
-						))}
-					</dl>
-				</div>
-			</section>
+				<section className="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20 lg:px-8">
+					<div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">Who we are</p><h2 className="mt-4 text-balance font-heading text-3xl leading-tight sm:text-4xl">Consultants in action. Real people, real change.</h2></div>
+					<div><p className="font-heading text-2xl leading-relaxed">We conduct <em>contextualized</em> OD services, tailor-fit to each client&apos;s reality, through short-term engagements, long-term partnerships, and consultancy teams.</p><p className="mt-5 text-lg leading-8 text-muted-foreground">Imbued with Ignatian values, we form the youth and youth-oriented organizations who will initiate positive change within the community.</p></div>
+				</section>
 
-			<section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-				<p className="mx-auto max-w-3xl text-center font-heading text-2xl leading-relaxed text-foreground sm:text-3xl">
-					{SERVICES_INTRO}
-				</p>
-			</section>
+				<section className="bg-[#D7DFE9]/40"><div className="mx-auto grid max-w-7xl gap-6 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-2 lg:px-8">{[["Vision", VISION], ["Mission", MISSION]].map(([title, body]) => <article key={title} className="relative overflow-hidden rounded-xl border border-white bg-white p-8 shadow-sm sm:p-10"><Quote className="absolute right-7 top-7 size-10 text-[#D7DFE9]" /><p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">{title}</p><p className="mt-6 font-heading text-xl leading-relaxed sm:text-2xl">{body}</p></article>)}</div></section>
 
-			<section className="bg-card">
-				<div className="mx-auto grid max-w-7xl gap-6 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:px-8">
-					<Card>
-						<CardHeader>
-							<p className="text-xs font-semibold uppercase tracking-wide text-accent">Vision</p>
-							<CardTitle className="text-xl">Where we are headed</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<p className="text-sm leading-relaxed text-muted-foreground">{VISION}</p>
-						</CardContent>
-					</Card>
-					<Card>
-						<CardHeader>
-							<p className="text-xs font-semibold uppercase tracking-wide text-accent">Mission</p>
-							<CardTitle className="text-xl">What we do about it</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<p className="text-sm leading-relaxed text-muted-foreground">{MISSION}</p>
-						</CardContent>
-					</Card>
-				</div>
-			</section>
+				<section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">What grounds us</p><h2 className="mt-3 font-heading text-4xl">Three core competencies</h2><p className="mt-3 text-lg text-muted-foreground">Everything we do as consultants traces back to these.</p><div className="mt-10 grid gap-6 md:grid-cols-3">{COMPETENCIES.map((item) => <article key={item.n} className="rounded-lg border border-border p-7"><p className="font-heading text-lg font-bold tracking-[0.12em] text-[#90B4CC]">{item.n}</p><div className="my-4 h-0.5 w-10 bg-accent" /><h3 className="font-heading text-2xl">{item.title}</h3><p className="mt-3 leading-7 text-muted-foreground">{item.body}</p></article>)}</div></section>
 
-			<section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-				<h2 className="font-heading text-3xl">Our competencies</h2>
-				<div className="mt-8 grid gap-6 md:grid-cols-3">
-					{COMPETENCIES.map((competency) => (
-						<div key={competency.n} className="rounded-2xl border border-border p-6">
-							<span className="font-heading text-4xl text-secondary-foreground/30">{competency.n}</span>
-							<h3 className="mt-3 font-heading text-xl">{competency.title}</h3>
-							<p className="mt-2 text-sm leading-relaxed text-muted-foreground">{competency.body}</p>
-						</div>
-					))}
-				</div>
-			</section>
+				<section className="bg-primary text-white"><div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:px-8"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#90B4CC]">The discipline behind it all</p><h2 className="mt-4 text-balance font-heading text-4xl leading-tight sm:text-5xl">What is Organization Development?</h2><p className="mt-6 text-lg leading-8 text-white/70">{WHAT_IS_OD}</p><Button asChild variant="secondary" className="mt-8"><Link href="/services">See how we apply it <ArrowRight /></Link></Button></div><PlaceholderBlock label="The planned-change cycle: diagnose, intervene, reinforce" className="aspect-[4/3] border-white/20 bg-white/5 text-white/65 [&_svg]:text-[#90B4CC]" /></div></section>
 
-			<section className="bg-primary text-primary-foreground">
-				<div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-					<div className="max-w-3xl">
-						<p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">What is OD?</p>
-						<p className="mt-4 font-heading text-2xl leading-relaxed sm:text-3xl">{WHAT_IS_OD}</p>
-					</div>
-				</div>
-			</section>
+				<section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8"><div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">Product Center</p><h2 className="mt-3 font-heading text-4xl">OD, made digestible</h2><p className="mt-3 max-w-2xl text-lg text-muted-foreground">Contextualized OD content written by CODE consultants, free for the youth.</p></div><Link href="/product" className="inline-flex items-center gap-2 text-sm font-semibold text-accent hover:underline">View all articles <ArrowRight className="size-4" /></Link></div><div className="mt-10 grid gap-6 md:grid-cols-3">{ARTICLES.slice(0, 3).map((article) => <ArticleCard key={article.id} article={article} />)}</div></section>
 
-			<section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-				<div className="flex items-end justify-between gap-4">
-					<h2 className="font-heading text-3xl">From the Product Center</h2>
-					<Link href="/product" className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:underline">
-						All articles
-						<ArrowRight className="size-4" />
-					</Link>
-				</div>
-				<div className="mt-8 grid gap-6 md:grid-cols-3">
-					{featured.map((article) => (
-						<Link key={article.id} href={`/product/${article.id}`} className="group flex flex-col rounded-2xl border border-border p-6 transition-colors hover:border-accent">
-							<span className="text-xs font-semibold uppercase tracking-wide text-accent">{article.cat}</span>
-							<h3 className="mt-2 font-heading text-xl leading-snug group-hover:text-accent">{article.title}</h3>
-							<p className="mt-2 flex-1 text-sm text-muted-foreground">{article.dek}</p>
-							<span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-foreground">
-								Read
-								<ArrowUpRight className="size-4" />
-							</span>
-						</Link>
-					))}
-				</div>
-			</section>
-
-			<section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-				<div className="flex flex-col items-start justify-between gap-6 rounded-3xl bg-accent p-8 text-accent-foreground sm:flex-row sm:items-center sm:p-12">
-					<div>
-						<h2 className="font-heading text-3xl">Have an organization to develop?</h2>
-						<p className="mt-2 max-w-xl text-sm text-accent-foreground/85">
-							Tell us about your org and what you are working toward. We will help you find the right engagement.
-						</p>
-					</div>
-					<Button asChild variant="secondary" className="shrink-0">
-						<Link href="/contact">
-							Get in touch
-							<ArrowRight />
-						</Link>
-					</Button>
-				</div>
-			</section>
-
+				<CtaBand />
+			</main>
 			<SiteFooter />
 		</div>
 	);

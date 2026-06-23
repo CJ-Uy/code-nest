@@ -1,7 +1,7 @@
-import { Mail, MapPin } from "lucide-react";
+import { ExternalLink, Mail, MapPin } from "lucide-react";
 import type { Metadata } from "next";
-import { Card, CardContent } from "@/components/ui/card";
 import { ContactForm } from "@/components/public/contact-form";
+import { PageHero } from "@/components/public/public-page";
 import { PlaceholderBlock } from "@/components/public/placeholder-block";
 import { SiteFooter } from "@/components/public/site-footer";
 import { SiteHeader } from "@/components/public/site-header";
@@ -11,61 +11,7 @@ export const dynamic = "force-static";
 export const metadata: Metadata = { title: "Contact — CODE" };
 
 export default function ContactPage() {
-	return (
-		<div className="min-h-screen bg-background text-foreground">
-			<SiteHeader />
-
-			<section className="border-b border-border bg-card">
-				<div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-					<p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Contact</p>
-					<h1 className="mt-3 max-w-3xl font-heading text-4xl leading-tight sm:text-5xl">Let&apos;s talk about your organization</h1>
-					<p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
-						Reach the right point of contact, or send us a message and we&apos;ll route it for you.
-					</p>
-				</div>
-			</section>
-
-			<section className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_1.2fr] lg:px-8">
-				<div className="grid gap-6">
-					<div className="grid gap-3">
-						{CONTACTS.map((rep) => (
-							<Card key={rep.email}>
-								<CardContent className="flex items-start gap-3 py-4">
-									<span className="grid size-10 shrink-0 place-items-center rounded-lg bg-secondary text-accent">
-										<Mail className="size-5" />
-									</span>
-									<div className="min-w-0">
-										<p className="font-medium">{rep.role}</p>
-										<p className="text-sm text-muted-foreground">{rep.scope}</p>
-										<a href={`mailto:${rep.email}`} className="mt-1 block truncate text-sm text-accent hover:underline">
-											{rep.email}
-										</a>
-									</div>
-								</CardContent>
-							</Card>
-						))}
-					</div>
-					<div className="rounded-2xl border border-border p-4">
-						<p className="flex items-center gap-2 text-sm font-medium">
-							<MapPin className="size-4 text-accent" />
-							Find us
-						</p>
-						<p className="mt-1 text-sm text-muted-foreground">{ORG.room}</p>
-						<p className="text-sm text-muted-foreground">{ORG.campus}</p>
-						<PlaceholderBlock label="Campus map" className="mt-3 aspect-[16/9]" />
-					</div>
-				</div>
-
-				<div>
-					<h2 className="font-heading text-2xl">Send a message</h2>
-					<p className="mt-1 text-sm text-muted-foreground">We read every inquiry. Expect a reply over email.</p>
-					<div className="mt-5">
-						<ContactForm />
-					</div>
-				</div>
-			</section>
-
-			<SiteFooter />
-		</div>
-	);
+	return <div className="min-h-screen bg-background text-foreground"><SiteHeader /><main><PageHero eyebrow="Contact Us" description="Reach the right representative for your context, or send us a note. We read everything.">Let&apos;s talk about <span className="font-normal italic text-[#90B4CC]">your organization.</span></PageHero>
+		<section className="mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:px-8"><div><h2 className="font-heading text-3xl">Representatives</h2><p className="mt-2 text-muted-foreground">Choose by where your organization sits.</p><div className="mt-6 grid gap-3">{CONTACTS.map((rep) => <a key={rep.email} href={`mailto:${rep.email}`} className="group rounded-lg border border-border bg-card p-5 transition hover:border-accent"><div className="flex items-start justify-between gap-4"><h3 className="font-heading text-xl">{rep.role}</h3><Mail className="size-5 shrink-0 text-[#90B4CC] group-hover:text-accent" /></div><p className="mt-2 text-sm text-muted-foreground">{rep.scope}</p><p className="mt-2 break-all text-sm font-semibold text-accent">{rep.email}</p></a>)}</div><div className="mt-6 flex flex-wrap gap-3"><a href={`mailto:${ORG.email}`} className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-primary"><Mail className="size-4" />{ORG.email}</a><a href={ORG.fbUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-primary"><ExternalLink className="size-4" />{ORG.fb}</a></div><div className="mt-10"><h2 className="font-heading text-3xl">Find us</h2><p className="mt-4 flex gap-3 leading-7 text-muted-foreground"><MapPin className="mt-1 size-5 shrink-0 text-[#90B4CC]" /><span><strong className="text-foreground">{ORG.room}</strong><br />{ORG.campus}</span></p><PlaceholderBlock label="Map: MVP Center for Student Leadership, ADMU" className="mt-5 aspect-video" /></div></div>
+		<div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-10"><h2 className="font-heading text-3xl">Send us a note</h2><p className="mt-2 mb-7 text-muted-foreground">Tell us about your organization and what you are hoping to develop.</p><ContactForm /></div></section></main><SiteFooter /></div>;
 }
