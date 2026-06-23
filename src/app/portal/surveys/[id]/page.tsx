@@ -98,7 +98,7 @@ export default async function MemberSurveyPage({
 						</Card>
 					))}
 					<div className="flex justify-end">
-						<Button type="submit" size="lg">
+						<Button type="submit">
 							<Send />
 							Submit response
 						</Button>
