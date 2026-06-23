@@ -24,3 +24,8 @@ jobs:
       - run: pnpm db:generate && git diff --exit-code drizzle/migrations
       - run: pnpm build
       - run: pnpm check:shared-dev-note
+      - name: Deploy beta Worker
+        if: github.event_name == 'push' && github.ref == 'refs/heads/beta'
+        run: pnpm upload:dev
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

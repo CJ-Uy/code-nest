@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,15 @@ export default function Home() {
 			<main>
 				<header className="relative isolate overflow-hidden bg-primary text-white">
 					<div className="absolute inset-0 -z-20 bg-[radial-gradient(120%_90%_at_12%_0%,rgba(144,180,204,0.28),transparent_55%)]" />
+					<Image
+						src="/code-falcon-white.png"
+						alt=""
+						aria-hidden="true"
+						width={430}
+						height={477}
+						priority
+						className="absolute -right-24 top-1/2 -z-10 h-[135%] w-auto max-w-none -translate-y-1/2 opacity-[0.07]"
+					/>
 					<div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
 						<div className="max-w-4xl">
 							<p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#90B4CC]">Youth-led · Non-profit · Jesuit-formed</p>
