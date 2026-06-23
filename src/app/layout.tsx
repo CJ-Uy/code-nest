@@ -18,13 +18,6 @@ const unna = Unna({
 export const metadata: Metadata = {
 	title: "CODE",
 	description: "Ateneo CODE public site and member portal.",
-	icons: {
-		icon: [
-			{ url: "/favicon.svg", type: "image/svg+xml" },
-			{ url: "/code-falcon-white.png", type: "image/png" },
-		],
-		apple: { url: "/favicon.svg" },
-	},
 };
 
 export default function RootLayout({
