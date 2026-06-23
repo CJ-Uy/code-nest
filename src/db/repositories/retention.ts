@@ -72,6 +72,7 @@ export type RetentionRepository = {
 	listForMember(actor: Actor, input: ListForMemberInput): Promise<RetentionRecord[]>;
 	getMemberTermSummary(actor: Actor, input: MemberTermSummaryInput): Promise<RetentionSummary>;
 	leaderboard(actor: Actor, input: LeaderboardInput): Promise<LeaderboardRow[]>;
+	publicLeaderboard(actor: Actor, input: LeaderboardInput): Promise<LeaderboardRow[]>;
 	createManual(actor: Actor, input: CreateManualRetentionRecordInput): Promise<{ recordIds: string[] }>;
 	listForTerm(actor: Actor, termId: string): Promise<TermMasterRow[]>;
 	listMemberTermHistory(actor: Actor, memberId: string, termId: string): Promise<MemberHistoryRow[]>;
@@ -204,6 +205,25 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				.groupBy(retentionRecords.memberId, members.fullName, members.name)
 				.orderBy(desc(sql`coalesce(sum(${retentionRecords.points}), 0)`))
 				.limit(Math.min(input.limit ?? 50, 100))
+				.offset(input.offset ?? 0);
+		},
+
+		async publicLeaderboard(_actor, input) {
+			// Read-only points ranking visible to any signed-in member (names + points
+			// only). Same aggregation as the admin leaderboard without the manage gate.
+			return db
+				.select({
+					memberId: retentionRecords.memberId,
+					fullName: members.fullName,
+					name: members.name,
+					totalPoints: sql<number>`coalesce(sum(${retentionRecords.points}), 0)`,
+				})
+				.from(retentionRecords)
+				.innerJoin(members, eq(members.id, retentionRecords.memberId))
+				.where(eq(retentionRecords.termId, input.termId))
+				.groupBy(retentionRecords.memberId, members.fullName, members.name)
+				.orderBy(desc(sql`coalesce(sum(${retentionRecords.points}), 0)`))
+				.limit(Math.min(input.limit ?? 25, 100))
 				.offset(input.offset ?? 0);
 		},
 

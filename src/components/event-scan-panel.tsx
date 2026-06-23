@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { isCheckinToken } from "@/lib/checkin-token";
 import { decodeMemberCode } from "@/lib/member-code";
 
 type ScanResult = { memberId: string; alreadyPresent: boolean };
@@ -22,26 +23,37 @@ export function EventScanPanel({ eventId, termId }: { eventId: string; termId: s
 	const [results, setResults] = useState<FoundMember[]>([]);
 	const [error, setError] = useState<string | null>(null);
 
-	async function scanMember(memberId: string) {
+	async function postScan(body: { memberId: string } | { token: string }, displayId: string) {
 		setError(null);
 		const response = await fetch(`/api/events/${eventId}/scan`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ memberId, termId }),
+			body: JSON.stringify({ ...body, termId }),
 		});
 		if (!response.ok) {
-			const body = (await response.json().catch(() => null)) as { error?: string } | null;
-			setError(body?.error ?? "Scan failed. Try the manual search.");
+			const errorBody = (await response.json().catch(() => null)) as { error?: string } | null;
+			setError(errorBody?.error ?? "Scan failed. Try the manual search.");
 			return;
 		}
 		const result = (await response.json()) as ScanResult;
-		setLog((prev) => [`${result.alreadyPresent ? "Already present" : "Marked present"}: ${memberId}`, ...prev]);
+		setLog((prev) => [`${result.alreadyPresent ? "Already present" : "Marked present"}: ${displayId}`, ...prev]);
+	}
+
+	async function scanMember(memberId: string) {
+		await postScan({ memberId }, memberId);
 	}
 
 	async function submitScan() {
-		const memberId = decodeMemberCode(scanInput.trim());
+		const raw = scanInput.trim();
+		// Accept either a short-lived event check-in token or the static member code.
+		if (isCheckinToken(raw)) {
+			setScanInput("");
+			await postScan({ token: raw }, "check-in code");
+			return;
+		}
+		const memberId = decodeMemberCode(raw);
 		if (!memberId) {
-			setError("That code is not a CODE member code.");
+			setError("That code is not a CODE member or check-in code.");
 			return;
 		}
 		setScanInput("");
