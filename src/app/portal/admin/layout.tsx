@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AdminTabs } from "@/components/portal/admin-tabs";
 import { getActor } from "@/server/auth/actor";
 import { hasAnyAdminScope } from "@/server/auth/admin";
 import { can } from "@/server/auth/permissions";
@@ -26,20 +26,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 	].filter((tab) => tab.show);
 
 	return (
-		<div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
-			<div className="mb-6">
-				<h1 className="font-heading text-3xl text-foreground">Admin</h1>
-				<nav className="mt-4 flex flex-wrap gap-2 border-b border-border pb-3">
-					{tabs.map((tab) => (
-						<Link
-							key={tab.href}
-							href={tab.href}
-							className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-						>
-							{tab.label}
-						</Link>
-					))}
-				</nav>
+		<div className="grid gap-6">
+			<div className="grid gap-4">
+				<div>
+					<p className="text-xs font-semibold uppercase tracking-wide text-primary">Admin</p>
+					<h1 className="font-heading text-3xl text-foreground">Console</h1>
+				</div>
+				<AdminTabs tabs={tabs} />
 			</div>
 			{children}
 		</div>
