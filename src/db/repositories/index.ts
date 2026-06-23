@@ -16,6 +16,7 @@ import { createRetentionRepository } from "./retention";
 import { createUnavailableRetentionRepository } from "./retention-unavailable";
 import { createRosterRepository } from "./roster";
 import { createSessionsRepository } from "./sessions";
+import { createSubmissionsRepository, createUnavailableSubmissionsRepository } from "./submissions";
 import { createSurveysRepository, createUnavailableSurveysRepository } from "./surveys";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type { MemberDb } from "./members";
@@ -53,6 +54,7 @@ export function createDrizzleRepositories(db: DrizzleDb) {
 		announcements: createAnnouncementsRepository(d1, audit),
 		library: createLibraryRepository(d1, audit),
 		memberFeed: createMemberFeedRepository(d1),
+		submissions: createSubmissionsRepository(d1),
 		audit,
 	};
 }
@@ -115,6 +117,7 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 		announcements: createUnavailableAnnouncementsRepository(),
 		library: createUnavailableLibraryRepository(),
 		memberFeed: createUnavailableMemberFeedRepository(),
+		submissions: createUnavailableSubmissionsRepository(),
 		audit,
 	};
 }

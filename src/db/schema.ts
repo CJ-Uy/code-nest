@@ -612,3 +612,35 @@ export const libraryListItems = sqliteTable(
 	},
 	(table) => [primaryKey({ columns: [table.listId, table.libraryItemId] })],
 );
+
+export const contactSubmissions = sqliteTable(
+	"contact_submissions",
+	{
+		id: text("id").primaryKey(),
+		name: text("name").notNull(),
+		organization: text("organization").notNull(),
+		email: text("email").notNull(),
+		// "within_ls" | "outside_ls" | "not_sure"
+		orgSegment: text("org_segment").notNull(),
+		message: text("message").notNull(),
+		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+	},
+	(table) => [index("contact_submissions_created_at_idx").on(table.createdAt)],
+);
+
+export const articleFeedback = sqliteTable(
+	"article_feedback",
+	{
+		id: text("id").primaryKey(),
+		// Articles are code-sourced (see src/content/site.ts), so feedback keys by
+		// slug rather than a FK into a content table.
+		articleSlug: text("article_slug").notNull(),
+		rating: integer("rating").notNull(),
+		comment: text("comment"),
+		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+	},
+	(table) => [
+		index("article_feedback_article_slug_idx").on(table.articleSlug),
+		index("article_feedback_created_at_idx").on(table.createdAt),
+	],
+);
