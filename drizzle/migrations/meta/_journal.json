@@ -43,6 +43,13 @@
       "when": 1782158388364,
       "tag": "0005_bored_luke_cage",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1782183684314,
+      "tag": "0006_bright_glorian",
+      "breakpoints": true
     }
   ]
 }

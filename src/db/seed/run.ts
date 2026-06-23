@@ -10,6 +10,7 @@ import {
 	seedAttendance,
 	seedEvents,
 	seedForumPosts,
+	seedLibraryItems,
 	seedLinkDailyStats,
 	seedMemberRoles,
 	seedMembers,
@@ -75,6 +76,7 @@ async function seedLocal() {
 	await insertChunks(db, schema.sharedDevTokens, seedSharedDevTokens);
 	await insertChunks(db, schema.navPins, seedNavPins);
 	await insertChunks(db, schema.quickLinks, seedQuickLinks);
+	await insertChunks(db, schema.libraryItems, seedLibraryItems);
 
 	sqlite.close();
 	console.log(`Seeded ${localPath}`);

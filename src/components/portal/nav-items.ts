@@ -1,4 +1,4 @@
-import { CalendarDays, CircleUserRound, House, Bell, Link2, Award, Megaphone, ShieldCheck } from "lucide-react";
+import { CalendarDays, CircleUserRound, House, Bell, BookOpen, Link2, Award, Megaphone, ShieldCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export type NavItem = { id: string; label: string; href: string; icon: LucideIcon };
@@ -17,6 +17,7 @@ export const primaryNav: NavItem[] = [
 // fixed bar. Later phases append their destinations here (Library, Announcements)
 // so the shell component never needs to change to gain a nav entry.
 export const secondaryNav: NavItem[] = [
+	{ id: "library", label: "Library", href: "/portal/library", icon: BookOpen },
 	{ id: "announcements", label: "Announcements", href: "/portal/announcements", icon: Megaphone },
 	{ id: "links", label: "Link shortener", href: "/portal/links", icon: Link2 },
 	{ id: "notifications", label: "Notifications", href: "/portal/notifications", icon: Bell },

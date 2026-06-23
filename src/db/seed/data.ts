@@ -4,6 +4,7 @@ import {
 	crsAttendance,
 	crsEvents,
 	eventForumPosts,
+	libraryItems,
 	linkDailyStats,
 	members,
 	memberRoles,
@@ -32,6 +33,65 @@ export const seedRoles: InferInsertModel<typeof roles>[] = [
 	{ id: "role_retention", key: "retention", label: "Retention", description: "Approves events and logs retention records.", kind: "admin" },
 	{ id: "role_member_admin", key: "member_admin", label: "Member admin", description: "Manages member profiles, roles, roster, and nav pins.", kind: "admin" },
 	{ id: "role_publishing", key: "publishing", label: "Publishing", description: "Manages announcements and the content library.", kind: "admin" },
+];
+
+export const seedLibraryItems: InferInsertModel<typeof libraryItems>[] = [
+	{
+		id: "lib_onboarding",
+		kind: "article",
+		confidentiality: "public",
+		category: "Onboarding",
+		title: "What CODE retention actually measures",
+		dek: "A plain-language guide to points, retained status, and why events matter.",
+		readMinutes: 6,
+		abstract: "Retention is how CODE keeps track of active membership across a term.\n\nThis piece explains the moving parts without the jargon.",
+		sectionsJson: [
+			{ heading: "Points", body: "You earn points by attending approved events and through manual records logged by retention admins." },
+			{ heading: "Retained status", body: "Crossing the term threshold marks you retained for that term." },
+		],
+		componentsJson: [
+			{ name: "Term", definition: "A scoped period retention is measured against.", example: "AY 2026 Sem 1" },
+		],
+		questionsJson: ["What happens if I miss the threshold?", "Do casual events count?"],
+		referencesJson: ["CODE member handbook, section 4"],
+		topicsJson: ["retention", "onboarding", "points"],
+		createdBy: "mem_demo_admin",
+	},
+	{
+		id: "lib_events_playbook",
+		kind: "case_study",
+		confidentiality: "members",
+		category: "Operations",
+		title: "Running a smooth event check-in",
+		dek: "How organizers cut check-in lines using QR codes.",
+		readMinutes: 4,
+		abstract: "A short retro on the QR check-in flow and what made queues move faster.",
+		sectionsJson: [
+			{ heading: "Before", body: "Paper sign-in sheets created bottlenecks at the door." },
+			{ heading: "After", body: "Members show a short-lived QR; organizers scan and move on." },
+		],
+		componentsJson: [],
+		questionsJson: ["How do we handle members without phones?"],
+		referencesJson: [],
+		topicsJson: ["events", "operations", "qr"],
+		createdBy: "mem_demo_admin",
+	},
+	{
+		id: "lib_internal_notes",
+		kind: "article",
+		confidentiality: "confidential",
+		category: "Internal",
+		title: "Officer transition notes",
+		dek: "Confidential handover details for incoming officers.",
+		readMinutes: 8,
+		abstract: "Internal-only context for the officer transition. Visible to publishers and super admins.",
+		sectionsJson: [{ heading: "Accounts", body: "Where shared credentials live and how access is rotated." }],
+		componentsJson: [],
+		questionsJson: [],
+		referencesJson: [],
+		topicsJson: ["internal", "officers"],
+		createdBy: "mem_demo_admin",
+	},
 ];
 
 export const seedMembers: InferInsertModel<typeof members>[] = [
