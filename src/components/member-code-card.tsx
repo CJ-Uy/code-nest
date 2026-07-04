@@ -14,14 +14,22 @@ export function MemberCodeCard({ memberId }: { memberId: string }) {
 		const canvas = canvasRef.current;
 		if (!canvas) return;
 		let cancelled = false;
+		// Render the backing store at device resolution and pin display size, so the
+		// QR + center logo stay crisp on hi-DPI screens instead of being upscaled.
+		const cssSize = 220;
+		const dpr = Math.min(window.devicePixelRatio || 1, 3); // ponytail: cap at 3x, extra pixels are wasted
 		// errorCorrectionLevel H (30% recovery) so the center logo badge stays scannable.
-		QRCode.toCanvas(canvas, payload, { width: 220, margin: 1, errorCorrectionLevel: "H" })
+		QRCode.toCanvas(canvas, payload, { width: cssSize * dpr, margin: 1, errorCorrectionLevel: "H" })
 			.then(() => {
+				canvas.style.width = `${cssSize}px`;
+				canvas.style.height = `${cssSize}px`;
 				const ctx = canvas.getContext("2d");
 				if (!ctx || cancelled) return;
 				const logo = new Image();
 				logo.onload = () => {
 					if (cancelled) return;
+					ctx.imageSmoothingEnabled = true;
+					ctx.imageSmoothingQuality = "high";
 					// White circle backing keeps QR modules from showing through the transparent logo.
 					const badge = canvas.width * 0.24;
 					const center = canvas.width / 2;
@@ -34,7 +42,9 @@ export function MemberCodeCard({ memberId }: { memberId: string }) {
 					const height = logo.height * scale;
 					ctx.drawImage(logo, center - width / 2, center - height / 2, width, height);
 				};
-				logo.src = "/code-falcon-transparent.png";
+				// SVG source: drawImage rasterizes it at the destination resolution, so the
+			// badge stays razor-sharp at any devicePixelRatio (the PNG was only 430px).
+			logo.src = "/code-falcon-transparent.svg";
 			})
 			.catch(() => setError("Could not render the code."));
 		return () => {
