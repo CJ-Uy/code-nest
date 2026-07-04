@@ -46,6 +46,12 @@ member's Google avatar becomes their identity across the app.
 - Owner column: avatar + name; render `—` when a link has no resolvable owner.
 - Filtering/sorting is **entirely client-side** over a single server-loaded dataset
   — avoids the shared-proxy query-param limitation and adds no endpoints.
+- Short links are served at **bare root `/<slug>`**, not `/l/<slug>`. Canonical URL
+  generation, QR codes, and copy actions all use `/<slug>`. `/l/<slug>` is kept as a
+  **301 alias** so existing printed/QR links keep working.
+- **Read access follows visibility**: any member may read any link's detail + stats
+  (the whole point of a shared table). Only **write** (edit/delete) stays owner-or-
+  moderator. This requires loosening the read guard — see Backend.
 
 ## Data model
 
@@ -74,9 +80,15 @@ short_links.tags  text   -- JSON array of strings, e.g. ["event","social"]; null
   type; list methods return `LinkListItem[]`. `getById`/`getStats` keep the flat
   `ShortLink` (owner/tags added where needed).
 - `create` / `update`: accept optional `tags: string[]`; validate each tag
-  (trimmed, 1–24 chars, max ~10 tags), store as JSON. Reuse existing owner/slug/url
-  validation.
-- Permissions: **unchanged**. `loadOwned` already blocks non-owner writes.
+  (trimmed, 1–24 chars, max ~10 tags), store as JSON. **Return an enriched
+  `LinkListItem`** (owner + parsed tags), not a flat `ShortLink`, so the client can
+  patch its in-memory list without a refetch. (Fixes review blocker #2/major #5.)
+- **Read guard loosened** (fixes review blocker #1): `getById` and `getStats` must
+  allow **any member** to read **any** link — drop the `loadOwned` ownership check on
+  the read paths (keep the link-exists check). Introduce `loadReadable` (exists-only)
+  for reads; `loadOwned` stays for `update`/`remove` only.
+- Write permissions **unchanged**: `update`/`remove` still go through `loadOwned`
+  (owner-or-`link:moderate`).
 
 ### Contract (`src/db/contract/links.ts`)
 
@@ -85,6 +97,10 @@ short_links.tags  text   -- JSON array of strings, e.g. ["event","social"]; null
 - New op `listVisible` (`auth: member`, `sharedDev: allow`), output `{ links: linkListItemSchema[] }`.
 - `listOwn` / `listAll` outputs switch to `linkListItemSchema[]`.
 - `create` / `update` inputs gain optional `tags: z.array(z.string().trim().min(1).max(24)).max(10)`.
+- **`create` / `update` OUTPUTS switch to `{ link: linkListItemSchema }`** (owner +
+  tags), matching the enriched repo return.
+- `get` / `stats` stay `auth: member` — now reachable by any member (read guard
+  loosened server-side), so no contract permission change needed.
 
 ### Handlers
 
@@ -94,6 +110,35 @@ short_links.tags  text   -- JSON array of strings, e.g. ["event","social"]; null
   own query and default to the visible list, so the proxied path returns the same
   shape without needing query params.
 - `create` / `update`: pass `tags` through.
+
+## Slug routing (`/<slug>` at root)
+
+Move short links from `/l/<slug>` to bare `/<slug>`.
+
+- **New route** `src/app/[slug]/route.ts` — dynamic segment at root; resolves the slug
+  and returns the redirect (reusing `buildRedirectResponse`). In the App Router,
+  static routes (`/portal`, `/signin`, `/api`, `/`, all marketing pages) take
+  precedence over `[slug]`, so real pages are never shadowed. Unknown slug → 404.
+- **`buildRedirectResponse`**: stop stripping `^/l/`; take the slug from the route
+  param (or strip only the leading `/`). Keep crawler-preview + click-recording as-is.
+- **`shortLinkUrl`** (`src/components/links/urls.ts`): emit `/<slug>` (canonical).
+  All QR/copy/open surfaces inherit this.
+- **`/l/<slug>` legacy alias**: keep `src/app/l/[slug]/route.ts`, but have it **301 →
+  `/<slug>`** (or resolve directly). Prevents breaking existing printed/QR links.
+  Flag for removal later; not this pass.
+- **Reserved slugs** (`RESERVED_SLUG_DEFAULTS`, currently
+  `["portal","admin","api","l","signin","internal"]`): expand to cover **every real
+  top-level route** so members can't claim a shadowed slug. Verified real top-level
+  dirs in `src/app` to add: **`contact`, `product`, `projects`, `services`** (plus the
+  already-listed `portal`, `admin`, `api`, `l`, `signin`, `internal`). Re-enumerate
+  `src/app` at implementation time in case dirs were added, plus static assets
+  (`favicon.ico`, `robots.txt`, `sitemap.xml`, `_next`). `create`
+  rejects any reserved slug (already wired via `reservedSlugs` table + defaults).
+  ponytail: enumerate once from the real route tree; no dynamic route-introspection.
+- **Collision note**: reservation is a UX guard, not security — a shadowed slug simply
+  never resolves (the page wins). No auth impact.
+- Tests: `/<slug>` resolves + records a click; reserved/real-route slug is rejected on
+  create; `/l/<slug>` 301s to `/<slug>`; unknown slug 404s.
 
 ## Frontend
 
@@ -108,10 +153,10 @@ short_links.tags  text   -- JSON array of strings, e.g. ["event","social"]; null
 - Server component loads `listVisible(actor)` once and passes `initialLinks` +
   `actorMemberId` + `canModerate`.
 - **Instructions**: a compact, collapsible "How short links work" block at the top
-  (what a short link is, how `/l/slug` resolves, that stats are click-based).
+  (what a short link is, how `/<slug>` resolves, that stats are click-based).
 - **Create form**: retained; adds a free-form tags input (chip input, autocompletes
   from tags in the loaded set).
-- **Table** columns: Owner (avatar+name or `—`) · Title · Short link (`/l/slug`
+- **Table** columns: Owner (avatar+name or `—`) · Title · Short link (`/<slug>`
   + copy) · Tags (chips) · Clicks · Created · Actions.
   - Actions: Copy, Open, QR for everyone; **Edit + Delete only when
     `link.ownerMemberId === actorMemberId` or `canModerate`**.
@@ -133,6 +178,10 @@ short_links.tags  text   -- JSON array of strings, e.g. ["event","social"]; null
 - **Shared chart components** (`src/components/links/charts.tsx`): `ClicksOverTime`,
   `BucketBars`. Used by both the dialog and the `[id]` page (which is refactored to
   consume them, replacing its hand-rolled SVG).
+- **recharts**: pin a React-19-compatible version (`recharts@^2.15`) and confirm
+  `pnpm build` (Next 16 + OpenNext) passes. **Fallback**: keep the same
+  `ClicksOverTime`/`BucketBars` prop shape but render inline SVG (the `[id]` page
+  already ships this) if the build breaks — the swap stays contained. (Review minor #9.)
 
 ## Data flow
 
@@ -158,7 +207,11 @@ direct and internal handlers return the enriched shape.
 ## Testing
 
 - Repo: `listVisible` returns all links with owner join + parsed tags; tags
-  round-trip on create/update; non-owner update/delete still throws `not_authorized`.
+  round-trip on create/update; non-owner update/delete still throws `not_authorized`;
+  **non-owner `getById`/`getStats` now SUCCEED** (read guard loosened).
+- **Update existing tests for the routing change** (they assert old `/l` behavior):
+  `src/components/links/link-qr.test.ts`, `src/server/links/redirect.test.ts`,
+  `src/app/l/[slug]/route.test.ts`. New canonical `/<slug>`; `/l/<slug>` → 301.
 - Contract/handler: default GET returns visible list; `?scope=own`/`all` honored;
   tags accepted and validated on create/update.
 - Internal handler: returns the same enriched shape.
@@ -182,7 +235,8 @@ No production D1 or deploy in this work.
 - Per-link privacy / unlisted flag.
 - Tags table + admin management UI + server-side tag index.
 - Bulk actions, CSV export of links, link expiry.
-- Changing redirect/click-recording logic.
+- Changing **click-recording / crawler-preview** logic. (Slug *extraction* in
+  `buildRedirectResponse` does change for `/<slug>` — that part is in scope.)
 
 ## Acceptance criteria
 
@@ -192,7 +246,42 @@ No production D1 or deploy in this work.
 - [ ] Free-form tags can be added on create/edit and shown as chips.
 - [ ] Filters work: All / Mine / Most clicked, tag chips, and text search.
 - [ ] Row click opens a popup with recharts click-over-time + referrer/device bars.
+- [ ] Short links resolve at bare `/<slug>`; canonical URLs/QR use `/<slug>`.
+- [ ] `/l/<slug>` 301-redirects to `/<slug>`; unknown slug 404s; real routes unshadowed.
+- [ ] Reserved-slug list covers all real top-level routes; create rejects them.
 - [ ] Instructions block present and understandable.
 - [ ] `[id]` page still works, using the shared chart components.
 - [ ] Migration generated; dev Worker updated after approval; no prod changes.
 - [ ] Tests above pass; `pnpm typecheck` and `pnpm lint` clean.
+
+## Implementation build order (for Codex)
+
+Do these in order; run `pnpm typecheck` + `pnpm test` after each backend step.
+
+1. **Schema + migration**: add `tags text` to `short_links`; `pnpm db:generate`. STOP
+   before applying — surface the exact `wrangler d1 migrations apply` command for
+   human approval (CLAUDE.md rule). Do NOT run any D1 or deploy command yourself.
+2. **Repo** (`src/db/repositories/links.ts`): `listVisible` (all + owner join +
+   parsed tags); enriched `LinkListItem` return from `create`/`update`; `loadReadable`
+   (exists-only) for `getById`/`getStats`; keep `loadOwned` for `update`/`remove`;
+   accept/validate/store `tags`.
+3. **Contract** (`src/db/contract/links.ts`): `linkOwnerSchema`, `linkListItemSchema`;
+   `listVisible` op (`auth: member`); list + create + update outputs → list-item shape;
+   create/update inputs gain `tags`.
+4. **Handlers**: direct `collection` GET default → `listVisible` (`?scope=own|all`
+   preserved); mirror owner-join + tags + visible default in
+   `src/server/internal/links.ts`; pass `tags` through create/update.
+5. **Slug routing**: `src/app/[slug]/route.ts` (root resolve via
+   `buildRedirectResponse`); change slug extraction to the route param; `shortLinkUrl`
+   → `/<slug>`; make `/l/[slug]` 301 → `/<slug>`; expand `RESERVED_SLUG_DEFAULTS`
+   (add `contact,product,projects,services` + assets); update the 3 existing tests.
+6. **UI foundation**: `src/components/ui/avatar.tsx` (Radix avatar + initials
+   fallback); `src/components/links/charts.tsx` (`ClicksOverTime`, `BucketBars` via
+   recharts, inline-SVG fallback).
+7. **Workspace rewrite** (`src/components/links/links-workspace.tsx`): table, owner
+   column, instructions block, tags chip input, client filters (All/Mine/Most-clicked
+   + tag chips + search), row-click Radix Dialog with charts + owner-only inline edit;
+   gate Edit/Delete by `actorMemberId`/`canModerate`. Page passes `actorMemberId`.
+8. **Refactor `[id]` page** to consume the shared chart components.
+9. **Verify**: `pnpm typecheck`, `pnpm lint`, `pnpm test` all green. Then hand back the
+   migration + `pnpm deploy:dev` commands for approval.
