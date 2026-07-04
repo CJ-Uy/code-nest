@@ -37,6 +37,9 @@ export default async function CalendarPage({
 					<h1 className="font-heading text-3xl">Calendar</h1>
 				</div>
 				<div className="flex items-center gap-2">
+					<Button asChild variant="outline" size="sm">
+						<Link href={`/portal/calendar?year=${now.getUTCFullYear()}&month=${now.getUTCMonth() + 1}`}>Today</Link>
+					</Button>
 					<Button asChild variant="outline" size="icon" aria-label="Previous month">
 						<Link href={`/portal/calendar?year=${prev.year}&month=${prev.month}`}>
 							<ChevronLeft />

@@ -16,7 +16,7 @@ const unna = Unna({
 });
 
 export const metadata: Metadata = {
-	title: "CODE",
+	title: { default: "Ateneo CODE", template: "%s · Ateneo CODE" },
 	description: "Ateneo CODE public site and member portal.",
 };
 

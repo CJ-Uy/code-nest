@@ -13,7 +13,33 @@ export function MemberCodeCard({ memberId }: { memberId: string }) {
 	useEffect(() => {
 		const canvas = canvasRef.current;
 		if (!canvas) return;
-		QRCode.toCanvas(canvas, payload, { width: 220, margin: 1 }).catch(() => setError("Could not render the code."));
+		let cancelled = false;
+		// errorCorrectionLevel H (30% recovery) so the center logo badge stays scannable.
+		QRCode.toCanvas(canvas, payload, { width: 220, margin: 1, errorCorrectionLevel: "H" })
+			.then(() => {
+				const ctx = canvas.getContext("2d");
+				if (!ctx || cancelled) return;
+				const logo = new Image();
+				logo.onload = () => {
+					if (cancelled) return;
+					// White circle backing keeps QR modules from showing through the transparent logo.
+					const badge = canvas.width * 0.24;
+					const center = canvas.width / 2;
+					ctx.beginPath();
+					ctx.arc(center, center, badge / 2, 0, Math.PI * 2);
+					ctx.fillStyle = "#ffffff";
+					ctx.fill();
+					const scale = (badge * 0.72) / Math.max(logo.width, logo.height);
+					const width = logo.width * scale;
+					const height = logo.height * scale;
+					ctx.drawImage(logo, center - width / 2, center - height / 2, width, height);
+				};
+				logo.src = "/code-falcon-transparent.png";
+			})
+			.catch(() => setError("Could not render the code."));
+		return () => {
+			cancelled = true;
+		};
 	}, [payload]);
 
 	return (

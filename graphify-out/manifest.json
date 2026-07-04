@@ -1,12 +1,12 @@
 {
   ".remember/tmp/last-ndc.ts": {
-    "mtime": 1782204727.7620766,
-    "ast_hash": "e84bcf95f83c8f212fbb267fd00f92b7",
+    "mtime": 1783057202.4524798,
+    "ast_hash": "4cf54662bbd08fd3a60ab18059005621",
     "semantic_hash": ""
   },
   ".remember/tmp/last-save.json": {
-    "mtime": 1782204727.288531,
-    "ast_hash": "d600dffe79ae162cdb1e65cc3e4f9c5e",
+    "mtime": 1783057202.0460117,
+    "ast_hash": "e1e3a99e9d77a57bb2279dcd30491610",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -330,8 +330,8 @@
     "semantic_hash": "7c2100606f5250b13d9ac4f576798cea"
   },
   "src/app/layout.tsx": {
-    "mtime": 1782207689.8555622,
-    "ast_hash": "c5b3b3102eca88544f1018541c609a48",
+    "mtime": 1783057737.5237288,
+    "ast_hash": "f13f3e7c17884966a80760618ca9a5cb",
     "semantic_hash": ""
   },
   "src/app/page.tsx": {
@@ -725,7 +725,7 @@
     "semantic_hash": ""
   },
   ".remember/now.md": {
-    "mtime": 1782204761.1859145,
+    "mtime": 1783057214.4093604,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
@@ -1600,8 +1600,8 @@
     "semantic_hash": ""
   },
   "src/components/member-code-card.tsx": {
-    "mtime": 1782144217.153006,
-    "ast_hash": "3fe39e8c5118d392a0270645b40d9b0b",
+    "mtime": 1783057735.9302404,
+    "ast_hash": "1ebd670ddce15c0b00971d7328e39a92",
     "semantic_hash": ""
   },
   "src/db/contract/events.ts": {
@@ -1805,8 +1805,8 @@
     "semantic_hash": ""
   },
   "src/app/portal/calendar/page.tsx": {
-    "mtime": 1782157419.5455258,
-    "ast_hash": "d3cbccf7fcfd552ce7da15bdf804e935",
+    "mtime": 1783057748.5906281,
+    "ast_hash": "e98a7dff9a2a56d9926a6b1fd9c73bc7",
     "semantic_hash": ""
   },
   "src/app/portal/events/page.tsx": {
@@ -2357,6 +2357,16 @@
   "src/app/icon.png": {
     "mtime": 1782207681.671,
     "ast_hash": "3fa5ef5572c7d3a0d107a56ddd799329",
+    "semantic_hash": ""
+  },
+  ".remember/today-2026-07-03.md": {
+    "mtime": 1783057214.4093604,
+    "ast_hash": "c34e90db613f4723d06ecf44ccc2bac2",
+    "semantic_hash": ""
+  },
+  "docs/improvement-plan.md": {
+    "mtime": 1783057710.551466,
+    "ast_hash": "8d2abeb4020df22f35d7c589d275eb0a",
     "semantic_hash": ""
   }
 }
