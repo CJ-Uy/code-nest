@@ -75,3 +75,16 @@ export function crumbFor(pathname: string): { label: string; href?: string }[] {
 	if (page) trail.push({ label: page.label, href: clean === page.href ? undefined : page.href });
 	return trail;
 }
+
+/**
+ * Header {section, title} for an admin path, derived from the breadcrumb trail.
+ * Returns null for non-admin paths so the caller can fall through to its own logic.
+ */
+export function adminHeading(pathname: string): { section: string; title: string } | null {
+	const clean = pathname.split("?")[0] ?? "";
+	if (!clean.startsWith("/portal/admin")) return null;
+	if (clean === "/portal/admin") return { section: "Admin", title: "Console" };
+	const trail = crumbFor(clean);
+	if (trail.length < 2) return { section: "Admin", title: "Console" };
+	return { section: trail[trail.length - 2].label, title: trail[trail.length - 1].label };
+}

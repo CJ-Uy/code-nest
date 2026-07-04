@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { Actor } from "@/server/auth/permissions";
-import { adminGroups, visibleGroups, crumbFor } from "./nav";
+import { adminGroups, visibleGroups, crumbFor, adminHeading } from "./nav";
 
 const superActor: Actor = { memberId: "m1", roles: ["super"] };
 const linkOnly: Actor = { memberId: "m2", roles: ["link"] };
@@ -33,5 +33,12 @@ describe("admin nav registry", () => {
 			{ label: "Admin", href: "/portal/admin" },
 			{ label: "Members & Access" },
 		]);
+	});
+
+	it("adminHeading resolves section+title at each depth and ignores non-admin paths", () => {
+		expect(adminHeading("/portal/admin")).toEqual({ section: "Admin", title: "Console" });
+		expect(adminHeading("/portal/admin/members")).toEqual({ section: "Admin", title: "Members & Access" });
+		expect(adminHeading("/portal/admin/members/roles")).toEqual({ section: "Members & Access", title: "Roles & Access" });
+		expect(adminHeading("/portal/library")).toBeNull();
 	});
 });

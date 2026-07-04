@@ -10,6 +10,7 @@ import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/com
 import { cn } from "@/lib/utils";
 import { MemberAvatar } from "./member-avatar";
 import { adminNav, primaryNav, secondaryNav, type NavItem } from "./nav-items";
+import { adminHeading, crumbFor } from "@/app/portal/admin/nav";
 
 export type PortalShellProps = {
 	member: { displayName: string; initials: string; subtitle?: string };
@@ -30,15 +31,8 @@ const detailTitles: Record<string, string> = {
 	"/portal/library": "Library item",
 	"/portal/links": "Link stats",
 	"/portal/surveys": "Survey",
-	"/portal/admin/surveys": "Survey details",
+	"/portal/admin/content/surveys": "Survey details",
 };
-
-function titleFromSegment(segment: string): string {
-	return segment
-		.split("-")
-		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-		.join(" ");
-}
 
 function getPageHeading(pathname: string): { section: string; title: string } {
 	const cleanPath = pathname.split("?")[0] ?? "/portal";
@@ -51,8 +45,14 @@ function getPageHeading(pathname: string): { section: string; title: string } {
 	if (cleanPath === "/portal/admin") return { section: "Admin", title: "Console" };
 
 	if (cleanPath.startsWith("/portal/admin/")) {
-		const segment = cleanPath.split("/")[3] ?? "console";
-		return { section: "Admin", title: titleFromSegment(segment) };
+		// dynamic detail pages (e.g. content/surveys/[id]) use the generic detail title.
+		for (const [prefix, title] of Object.entries(detailTitles)) {
+			if (cleanPath.startsWith(`${prefix}/`)) {
+				const crumb = crumbFor(prefix);
+				return { section: crumb.at(-1)?.label ?? "Admin", title };
+			}
+		}
+		return adminHeading(cleanPath) ?? { section: "Admin", title: "Console" };
 	}
 
 	for (const [prefix, title] of Object.entries(detailTitles)) {
