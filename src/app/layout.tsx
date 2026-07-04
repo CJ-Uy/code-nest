@@ -16,8 +16,8 @@ const unna = Unna({
 });
 
 export const metadata: Metadata = {
-	title: "CODE",
-	description: "Public CODE publishing site with a private member portal demo.",
+	title: { default: "Ateneo CODE", template: "%s · Ateneo CODE" },
+	description: "Ateneo CODE public site and member portal.",
 };
 
 export default function RootLayout({
@@ -27,9 +27,6 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<head>
-				<link rel="icon" href="/favicon.svg" type="image/svg+xml"></link>
-			</head>
 			<body className={`${sourceSans.variable} ${unna.variable} antialiased`}>{children}</body>
 		</html>
 	);

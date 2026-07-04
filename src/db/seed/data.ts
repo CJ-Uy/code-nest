@@ -19,6 +19,7 @@ import {
 	teamMembers,
 	terms,
 } from "@/db/schema";
+import { RESERVED_SLUG_DEFAULTS } from "@/lib/links";
 
 const now = new Date("2026-06-18T00:00:00.000Z");
 const later = new Date("2026-07-10T10:00:00.000Z");
@@ -33,12 +34,13 @@ export const seedRoles: InferInsertModel<typeof roles>[] = [
 ];
 
 export const seedMembers: InferInsertModel<typeof members>[] = [
+	{ id: "mem_charles", email: "charles.joshua.uy@student.ateneo.edu", name: "Charles Uy", fullName: "Charles Joshua Uy", batch: "2026", status: "active" },
 	{ id: "mem_demo_admin", email: "admin@example.com", name: "Demo Admin", fullName: "Demo Admin", batch: "2026", status: "active" },
 	{ id: "mem_demo_member", email: "member@example.com", name: "Demo Member", fullName: "Demo Member", batch: "2027", status: "active" },
 ];
 
 export const seedMemberRoles: InferInsertModel<typeof memberRoles>[] = [
-	{ memberId: "mem_demo_admin", roleId: "role_super", assignedBy: "mem_demo_admin" },
+	{ memberId: "mem_charles", roleId: "role_super", assignedBy: "mem_charles" },
 ];
 
 export const seedTeams: InferInsertModel<typeof consultancyTeams>[] = [{ id: "team_blue", name: "Blue Team", createdAt: now }];
@@ -85,7 +87,7 @@ export const seedArticleSections: InferInsertModel<typeof articleSections>[] = [
 	{ id: "sec_member_points_1", articleId: "art_member_points", position: 1, heading: "Retention", body: "Points help members track steady participation." },
 ];
 
-export const seedReservedSlugs: InferInsertModel<typeof reservedSlugs>[] = [{ slug: "portal" }, { slug: "admin" }, { slug: "api" }];
+export const seedReservedSlugs: InferInsertModel<typeof reservedSlugs>[] = RESERVED_SLUG_DEFAULTS.map((slug) => ({ slug }));
 
 export const seedShortLinks: InferInsertModel<typeof shortLinks>[] = [
 	{
@@ -93,7 +95,7 @@ export const seedShortLinks: InferInsertModel<typeof shortLinks>[] = [
 		slug: "welcome",
 		destinationUrl: "https://example.com/code",
 		title: "Welcome link",
-		ownerMemberId: "mem_demo_admin",
+		ownerMemberId: "mem_charles",
 		clickCount: 5,
 	},
 ];
