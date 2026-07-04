@@ -57,6 +57,13 @@
       "when": 1782192889431,
       "tag": "0007_flippant_leech",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1783165877513,
+      "tag": "0008_elite_rogue",
+      "breakpoints": true
     }
   ]
 }

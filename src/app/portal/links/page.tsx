@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export default async function LinksPage() {
 	const actor = await requireActor();
 	const { links } = await getRepositories();
-	const ownLinks = await links.listOwn(actor, { limit: 50 });
+	const visibleLinks = await links.listVisible(actor, { limit: 50 });
 	const canModerate = actor.roles.includes("link") || actor.roles.includes("super");
-	return <LinksWorkspace initialLinks={ownLinks} canModerate={canModerate} />;
+	return <LinksWorkspace initialLinks={visibleLinks} actorMemberId={actor.memberId} canModerate={canModerate} />;
 }

@@ -3,54 +3,22 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { getRepositories } from "@/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ClicksOverTime, BucketBars } from "@/components/links/charts";
 import { LinkQrCustomizer } from "@/components/links/link-qr-customizer";
 import { shortLinkUrl } from "@/components/links/urls";
 import { requireActor } from "@/server/auth/actor";
 import { getAppConfig } from "@/server/env";
-import type { LinkStats } from "@/db/repositories/links";
+import type { QrStyle } from "@/db/repositories/links";
 
 export const dynamic = "force-dynamic";
 
-function Bars({ data, label }: { data: Array<{ key: string; count: number }>; label: string }) {
-	const max = Math.max(1, ...data.map((d) => d.count));
-	if (data.length === 0) {
-		return <p className="text-sm text-muted-foreground">No {label} data yet.</p>;
+function readQrStyle(value: string | null): QrStyle | undefined {
+	if (!value) return undefined;
+	try {
+		return JSON.parse(value) as QrStyle;
+	} catch {
+		return undefined;
 	}
-	return (
-		<ul className="grid gap-2">
-			{data.map((row) => (
-				<li key={row.key} className="grid grid-cols-[120px_1fr_auto] items-center gap-3 text-sm">
-					<span className="truncate text-muted-foreground" title={row.key}>
-						{row.key}
-					</span>
-					<span className="h-2.5 overflow-hidden rounded-full bg-secondary">
-						<span className="block h-full rounded-full bg-accent" style={{ width: `${(row.count / max) * 100}%` }} />
-					</span>
-					<span className="tabular-nums font-medium">{row.count}</span>
-				</li>
-			))}
-		</ul>
-	);
-}
-
-function TimeSeries({ series }: { series: LinkStats["series"] }) {
-	const recent = series.slice(-30);
-	const max = Math.max(1, ...recent.map((point) => point.count));
-	if (recent.length === 0) {
-		return <p className="text-sm text-muted-foreground">No clicks recorded yet.</p>;
-	}
-	return (
-		<div className="flex h-40 items-end gap-1">
-			{recent.map((point) => (
-				<div key={point.date} className="flex flex-1 flex-col items-center justify-end gap-1" title={`${point.date}: ${point.count}`}>
-					<span
-						className="w-full rounded-t bg-accent/80"
-						style={{ height: `${Math.max(4, (point.count / max) * 100)}%` }}
-					/>
-				</div>
-			))}
-		</div>
-	);
 }
 
 export default async function LinkAnalyticsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -64,9 +32,8 @@ export default async function LinkAnalyticsPage({ params }: { params: Promise<{ 
 	const origin = config.APP_BASE_URL ?? "https://code.local";
 	const url = shortLinkUrl(origin, stats.link.slug);
 	const total = stats.series.reduce((sum, point) => sum + point.count, 0);
-	const topReferrer = stats.referrers[0]?.bucket ?? "—";
-	const topDevice = stats.devices[0]?.bucket ?? "—";
-
+	const topReferrer = [...stats.referrers].sort((a, b) => b.count - a.count)[0]?.bucket ?? "—";
+	const topDevice = [...stats.devices].sort((a, b) => b.count - a.count)[0]?.bucket ?? "—";
 	const tiles = [
 		{ label: "Total clicks", value: total },
 		{ label: "Days tracked", value: stats.series.length },
@@ -85,7 +52,7 @@ export default async function LinkAnalyticsPage({ params }: { params: Promise<{ 
 					<div>
 						<h1 className="font-heading text-3xl">{stats.link.title}</h1>
 						<a href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-accent hover:underline">
-							/l/{stats.link.slug}
+							/{stats.link.slug}
 							<ExternalLink className="size-3.5" />
 						</a>
 					</div>
@@ -109,7 +76,7 @@ export default async function LinkAnalyticsPage({ params }: { params: Promise<{ 
 							<CardDescription>Last {Math.min(30, stats.series.length)} days with activity.</CardDescription>
 						</CardHeader>
 						<CardContent>
-							<TimeSeries series={stats.series} />
+							<ClicksOverTime data={stats.series.slice(-30)} />
 						</CardContent>
 					</Card>
 					<div className="grid gap-5 sm:grid-cols-2">
@@ -118,7 +85,7 @@ export default async function LinkAnalyticsPage({ params }: { params: Promise<{ 
 								<CardTitle className="text-base">Referrers</CardTitle>
 							</CardHeader>
 							<CardContent>
-								<Bars label="referrer" data={stats.referrers.map((r) => ({ key: r.bucket, count: r.count }))} />
+								<BucketBars label="Referrers" data={stats.referrers} />
 							</CardContent>
 						</Card>
 						<Card>
@@ -126,7 +93,7 @@ export default async function LinkAnalyticsPage({ params }: { params: Promise<{ 
 								<CardTitle className="text-base">Devices</CardTitle>
 							</CardHeader>
 							<CardContent>
-								<Bars label="device" data={stats.devices.map((d) => ({ key: d.bucket, count: d.count }))} />
+								<BucketBars label="Devices" data={stats.devices} />
 							</CardContent>
 						</Card>
 					</div>
@@ -138,7 +105,7 @@ export default async function LinkAnalyticsPage({ params }: { params: Promise<{ 
 						<CardDescription>Download a customized QR for this short link.</CardDescription>
 					</CardHeader>
 					<CardContent>
-						<LinkQrCustomizer url={url} />
+						<LinkQrCustomizer url={url} style={readQrStyle(stats.link.qrStyle)} editable={false} />
 					</CardContent>
 				</Card>
 			</div>

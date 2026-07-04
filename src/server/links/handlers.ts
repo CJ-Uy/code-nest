@@ -25,12 +25,13 @@ export function createLinksHandlers(deps: LinksHandlerDependencies) {
 			if (request.method === "GET") {
 				const url = new URL(request.url);
 				const scope = url.searchParams.get("scope");
-				const input = (scope === "all" ? linksContract.listAll : linksContract.listOwn).input.parse({
+				const op = scope === "all" ? linksContract.listAll : scope === "own" ? linksContract.listOwn : linksContract.listVisible;
+				const input = op.input.parse({
 					limit: url.searchParams.get("limit") ? Number(url.searchParams.get("limit")) : undefined,
 					offset: url.searchParams.get("offset") ? Number(url.searchParams.get("offset")) : undefined,
 				});
 				try {
-					const result = scope === "all" ? await links.listAll(actor, input) : await links.listOwn(actor, input);
+					const result = scope === "all" ? await links.listAll(actor, input) : scope === "own" ? await links.listOwn(actor, input) : await links.listVisible(actor, input);
 					return Response.json({ links: result });
 				} catch (error) {
 					return fail(error);

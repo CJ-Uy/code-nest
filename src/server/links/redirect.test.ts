@@ -26,7 +26,7 @@ describe("buildRedirectResponse", () => {
 		const d = deps();
 		const res = await buildRedirectResponse(
 			d,
-			new Request("https://app.example/l/welcome", {
+			new Request("https://app.example/welcome", {
 				headers: { "user-agent": "Mozilla/5.0 (Windows NT 10.0) Chrome/120", referer: "https://www.google.com/" },
 			}),
 		);
@@ -44,7 +44,7 @@ describe("buildRedirectResponse", () => {
 		});
 		const res = await buildRedirectResponse(
 			d,
-			new Request("https://app.example/l/welcome", { headers: { "user-agent": "facebookexternalhit/1.1" } }),
+			new Request("https://app.example/welcome", { headers: { "user-agent": "facebookexternalhit/1.1" } }),
 		);
 		expect(res.status).toBe(200);
 		expect(res.headers.get("content-type")).toContain("text/html");
@@ -55,7 +55,7 @@ describe("buildRedirectResponse", () => {
 
 	it("404s an unknown slug", async () => {
 		const d = deps();
-		const res = await buildRedirectResponse(d, new Request("https://app.example/l/missing"));
+		const res = await buildRedirectResponse(d, new Request("https://app.example/missing"));
 		expect(res.status).toBe(404);
 		expect(d.scheduleBackground).not.toHaveBeenCalled();
 	});
@@ -67,7 +67,7 @@ describe("buildRedirectResponse", () => {
 			}),
 			scheduleBackground: (task: Promise<unknown>) => void task.catch(() => {}),
 		});
-		const res = await buildRedirectResponse(d, new Request("https://app.example/l/welcome", { headers: { "user-agent": "Chrome" } }));
+		const res = await buildRedirectResponse(d, new Request("https://app.example/welcome", { headers: { "user-agent": "Chrome" } }));
 		expect(res.status).toBe(302);
 	});
 });

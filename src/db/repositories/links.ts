@@ -2,7 +2,7 @@ import { desc, eq, sql } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type { InferSelectModel } from "drizzle-orm";
 import * as schema from "@/db/schema";
-import { linkDailyStats, reservedSlugs, shortLinks } from "@/db/schema";
+import { linkDailyStats, members, reservedSlugs, shortLinks } from "@/db/schema";
 import { createId } from "@/lib/ids";
 import { isValidDestinationUrl, isValidSlugFormat, normalizeSlug, RESERVED_SLUG_DEFAULTS } from "@/lib/links";
 import type { Actor } from "@/server/auth/permissions";
@@ -11,14 +11,35 @@ import type { AuditRepository } from "./audit";
 import { pageLimit } from "./types";
 
 export type ShortLink = InferSelectModel<typeof shortLinks>;
+export type LinkOwner = { id: string; name: string | null; image: string | null };
+export type QrStyle = {
+	foreground: string;
+	background: string;
+	logoUrl: string | null;
+	logoSize: number;
+	logoMargin: number;
+	showLogoBacking: boolean;
+};
+export type LinkListItem = Omit<ShortLink, "tags" | "qrStyle"> & { owner: LinkOwner | null; tags: string[]; qrStyle: QrStyle };
 
-export type CreateLinkInput = { slug: string; destinationUrl: string; title: string };
+export const DEFAULT_QR_STYLE: QrStyle = {
+	foreground: "#06192F",
+	background: "#FFFFFF",
+	logoUrl: "/code-falcon-transparent.svg",
+	logoSize: 0.28,
+	logoMargin: 8,
+	showLogoBacking: true,
+};
+
+export type CreateLinkInput = { slug: string; destinationUrl: string; title: string; tags?: string[]; qrStyle?: Partial<QrStyle> };
 export type UpdateLinkInput = Partial<{
 	destinationUrl: string;
 	title: string;
 	previewTitle: string | null;
 	previewDescription: string | null;
 	previewImageKey: string | null;
+	tags: string[];
+	qrStyle: Partial<QrStyle>;
 }>;
 export type ResolvedLink = {
 	id: string;
@@ -37,11 +58,12 @@ export type LinkStats = {
 };
 
 export type LinksRepository = {
-	listOwn(actor: Actor, input?: { limit?: number; offset?: number }): Promise<ShortLink[]>;
-	listAll(actor: Actor, input?: { limit?: number; offset?: number }): Promise<ShortLink[]>;
+	listVisible(actor: Actor, input?: { limit?: number; offset?: number }): Promise<LinkListItem[]>;
+	listOwn(actor: Actor, input?: { limit?: number; offset?: number }): Promise<LinkListItem[]>;
+	listAll(actor: Actor, input?: { limit?: number; offset?: number }): Promise<LinkListItem[]>;
 	getById(actor: Actor, id: string): Promise<ShortLink | null>;
-	create(actor: Actor, input: CreateLinkInput): Promise<ShortLink>;
-	update(actor: Actor, id: string, input: UpdateLinkInput): Promise<ShortLink>;
+	create(actor: Actor, input: CreateLinkInput): Promise<LinkListItem>;
+	update(actor: Actor, id: string, input: UpdateLinkInput): Promise<LinkListItem>;
 	remove(actor: Actor, id: string): Promise<void>;
 	getStats(actor: Actor, id: string): Promise<LinkStats>;
 	resolveForRedirect(slug: string): Promise<ResolvedLink | null>;
@@ -72,9 +94,14 @@ function linkError(code: LinkErrorCode, message: string): LinkRepositoryError {
 	return new LinkRepositoryError(code, message);
 }
 
-async function loadOwned(db: LinkDb, actor: Actor, id: string): Promise<ShortLink> {
+async function loadReadable(db: LinkDb, id: string): Promise<ShortLink> {
 	const [link] = await db.select().from(shortLinks).where(eq(shortLinks.id, id)).limit(1);
 	if (!link) throw linkError("not_found", "Link not found.");
+	return link;
+}
+
+async function loadOwned(db: LinkDb, actor: Actor, id: string): Promise<ShortLink> {
+	const link = await loadReadable(db, id);
 	if (link.ownerMemberId !== actor.memberId && !can(actor, "link:moderate")) {
 		throw linkError("not_authorized", "Not authorized to access this link.");
 	}
@@ -90,33 +117,92 @@ function sortedBuckets(map: Map<string, number>) {
 		.map(([key, count]) => ({ key, count }))
 		.sort((a, b) => a.key.localeCompare(b.key));
 }
+function parseTags(value: string | null): string[] {
+	if (!value) return [];
+	try {
+		const parsed = JSON.parse(value) as unknown;
+		return Array.isArray(parsed) ? validateTags(parsed.filter((tag): tag is string => typeof tag === "string")) : [];
+	} catch {
+		return [];
+	}
+}
+
+function validateTags(input: string[] = []): string[] {
+	const tags = Array.from(new Set(input.map((tag) => tag.trim()).filter(Boolean)));
+	if (tags.length > 10 || tags.some((tag) => tag.length > 24)) throw linkError("validation", "Tags must be 1 to 24 characters, max 10 tags.");
+	return tags;
+}
+
+function validHex(value: string): boolean {
+	return /^#[0-9a-f]{6}$/i.test(value);
+}
+
+function validateQrStyle(input?: Partial<QrStyle>): QrStyle {
+	const style = { ...DEFAULT_QR_STYLE, ...(input ?? {}) };
+	if (!validHex(style.foreground) || !validHex(style.background)) throw linkError("validation", "QR colors must be hex values.");
+	if (style.logoSize < 0.1 || style.logoSize > 0.35) throw linkError("validation", "QR logo size is out of range.");
+	if (style.logoMargin < 0 || style.logoMargin > 24) throw linkError("validation", "QR logo margin is out of range.");
+	if (style.logoUrl && !style.logoUrl.startsWith("/") && !/^https?:\/\//i.test(style.logoUrl)) throw linkError("validation", "QR logo URL is invalid.");
+	return style;
+}
+
+function parseQrStyle(value: string | null): QrStyle {
+	if (!value) return DEFAULT_QR_STYLE;
+	try {
+		return validateQrStyle(JSON.parse(value) as Partial<QrStyle>);
+	} catch {
+		return DEFAULT_QR_STYLE;
+	}
+}
+
+function rowToListItem(row: { link: ShortLink; owner: LinkOwner | null }): LinkListItem {
+	return { ...row.link, owner: row.owner, tags: parseTags(row.link.tags), qrStyle: parseQrStyle(row.link.qrStyle) };
+}
+
+async function enrichLink(db: LinkDb, link: ShortLink): Promise<LinkListItem> {
+	const [row] = await db
+		.select({ link: shortLinks, owner: { id: members.id, name: members.name, image: members.image } })
+		.from(shortLinks)
+		.leftJoin(members, eq(members.id, shortLinks.ownerMemberId))
+		.where(eq(shortLinks.id, link.id))
+		.limit(1);
+	return rowToListItem(row ?? { link, owner: null });
+}
+
+function listQuery(db: LinkDb) {
+	return db.select({ link: shortLinks, owner: { id: members.id, name: members.name, image: members.image } }).from(shortLinks).leftJoin(members, eq(members.id, shortLinks.ownerMemberId));
+}
 
 export function createLinksRepository(db: LinkDb, audit: AuditRepository): LinksRepository {
 	return {
+		async listVisible(actor, input) {
+			void actor;
+			const page = ensurePage(input);
+			const rows = await listQuery(db).orderBy(desc(shortLinks.createdAt)).limit(page.limit).offset(page.offset);
+			return rows.map(rowToListItem);
+		},
+
 		async listOwn(actor, input) {
 			const page = ensurePage(input);
-			return db
-				.select()
-				.from(shortLinks)
+			const rows = await listQuery(db)
 				.where(eq(shortLinks.ownerMemberId, actor.memberId))
 				.orderBy(desc(shortLinks.createdAt))
 				.limit(page.limit)
 				.offset(page.offset);
+			return rows.map(rowToListItem);
 		},
 
 		async listAll(actor, input) {
 			if (!can(actor, "link:moderate")) throw linkError("not_authorized", "Not authorized to list all links.");
 			const page = ensurePage(input);
-			return db.select().from(shortLinks).orderBy(desc(shortLinks.createdAt)).limit(page.limit).offset(page.offset);
+			const rows = await listQuery(db).orderBy(desc(shortLinks.createdAt)).limit(page.limit).offset(page.offset);
+			return rows.map(rowToListItem);
 		},
 
 		async getById(actor, id) {
+			void actor;
 			const [link] = await db.select().from(shortLinks).where(eq(shortLinks.id, id)).limit(1);
-			if (!link) return null;
-			if (link.ownerMemberId !== actor.memberId && !can(actor, "link:moderate")) {
-				throw linkError("not_authorized", "Not authorized to read this link.");
-			}
-			return link;
+			return link ?? null;
 		},
 
 		async create(actor, input) {
@@ -132,17 +218,19 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository): Links
 			const [existing] = await db.select().from(shortLinks).where(eq(shortLinks.slug, slug)).limit(1);
 			if (existing) throw linkError("validation", "That slug is already taken.");
 
+			const tags = validateTags(input.tags);
+			const qrStyle = validateQrStyle(input.qrStyle);
 			const [link] = await db
 				.insert(shortLinks)
-				.values({ id: createId("lnk"), slug, destinationUrl: input.destinationUrl, title, ownerMemberId: actor.memberId })
+				.values({ id: createId("lnk"), slug, destinationUrl: input.destinationUrl, title, ownerMemberId: actor.memberId, tags: JSON.stringify(tags), qrStyle: JSON.stringify(qrStyle) })
 				.returning();
 			await audit.record(actor, { action: "link:create", targetType: "link", targetId: link.id, category: "link" });
-			return link;
+			return enrichLink(db, link);
 		},
 
 		async update(actor, id, input) {
 			const current = await loadOwned(db, actor, id);
-			const patch: UpdateLinkInput & { updatedAt: Date } = { updatedAt: new Date() };
+			const patch: Partial<ShortLink> & { updatedAt: Date } = { updatedAt: new Date() };
 			if (input.destinationUrl !== undefined) {
 				if (!isValidDestinationUrl(input.destinationUrl)) throw linkError("validation", "Invalid destination URL.");
 				patch.destinationUrl = input.destinationUrl;
@@ -155,6 +243,8 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository): Links
 			if (input.previewTitle !== undefined) patch.previewTitle = input.previewTitle;
 			if (input.previewDescription !== undefined) patch.previewDescription = input.previewDescription;
 			if (input.previewImageKey !== undefined) patch.previewImageKey = input.previewImageKey;
+			if (input.tags !== undefined) patch.tags = JSON.stringify(validateTags(input.tags));
+			if (input.qrStyle !== undefined) patch.qrStyle = JSON.stringify(validateQrStyle(input.qrStyle));
 
 			const [link] = await db.update(shortLinks).set(patch).where(eq(shortLinks.id, current.id)).returning();
 			const moderated = current.ownerMemberId !== actor.memberId;
@@ -164,7 +254,7 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository): Links
 				targetId: link.id,
 				category: "link",
 			});
-			return link;
+			return enrichLink(db, link);
 		},
 
 		async remove(actor, id) {
@@ -180,7 +270,8 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository): Links
 		},
 
 		async getStats(actor, id) {
-			const link = await loadOwned(db, actor, id);
+			void actor;
+			const link = await loadReadable(db, id);
 			const rows = await db.select().from(linkDailyStats).where(eq(linkDailyStats.linkId, link.id)).limit(2000);
 			const byDate = new Map<string, number>();
 			const byReferrer = new Map<string, number>();
@@ -233,6 +324,7 @@ export function createUnavailableLinksRepository(): LinksRepository {
 		throw new Error("Links are unavailable through this repository adapter.");
 	};
 	return {
+		listVisible: unavailable,
 		listOwn: unavailable,
 		listAll: unavailable,
 		getById: unavailable,

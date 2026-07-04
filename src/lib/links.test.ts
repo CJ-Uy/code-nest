@@ -49,6 +49,8 @@ describe("RESERVED_SLUG_DEFAULTS", () => {
 		expect(RESERVED_SLUG_DEFAULTS).toContain("portal");
 		expect(RESERVED_SLUG_DEFAULTS).toContain("l");
 		expect(RESERVED_SLUG_DEFAULTS).toContain("api");
+		expect(RESERVED_SLUG_DEFAULTS).toContain("contact");
+		expect(RESERVED_SLUG_DEFAULTS).toContain("_next");
 	});
 });
 

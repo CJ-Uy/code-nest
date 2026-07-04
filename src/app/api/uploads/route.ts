@@ -21,13 +21,13 @@ export async function POST(request: Request) {
 		return proxySharedApiRequest(request, "/internal/uploads");
 	}
 
-	return createHandlers().collection(request);
+	return (await createHandlers()).collection(request);
 }
 
-function createHandlers() {
+async function createHandlers() {
 	return createUploadHandlers({
 		getActor: async () => getActor(),
-		storage: getStorageAdapter(),
+		storage: await getStorageAdapter(),
 		canPostEvent: async (actor, eventId) => {
 			if (!can(actor, "event:approve")) return false;
 			const [event] = await getDb()
@@ -47,3 +47,4 @@ function createHandlers() {
 		},
 	});
 }
+

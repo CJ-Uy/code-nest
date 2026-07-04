@@ -57,12 +57,12 @@ export function createLinksInternalHandlers({ db, deployEnv, allowedOrigins = []
 				if (request.method === "GET") {
 					const url = new URL(request.url);
 					const scope = url.searchParams.get("scope");
-					const op = scope === "all" ? linksContract.listAll : linksContract.listOwn;
+					const op = scope === "all" ? linksContract.listAll : scope === "own" ? linksContract.listOwn : linksContract.listVisible;
 					const input = op.input.parse({
 						limit: url.searchParams.get("limit") ? Number(url.searchParams.get("limit")) : undefined,
 						offset: url.searchParams.get("offset") ? Number(url.searchParams.get("offset")) : undefined,
 					});
-					const links = scope === "all" ? await repository.listAll(actor, input) : await repository.listOwn(actor, input);
+					const links = scope === "all" ? await repository.listAll(actor, input) : scope === "own" ? await repository.listOwn(actor, input) : await repository.listVisible(actor, input);
 					return Response.json({ links }, { headers });
 				}
 				if (request.method === "POST") {
@@ -123,7 +123,7 @@ export function createLinksInternalHandlers({ db, deployEnv, allowedOrigins = []
 			const { early } = await guard(request);
 			if (early) return early;
 			const url = new URL(request.url);
-			const redirectRequest = new Request(new URL(`/l/${encodeURIComponent(slug)}`, url.origin), request);
+			const redirectRequest = new Request(new URL(`/${encodeURIComponent(slug)}`, url.origin), request);
 			let background: Promise<unknown> = Promise.resolve();
 			const response = await buildRedirectResponse(
 				{
@@ -135,6 +135,7 @@ export function createLinksInternalHandlers({ db, deployEnv, allowedOrigins = []
 					previewImageBaseUrl: url.origin,
 				},
 				redirectRequest,
+				slug,
 			);
 			await background;
 			return response;

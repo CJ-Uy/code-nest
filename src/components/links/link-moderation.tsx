@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { ExternalLink, Pencil, Trash2 } from "lucide-react";
-import type { ShortLink } from "@/db/repositories/links";
+import type { LinkListItem } from "@/db/repositories/links";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { linkModerationPageUrl } from "./moderation-utils";
 
-type LinkView = Omit<ShortLink, "createdAt" | "updatedAt"> & { createdAt: Date | string; updatedAt: Date | string };
+type LinkView = Omit<LinkListItem, "createdAt" | "updatedAt"> & { createdAt: Date | string; updatedAt: Date | string };
 
 export function LinkModeration({ initialLinks }: { initialLinks: LinkView[] }) {
 	const [links, setLinks] = useState(initialLinks);
@@ -88,7 +88,7 @@ export function LinkModeration({ initialLinks }: { initialLinks: LinkView[] }) {
 					<TableBody>
 						{links.map((link) => (
 							<TableRow key={link.id}>
-								<TableCell className="font-medium">/l/{link.slug}</TableCell>
+								<TableCell className="font-medium">/{link.slug}</TableCell>
 								<TableCell className="min-w-72">
 									{editingId === link.id ? (
 										<div className="grid gap-2">
@@ -105,7 +105,7 @@ export function LinkModeration({ initialLinks }: { initialLinks: LinkView[] }) {
 								<TableCell>
 									<div className="flex justify-end gap-2">
 										<Button asChild variant="outline" size="icon" aria-label="Open short link">
-											<a href={`/l/${link.slug}`} target="_blank" rel="noreferrer">
+											<a href={`/${link.slug}`} target="_blank" rel="noreferrer">
 												<ExternalLink />
 											</a>
 										</Button>

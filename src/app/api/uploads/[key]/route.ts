@@ -36,13 +36,13 @@ async function handleObject(request: Request, context: UploadRouteContext) {
 		return proxySharedApiRequest(request, `/internal/uploads/${encodeURIComponent(decodedKey)}`);
 	}
 
-	return createHandlers().object(request, decodedKey);
+	return (await createHandlers()).object(request, decodedKey);
 }
 
-function createHandlers() {
+async function createHandlers() {
 	return createUploadHandlers({
 		getActor: async () => getActor(),
-		storage: getStorageAdapter(),
+		storage: await getStorageAdapter(),
 		canPostEvent: async (_actor, eventId) => {
 			const [event] = await getDb()
 				.select()
@@ -61,3 +61,4 @@ function createHandlers() {
 		},
 	});
 }
+

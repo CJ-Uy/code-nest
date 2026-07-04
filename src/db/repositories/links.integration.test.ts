@@ -73,6 +73,38 @@ describe("links repository on D1", () => {
 		await expect(repository.listAll(other, { limit: 10 })).rejects.toThrow("Not authorized");
 	});
 
+	it("lists visible links with owner data and saved tags", async () => {
+		const repository = repo();
+		const first = await repository.create(owner, { slug: "welcome", destinationUrl: "https://e.com", title: "Welcome", tags: ["event", "social"] });
+		const second = await repository.create(other, { slug: "newsletter", destinationUrl: "https://e.com/news", title: "News" });
+
+		const visible = await repository.listVisible(owner, { limit: 10 });
+		expect(visible.map((link) => link.id).sort()).toEqual([first.id, second.id].sort());
+		expect(visible.find((link) => link.id === first.id)).toMatchObject({ tags: ["event", "social"], owner: { id: "mem_owner", name: "Owner" } });
+		expect(first.qrStyle.logoUrl).toBe("/code-falcon-transparent.svg");
+	});
+
+	it("round-trips tags and qr style on update", async () => {
+		const repository = repo();
+		const link = await repository.create(owner, { slug: "welcome", destinationUrl: "https://e.com", title: "x" });
+		const updated = await repository.update(owner, link.id, {
+			tags: ["crs"],
+			qrStyle: { foreground: "#0C315C", background: "#FFFFFF", logoSize: 0.2, logoMargin: 4, logoUrl: "/logo.svg", showLogoBacking: false },
+		});
+
+		expect(updated.tags).toEqual(["crs"]);
+		expect(updated.qrStyle).toMatchObject({ foreground: "#0C315C", logoUrl: "/logo.svg", showLogoBacking: false });
+	});
+
+	it("lets non-owners read link details and stats", async () => {
+		const repository = repo();
+		const link = await repository.create(owner, { slug: "welcome", destinationUrl: "https://e.com", title: "x" });
+		await repository.recordClick(link.id, { date: "2026-06-19", referrerBucket: "direct", deviceBucket: "desktop" });
+
+		await expect(repository.getById(other, link.id)).resolves.toMatchObject({ id: link.id });
+		await expect(repository.getStats(other, link.id)).resolves.toMatchObject({ link: { id: link.id } });
+	});
+
 	it("resolves a slug for redirect and records a fail-open click upsert", async () => {
 		const repository = repo();
 		const link = await repository.create(owner, { slug: "welcome", destinationUrl: "https://e.com/dest", title: "x" });

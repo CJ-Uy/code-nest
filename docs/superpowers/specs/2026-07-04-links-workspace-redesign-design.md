@@ -37,6 +37,12 @@ member's Google avatar becomes their identity across the app.
 - Tags: **free-form**, stored as a **JSON string array in a single `tags` column**.
   No tags table, no admin UI. Autocomplete suggestions come from tags already
   present in the loaded set.
+- QR styling: **per-link saved JSON in a single `qr_style` column**. No separate
+  preset table. The default is the CODE organization look: navy modules, white
+  background, CODE falcon logo centered, high error correction, and dots hidden
+  behind the logo. Owners and moderators may change colors, logo image URL,
+  logo size, logo margin, and whether logo backing is shown. Any member who can
+  open a link detail can view and scan that saved QR style.
 - Visibility: **fully visible to members** — any logged-in member sees all links
   and their destinations. No unlisted/private flag.
 - Charts: **add `recharts`**. Client-only component, zero Worker cost.
@@ -55,18 +61,24 @@ member's Google avatar becomes their identity across the app.
 
 ## Data model
 
-Migration adds one column:
+Migration adds two columns:
 
 ```
 short_links.tags  text   -- JSON array of strings, e.g. ["event","social"]; nullable
+short_links.qr_style  text   -- saved QR style JSON; nullable means org default
 ```
 
 - Read: parse JSON, default `[]` on null/parse-error.
 - Write: `JSON.stringify(tags)`; empty array stored as `[]` or null.
+- QR style read: parse JSON, default to the org preset on null/parse-error.
+- QR style write: merge over the org preset, validate hex colors, logo size
+  `0.1-0.35`, logo margin `0-24`, and image URL as same-origin path or http(s).
 - No index (client-side filtering; link volume is small).
 - ponytail: single JSON column over a join table — tags are filter labels, not
   entities. Upgrade path if tags ever need their own metadata/ownership: promote to
   a `link_tags` table.
+- ponytail: single QR style JSON column over a preset table. Upgrade path if teams
+  need reusable branded presets: promote saved styles to `link_qr_presets`.
 
 ## Backend
 
@@ -79,7 +91,7 @@ short_links.tags  text   -- JSON array of strings, e.g. ["event","social"]; null
 - Define a `LinkListItem = ShortLink & { owner: LinkOwner | null; tags: string[] }`
   type; list methods return `LinkListItem[]`. `getById`/`getStats` keep the flat
   `ShortLink` (owner/tags added where needed).
-- `create` / `update`: accept optional `tags: string[]`; validate each tag
+- `create` / `update`: accept optional `tags: string[]` and `qrStyle`; validate each tag
   (trimmed, 1–24 chars, max ~10 tags), store as JSON. **Return an enriched
   `LinkListItem`** (owner + parsed tags), not a flat `ShortLink`, so the client can
   patch its in-memory list without a refetch. (Fixes review blocker #2/major #5.)
@@ -93,10 +105,10 @@ short_links.tags  text   -- JSON array of strings, e.g. ["event","social"]; null
 ### Contract (`src/db/contract/links.ts`)
 
 - Add `linkOwnerSchema = { id, name: nullable, image: nullable }`.
-- Add `linkListItemSchema = linkOutputSchema.extend({ owner: linkOwnerSchema.nullable(), tags: string[] })`.
+- Add `qrStyleSchema` and `linkListItemSchema = linkOutputSchema.extend({ owner: linkOwnerSchema.nullable(), tags: string[], qrStyle: qrStyleSchema })`.
 - New op `listVisible` (`auth: member`, `sharedDev: allow`), output `{ links: linkListItemSchema[] }`.
 - `listOwn` / `listAll` outputs switch to `linkListItemSchema[]`.
-- `create` / `update` inputs gain optional `tags: z.array(z.string().trim().min(1).max(24)).max(10)`.
+- `create` / `update` inputs gain optional `tags: z.array(z.string().trim().min(1).max(24)).max(10)` and optional `qrStyle`.
 - **`create` / `update` OUTPUTS switch to `{ link: linkListItemSchema }`** (owner +
   tags), matching the enriched repo return.
 - `get` / `stats` stay `auth: member` — now reachable by any member (read guard
@@ -109,7 +121,7 @@ short_links.tags  text   -- JSON array of strings, e.g. ["event","social"]; null
 - `createLinksInternalHandlers` (shared Worker): mirror the owner-join + tags in its
   own query and default to the visible list, so the proxied path returns the same
   shape without needing query params.
-- `create` / `update`: pass `tags` through.
+- `create` / `update`: pass `tags` and `qrStyle` through.
 
 ## Slug routing (`/<slug>` at root)
 
@@ -173,8 +185,13 @@ Move short links from `/l/<slug>` to bare `/<slug>`.
 - Radix Dialog opened per link. Fetches `/api/links/{id}/stats`.
 - Content: stat tiles (total clicks, days tracked, top referrer, top device),
   **Clicks-over-time (recharts area/line)**, **Referrers + Devices (recharts bars)**,
-  QR (existing `LinkQr`), and — for owner/moderator — inline edit
+  QR with saved style controls, and — for owner/moderator — inline edit
   (title, destination, tags, preview title/description, preview image upload).
+- QR panel: render the saved style for everyone. Owners/moderators can edit
+  foreground/background colors, center image URL, logo size, logo margin, and logo
+  backing. Defaults use CODE navy, white, and `/code-falcon-transparent.svg`.
+  Export PNG and SVG. Include a **Full Screen Viewing** button that opens a
+  full-viewport QR presentation for mobile or desktop public display.
 - **Shared chart components** (`src/components/links/charts.tsx`): `ClicksOverTime`,
   `BucketBars`. Used by both the dialog and the `[id]` page (which is refactored to
   consume them, replacing its hand-rolled SVG).
@@ -218,6 +235,9 @@ direct and internal handlers return the enriched shape.
 - Component: table renders rows; edit/delete controls absent for non-owned rows;
   client filters (mine/most-clicked/tag/search) narrow the set correctly.
 - Charts: shared components render given a stats fixture (smoke).
+- QR style: org default renders with center logo; style round-trips on
+  create/update; non-owner can view saved style but cannot edit it; fullscreen view
+  opens from the QR popup.
 
 ## Deploy sequence (CLAUDE.md compliance)
 
@@ -246,6 +266,9 @@ No production D1 or deploy in this work.
 - [ ] Free-form tags can be added on create/edit and shown as chips.
 - [ ] Filters work: All / Mine / Most clicked, tag chips, and text search.
 - [ ] Row click opens a popup with recharts click-over-time + referrer/device bars.
+- [ ] QR popup shows the saved styled QR for every visible link.
+- [ ] Owners/moderators can customize and save QR colors and center image.
+- [ ] QR popup has a Full Screen Viewing mode for mobile and desktop display.
 - [ ] Short links resolve at bare `/<slug>`; canonical URLs/QR use `/<slug>`.
 - [ ] `/l/<slug>` 301-redirects to `/<slug>`; unknown slug 404s; real routes unshadowed.
 - [ ] Reserved-slug list covers all real top-level routes; create rejects them.
@@ -258,29 +281,30 @@ No production D1 or deploy in this work.
 
 Do these in order; run `pnpm typecheck` + `pnpm test` after each backend step.
 
-1. **Schema + migration**: add `tags text` to `short_links`; `pnpm db:generate`. STOP
+1. **Schema + migration**: add `tags text` and `qr_style text` to `short_links`; `pnpm db:generate`. STOP
    before applying — surface the exact `wrangler d1 migrations apply` command for
    human approval (CLAUDE.md rule). Do NOT run any D1 or deploy command yourself.
 2. **Repo** (`src/db/repositories/links.ts`): `listVisible` (all + owner join +
    parsed tags); enriched `LinkListItem` return from `create`/`update`; `loadReadable`
    (exists-only) for `getById`/`getStats`; keep `loadOwned` for `update`/`remove`;
-   accept/validate/store `tags`.
+   accept/validate/store `tags` and `qrStyle`.
 3. **Contract** (`src/db/contract/links.ts`): `linkOwnerSchema`, `linkListItemSchema`;
    `listVisible` op (`auth: member`); list + create + update outputs → list-item shape;
-   create/update inputs gain `tags`.
+   create/update inputs gain `tags` and `qrStyle`.
 4. **Handlers**: direct `collection` GET default → `listVisible` (`?scope=own|all`
    preserved); mirror owner-join + tags + visible default in
-   `src/server/internal/links.ts`; pass `tags` through create/update.
+   `src/server/internal/links.ts`; pass `tags` and `qrStyle` through create/update.
 5. **Slug routing**: `src/app/[slug]/route.ts` (root resolve via
    `buildRedirectResponse`); change slug extraction to the route param; `shortLinkUrl`
    → `/<slug>`; make `/l/[slug]` 301 → `/<slug>`; expand `RESERVED_SLUG_DEFAULTS`
    (add `contact,product,projects,services` + assets); update the 3 existing tests.
 6. **UI foundation**: `src/components/ui/avatar.tsx` (Radix avatar + initials
    fallback); `src/components/links/charts.tsx` (`ClicksOverTime`, `BucketBars` via
-   recharts, inline-SVG fallback).
+   recharts, inline-SVG fallback); shared styled QR renderer using the existing
+   `qrcode` dependency, CODE logo default, export, and fullscreen presentation.
 7. **Workspace rewrite** (`src/components/links/links-workspace.tsx`): table, owner
    column, instructions block, tags chip input, client filters (All/Mine/Most-clicked
-   + tag chips + search), row-click Radix Dialog with charts + owner-only inline edit;
+   + tag chips + search), row-click Radix Dialog with charts + QR customizer/fullscreen + owner-only inline edit;
    gate Edit/Delete by `actorMemberId`/`canModerate`. Page passes `actorMemberId`.
 8. **Refactor `[id]` page** to consume the shared chart components.
 9. **Verify**: `pnpm typecheck`, `pnpm lint`, `pnpm test` all green. Then hand back the

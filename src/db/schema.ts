@@ -138,6 +138,8 @@ export const shortLinks = sqliteTable(
 		previewTitle: text("preview_title"),
 		previewDescription: text("preview_description"),
 		previewImageKey: text("preview_image_key"),
+		tags: text("tags"),
+		qrStyle: text("qr_style"),
 		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 		updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 	},

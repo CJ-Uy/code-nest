@@ -9,8 +9,8 @@ export type RedirectDependencies = {
 	previewImageBaseUrl: string;
 };
 
-export async function buildRedirectResponse(deps: RedirectDependencies, request: Request): Promise<Response> {
-	const slug = new URL(request.url).pathname.replace(/^\/l\//, "");
+export async function buildRedirectResponse(deps: RedirectDependencies, request: Request, routeSlug?: string): Promise<Response> {
+	const slug = routeSlug ?? new URL(request.url).pathname.replace(/^\//, "");
 	const link = await deps.resolveForRedirect(slug);
 	if (!link) return new Response("Not found", { status: 404 });
 

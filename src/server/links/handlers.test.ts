@@ -7,6 +7,7 @@ const owner: Actor = { memberId: "mem_owner", roles: ["member"] };
 
 function depsWith(overrides: Record<string, unknown>) {
 	const repo = {
+		listVisible: vi.fn(async () => []),
 		listOwn: vi.fn(async () => []),
 		listAll: vi.fn(async () => []),
 		getById: vi.fn(async () => null),
@@ -29,6 +30,17 @@ describe("links handlers", () => {
 		const handlers = createLinksHandlers({ getActor: async () => null, getRepositories: deps.getRepositories });
 		const res = await handlers.collection(new Request("https://app/api/links", { method: "GET" }));
 		expect(res.status).toBe(401);
+	});
+
+	it("lists visible links by default and own links when scoped", async () => {
+		const deps = depsWith({});
+		const handlers = createLinksHandlers(deps);
+
+		await handlers.collection(new Request("https://app/api/links", { method: "GET" }));
+		await handlers.collection(new Request("https://app/api/links?scope=own", { method: "GET" }));
+
+		expect(deps.repo.listVisible).toHaveBeenCalledOnce();
+		expect(deps.repo.listOwn).toHaveBeenCalledOnce();
 	});
 
 	it("creates a link from a POST body", async () => {
