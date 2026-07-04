@@ -12,10 +12,10 @@ import { createSessionsRepository } from "./sessions";
 import { createSurveysRepository } from "./surveys";
 import { createTeamsRepository } from "./teams";
 import type { MemberDb } from "./members";
-import type { LinksDb } from "./links";
+import type { LinkDb } from "./links";
 import type { DatabaseAdapter } from "../types";
 
-export function createDrizzleRepositories(db: MemberDb & LinksDb) {
+export function createDrizzleRepositories(db: MemberDb & LinkDb) {
 	return {
 		members: createMembersRepository(db),
 		sessions: createSessionsRepository(),
