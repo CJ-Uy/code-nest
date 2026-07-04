@@ -1,6 +1,6 @@
 import type { ResolvedLink } from "@/db/repositories/links";
 import { isCrawlerUserAgent, renderPreviewHtml } from "@/lib/crawlers";
-import { deviceBucket, referrerBucket } from "@/lib/links";
+import { deviceBucket } from "@/lib/links";
 
 export type RedirectDependencies = {
 	resolveForRedirect(slug: string): Promise<ResolvedLink | null>;
@@ -10,16 +10,21 @@ export type RedirectDependencies = {
 };
 
 export async function buildRedirectResponse(deps: RedirectDependencies, request: Request, routeSlug?: string): Promise<Response> {
-	const slug = routeSlug ?? new URL(request.url).pathname.replace(/^\//, "");
+	const requestUrl = new URL(request.url);
+	const slug = routeSlug ?? requestUrl.pathname.replace(/^\//, "");
 	const link = await deps.resolveForRedirect(slug);
 	if (!link) return new Response("Not found", { status: 404 });
 
 	const userAgent = request.headers.get("user-agent");
+	// Two sources only: a QR scan (its URL carries ?s=qr) or a placed/pasted link.
+	// Referrer headers are unreliable — messaging/native apps strip them — so everything
+	// that isn't a scan is just "direct".
+	const scanned = requestUrl.searchParams.get("s") === "qr";
 	deps.scheduleBackground(
 		deps
 			.recordClick(link.id, {
 				date: new Date().toISOString().slice(0, 10),
-				referrerBucket: referrerBucket(request.headers.get("referer")),
+				referrerBucket: scanned ? "qr scan" : "direct",
 				deviceBucket: deviceBucket(userAgent),
 			})
 			.catch(() => {}),

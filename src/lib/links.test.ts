@@ -4,7 +4,6 @@ import {
 	isValidDestinationUrl,
 	isValidSlugFormat,
 	normalizeSlug,
-	referrerBucket,
 	RESERVED_SLUG_DEFAULTS,
 } from "./links";
 
@@ -51,15 +50,6 @@ describe("RESERVED_SLUG_DEFAULTS", () => {
 		expect(RESERVED_SLUG_DEFAULTS).toContain("api");
 		expect(RESERVED_SLUG_DEFAULTS).toContain("contact");
 		expect(RESERVED_SLUG_DEFAULTS).toContain("_next");
-	});
-});
-
-describe("referrerBucket", () => {
-	it("buckets null to direct and a URL to its hostname", () => {
-		expect(referrerBucket(null)).toBe("direct");
-		expect(referrerBucket("")).toBe("direct");
-		expect(referrerBucket("https://www.Google.com/search?q=x")).toBe("www.google.com");
-		expect(referrerBucket("garbage")).toBe("other");
 	});
 });
 

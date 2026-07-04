@@ -36,6 +36,17 @@ describe("buildRedirectResponse", () => {
 		expect(d.recordClick).toHaveBeenCalledOnce();
 	});
 
+	it("records a QR scan (?s=qr) as its own bucket, not a referrer", async () => {
+		const d = deps();
+		await buildRedirectResponse(
+			d,
+			new Request("https://app.example/welcome?s=qr", {
+				headers: { "user-agent": "Mozilla/5.0 (iPhone) Safari", referer: "https://www.google.com/" },
+			}),
+		);
+		expect(d.recordClick).toHaveBeenCalledWith("lnk_1", expect.objectContaining({ referrerBucket: "qr scan" }));
+	});
+
 	it("serves OG HTML to a crawler and does not need the click to succeed", async () => {
 		const d = deps({
 			recordClick: vi.fn(async () => {

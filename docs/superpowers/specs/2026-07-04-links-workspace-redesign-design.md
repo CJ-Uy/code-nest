@@ -250,6 +250,53 @@ Schema changed → migration + dev Worker update required. Exact commands shown 
 
 No production D1 or deploy in this work.
 
+## Design refinement — polish pass (2026-07-04)
+
+Shipped after first build review. Goal restated: **simple and calm, not dense or
+intimidating.** Plain words over jargon; progressive disclosure over walls of fields.
+
+- **Create is a modal, not an inline form.** A "New short link" button opens a Radix
+  Dialog. The slug field shows a baked-in `your-site/` prefix and a note — "no need to
+  type a slash, just the custom ending" — with a live `your-site/your-slug` preview.
+  Every field has one line of plain-language help.
+- **Sortable table.** Title / Short link / Clicks / Owner / Created headers sort in place
+  (client-side); the old "Most clicked" tab is gone — the Clicks column sorts it.
+- **Owner moved to the right,** next to Created. Order: Title · Short link · Tags ·
+  Clicks · Owner · Created · Actions.
+- **Short link is a real clickable URL** (`your-site/slug`), opening in a new tab.
+- **Explainer** at the top defines short link / slug / destination / clicks in plain terms.
+- **Detail dialog is tabbed**: **Details** (QR + edit) and **Statistics** (charts).
+  Nothing is packed into one long scroll.
+  - QR: big preview, a one-click **Dark / Light swap** (swaps foreground/background and
+    flips the CODE falcon between navy and white), download PNG/SVG, full-screen. Colors,
+    logo size/margin/backing live in a collapsible **"Customize QR code"**.
+  - **Custom logo upload** for event branding, via the existing `link_preview` upload
+    path (public `links/` namespace → loadable same-origin image URL). No new endpoint.
+  - Note: the `qrcode` renderer draws square modules only — dot/rounded module styles
+    are **not** supported without swapping in a styling library (deferred, YAGNI).
+  - Edit panel keeps title/destination/tags visible; **preview title/description/image**
+    move into an explained **"Social preview (optional)"** accordion.
+  - Statistics: stat tiles + clicks-over-time line (theme-aware, gridlines) + **donut
+    charts** for traffic source and device (inline SVG, no chart dependency).
+- Charts are **theme-aware** (drive off `currentColor`/tokens) so they read in dark mode.
+
+### Traffic source: two buckets (shipped, no migration)
+
+Referrer headers proved useless for real attribution — Messenger, WhatsApp, native apps,
+QR scans, and typed URLs all arrive with **no `Referer`**, so everything collapsed into
+`direct` and the named-hostname buckets almost never appeared. Decision: **drop hostname
+attribution entirely** and record exactly two sources, reusing the existing
+`referrerBucket` stats column (no schema change):
+
+- **`qr scan`** — the QR image encodes `/<slug>?s=qr`; the redirect records `?s=qr` as
+  `qr scan`. On-page copy/open links stay bare, so only genuine scans carry the marker.
+- **`direct`** — everything else (placed/pasted/typed links). No hostname parsing.
+
+Display labels are prettified in the UI (`formatBucket`): `qr scan → "QR code scanned"`,
+`direct → "Direct link"`. The "Top source" tile and the "How people arrived" donut show
+these. Per-channel tagged links (`?s=messenger`, etc.) were considered and **declined** —
+kept intentionally simple.
+
 ## Out of scope (YAGNI)
 
 - Per-link privacy / unlisted flag.

@@ -22,15 +22,6 @@ export function isValidDestinationUrl(url: string): boolean {
 	}
 }
 
-export function referrerBucket(referer: string | null): string {
-	if (!referer) return "direct";
-	try {
-		return new URL(referer).hostname.toLowerCase();
-	} catch {
-		return "other";
-	}
-}
-
 export function deviceBucket(userAgent: string | null): "mobile" | "desktop" {
 	if (!userAgent) return "desktop";
 	return MOBILE_PATTERN.test(userAgent) ? "mobile" : "desktop";
