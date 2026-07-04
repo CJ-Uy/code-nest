@@ -25,6 +25,45 @@ function isActive(pathname: string, href: string): boolean {
 	return href === "/portal" ? pathname === "/portal" : pathname.startsWith(href);
 }
 
+const detailTitles: Record<string, string> = {
+	"/portal/calendar": "Event details",
+	"/portal/library": "Library item",
+	"/portal/links": "Link stats",
+	"/portal/surveys": "Survey",
+	"/portal/admin/surveys": "Survey details",
+};
+
+function titleFromSegment(segment: string): string {
+	return segment
+		.split("-")
+		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+		.join(" ");
+}
+
+function getPageHeading(pathname: string): { section: string; title: string } {
+	const cleanPath = pathname.split("?")[0] ?? "/portal";
+	const navItems = [...primaryNav, ...secondaryNav, adminNav];
+	const activeItem = navItems
+		.filter((item) => isActive(cleanPath, item.href))
+		.sort((a, b) => b.href.length - a.href.length)[0];
+
+	if (cleanPath === "/portal") return { section: "Portal", title: "Overview" };
+	if (cleanPath === "/portal/admin") return { section: "Admin", title: "Console" };
+
+	if (cleanPath.startsWith("/portal/admin/")) {
+		const segment = cleanPath.split("/")[3] ?? "console";
+		return { section: "Admin", title: titleFromSegment(segment) };
+	}
+
+	for (const [prefix, title] of Object.entries(detailTitles)) {
+		if (cleanPath.startsWith(`${prefix}/`)) {
+			return { section: activeItem?.label ?? "Portal", title };
+		}
+	}
+
+	return { section: "Portal", title: activeItem?.label ?? "Overview" };
+}
+
 function RailItem({ item, pathname }: { item: NavItem; pathname: string }) {
 	const Icon = item.icon;
 	const on = isActive(pathname, item.href);
@@ -53,6 +92,7 @@ function RailItem({ item, pathname }: { item: NavItem; pathname: string }) {
 export function PortalShell({ member, memberId, navPins, showAdmin, bell, signOutAction, children }: PortalShellProps) {
 	const pathname = usePathname();
 	const [menuOpen, setMenuOpen] = useState(false);
+	const pageHeading = getPageHeading(pathname);
 
 	const railSecondary: NavItem[] = [...secondaryNav, ...(showAdmin ? [adminNav] : [])];
 	const sheetItems: NavItem[] = railSecondary;
@@ -131,9 +171,10 @@ export function PortalShell({ member, memberId, navPins, showAdmin, bell, signOu
 							<span className="font-heading text-lg font-bold leading-tight tracking-tight">CODE</span>
 						</span>
 					</Link>
-					<span className="hidden text-sm text-muted-foreground lg:inline lg:flex-1">
-						Welcome back, {member.displayName}
-					</span>
+					<div className="hidden min-w-0 flex-1 lg:block">
+						<p className="text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">{pageHeading.section}</p>
+						<p className="truncate font-heading text-xl font-semibold text-foreground">{pageHeading.title}</p>
+					</div>
 					<div className="flex items-center gap-2">
 						{bell}
 					</div>
