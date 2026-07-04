@@ -116,7 +116,7 @@ Roles for Juan Dela Cruz
   [✓] Publishing      — announcements, library, article moderation
   [ ] Retention       — record retention, approve events, assign points
   [ ] Links           — moderate short links
-  [ ] Calendar        — (as defined by its permissions)
+  [ ] Events          — event administration (placeholder; wired when the events system lands)
                                   [ Save changes ]
 ```
 
@@ -185,3 +185,7 @@ during planning whether the roles table is seeded in shared dev.
 
 - None blocking. Confirm during planning: (a) roles table seeded in shared dev, (b) whether any old
   admin URL is bookmarked externally (default assumption: no, routes move without redirects).
+- The `calendar` role is displayed as **Events** (placeholder) in the Roles page. Whether to rename
+  the underlying `calendar` roleKey → `events` is decided in the separate events-system spec, since
+  that spec defines what the Events role actually grants. Until then it has no effect (empty
+  permission set today).
