@@ -50,7 +50,6 @@ export function MemberCodeCard({ memberId }: { memberId: string }) {
 			</CardHeader>
 			<CardContent className="flex flex-col items-center gap-3">
 				<canvas ref={canvasRef} aria-label="Member attendance QR code" className="rounded-md border bg-white p-2" />
-				<p className="font-mono text-xs text-muted-foreground">{payload}</p>
 				{error ? <p className="text-sm text-destructive">{error}</p> : null}
 			</CardContent>
 		</Card>

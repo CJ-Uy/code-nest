@@ -123,9 +123,6 @@ export function PortalShell({ member, memberId, navPins, showAdmin, bell, signOu
 					</span>
 					<div className="flex items-center gap-2">
 						{bell}
-						<span className="hidden lg:inline">
-							<MemberAvatar initials={member.initials} className="bg-primary text-primary-foreground" />
-						</span>
 					</div>
 				</header>
 
