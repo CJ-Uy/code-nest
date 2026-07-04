@@ -1,7 +1,7 @@
 # Admin Console Redesign — Design Spec
 
 **Date:** 2026-07-04
-**Status:** Revised after adversarial review (Codex + ChatGPT) — ready for planning
+**Status:** Ready for planning — revised through two adversarial passes (see review log)
 **Branch:** beta
 
 ## Problem
@@ -74,8 +74,9 @@ updated in the same change, or links/revalidation silently break:
   `portal-shell.tsx`, and any `<Link>`/`redirect()` to old admin paths.
 - **Tests:** `e2e/retention-record.spec.ts` and any spec asserting old paths/labels.
 
-Planning MUST start from a fresh grep of `/portal/admin/` across `src/` + `e2e/`; the list above is a
-floor, not a ceiling.
+Acceptance criterion: after the move, a repo-wide grep for the old `/portal/admin/<old-page>` strings
+(across `src/`, `e2e/`, `docs/`, seed data, and config) returns nothing. Planning starts from that
+grep; the list above is a floor, not a ceiling.
 
 **Authorization stays on the pages, not just the nav.** Each moved page keeps its own
 `can(actor, ...)` guard (direct-URL access must fail without it); nav/tile filtering is cosmetic and
@@ -99,14 +100,25 @@ dashboard, and breadcrumb all read the same structure.
 - `<Group>` → `/portal/admin/<group>` (group index; see below)
 - `<Page>` → current page (not a link)
 
+`nav.ts` is a **minimal typed route registry** — `{ segment, label, href, permission }` per route,
+nothing else. Page intro **copy** stays local to each page (see §4), so the registry doesn't become a
+god object.
+
+**Dynamic detail segments** (e.g. `content/surveys/[id]`) resolve their crumb label from the existing
+`detailTitles` map in `portal-shell.tsx` (a static generic label like "Survey details") — the shell
+does **no** entity fetch for the crumb. A page that already has the entity title loaded may pass a
+label override; an unknown id falls back to the generic label, never the raw id.
+
 A `<Breadcrumb>` presentational component (new, in `src/components/portal/`) renders the trail;
 it is generic (takes an array of `{ label, href? }`).
 
 ### Group index pages
 
 Each `/portal/admin/<group>` renders a small landing: the group's intro card + the group's page
-tiles. The console root `/portal/admin` renders all 4 groups as labeled sections of tiles
-(replacing the current flat 8-card grid), each tile showing name + one-line description.
+tiles, filtered to the pages the actor may see. If the actor has **no** visible page in that group,
+the group index returns **`notFound()`** (not an empty shell, not a redirect). The console root
+`/portal/admin` renders all 4 groups as labeled sections of tiles (replacing the current flat 8-card
+grid), each tile showing name + one-line description; groups with no visible pages don't render.
 
 ## 2. Roles & Access page (`members/roles`)
 
@@ -119,22 +131,31 @@ Member-first flow, gated by `can(actor, "role:assign")`.
   plain description comes from the `roles.description` column; if a friendlier copy is wanted it is
   edited in the seed, not hardcoded in the page.
 - **Member search:** new `members.search(actor, query)` repository method — case-insensitive `LIKE`
-  over `name`, `full_name`, `nickname`, `email`, with **min query length 2** and **capped at 20
-  rows**. At org scale (hundreds–low thousands of members) a capped `LIKE` scan is fine; add a
-  normalized search index only if measured slow. **Permission:** the page needs both `role:assign`
-  (mutate) and `member:manage` (search); today the only `role:assign` holders are `member_admin`
-  (which also has `member:manage`) and `super`, so they align — gate the page on `role:assign` and
-  let search run for those actors. Flag if a `role:assign`-only role is ever added.
+  over `name`, `full_name`, `nickname`, `email`, restricted to **active members** (`status='active'`),
+  **min query length 2**, **capped at 20 rows**. At org scale (hundreds–low thousands) a capped
+  `LIKE` scan is fine; add a normalized search index only if measured slow.
+- **Permission (exact):** the page is gated on `role:assign`, and the member search used by this page
+  authorizes on the **same `role:assign`** (not `member:manage`), so the flow needs exactly one
+  permission and can't half-work. `members.search` accepts `role:assign` OR `member:manage`.
 - **Read a member's roles:** join `member_roles` → `roles.key`; gated the same as the page.
-- **Assignable targets:** only existing `members` rows (the `member_roles.member_id` FK guarantees
-  it). Roles are org-wide, not term-scoped; assigning to a non-active member is allowed (pre-grant),
-  nothing restricts by roster/term.
-- **Write (atomic, server-computed diff):** `assignRoleAction` / `revokeRoleAction`, `role:assign`-
-  gated. The server **loads the member's current roles fresh from D1**, computes the add/remove diff
-  itself, and ignores any client-supplied "current" state (the client sends only the desired set).
-  Each mutation writes the `member_roles` change **and** its audit row (`role:assign` / `role:revoke`,
-  `assigned_by = actor.memberId`) in a single **`db.batch([...])`** — D1 has no interactive
-  transactions, so `batch()` is the atomic unit — so a change and its audit entry can't diverge.
+- **Assignable targets (eligibility):** only existing **active** `members` rows. A roster email with
+  no `members` row has no id and simply can't be targeted — you assign roles to people who have signed
+  in. Roles are org-wide, not term-scoped. Inactive/departed members are excluded from search and
+  rejected server-side.
+- **One save path.** A single `saveMemberRolesAction(memberId, desiredRoleKeys, baseVersion)` handles
+  the whole "Save changes" submit (no separate per-role actions that could drift from the guardrails).
+  It:
+  1. **fails closed** if `actor.memberId` is missing (defensive, even though the type guarantees it);
+  2. calls the shared **`assertSameOrigin`** guard like every other mutation action;
+  3. loads the member's **current roles fresh from D1**; `baseVersion` is a hash of that current
+     role-key set taken when the client loaded — if it no longer matches, reject with "roles changed,
+     reload" (**optimistic concurrency**, closes the concurrent lost-update race);
+  4. computes the add/remove **diff server-side** (ignores any client notion of "current");
+  5. applies the guardrails below to the **whole diff**;
+  6. writes every `member_roles` insert/delete **and** one audit row per change
+     (`role:assign` / `role:revoke`, `assigned_by = actor.memberId`) in a single **`db.batch([...])`**
+     — D1 has no interactive transactions and rolls a batch back on any failed statement (master plan
+     §3.4), verified by a rollback test.
 
 ### UI
 
@@ -152,28 +173,27 @@ Roles for Juan Dela Cruz
   [✓] Publishing      — announcements, library, article moderation
   [ ] Retention       — record retention, approve events, assign points
   [ ] Links           — moderate short links
-  [ ] Events          — INACTIVE placeholder, grants nothing until the events system ships
-                                  [ Save changes ]
+  [·] Events          — coming soon (disabled, not assignable until the events system ships)
+                  [ Save changes ]  ← submits desired set + baseVersion; stale save ⇒ "reload"
 ```
 
-### Guardrails (all three, confirmed)
+### Guardrails (enforced inside `saveMemberRolesAction`, on the whole diff)
 
-1. **Only Overall Admins grant Overall Admin.** The `super` toggle is disabled (with a tooltip)
-   unless `actor.roles.includes("super")`. Enforced again server-side in `assignRoleAction`: a
-   non-super adding/removing `super` is rejected. This check is **independent of the generic
-   `role:assign` gate** — holding `role:assign` never implies the right to touch `super`.
-2. **Block removing the last Overall Admin — race-safe.** D1 has no interactive transactions, so a
-   read-count-then-delete is a TOCTOU hole (two admins each remove a different super, both counts
-   pass, zero remain). Instead remove `super` with a **guarded conditional delete** — delete only if
-   more than one `super` assignment exists, e.g. `DELETE FROM member_roles WHERE member_id=? AND
+1. **Only Overall Admins grant Overall Admin.** Any `super` delta in the computed diff (add OR
+   remove) is rejected unless `actor.roles.includes("super")`. Checked on the **diff**, not the UI
+   toggle, and **independent of `role:assign`** — holding the generic permission never implies the
+   right to touch `super`. The UI also disables the `super` toggle for non-supers (sugar only).
+2. **Block removing the last Overall Admin — race-safe.** Every `super` removal (including one that
+   falls out of a desired-set save) goes through a **guarded conditional delete** — delete only if
+   more than one `super` assignment exists: `DELETE FROM member_roles WHERE member_id=? AND
    role_id=:super AND (SELECT count(*) FROM member_roles WHERE role_id=:super) > 1` — then check
-   affected-rows; 0 ⇒ reject "at least one Overall Admin required." One statement, no race; covered
-   by a concurrency test.
-3. **Confirm self-changes.** If the target is the current actor and the save removes any of the
-   actor's own roles, show a confirmation ("This removes your own access — continue?") before
+   affected-rows; 0 ⇒ reject "at least one Overall Admin required." One statement, no read-then-write
+   TOCTOU; covered by a concurrency test.
+3. **Confirm self-changes.** If the target is the current actor and the diff removes any of the
+   actor's own roles, the UI shows a confirmation ("This removes your own access — continue?") before
    submitting. Revocation is immediate (see Non-goals), so self-demotion takes effect next request.
 
-Server-side checks are authoritative; client-side disabling is UX sugar.
+Server-side checks in the single save path are authoritative; client-side disabling is UX sugar.
 
 ## 3. Member List + bulk add (`members/list`)
 
@@ -188,14 +208,20 @@ Keep the term picker and table; rename, add intro card, add bulk add.
 - **Bulk add UI:** a textarea labeled "Paste a column of emails (e.g. from Google Sheets)". Live
   summary **"N valid · M already members · K invalid"**, invalid entries listed for fixing. The
   single-add form stays for one-offs.
-- **Limits (D1 budget).** Cap at **≤ 500 emails per submission** plus a max payload size; reject over
-  the cap with guidance to split. Insert in **chunked `db.batch([...])`** writes within D1's
-  ~100-bound-param / 100 KB-per-statement budget (mirrors the manual-retention batch pattern).
+- **Limits (D1 budget + abuse).** Cap at **≤ 500 emails** and **≤ 64 KB** of pasted text per
+  submission; return at most **50** invalid entries (with a "+N more" count). Over any cap ⇒ reject
+  with guidance to split. Insert in **chunked `db.batch([...])`** within D1's ~100-bound-param /
+  100 KB-per-statement budget (mirrors the manual-retention batch pattern; exact chunk size confirmed
+  in planning).
+- **Canonical email rule.** Accept only plain RFC-ish addresses (the existing `addSchema`:
+  `trim().toLowerCase().email()`); reject display-name/quoted forms (`Jane <j@x.com>`). Lowercasing is
+  for dedupe/storage only — no provider-specific equivalence (no gmail dot/plus folding).
 - **Idempotent, partial success.** Insert with `onConflictDoNothing` against the `term_member_roster`
-  PK `(termId, email)`, so members already on the roster are skipped, not errored.
-  `bulkAddRosterAction(termId, rawText)` returns `{ added, skippedDuplicates, invalid: string[] }`;
-  the UI renders those counts + the invalid list. Valid rows commit even when some rows are invalid
-  (invalid ones are reported, never block the batch).
+  PK `(termId, email)` (confirmed `schema.ts:296`), so members already on the roster are skipped, not
+  errored. `bulkAddRosterAction(termId, rawText)` returns **separate** counts
+  `{ added, alreadyMembers, dedupedInput, invalid: string[] }` so the admin sees exactly what
+  happened. Valid rows commit even when some are invalid; the UI states partial success explicitly and
+  offers the invalid list as copyable text for a fixed resubmit.
 - **Write safety in shared-dev:** see §5 — bulk add fails loudly if the write path is unavailable,
   never silently reports success.
 
@@ -215,10 +241,14 @@ Keep the term picker and table; rename, add intro card, add bulk add.
 
 Repositories route through an internal proxy in the shared-dev Worker. `roster.listForTerm` and
 `quickLinks.list` already `.catch(() => [])` because "no shared-dev internal proxy yet." The new
-`members.search` and role read/write must either (a) work directly against D1 in the normal path
-and degrade gracefully in shared-dev like the others, or (b) add internal-contract operations.
-**Reads may degrade to `[]`; writes must not.** Role assign/revoke and bulk add **fail loudly** in
-shared-dev if their write path is unavailable — never silently no-op or fake success.
+`members.search` and role read/write must either (a) work directly against D1 in the normal path,
+or (b) add internal-contract operations. **Admin-critical reads and all writes must not silently
+lie:**
+- **Reads** (member search, a member's roles): on an unavailable path, return an explicit
+  **"unavailable"** state, not `[]` — an empty array reads as "no members found" and makes role
+  assignment undebuggable.
+- **Writes** (save roles, bulk add): throw a **typed error** the action surfaces as clear UI copy
+  ("This action isn't available in the shared-dev environment"); never no-op or fake success.
 Per project rules, **any internal-contract/permissions/dev-seed change requires updating the dev
 Worker path** (`pnpm db:migrate:dev` then `pnpm deploy:dev`) — shown as an explicit command and
 run only with approval. No schema migration is expected (roles/member_roles already exist); confirm
@@ -226,19 +256,22 @@ during planning whether the roles table is seeded in shared dev.
 
 ## Testing strategy
 
-- **Unit:** shared email parser/normalizer (valid/invalid/dup/whitespace/comma/CRLF, over-cap);
-  server-side role-diff (recomputed from DB, ignores client "current"); breadcrumb segment walker
-  incl. dynamic segments (`surveys/[id]`).
-- **Permission/guardrail:** non-super cannot add/remove `super` (independent of `role:assign`);
-  `role:assign` required for mutations; direct-URL access to a moved page fails without its `can()`
-  guard — mirror `permissions.test.ts`.
-- **Concurrency:** two simultaneous last-super removals ⇒ exactly one succeeds and one `super`
-  remains (guarded-delete race test).
-- **Integration:** `members.search` matches name/full_name/nickname/email case-insensitively with
-  min-length + cap; `assign`/`revoke` write `member_roles` + audit atomically (`db.batch`); bulk add
-  is idempotent and returns `{ added, skippedDuplicates, invalid }`.
-- **Migration:** a grep/test check that no `/portal/admin/<old>` reference remains in `src/` or
-  `e2e/` after the move.
+- **Unit:** shared email parser/normalizer (valid/invalid/dup/whitespace/comma/CRLF, display-name
+  reject, over-cap); server-side role-diff (recomputed from DB, ignores client "current"); breadcrumb
+  segment walker incl. dynamic `content/surveys/[id]` (generic label, unknown-id fallback).
+- **Permission/guardrail:** non-super cannot add or remove `super` in a whole-set save (independent
+  of `role:assign`); `role:assign` gates page + search + save; direct-URL access to a moved page
+  fails without its `can()` guard; role assignment to an inactive member is rejected — mirror
+  `permissions.test.ts`.
+- **Concurrency:** two simultaneous last-super removals ⇒ exactly one succeeds, one `super` remains
+  (guarded-delete race); a stale `baseVersion` save is rejected (optimistic concurrency).
+- **Atomicity:** a forced failure of the audit statement rolls back the `member_roles` change in the
+  same `db.batch` (rollback test).
+- **Integration:** `members.search` matches name/full_name/nickname/email case-insensitively, active-
+  only, min-length + capped; save writes `member_roles` + audit atomically; bulk add is idempotent
+  and returns `{ added, alreadyMembers, dedupedInput, invalid }`.
+- **Migration:** repo-wide check that no old `/portal/admin/<old>` string remains in `src/`, `e2e/`,
+  `docs/`, seed, or config.
 
 ## Open questions
 
@@ -248,23 +281,9 @@ during planning whether the roles table is seeded in shared dev.
   harmless. Renaming `calendar` → `events` and giving it real powers is the events-system spec's job;
   until then it stays labeled inactive to avoid a "granted a role that silently gains power" footgun.
 
-## Adversarial-review disposition (2026-07-04)
+## Review history
 
-Reviewed 31 findings (Codex run cancelled; ChatGPT pass folded in **after repo verification** —
-several findings were guesses made without codebase access). **Accepted & folded above:** atomic
-server-computed role diff via `db.batch` (#2,13,23), race-safe last-super guarded delete (#1),
-super-check independent of `role:assign` (#3), full route/link migration inventory + page-level
-guards (#6,7,9,20,21,30), dynamic-segment breadcrumb (#8), bulk-add limits/idempotency/result-shape/
-shared parser (#10,11,12,27,28), shared-dev write-fail-loud (#15), search min-length+cap + permission
-coupling note (#17,18,24), group-index not-found (#19), compact intro cards (#29), Events-inactive
-label (#16), status reclassified (#31), target eligibility (#4).
-
-**Rejected after verifying against the repo:**
-- **#5 (role-change timing):** not a lag — `src/auth.ts` uses `session.strategy="database"` and the
-  `session()` callback re-reads `member_roles` from D1 every request, so revocation is immediate.
-  Only the spec's "next sign-in" copy was wrong (fixed).
-- **#14 (`assigned_by` nullable):** `Actor.memberId` is a required `string`; always valid.
-- **#25 (rate-limit role/search/bulk):** YAGNI for a small trusted admin set behind auth; the audit
-  log is the accountability control. Revisit only on evidence of abuse.
-- **#26 (CSRF/server-action):** Next server actions are same-origin POST and the app already runs an
-  `assertSameOrigin` check with same-site Auth.js cookies; no new work.
+Two adversarial passes (round 1 folded after repo verification; round 2 "fix-first" resolved — the
+substantive item was the unified concurrency-safe save path in §2). The full finding-by-finding
+disposition, including what was rejected and why, lives in the non-normative companion
+`2026-07-04-admin-console-redesign-review-log.md`. This spec is the single normative source.
