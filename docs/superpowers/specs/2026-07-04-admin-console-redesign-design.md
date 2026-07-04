@@ -48,9 +48,9 @@ the group's sub-nav; the console root renders the grouped dashboard.
 | | Library | `/portal/admin/content/library` | `/library` | Articles & case studies |
 | | Surveys | `/portal/admin/content/surveys` | `/surveys` | Sampling & questions |
 | | Public Submissions | `/portal/admin/content/submissions` | Submissions · `/submissions` | Contact inquiries + article feedback from the public site |
-| **Growth & Data** (`growth`) | Log Retention | `/portal/admin/growth/retention` | Retention · `/retention` | Record retention/attendance records |
-| | Data Exports | `/portal/admin/growth/exports` | Reporting · `/reporting` | CSV exports of retention data |
-| | Short Links | `/portal/admin/growth/links` | Links · `/links` | Moderate member short links |
+| | Short Links | `/portal/admin/content/links` | Links · `/links` | Moderate member short links (member-generated content) |
+| **Data** (`data`) | Log Retention | `/portal/admin/data/retention` | Retention · `/retention` | Record retention/attendance records |
+| | Data Exports | `/portal/admin/data/exports` | Reporting · `/reporting` | CSV exports of retention data |
 | **System** (`system`) | Pinned Nav Links | `/portal/admin/system/nav-pins` | Nav pins · `/nav-pins` | Links shown in every member's top nav |
 | | Dashboard Shortcuts | `/portal/admin/system/quick-links` | Quick links · `/quick-links` | Resources in the dashboard Quick Links widget |
 | | Activity Log | `/portal/admin/system/audit` | Audit log · `/audit` | Recorded admin actions |
