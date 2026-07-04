@@ -14413,10 +14413,20 @@
       "norm_label": "layout.tsx"
     },
     {
-      "label": "PortalLayout()",
+      "label": "initialsFrom()",
       "file_type": "code",
       "source_file": "src/app/portal/layout.tsx",
       "source_location": "L8",
+      "_origin": "ast",
+      "id": "portal_layout_initialsfrom",
+      "community": 2,
+      "norm_label": "initialsfrom()"
+    },
+    {
+      "label": "PortalLayout()",
+      "file_type": "code",
+      "source_file": "src/app/portal/layout.tsx",
+      "source_location": "L13",
       "_origin": "ast",
       "id": "portal_layout_portallayout",
       "community": 2,
@@ -14496,7 +14506,7 @@
       "label": "GoogleIcon()",
       "file_type": "code",
       "source_file": "src/app/signin/page.tsx",
-      "source_location": "L7",
+      "source_location": "L8",
       "_origin": "ast",
       "id": "signin_page_googleicon",
       "community": 2,
@@ -14506,7 +14516,7 @@
       "label": "SignInPage()",
       "file_type": "code",
       "source_file": "src/app/signin/page.tsx",
-      "source_location": "L18",
+      "source_location": "L19",
       "_origin": "ast",
       "id": "signin_page_signinpage",
       "community": 2,
@@ -15439,7 +15449,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_audit",
-      "community": 84,
+      "community": 83,
       "norm_label": "audit.ts"
     },
     {
@@ -15449,7 +15459,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "repositories_audit_auditrecordinput",
-      "community": 84,
+      "community": 83,
       "norm_label": "auditrecordinput"
     },
     {
@@ -15459,7 +15469,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "repositories_audit_auditrepository",
-      "community": 84,
+      "community": 83,
       "norm_label": "auditrepository"
     },
     {
@@ -15469,7 +15479,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "repositories_audit_createauditrepository",
-      "community": 84,
+      "community": 83,
       "norm_label": "createauditrepository()"
     },
     {
@@ -15609,7 +15619,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_links_integration_test",
-      "community": 94,
+      "community": 85,
       "norm_label": "links.integration.test.ts"
     },
     {
@@ -15619,7 +15629,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "repositories_links_integration_test_db",
-      "community": 94,
+      "community": 85,
       "norm_label": "db"
     },
     {
@@ -15629,7 +15639,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "repositories_links_integration_test_links",
-      "community": 94,
+      "community": 85,
       "norm_label": "links"
     },
     {
@@ -15799,7 +15809,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_notifications",
-      "community": 103,
+      "community": 83,
       "norm_label": "notifications.ts"
     },
     {
@@ -15809,7 +15819,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_notifications_notificationsrepository",
-      "community": 103,
+      "community": 83,
       "norm_label": "notificationsrepository"
     },
     {
@@ -15819,7 +15829,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "repositories_notifications_createnotificationsrepository",
-      "community": 103,
+      "community": 83,
       "norm_label": "createnotificationsrepository()"
     },
     {
@@ -15859,7 +15869,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_sessions",
-      "community": 104,
+      "community": 83,
       "norm_label": "sessions.ts"
     },
     {
@@ -15869,7 +15879,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_sessions_sessionsrepository",
-      "community": 104,
+      "community": 83,
       "norm_label": "sessionsrepository"
     },
     {
@@ -15879,7 +15889,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "repositories_sessions_createsessionsrepository",
-      "community": 104,
+      "community": 83,
       "norm_label": "createsessionsrepository()"
     },
     {
@@ -15949,7 +15959,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_types",
-      "community": 84,
+      "community": 83,
       "norm_label": "types.ts"
     },
     {
@@ -15959,7 +15969,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "repositories_types_pagerequest",
-      "community": 84,
+      "community": 83,
       "norm_label": "pagerequest"
     },
     {
@@ -15969,7 +15979,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "repositories_types_pageresult",
-      "community": 84,
+      "community": 83,
       "norm_label": "pageresult"
     },
     {
@@ -15979,7 +15989,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "repositories_types_repositorycontext",
-      "community": 84,
+      "community": 83,
       "norm_label": "repositorycontext"
     },
     {
@@ -15989,7 +15999,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "repositories_types_pagelimit",
-      "community": 84,
+      "community": 83,
       "norm_label": "pagelimit()"
     },
     {
@@ -16009,7 +16019,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "db_schema_memberstatus",
-      "community": 98,
+      "community": 88,
       "norm_label": "memberstatus"
     },
     {
@@ -16199,7 +16209,7 @@
       "source_location": "L115",
       "_origin": "ast",
       "id": "db_schema_shareddevtokens",
-      "community": 80,
+      "community": 82,
       "norm_label": "shareddevtokens"
     },
     {
@@ -16209,7 +16219,7 @@
       "source_location": "L124",
       "_origin": "ast",
       "id": "db_schema_consultancyteams",
-      "community": 80,
+      "community": 82,
       "norm_label": "consultancyteams"
     },
     {
@@ -16219,7 +16229,7 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "db_schema_teammembers",
-      "community": 80,
+      "community": 82,
       "norm_label": "teammembers"
     },
     {
@@ -16229,7 +16239,7 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "db_schema_articles",
-      "community": 80,
+      "community": 82,
       "norm_label": "articles"
     },
     {
@@ -16239,7 +16249,7 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "db_schema_articlesections",
-      "community": 80,
+      "community": 82,
       "norm_label": "articlesections"
     },
     {
@@ -16359,7 +16369,7 @@
       "source_location": "L338",
       "_origin": "ast",
       "id": "db_schema_shortlinks",
-      "community": 94,
+      "community": 85,
       "norm_label": "shortlinks"
     },
     {
@@ -16379,7 +16389,7 @@
       "source_location": "L359",
       "_origin": "ast",
       "id": "db_schema_linkdailystats",
-      "community": 94,
+      "community": 85,
       "norm_label": "linkdailystats"
     },
     {
@@ -16389,7 +16399,7 @@
       "source_location": "L376",
       "_origin": "ast",
       "id": "db_schema_crsevents",
-      "community": 80,
+      "community": 82,
       "norm_label": "crsevents"
     },
     {
@@ -16439,7 +16449,7 @@
       "source_location": "L475",
       "_origin": "ast",
       "id": "db_schema_terms",
-      "community": 80,
+      "community": 82,
       "norm_label": "terms"
     },
     {
@@ -16459,7 +16469,7 @@
       "source_location": "L509",
       "_origin": "ast",
       "id": "db_schema_surveys",
-      "community": 80,
+      "community": 82,
       "norm_label": "surveys"
     },
     {
@@ -16469,7 +16479,7 @@
       "source_location": "L525",
       "_origin": "ast",
       "id": "db_schema_surveyquestions",
-      "community": 80,
+      "community": 82,
       "norm_label": "surveyquestions"
     },
     {
@@ -16509,7 +16519,7 @@
       "source_location": "L579",
       "_origin": "ast",
       "id": "db_schema_announcements",
-      "community": 80,
+      "community": 82,
       "norm_label": "announcements"
     },
     {
@@ -16539,7 +16549,7 @@
       "source_location": "L629",
       "_origin": "ast",
       "id": "db_schema_auditlogs",
-      "community": 80,
+      "community": 82,
       "norm_label": "auditlogs"
     },
     {
@@ -16789,7 +16799,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "seed_run_chunk",
-      "community": 100,
+      "community": 80,
       "norm_label": "chunk()"
     },
     {
@@ -16819,7 +16829,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "seed_run_insertchunks",
-      "community": 100,
+      "community": 80,
       "norm_label": "insertchunks()"
     },
     {
@@ -16829,7 +16839,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "seed_run_seedlocal",
-      "community": 100,
+      "community": 80,
       "norm_label": "seedlocal()"
     },
     {
@@ -16839,7 +16849,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "seed_run_main",
-      "community": 100,
+      "community": 80,
       "norm_label": "main()"
     },
     {
@@ -17079,7 +17089,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "auth_permissions",
-      "community": 84,
+      "community": 88,
       "norm_label": "permissions.ts"
     },
     {
@@ -17089,7 +17099,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "auth_permissions_rolekeys",
-      "community": 84,
+      "community": 88,
       "norm_label": "rolekeys"
     },
     {
@@ -17099,7 +17109,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "auth_permissions_rolekey",
-      "community": 98,
+      "community": 88,
       "norm_label": "rolekey"
     },
     {
@@ -17109,7 +17119,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "auth_permissions_permissionactions",
-      "community": 84,
+      "community": 88,
       "norm_label": "permissionactions"
     },
     {
@@ -17129,7 +17139,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "auth_permissions_actor",
-      "community": 84,
+      "community": 83,
       "norm_label": "actor"
     },
     {
@@ -17139,7 +17149,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "auth_permissions_rolepermissions",
-      "community": 84,
+      "community": 88,
       "norm_label": "rolepermissions"
     },
     {
@@ -17149,7 +17159,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "auth_permissions_can",
-      "community": 84,
+      "community": 88,
       "norm_label": "can()"
     },
     {
@@ -17349,7 +17359,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_short_links_test",
-      "community": 87,
+      "community": 1,
       "norm_label": "short-links.test.ts"
     },
     {
@@ -17359,7 +17369,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_short_links",
-      "community": 87,
+      "community": 1,
       "norm_label": "short-links.ts"
     },
     {
@@ -17369,7 +17379,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_short_links_referrerbucket",
-      "community": 87,
+      "community": 1,
       "norm_label": "referrerbucket"
     },
     {
@@ -17379,7 +17389,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "server_short_links_devicebucket",
-      "community": 87,
+      "community": 1,
       "norm_label": "devicebucket"
     },
     {
@@ -17389,7 +17399,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "server_short_links_shortlinkvisit",
-      "community": 87,
+      "community": 1,
       "norm_label": "shortlinkvisit"
     },
     {
@@ -17399,7 +17409,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "server_short_links_publicshortlink",
-      "community": 87,
+      "community": 1,
       "norm_label": "publicshortlink"
     },
     {
@@ -17409,7 +17419,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "server_short_links_shortlinkhandlerdependencies",
-      "community": 87,
+      "community": 1,
       "norm_label": "shortlinkhandlerdependencies"
     },
     {
@@ -17419,7 +17429,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "server_short_links_parseredirectdestination",
-      "community": 87,
+      "community": 1,
       "norm_label": "parseredirectdestination()"
     },
     {
@@ -17429,7 +17439,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "server_short_links_classifyshortlinkrequest",
-      "community": 87,
+      "community": 1,
       "norm_label": "classifyshortlinkrequest()"
     },
     {
@@ -17439,7 +17449,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "server_short_links_createshortlinkhandler",
-      "community": 87,
+      "community": 1,
       "norm_label": "createshortlinkhandler()"
     },
     {
@@ -17819,7 +17829,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "types_next_auth_d",
-      "community": 98,
+      "community": 88,
       "norm_label": "next-auth.d.ts"
     },
     {
@@ -17829,7 +17839,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "types_next_auth_d_session",
-      "community": 98,
+      "community": 88,
       "norm_label": "session"
     },
     {
@@ -36417,6 +36427,38 @@
       "target": "auth_actor_requireactor"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/layout.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "portal_layout",
+      "target": "db_index",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/layout.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "portal_layout",
+      "target": "db_index_getrepositories",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/layout.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "portal_layout",
+      "target": "portal_layout_initialsfrom",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/portal/layout.tsx",
@@ -36452,12 +36494,34 @@
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/layout.tsx",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "portal_layout_portallayout",
+      "target": "portal_layout_initialsfrom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/portal/layout.tsx",
       "source_location": "L9",
       "weight": 1.0,
       "source": "portal_layout_portallayout",
       "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/layout.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "portal_layout_portallayout",
+      "target": "db_index_getrepositories"
     },
     {
       "relation": "imports_from",
@@ -47124,5 +47188,5 @@
       "source_file": "docs/operations/migrations.md"
     }
   ],
-  "built_at_commit": "8f9f471906f533e89f419ab37148115e82723756"
+  "built_at_commit": "6e59c53ce06cb3f58411e1889ca75d2ff977a5a4"
 }

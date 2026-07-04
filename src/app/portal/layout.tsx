@@ -1,34 +1,105 @@
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Link2, LogOut } from "lucide-react";
+import { getRepositories } from "@/db";
 import { requireActor } from "@/server/auth/actor";
 import { signOutAction } from "./actions";
+
+function initialsFrom(value: string): string {
+	const parts = value.trim().split(/\s+/).slice(0, 2);
+	return parts.map((part) => part[0]?.toUpperCase() ?? "").join("") || "M";
+}
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
 	const actor = await requireActor();
 	const isAdmin = actor.roles.includes("super");
+	const { members } = await getRepositories();
+	const member = await members.getById(actor, actor.memberId).catch(() => null);
+	const displayName = member?.nickname ?? member?.fullName ?? member?.name ?? member?.email ?? "Member";
+	const subtitle = member?.email ?? "Signed in";
+	const initials = initialsFrom(displayName);
 
 	return (
-		<main className="min-h-screen bg-background text-foreground">
-			<header className="border-b bg-primary text-primary-foreground">
-				<div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-					<Link href="/portal/links" className="flex items-center gap-3">
-						<Image src="/code-logo-full-white.png" alt="CODE" width={112} height={40} priority className="h-9 w-auto object-contain" />
-						<span className="hidden text-sm text-white/70 sm:inline">Member portal</span>
+		<div className="min-h-screen bg-background text-foreground lg:flex">
+			<aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-primary px-4 py-6 text-primary-foreground lg:flex">
+				<Link href="/portal/links" aria-label="Ateneo CODE portal" className="mb-7 flex items-center gap-2.5 px-2">
+					<Image src="/code-falcon-white.png" alt="" width={48} height={48} priority className="h-9 w-auto object-contain" />
+					<span className="flex flex-col leading-none">
+						<span className="text-[0.6rem] font-medium uppercase text-primary-foreground/70">Ateneo</span>
+						<span className="font-heading text-xl font-bold leading-tight">CODE</span>
+					</span>
+				</Link>
+
+				<nav className="flex flex-col gap-1" aria-label="Portal modules">
+					<Link href="/portal/links" className="relative flex items-center gap-3 rounded-xl bg-white/10 px-3 py-2.5 text-sm font-semibold text-primary-foreground">
+						<span className="absolute -left-3 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r bg-secondary" aria-hidden />
+						<Link2 className="size-5" />
+						<span className="flex-1">Link shortener</span>
 					</Link>
-					<div className="flex items-center gap-2">
-						{isAdmin ? <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">Admin</span> : null}
-						<form action={signOutAction}>
-							<Button className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white" variant="outline" size="sm">
-								<LogOut />
-								Sign out
-							</Button>
+				</nav>
+
+				<div className="mt-auto pt-3">
+					<div className="h-px bg-white/10" />
+					<div className="mt-3 flex items-center gap-2 rounded-xl p-2">
+						<div className="grid size-9 shrink-0 place-items-center rounded-full bg-secondary text-sm font-bold text-primary">
+							{initials}
+						</div>
+						<div className="min-w-0 flex-1 leading-tight">
+							<p className="truncate text-sm font-semibold text-primary-foreground">{displayName}</p>
+							<p className="truncate text-xs text-primary-foreground/60">{subtitle}</p>
+						</div>
+						<form action={signOutAction} className="shrink-0">
+							<button
+								type="submit"
+								aria-label="Sign out"
+								title="Sign out"
+								className="grid size-8 place-items-center rounded-lg text-primary-foreground/60 transition-colors hover:bg-white/10 hover:text-primary-foreground"
+							>
+								<LogOut className="size-4" />
+							</button>
 						</form>
 					</div>
 				</div>
-			</header>
-			<div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">{children}</div>
-		</main>
+			</aside>
+
+			<div className="flex min-h-screen w-full min-w-0 flex-col">
+				<header className="sticky top-0 z-30 flex items-center justify-between gap-4 bg-primary px-4 py-3 text-primary-foreground sm:px-6 lg:border-b lg:border-border lg:bg-card lg:px-8 lg:text-card-foreground">
+					<Link href="/portal/links" aria-label="Ateneo CODE portal" className="flex items-center gap-2 lg:hidden">
+						<Image src="/code-falcon-white.png" alt="" width={42} height={42} priority className="h-8 w-auto object-contain" />
+						<span className="flex flex-col leading-none">
+							<span className="text-[0.55rem] font-medium uppercase text-primary-foreground/70">Ateneo</span>
+							<span className="font-heading text-lg font-bold leading-tight">CODE</span>
+						</span>
+					</Link>
+					<div className="hidden min-w-0 flex-1 lg:block">
+						<p className="text-[0.65rem] font-semibold uppercase text-muted-foreground">Portal</p>
+						<p className="truncate font-heading text-xl font-semibold text-foreground">Link shortener</p>
+					</div>
+					<div className="flex items-center gap-2">
+						{isAdmin ? <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80 lg:bg-secondary lg:text-primary">Admin</span> : null}
+						<form action={signOutAction} className="lg:hidden">
+							<button
+								type="submit"
+								aria-label="Sign out"
+								className="grid size-9 place-items-center rounded-lg text-primary-foreground/70 hover:bg-white/10 hover:text-primary-foreground"
+							>
+								<LogOut className="size-4" />
+							</button>
+						</form>
+					</div>
+				</header>
+
+				<main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-24 sm:px-6 lg:px-8 lg:pb-10">{children}</main>
+			</div>
+
+			<nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-primary text-primary-foreground lg:hidden" aria-label="Portal modules">
+				<div className="mx-auto flex h-16 max-w-md items-center justify-center px-4">
+					<Link href="/portal/links" className="flex min-w-24 flex-col items-center gap-1 py-2 text-[0.7rem] font-semibold text-secondary">
+						<Link2 className="size-5" />
+						Link shortener
+					</Link>
+				</div>
+			</nav>
+		</div>
 	);
 }
