@@ -63,9 +63,15 @@ export function PortalShell({ member, memberId, navPins, showAdmin, bell, signOu
 		<div className="min-h-screen bg-background text-foreground lg:flex">
 			{/* Desktop sidebar rail */}
 			<aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col gap-1 bg-primary px-4 py-6 text-primary-foreground lg:flex">
-				<Link href="/portal" className="mb-4 flex items-center gap-2 px-2">
+				<Link href="/portal" aria-label="Ateneo CODE home" className="mb-4 flex items-center gap-2.5 px-2">
 					{/* eslint-disable-next-line @next/next/no-img-element */}
-					<img src="/code-logo-full-white.png" alt="Ateneo CODE" className="h-8 w-auto" />
+					<img src="/code-falcon-white.png" alt="" className="h-9 w-auto" />
+					<span className="flex flex-col leading-none">
+						<span className="text-[0.6rem] font-medium uppercase tracking-[0.24em] text-primary-foreground/70">
+							Ateneo
+						</span>
+						<span className="font-heading text-xl font-bold leading-tight tracking-tight">CODE</span>
+					</span>
 				</Link>
 				<nav className="flex flex-col gap-1" aria-label="Portal modules">
 					{primaryNav.map((item) => (
@@ -90,33 +96,40 @@ export function PortalShell({ member, memberId, navPins, showAdmin, bell, signOu
 						</a>
 					))}
 				</nav>
-				<div className="mt-auto flex flex-col gap-1">
-					<Separator className="my-2 bg-white/10" />
-					<div className="flex items-center gap-3 px-3 py-2">
+				<div className="mt-auto pt-2">
+					<Separator className="mb-2 bg-white/10" />
+					<div className="flex items-center gap-2 rounded-xl p-2 transition-colors hover:bg-white/5">
 						<MemberAvatar initials={member.initials} />
 						<div className="min-w-0 flex-1 leading-tight">
 							<p className="truncate text-sm font-semibold text-primary-foreground">{member.displayName}</p>
 							{member.subtitle ? <p className="truncate text-xs text-primary-foreground/60">{member.subtitle}</p> : null}
 						</div>
+						<form action={signOutAction} className="shrink-0">
+							<button
+								type="submit"
+								aria-label="Sign out"
+								title="Sign out"
+								className="grid size-8 place-items-center rounded-lg text-primary-foreground/60 transition-colors hover:bg-white/10 hover:text-primary-foreground"
+							>
+								<LogOut className="size-4" />
+							</button>
+						</form>
 					</div>
-					<form action={signOutAction}>
-						<button
-							type="submit"
-							className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-primary-foreground/65 transition-colors hover:text-primary-foreground"
-						>
-							<LogOut className="size-5" />
-							Sign out
-						</button>
-					</form>
 				</div>
 			</aside>
 
 			<div className="flex min-h-screen w-full min-w-0 flex-col">
 				{/* Top bar: navy app bar on mobile, light utility bar on desktop. */}
 				<header className="sticky top-0 z-30 flex items-center justify-between gap-4 bg-primary px-4 py-3 text-primary-foreground sm:px-6 lg:border-b lg:border-border lg:bg-card lg:text-card-foreground lg:px-8">
-					<Link href="/portal" className="lg:hidden">
+					<Link href="/portal" aria-label="Ateneo CODE home" className="flex items-center gap-2 lg:hidden">
 						{/* eslint-disable-next-line @next/next/no-img-element */}
-						<img src="/code-logo-full-white.png" alt="Ateneo CODE" className="h-7 w-auto" />
+						<img src="/code-falcon-white.png" alt="" className="h-8 w-auto" />
+						<span className="flex flex-col leading-none">
+							<span className="text-[0.55rem] font-medium uppercase tracking-[0.22em] text-primary-foreground/70">
+								Ateneo
+							</span>
+							<span className="font-heading text-lg font-bold leading-tight tracking-tight">CODE</span>
+						</span>
 					</Link>
 					<span className="hidden text-sm text-muted-foreground lg:inline lg:flex-1">
 						Welcome back, {member.displayName}
