@@ -33,6 +33,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 			Google({
 				clientId: required(config.AUTH_GOOGLE_ID, "AUTH_GOOGLE_ID"),
 				clientSecret: required(config.AUTH_GOOGLE_SECRET, "AUTH_GOOGLE_SECRET"),
+				// Safe here because signIn only allows active members with Google-verified email.
+				allowDangerousEmailAccountLinking: true,
 			}),
 		],
 		session: { strategy: "database" },
