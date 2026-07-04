@@ -1,8 +1,9 @@
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { signIn } from "@/auth";
 import { Button } from "@/components/ui/button";
+
+const LANDING_PAGE_URL = "https://sites.google.com/view/ateneo-code/landing";
 
 function GoogleIcon() {
 	return (
@@ -39,10 +40,10 @@ export default function SignInPage() {
 						</Button>
 					</form>
 				</section>
-				<Link href="/" className="mt-6 flex items-center justify-center gap-2 text-sm font-semibold text-[#90B4CC] hover:text-white">
+				<a href={LANDING_PAGE_URL} className="mt-6 flex items-center justify-center gap-2 text-sm font-semibold text-[#90B4CC] hover:text-white">
 					<ArrowLeft className="size-4" />
 					Back to the public site
-				</Link>
+				</a>
 			</div>
 		</main>
 	);
