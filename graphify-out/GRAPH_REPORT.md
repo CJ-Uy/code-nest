@@ -1,16 +1,16 @@
 # Graph Report - code-nest-main  (2026-07-05)
 
 ## Corpus Check
-- 193 files · ~284,982 words
+- 206 files · ~288,818 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2302 nodes · 3117 edges · 123 communities (86 shown, 37 thin omitted)
+- 2376 nodes · 3309 edges · 130 communities (92 shown, 38 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 36 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `89a0ef48`
+- Built from commit: `c789a8f8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -129,14 +129,21 @@
 - [[_COMMUNITY_Community 119|Community 119]]
 - [[_COMMUNITY_Community 120|Community 120]]
 - [[_COMMUNITY_Community 122|Community 122]]
+- [[_COMMUNITY_Community 123|Community 123]]
+- [[_COMMUNITY_Community 124|Community 124]]
+- [[_COMMUNITY_Community 125|Community 125]]
+- [[_COMMUNITY_Community 126|Community 126]]
+- [[_COMMUNITY_Community 127|Community 127]]
+- [[_COMMUNITY_Community 128|Community 128]]
+- [[_COMMUNITY_Community 129|Community 129]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `getRepositories()` - 39 edges
-2. `getAppConfig()` - 35 edges
-3. `requireActor()` - 30 edges
-4. `scripts` - 29 edges
-5. `can()` - 20 edges
-6. `cn()` - 19 edges
+1. `cn()` - 47 edges
+2. `getRepositories()` - 44 edges
+3. `getAppConfig()` - 35 edges
+4. `requireActor()` - 33 edges
+5. `scripts` - 29 edges
+6. `can()` - 20 edges
 7. `createDrizzleRepositories()` - 18 edges
 8. `createSharedRepositories()` - 17 edges
 9. `compilerOptions` - 17 edges
@@ -165,19 +172,19 @@
 - **Shared Dev Worker Migrate + Deploy + Reseed Flow** — code_portal_master_plan_dev_worker_lifecycle, migrations_db_migrate_dev, commands_deploy_dev, secrets_and_env_token_rotation [EXTRACTED 0.85]
 - **Drizzle Migration Pipeline (generate to apply per target)** — migrations_drizzle_schema, migrations_db_generate, migrations_db_migrate_local, migrations_db_migrate_dev, migrations_db_migrate_prod [EXTRACTED 0.85]
 
-## Communities (123 total, 37 thin omitted)
+## Communities (130 total, 38 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.00
 Nodes (939): AbortController, AgentMemoryGetSummaryOptions, AgentMemoryGetSummaryResponse, AgentMemoryIncomingMemory, AgentMemoryIngestOptions, AgentMemoryListMemoriesOptions, AgentMemoryListMemoriesResult, AgentMemoryMemory (+931 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.31
-Nodes (6): AdminLayout(), getActor(), hasAnyAdminScope(), signOutAction(), initialsFrom(), PortalLayout()
+Cohesion: 0.23
+Nodes (10): AdminLayout(), getActor(), hasAnyAdminScope(), idSchema, markAllNotificationsReadAction(), markNotificationReadAction(), NotificationsPage(), signOutAction() (+2 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.08
-Nodes (11): adminQueue, events, links, ModuleId, modules, resources, views, Select (+3 more)
+Nodes (14): adminQueue, events, links, ModuleId, modules, resources, views, Select (+6 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.07
@@ -345,7 +352,7 @@ Nodes (3): link_daily_stats Rollup, runInBackground() (ctx.waitUntil wrapper), /
 
 ### Community 80 - "Community 80"
 Cohesion: 0.08
-Nodes (34): announcements, articles, articleSections, consultancyTeams, sharedDevTokens, surveyAssignments, surveyQuestions, surveys (+26 more)
+Nodes (35): announcements, articles, articleSections, consultancyTeams, reservedSlugs, sharedDevTokens, surveyAssignments, surveyQuestions (+27 more)
 
 ### Community 81 - "Community 81"
 Cohesion: 0.06
@@ -353,27 +360,27 @@ Nodes (35): 10. Security Considerations, 11. Explicitly Deferred (recorded so th
 
 ### Community 82 - "Community 82"
 Cohesion: 0.06
-Nodes (32): AnnouncementAudienceKind, articleAcl, articleComponents, ArticleConfidentiality, ArticleKind, articleQuestions, articleRefs, articleRelated (+24 more)
+Nodes (31): AnnouncementAudienceKind, articleAcl, articleComponents, ArticleConfidentiality, ArticleKind, articleQuestions, articleRefs, articleRelated (+23 more)
 
 ### Community 83 - "Community 83"
-Cohesion: 0.05
-Nodes (54): D1DatabaseAdapter, LocalDatabase, LocalSqliteDatabaseAdapter, SharedApiDatabaseAdapter, members, navPins, CreateMemberInput, DatabaseAdapter (+46 more)
+Cohesion: 0.10
+Nodes (30): AnnouncementsRepository, createAnnouncementsRepository(), ArticlesRepository, createArticlesRepository(), createAuditRepository(), CalendarRepository, createCalendarRepository(), createEventsRepository() (+22 more)
 
 ### Community 84 - "Community 84"
 Cohesion: 0.09
 Nodes (13): formatBucket(), LinksWorkspace(), LinksWorkspaceProps, LinkView, ShortLinkCell(), SortKey, SortState, StatsBlock() (+5 more)
 
 ### Community 85 - "Community 85"
-Cohesion: 0.06
-Nodes (46): GET(), mocks, reservedSlugs, escapeHtml(), isCrawlerUserAgent(), renderPreviewHtml(), deviceBucket(), isValidDestinationUrl() (+38 more)
+Cohesion: 0.11
+Nodes (24): isValidDestinationUrl(), isValidSlugFormat(), normalizeSlug(), RESERVED_SLUG_DEFAULTS, CreateLinkInput, DEFAULT_QR_STYLE, enrichLink(), LinkDb (+16 more)
 
 ### Community 86 - "Community 86"
-Cohesion: 0.17
-Nodes (16): requireActor(), can(), createLinkAction(), LinksPage(), MemberListPage(), NavPinsManager(), NavPinsAdminPage(), AdminEntry (+8 more)
+Cohesion: 0.16
+Nodes (23): requireActor(), can(), getRepositories(), createLinkAction(), LinksPage(), inviteMemberAction(), inviteSchema, statusSchema (+15 more)
 
 ### Community 87 - "Community 87"
-Cohesion: 0.13
-Nodes (20): publicArticles, publicResources, createNavPinAction(), deleteNavPinAction(), parsePin(), pinSchema, saveNavPinsAction(), updateNavPinAction() (+12 more)
+Cohesion: 0.12
+Nodes (18): MemberCodeCard(), encodeMemberCode(), publicArticles, publicResources, iconLabel(), IconPicker(), NavPin, NavPinsManager() (+10 more)
 
 ### Community 88 - "Community 88"
 Cohesion: 0.20
@@ -416,44 +423,44 @@ Cohesion: 0.50
 Nodes (3): Auth Architecture Notes, D1 Schema Inventory, Phase 0 Middleware Spike
 
 ### Community 98 - "Community 98"
-Cohesion: 0.22
-Nodes (9): PermissionAction, InternalOperation, operation(), operationAuthSchema, sharedDevModeSchema, memberOutputSchema, membersContract, uploadsContract (+1 more)
+Cohesion: 0.11
+Nodes (19): PermissionAction, InternalOperation, operation(), operationAuthSchema, sharedDevModeSchema, createLinkInputSchema, linkListItemSchema, linkOutputSchema (+11 more)
 
 ### Community 99 - "Community 99"
 Cohesion: 0.83
 Nodes (3): ensureDirectoryLink(), targetFor(), walkSource()
 
 ### Community 100 - "Community 100"
-Cohesion: 0.20
-Nodes (12): cn(), LinkDialog(), SortHeader(), Avatar(), AvatarProps, initials(), Badge(), BadgeProps (+4 more)
+Cohesion: 0.14
+Nodes (17): cn(), LinkDialog(), SortHeader(), EmptyState(), EmptyStateProps, MemberAvatar(), MemberAvatarProps, Avatar() (+9 more)
 
 ### Community 101 - "Community 101"
 Cohesion: 0.50
 Nodes (3): Runtime Shape, Setup Overview, Stack
 
 ### Community 103 - "Community 103"
-Cohesion: 0.26
+Cohesion: 0.24
 Nodes (4): AdminGroupIndex(), visibleGroups(), AdminHomePage(), AdminIntro()
 
 ### Community 104 - "Community 104"
-Cohesion: 0.13
-Nodes (15): createLinkInputSchema, linkListItemSchema, linkOutputSchema, linkOwnerSchema, linksContract, linkStatsOutputSchema, pageInput, qrStyleInputSchema (+7 more)
+Cohesion: 0.27
+Nodes (8): linksContract, createLinksHandlers(), fail(), LinksHandlerDependencies, Repositories, linkErrorStatus(), Context, GET()
 
 ### Community 113 - "Community 113"
-Cohesion: 0.25
-Nodes (7): AdminGroup, adminGroups, adminHeading(), AdminPage, AdminPermission, crumbFor(), pageVisible()
+Cohesion: 0.29
+Nodes (5): AdminGroup, adminGroups, AdminPage, AdminPermission, pageVisible()
 
 ### Community 114 - "Community 114"
 Cohesion: 0.28
 Nodes (7): Bucket, BucketBars(), ClicksOverTime(), DONUT_PALETTE, DonutChart(), maxCount(), Point
 
 ### Community 115 - "Community 115"
-Cohesion: 0.33
-Nodes (3): Button, ButtonProps, buttonVariants
+Cohesion: 0.13
+Nodes (21): adminHeading(), crumbFor(), Breadcrumb(), adminNav, NavItem, primaryNav, secondaryNav, navPinIconFor() (+13 more)
 
 ### Community 116 - "Community 116"
-Cohesion: 0.33
-Nodes (5): linkDailyStats, shortLinks, createLinksRepository(), db, links
+Cohesion: 0.40
+Nodes (4): linkDailyStats, shortLinks, db, links
 
 ### Community 117 - "Community 117"
 Cohesion: 0.50
@@ -461,38 +468,62 @@ Nodes (4): chunk(), insertChunks(), main(), seedLocal()
 
 ### Community 118 - "Community 118"
 Cohesion: 0.06
-Nodes (52): LocalFileStorageAdapter, R2BindingStorageAdapter, R2S3StorageAdapter, SharedApiStorageAdapter, getDb(), getDatabaseAdapter(), getRepositories(), crsEvents (+44 more)
+Nodes (48): LocalFileStorageAdapter, R2BindingStorageAdapter, R2S3StorageAdapter, SharedApiStorageAdapter, getDb(), getDatabaseAdapter(), crsEvents, GET() (+40 more)
 
 ### Community 119 - "Community 119"
-Cohesion: 0.46
-Nodes (6): Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+Cohesion: 0.29
+Nodes (9): Badge(), BadgeProps, badgeVariants, Table, TableBody, TableCell, TableHead, TableHeader (+1 more)
 
 ### Community 120 - "Community 120"
-Cohesion: 0.40
-Nodes (4): inviteMemberAction(), inviteSchema, statusSchema, updateMemberStatusAction()
+Cohesion: 0.22
+Nodes (9): LocalDatabase, LocalSqliteDatabaseAdapter, SharedApiDatabaseAdapter, members, CreateMemberInput, DatabaseAdapter, Member, NewMember (+1 more)
 
 ### Community 122 - "Community 122"
+Cohesion: 0.13
+Nodes (19): Actor, normalizeRoleKey(), normalizeRoleKeys(), permissionActions, RoleKey, rolePermissions, auditLogs, MemberStatus (+11 more)
+
+### Community 123 - "Community 123"
+Cohesion: 0.13
+Nodes (13): NotificationBell(), NotificationBellProps, DropdownMenu(), DropdownMenuCheckboxItem(), DropdownMenuContent(), DropdownMenuItem(), DropdownMenuLabel(), DropdownMenuRadioItem() (+5 more)
+
+### Community 124 - "Community 124"
+Cohesion: 0.22
+Nodes (10): GET(), mocks, classifyShortLinkRequest(), createShortLinkHandler(), DeviceBucket, parseRedirectDestination(), PublicShortLink, ReferrerBucket (+2 more)
+
+### Community 125 - "Community 125"
 Cohesion: 0.16
-Nodes (15): Actor, normalizeRoleKey(), normalizeRoleKeys(), permissionActions, RoleKey, rolePermissions, auditLogs, MemberStatus (+7 more)
+Nodes (11): navPins, UpdateMemberProfileInput, AuditRecordInput, AuditRepository, MemberDb, MemberInsert, MembersRepository, NavPin (+3 more)
+
+### Community 126 - "Community 126"
+Cohesion: 0.19
+Nodes (10): notifications, createId(), createObjectKey(), Db, FeedItem, NotificationKind, NotificationRow, NotificationsRepository (+2 more)
+
+### Community 127 - "Community 127"
+Cohesion: 0.39
+Nodes (7): escapeHtml(), isCrawlerUserAgent(), renderPreviewHtml(), deviceBucket(), buildRedirectResponse(), RedirectDependencies, ResolvedLink
+
+### Community 128 - "Community 128"
+Cohesion: 0.33
+Nodes (5): ensurePage(), pageLimit(), PageRequest, PageResult, RepositoryContext
 
 ## Knowledge Gaps
-- **1396 isolated node(s):** `GlobalProps`, `DevEnv`, `DOMException`, `WorkerGlobalScopeEventMap`, `Console` (+1391 more)
+- **1406 isolated node(s):** `GlobalProps`, `DevEnv`, `DOMException`, `WorkerGlobalScopeEventMap`, `Console` (+1401 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **37 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **38 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Cloudflare Runtime` connect `Community 4` to `Community 118`?**
-  _High betweenness centrality (0.024) - this node is a cross-community bridge._
+  _High betweenness centrality (0.014) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `getAppConfig()` (e.g. with `.request()` and `.request()`) actually correct?**
   _`getAppConfig()` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `GlobalProps`, `DevEnv`, `DOMException` to the rest of the system?**
-  _1405 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1415 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.002127659574468085 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.08307692307692308 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07586206896551724 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
   _Cohesion score 0.06881720430107527 - nodes in this community are weakly interconnected._
 - **Should `Community 4` be split into smaller, more focused modules?**

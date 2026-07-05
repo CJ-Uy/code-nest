@@ -32,7 +32,7 @@ export function createDrizzleRepositories(db: DrizzleDb & MemberDb & LinkDb) {
 		points: createPointsRepository(),
 		surveys: createSurveysRepository(),
 		announcements: createAnnouncementsRepository(),
-		notifications: createNotificationsRepository(),
+		notifications: createNotificationsRepository(db),
 		calendar: createCalendarRepository(),
 		audit,
 		roles: createRolesRepository(db),
@@ -65,7 +65,16 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 		points: createPointsRepository(),
 		surveys: createSurveysRepository(),
 		announcements: createAnnouncementsRepository(),
-		notifications: createNotificationsRepository(),
+		notifications: {
+			listFeed: async () => [],
+			unreadCount: async () => 0,
+			markRead: async () => {
+				throw new Error("Notifications are unavailable in shared mode.");
+			},
+			markAllRead: async () => {
+				throw new Error("Notifications are unavailable in shared mode.");
+			},
+		},
 		calendar: createCalendarRepository(),
 		audit: createAuditRepository(),
 		roles: createUnavailableRolesRepository(),
