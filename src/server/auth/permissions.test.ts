@@ -1,16 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { can, type Actor, type PermissionAction, type RoleKey } from "./permissions";
+import { can, normalizeRoleKey, type Actor, type PermissionAction, type RoleKey } from "./permissions";
 
 const cases: Array<{ role: RoleKey; allowed: PermissionAction[] }> = [
 	{ role: "member", allowed: [] },
-	{ role: "calendar", allowed: [] },
+	{ role: "events", allowed: ["event:moderate", "event:points"] },
 	{ role: "link", allowed: ["link:moderate"] },
-	{ role: "retention", allowed: ["event:approve", "points:assign", "retention:record"] },
+	{ role: "retention", allowed: ["points:assign", "retention:record"] },
 	{ role: "member_admin", allowed: ["member:manage", "role:assign", "roster:manage", "nav:configure"] },
 ];
 
 const actions: PermissionAction[] = [
-	"event:approve",
+	"event:moderate",
+	"event:points",
 	"points:assign",
 	"retention:record",
 	"link:moderate",
@@ -36,5 +37,9 @@ describe("permissions", () => {
 		for (const action of actions) {
 			expect(can(actor, action)).toBe(allowed.includes(action));
 		}
+	});
+
+	it("aliases calendar role keys to events", () => {
+		expect(normalizeRoleKey("calendar")).toBe("events");
 	});
 });

@@ -13,7 +13,7 @@ export async function GET(request: Request) {
 	if (!actor) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 	try {
 		const repositories = await getRepositories();
-		const events = await repositories.events.listApproved(actor, { limit: 50 });
+		const events = await repositories.events.listPublished(actor, { limit: 50 });
 		return NextResponse.json({ events });
 	} catch {
 		return NextResponse.json({ error: "Not authorized." }, { status: 403 });

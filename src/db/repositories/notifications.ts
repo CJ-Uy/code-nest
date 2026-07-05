@@ -12,7 +12,7 @@ import type * as schema from "@/db/schema";
 // is structurally compatible at runtime, matching the existing members repo.
 type Db = DrizzleD1Database<typeof schema>;
 
-export type NotificationKind = "event_approved" | "survey_assigned" | "forum_reply" | "points_awarded";
+export type NotificationKind = "event_approved" | "event_invite" | "survey_assigned" | "forum_reply" | "points_awarded";
 
 export type FeedItem = {
 	id: string;

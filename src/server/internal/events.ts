@@ -5,7 +5,6 @@ import { createAuditRepository } from "@/db/repositories/audit";
 import { createEventForumRepository } from "@/db/repositories/event-forum";
 import { createEventMediaRepository } from "@/db/repositories/event-media";
 import { createEventsRepository } from "@/db/repositories/events";
-import { createRetentionRepository } from "@/db/repositories/retention";
 import type { DeployEnv } from "@/server/env";
 import { getInternalCorsHeaders } from "./cors";
 import { resolveSharedActor } from "./shared-actor";
@@ -18,8 +17,7 @@ type EventsInternalDependencies = {
 
 export function createEventsInternalHandlers({ db, deployEnv, allowedOrigins = [] }: EventsInternalDependencies) {
 	const audit = createAuditRepository(db);
-	const retention = createRetentionRepository(db, audit);
-	const repository = createEventsRepository(db, audit, retention);
+	const repository = createEventsRepository(db, audit);
 	const forum = createEventForumRepository(db, audit);
 	const mediaRepository = createEventMediaRepository(db, audit);
 
@@ -48,15 +46,15 @@ export function createEventsInternalHandlers({ db, deployEnv, allowedOrigins = [
 
 			try {
 				const url = new URL(request.url);
-				const op = url.searchParams.get("op") ?? "listApproved";
+				const op = url.searchParams.get("op") ?? "listPublished";
 
-				if (request.method === "GET" && op === "listApproved") {
-					const input = eventsContract.listApproved.input.parse({
+				if (request.method === "GET" && op === "listPublished") {
+					const input = eventsContract.listPublished.input.parse({
 						limit: url.searchParams.get("limit") ? Number(url.searchParams.get("limit")) : undefined,
 						offset: url.searchParams.get("offset") ? Number(url.searchParams.get("offset")) : undefined,
 					});
-					const events = await repository.listApproved(actor, input);
-					return Response.json(eventsContract.listApproved.output.parse({ events }), { headers: responseHeaders });
+					const events = await repository.listPublished(actor, input);
+					return Response.json(eventsContract.listPublished.output.parse({ events }), { headers: responseHeaders });
 				}
 
 				if (request.method === "GET" && op === "searchMembers") {
@@ -73,6 +71,18 @@ export function createEventsInternalHandlers({ db, deployEnv, allowedOrigins = [
 					const input = eventsContract.listAttendance.input.parse({ eventId: url.searchParams.get("eventId") });
 					const attendance = await repository.listAttendance(actor, input.eventId);
 					return Response.json(eventsContract.listAttendance.output.parse({ attendance }), { headers: responseHeaders });
+				}
+
+				if (request.method === "GET" && op === "listInvites") {
+					const input = eventsContract.listInvites.input.parse({ eventId: url.searchParams.get("eventId") });
+					const invites = await repository.listInvites(actor, input.eventId);
+					return Response.json(eventsContract.listInvites.output.parse({ invites }), { headers: responseHeaders });
+				}
+
+				if (request.method === "GET" && op === "listStaff") {
+					const input = eventsContract.listStaff.input.parse({ eventId: url.searchParams.get("eventId") });
+					const staff = await repository.listStaff(actor, input.eventId);
+					return Response.json(eventsContract.listStaff.output.parse({ staff }), { headers: responseHeaders });
 				}
 
 				if (request.method === "GET" && op === "listForumPosts") {
@@ -104,11 +114,6 @@ export function createEventsInternalHandlers({ db, deployEnv, allowedOrigins = [
 					}
 					const body = await readBody(request);
 					const bodyWithParams = body && typeof body === "object" ? { ...body, ...Object.fromEntries(url.searchParams) } : Object.fromEntries(url.searchParams);
-					if (op === "approve") {
-						const input = eventsContract.approve.input.parse(bodyWithParams);
-						const event = await repository.approve(actor, input.eventId);
-						return Response.json(eventsContract.approve.output.parse({ event }), { headers: responseHeaders });
-					}
 					if (op === "rsvp") {
 						const input = eventsContract.rsvp.input.parse(bodyWithParams);
 						const result = await repository.setRsvp(actor, input);

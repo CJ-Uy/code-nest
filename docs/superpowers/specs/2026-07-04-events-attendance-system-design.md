@@ -1,7 +1,7 @@
 # Events & Attendance System — Design Spec
 
 **Date:** 2026-07-04
-**Status:** Draft for adversarial review (Codex) then planning
+**Status:** Adversarially reviewed (Codex 2026-07-05); 11 findings folded in (§11). Planning.
 **Branch:** beta
 **Related:** `2026-07-04-admin-console-redesign-design.md` (defines the Events org role placeholder)
 
@@ -89,11 +89,19 @@ old owner to `admin` (audited).
   (`endsAt` no longer nullable in input). Event is visible immediately.
 - `listApproved` → **`listPublished`**: returns all non-deleted events (no status filter). Keep the
   op name stable if cheaper, but drop the approved-only filter.
-- Delete: new `delete` op — allowed for the owner or `event:moderate`. Hard delete cascades
-  attendance/board/media/staff/invites (all FKs already `on delete cascade`).
-- `approve`/`reject` ops and the `status` column: **retired.** Leave the column in place (default
-  treated as published) to avoid a destructive migration; stop reading it for visibility. A later
-  cleanup migration can drop it.
+- Delete: new `delete` op — allowed for the owner or `event:moderate`. **⚠ Corrected (review #1):**
+  attendance/board/media/staff/invites FKs cascade, but `retention_records.event_id` is
+  `onDelete: "set null"` ([schema.ts:312](../../../src/db/schema.ts)) — a hard delete would **orphan
+  earned points** (they stay in `SUM(points)` with a null event link). Decision: **soft-delete**
+  events (add `deletedAt`, filter it out of `listPublished`); attendance/points/history survive and
+  stay attributable. A hard "purge" stays CRS-admin-only and must delete the `event_attendance`
+  retention rows in the same tx.
+- `approve`/`reject` ops and the `status` column: **retired.** Leave the column in place to avoid a
+  destructive migration, but **⚠ Corrected (review #2):** every read path currently gates on
+  `status == "approved"` (`create` writes `pending`, and `listApproved`/`getById`/`rsvp`/`scan`/
+  forum/media all filter approved). "Leave ops unchanged" would make member events invisible.
+  Decision: in the same change, **strip the approved-only checks everywhere** (create writes with no
+  pending gate) — not just rename `listApproved`. A later cleanup migration drops the column.
 
 ## 3. Check-in window & scanning
 
@@ -120,9 +128,17 @@ deriving points at read time, which would rewrite every `SUM(points)` path — l
   `UPDATE retention_records SET points = ? WHERE event_id = ? AND source = 'event_attendance'`,
   then batch-notifies attendees ("This event is now worth N points"). This makes point changes
   retroactive with O(1) SQL and **zero changes to the read paths**.
-- **Requires** `retentionRecords` to carry `event_id` so the re-value UPDATE can target it.
-  **Verify during planning** whether the column exists; if not, add it (migration + backfill from
-  existing `event_attendance` rows via their linkage). This is the single biggest planning risk.
+- **Confirmed (review):** `retention_records.event_id` **already exists**
+  ([schema.ts:312](../../../src/db/schema.ts), index :324). §4 is unblocked — no migration/backfill
+  needed for the re-value UPDATE. (This retires the "single biggest risk" open question.)
+- **⚠ Race (review #3):** `recordScan` reads `event.points`, inserts attendance, then inserts the
+  retention row — a concurrent `setPoints` UPDATE can land between and miss the late row (stale
+  value). Fix: do the attendance-insert + retention-insert **in one transaction**, reading
+  `crs_events.points` inside that tx; `setPoints` updates the event and re-values in one tx too.
+- **⚠ null vs 0 (review #7):** define **`null` points = "unset — attendance only, worth nothing
+  yet"** and **`0` = "explicitly worth zero."** Summaries already `coalesce(sum,0)`, but `count(*)`
+  counts null-point rows as attendance (correct). Suppress the "now worth N points" notification when
+  the value is `null`.
 
 ## 5. Invites
 
@@ -166,11 +182,19 @@ Internal-contract changes ⇒ **update the shared-dev Worker path** (`pnpm db:mi
 
 ## 8. Schema migrations (all gated behind explicit approval + `wrangler` command)
 
-1. `crs_events.ends_at` → `NOT NULL` (backfill existing nulls first, e.g. `starts_at + 3h`).
-2. New `event_staff` table.
-3. New `event_invites` table.
-4. `retention_records.event_id` — add if missing (§4), backfill, index.
-5. (Deferred) drop `crs_events.status` once nothing reads it.
+1. `crs_events.ends_at` → `NOT NULL`. **⚠ Corrected (review #4):** do **not** blind-backfill
+   `starts_at + 3h` (would silently close real multi-hour/all-day events). Produce an **audited
+   backfill list** first, validate `ends_at > starts_at`, and set the app-input default so new
+   events always carry an end time. Only NOT-NULL after the audited backfill lands.
+2. New `event_staff` table (+ index on `memberId`). Guard: **no owner row in `event_staff`** — owner
+   is `createdBy` only (review #6).
+3. New `event_invites` table. **⚠ (review #8):** add `index(memberId, invitedAt)` for the member
+   "Invited" surface; inserts use on-conflict-do-nothing.
+4. Add `crs_events.deletedAt` (soft-delete, review #1). `retention_records.event_id` already exists
+   — **no migration needed** for §4.
+5. Role rename `calendar` → `events` needs a data migration for existing `roles`/`member_roles`
+   rows + a temporary `calendar → events` alias so live sessions don't strand (review #9).
+6. (Deferred) drop `crs_events.status` once nothing reads it.
 
 No production or dev DB is touched without showing the exact `pnpm exec wrangler` command and
 waiting for approval.
@@ -188,10 +212,28 @@ waiting for approval.
 - **Instant publish:** created event appears in `listPublished` immediately; delete removes it.
 - Mirror existing `events.test.ts` / integration-test style; keep parity in shared-dev adapter.
 
-## 10. Open questions (resolve in review/planning)
+## 10. Open questions (resolved by adversarial review 2026-07-05)
 
-- Does `retention_records` already have `event_id`? (Blocks §4 re-value UPDATE if not.)
-- Should the "Invited" filter live on the calendar, or is a bell notification enough for v1?
-- Keep `event.type` (official/casual/birthday) as a member-set field, or CRS-only? Default: member
-  sets a type on create; it's cosmetic and does not affect points (points are the CRS lever).
-- Backfill value for existing null `ends_at` rows before the NOT NULL migration.
+- ~~Does `retention_records` have `event_id`?~~ **Yes** ([schema.ts:312](../../../src/db/schema.ts) + index :324). §4 unblocked.
+- ~~Keep `event.type` member-set or CRS-only?~~ **Member-set.** Already exists as create input
+  ([schema.ts:175](../../../src/db/schema.ts), contract :56); cosmetic, does not affect points.
+- **"Invited" surface:** bell notification for v1; a calendar "Invited" filter is a fast-follow, not blocking.
+- ~~Backfill for null `ends_at`?~~ **Audited list, not blind `+3h`** — see §8.1 correction.
+
+## 11. Adversarial-review resolutions (Codex, 2026-07-05) — locked
+
+Reviewed against real code; 11 findings, all folded in. Two were ship-blockers:
+
+| # | Sev | Where | Resolution |
+|---|-----|-------|------------|
+| 1 | crit | §2 delete | `retention_records.event_id` is `set null`, not cascade → hard delete orphans points. **Soft-delete** (`deletedAt`); CRS purge deletes retention rows in-tx. |
+| 2 | crit | §2/§7 | `status=="approved"` gates every read/write path. **Strip approved checks everywhere**, not just rename `listApproved`; `create` writes with no pending gate. |
+| 3 | high | §4 | scan↔setPoints race → wrap attendance+retention insert in one tx reading current `crs_events.points`; `setPoints` re-values in one tx. |
+| 4 | high | §8.1 | `ends_at` NOT NULL: **audited backfill**, validate `ends_at>starts_at`, no blind `+3h`. |
+| 5 | high | §7 | Every new write op must set `sharedDev: "deny"` (`update/delete/setPoints/addStaff/removeStaff/transferOwnership/invite`); only reads may allow. |
+| 6 | med | §1 | No owner row in `event_staff`; transfer-ownership + old-owner→admin demotion in one tx; can't remove final owner. |
+| 7 | med | §4 | `null` points = "unset/attendance only"; `0` = "explicit zero"; suppress "worth N" notice when null. |
+| 8 | med | §5 | Invites: `index(memberId, invitedAt)`; insert-on-conflict-do-nothing; notify only new rows; cap batch. |
+| 9 | med | §6 | Role rename `calendar→events` needs roles/member_roles migration + temporary alias; retention loses dead `event:approve`. |
+| 10 | med | §7 | `searchMembers` leaks member directory (email/name) to plain scanners → require owner/admin for broad search, scanners do exact QR/id lookup only. |
+| 11 | low | §9 | Add tests: hard/soft-delete retention effect, concurrent scan/setPoints, status-free forum/media/rsvp, sharedDev-deny on every writer. |

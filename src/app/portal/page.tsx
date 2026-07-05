@@ -37,10 +37,10 @@ export default async function PortalOverviewPage() {
 	const today = new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric" }).format(new Date());
 
 	const canScanAttendance = can(actor, "points:assign");
-	let scanEvent: Awaited<ReturnType<typeof repositories.events.listApproved>>[number] | null = null;
+	let scanEvent: Awaited<ReturnType<typeof repositories.events.listPublished>>[number] | null = null;
 	if (canScanAttendance) {
 		try {
-			const [event] = await repositories.events.listApproved(actor, { limit: 1 });
+			const [event] = await repositories.events.listPublished(actor, { limit: 1 });
 			scanEvent = event ?? null;
 		} catch {
 			scanEvent = null;

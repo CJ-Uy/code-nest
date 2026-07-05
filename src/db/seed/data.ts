@@ -28,9 +28,9 @@ const later = new Date("2026-07-10T10:00:00.000Z");
 
 export const seedRoles: InferInsertModel<typeof roles>[] = [
 	{ id: "role_super", key: "super", label: "Super admin", description: "Full portal access.", kind: "admin" },
-	{ id: "role_calendar", key: "calendar", label: "Calendar", description: "Manages shared dates.", kind: "admin" },
+	{ id: "role_events", key: "events", label: "Events", description: "Moderates events and attendance points.", kind: "admin" },
 	{ id: "role_link", key: "link", label: "Links", description: "Moderates short links.", kind: "admin" },
-	{ id: "role_retention", key: "retention", label: "Retention", description: "Approves events and logs retention records.", kind: "admin" },
+	{ id: "role_retention", key: "retention", label: "Retention", description: "Logs retention records.", kind: "admin" },
 	{ id: "role_member_admin", key: "member_admin", label: "Member admin", description: "Manages member profiles, roles, roster, and nav pins.", kind: "admin" },
 	{ id: "role_publishing", key: "publishing", label: "Publishing", description: "Manages announcements and the content library.", kind: "admin" },
 ];

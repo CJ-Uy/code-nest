@@ -9,7 +9,7 @@ import type * as schema from "../schema";
 type Db = DrizzleD1Database<typeof schema>;
 
 /** Role keys that exist but grant nothing yet: shown disabled, never assignable. */
-const INACTIVE_ROLE_KEYS: RoleKey[] = ["calendar"];
+const INACTIVE_ROLE_KEYS: RoleKey[] = [];
 /** The implicit baseline role: never surfaced or assignable on the Roles page. */
 const NON_ASSIGNABLE: RoleKey[] = ["member"];
 

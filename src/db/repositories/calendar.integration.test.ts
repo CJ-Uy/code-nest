@@ -48,12 +48,12 @@ describe("calendar repository on D1", () => {
 			.run();
 	});
 
-	it("includes approved in-window events and excludes pending and out-of-window ones", async () => {
+	it("includes non-deleted in-window events and excludes out-of-window ones", async () => {
 		const repo = createCalendarRepository(db());
 		const items = await repo.getMonth(memberActor, { year: 2026, month: 6 });
 		const eventIds = items.filter((i) => i.source === "event").map((i) => i.eventId);
 		expect(eventIds).toContain("evt_in");
-		expect(eventIds).not.toContain("evt_pending");
+		expect(eventIds).toContain("evt_pending");
 		expect(eventIds).not.toContain("evt_out");
 	});
 
@@ -92,7 +92,8 @@ describe("calendar repository on D1", () => {
 		expect(detail?.iAttended).toBe(true);
 	});
 
-	it("returns null event detail for a pending (non-approved) event", async () => {
+	it("returns null event detail for a deleted event", async () => {
+		await env.DB.prepare("UPDATE crs_events SET deleted_at = ? WHERE id = ?").bind(Date.now(), "evt_pending").run();
 		const repo = createCalendarRepository(db());
 		expect(await repo.getEvent(memberActor, "evt_pending")).toBeNull();
 	});

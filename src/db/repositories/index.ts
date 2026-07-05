@@ -41,7 +41,7 @@ export function createDrizzleRepositories(db: DrizzleDb) {
 		members: createMembersRepository(db as unknown as MemberDb & AuditDb, audit),
 		sessions: createSessionsRepository(),
 		links: createLinksRepository(db as unknown as LinkDb, audit),
-		events: createEventsRepository(db, audit, retention),
+		events: createEventsRepository(db, audit),
 		eventMedia: createEventMediaRepository(db, audit),
 		eventForum: createEventForumRepository(db, audit),
 		retention,

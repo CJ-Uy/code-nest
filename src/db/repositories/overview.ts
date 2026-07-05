@@ -69,7 +69,7 @@ export function createOverviewRepository(db: Db): OverviewRepository {
 			const [eventRow] = await db
 				.select({ count: sql<number>`count(*)` })
 				.from(crsEvents)
-				.where(and(eq(crsEvents.status, "approved"), gt(crsEvents.startsAt, now)));
+				.where(and(isNull(crsEvents.deletedAt), gt(crsEvents.startsAt, now)));
 
 			const [linkRow] = await db
 				.select({ total: sql<number>`coalesce(sum(${linkDailyStats.count}), 0)` })

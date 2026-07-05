@@ -1,4 +1,4 @@
-import { and, count, eq, gte, lt } from "drizzle-orm";
+import { and, count, eq, gte, isNull, lt } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import * as schema from "@/db/schema";
 import { crsAttendance, crsEvents, eventMedia, eventRsvps, members, terms } from "@/db/schema";
@@ -52,7 +52,7 @@ export function createCalendarRepository(db: Db): CalendarRepository {
 					endsAt: crsEvents.endsAt,
 				})
 				.from(crsEvents)
-				.where(and(eq(crsEvents.status, "approved"), gte(crsEvents.startsAt, start), lt(crsEvents.startsAt, end)));
+				.where(and(isNull(crsEvents.deletedAt), gte(crsEvents.startsAt, start), lt(crsEvents.startsAt, end)));
 			for (const event of events) {
 				items.push({
 					id: `event:${event.id}`,
@@ -109,7 +109,7 @@ export function createCalendarRepository(db: Db): CalendarRepository {
 
 		async getEvent(actor, eventId) {
 			const [event] = await db.select().from(crsEvents).where(eq(crsEvents.id, eventId)).limit(1);
-			if (!event || event.status !== "approved") return null;
+			if (!event || event.deletedAt) return null;
 
 			const [myRsvp] = await db
 				.select({ state: eventRsvps.state })

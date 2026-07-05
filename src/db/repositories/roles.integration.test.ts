@@ -30,7 +30,7 @@ describe("roles + member search on D1", () => {
 			["role_super", "super", "Overall Admin"],
 			["role_member_admin", "member_admin", "Member Admin"],
 			["role_publishing", "publishing", "Publishing"],
-			["role_calendar", "calendar", "Events"],
+			["role_events", "events", "Events"],
 			["role_member", "member", "Member"],
 		];
 		for (const [id, key, label] of roleSeed) {
@@ -67,11 +67,11 @@ describe("roles + member search on D1", () => {
 		await expect(members.search(plain, "dela")).rejects.toThrow(/Not authorized/);
 	});
 
-	it("lists assignable roles (no member, calendar inactive) and reads keys", async () => {
+	it("lists assignable roles (no member, events active) and reads keys", async () => {
 		const { roles } = repos();
 		const list = await roles.listAssignableRoles(superActor);
 		expect(list.find((r) => r.key === "member")).toBeUndefined();
-		expect(list.find((r) => r.key === "calendar")?.assignable).toBe(false);
+		expect(list.find((r) => r.key === "events")?.assignable).toBe(true);
 		expect(await roles.getMemberRoleKeys(superActor, "m_plain")).toEqual(["publishing"]);
 		expect(roles.baseVersionOf(["publishing", "super"])).toBe("publishing|super");
 	});
@@ -93,6 +93,18 @@ describe("roles + member search on D1", () => {
 			baseVersion: base,
 		});
 		expect(res.roleKeys).toEqual(["publishing", "retention"]);
+	});
+
+	it("normalizes legacy calendar role rows to events", async () => {
+		await env.DB.prepare("INSERT INTO roles (id, key, label, description, kind) VALUES (?,?,?,?,?)")
+			.bind("role_calendar", "calendar", "Calendar", "Legacy calendar role", "system")
+			.run();
+		await env.DB.prepare("INSERT INTO member_roles (member_id, role_id, assigned_by) VALUES (?,?,?)")
+			.bind("m_juan", "role_calendar", "m_super")
+			.run();
+
+		const { roles } = repos();
+		expect(await roles.getMemberRoleKeys(superActor, "m_juan")).toEqual(["events"]);
 	});
 
 	it("listAdmins returns only members with a non-member role, plus their keys", async () => {
@@ -141,11 +153,11 @@ describe("roles + member search on D1", () => {
 		).rejects.toThrow(/Overall Admin/);
 	});
 
-	it("rejects assigning the inactive Events (calendar) placeholder role", async () => {
+	it("assigns the active Events role", async () => {
 		const { roles } = repos();
 		const base = roles.baseVersionOf(await roles.getMemberRoleKeys(superActor, "m_plain"));
 		await expect(
-			roles.saveMemberRoles(superActor, { memberId: "m_plain", desiredRoleKeys: ["publishing", "calendar"], baseVersion: base }),
-		).rejects.toThrow(/not assignable/);
+			roles.saveMemberRoles(superActor, { memberId: "m_plain", desiredRoleKeys: ["publishing", "events"], baseVersion: base }),
+		).resolves.toEqual({ roleKeys: ["events", "publishing"] });
 	});
 });

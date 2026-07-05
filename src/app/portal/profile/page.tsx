@@ -69,7 +69,8 @@ export default async function ProfilePage() {
 			</Card>
 
 			<div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-				<Card>
+				<MemberCodeCard memberId={actor.memberId} className="lg:order-last" />
+				<Card className="lg:order-first">
 					<CardHeader>
 						<CardTitle>Edit profile</CardTitle>
 						<CardDescription>Keep the member details used across the portal current.</CardDescription>
@@ -94,8 +95,6 @@ export default async function ProfilePage() {
 						</form>
 					</CardContent>
 				</Card>
-
-				<MemberCodeCard memberId={actor.memberId} />
 			</div>
 		</div>
 	);

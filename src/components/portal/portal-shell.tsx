@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createElement, useState } from "react";
-import { ChevronLeft, ChevronRight, LogOut, Plus } from "lucide-react";
+import { CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, LogOut, Plus } from "lucide-react";
 import { MemberCodeCard } from "@/components/member-code-card";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -277,13 +277,41 @@ export function PortalShell({ member, memberId, navPins, showAdmin, adminGroups,
 					className="max-h-[82vh] gap-0 overflow-y-auto rounded-t-2xl pb-[max(1.5rem,env(safe-area-inset-bottom))]"
 				>
 					<span className="mx-auto mt-3 h-1 w-10 shrink-0 rounded-full bg-border" aria-hidden />
-					<SheetTitle className="px-5 pt-3 font-heading text-xl">Menu</SheetTitle>
+					<SheetTitle className="px-5 pt-3 font-heading text-xl">Quick actions</SheetTitle>
 
 					<div className="px-4 pt-4">
 						<MemberCodeCard memberId={memberId} />
 					</div>
 
+					<div className="grid grid-cols-2 gap-2 px-4 pt-3">
+						<SheetClose asChild>
+							<Link
+								href="/portal/calendar?create=1"
+								className="flex flex-col items-center gap-1.5 rounded-xl border border-border py-4 text-sm font-semibold transition-colors hover:bg-muted"
+							>
+								<span className="grid size-9 place-items-center rounded-lg bg-secondary text-accent">
+									<CalendarPlus className="size-5" />
+								</span>
+								Create event
+							</Link>
+						</SheetClose>
+						<SheetClose asChild>
+							<Link
+								href="/portal/calendar"
+								className="flex flex-col items-center gap-1.5 rounded-xl border border-border py-4 text-sm font-semibold transition-colors hover:bg-muted"
+							>
+								<span className="grid size-9 place-items-center rounded-lg bg-secondary text-accent">
+									<CalendarDays className="size-5" />
+								</span>
+								Calendar
+							</Link>
+						</SheetClose>
+					</div>
+
 					<nav className="flex flex-col px-2 pt-3" aria-label="More modules">
+						<p className="px-3 pb-1 pt-2 text-[0.6rem] font-semibold uppercase tracking-wider text-muted-foreground">
+							Go to
+						</p>
 						{inAdmin ? (
 							<>
 								<SheetClose asChild>

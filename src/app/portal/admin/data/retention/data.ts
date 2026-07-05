@@ -1,4 +1,4 @@
-import { desc, eq, inArray } from "drizzle-orm";
+import { desc, inArray, isNull } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { getDb } from "@/db/client";
 import * as schema from "@/db/schema";
@@ -29,7 +29,7 @@ export async function loadRetentionPickers(actor: Actor): Promise<{
 	const eventRows = await db
 		.select({ id: crsEvents.id, title: crsEvents.title })
 		.from(crsEvents)
-		.where(eq(crsEvents.status, "approved"))
+		.where(isNull(crsEvents.deletedAt))
 		.orderBy(desc(crsEvents.startsAt))
 		.limit(200);
 

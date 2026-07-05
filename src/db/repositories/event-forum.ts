@@ -46,7 +46,7 @@ export function createEventForumRepository(db: Db, audit: AuditRepository): Even
 	return {
 		async post(actor, input) {
 			const [event] = await db.select().from(crsEvents).where(eq(crsEvents.id, input.eventId)).limit(1);
-			if (!event || event.status !== "approved") throw new Error("Event not found.");
+			if (!event || event.deletedAt) throw new Error("Event not found.");
 			if (input.parentId) {
 				const [parent] = await db
 					.select({ eventId: eventForumPosts.eventId })

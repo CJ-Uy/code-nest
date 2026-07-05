@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { getRepositories } from "@/db";
 import { crsEvents } from "@/db/schema";
 import { getDb } from "@/db/client";
@@ -29,13 +29,13 @@ async function createHandlers() {
 		getActor: async () => getActor(),
 		storage: await getStorageAdapter(),
 		canPostEvent: async (actor, eventId) => {
-			if (!can(actor, "event:approve")) return false;
+			if (!can(actor, "event:moderate")) return false;
 			const [event] = await getDb()
 				.select()
 				.from(crsEvents)
-				.where(eq(crsEvents.id, eventId))
+				.where(and(eq(crsEvents.id, eventId), isNull(crsEvents.deletedAt)))
 				.limit(1);
-			return event?.status === "approved";
+			return Boolean(event);
 		},
 		canEditLink: async (actor, linkId) => {
 			const { links } = await getRepositories();

@@ -1,8 +1,9 @@
-export const roleKeys = ["super", "member", "calendar", "link", "retention", "member_admin", "publishing"] as const;
+export const roleKeys = ["super", "member", "events", "link", "retention", "member_admin", "publishing"] as const;
 
 export type RoleKey = (typeof roleKeys)[number];
 
 const roleKeyAliases: Record<string, RoleKey> = {
+	calendar: "events",
 	crs: "retention",
 };
 
@@ -22,7 +23,8 @@ export function normalizeRoleKeys(values: Iterable<string | null | undefined>): 
 }
 
 export const permissionActions = [
-	"event:approve",
+	"event:moderate",
+	"event:points",
 	"points:assign",
 	"retention:record",
 	"link:moderate",
@@ -47,9 +49,9 @@ export type Actor = {
 };
 
 const rolePermissions: Record<Exclude<RoleKey, "super" | "member">, PermissionAction[]> = {
-	calendar: [],
+	events: ["event:moderate", "event:points"],
 	link: ["link:moderate"],
-	retention: ["event:approve", "points:assign", "retention:record"],
+	retention: ["points:assign", "retention:record"],
 	member_admin: ["member:manage", "role:assign", "roster:manage", "nav:configure"],
 	publishing: ["announcement:manage", "library:manage", "library:moderate"],
 };

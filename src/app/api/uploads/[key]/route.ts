@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { getRepositories } from "@/db";
 import { getDb } from "@/db/client";
 import { crsEvents } from "@/db/schema";
@@ -47,9 +47,9 @@ async function createHandlers() {
 			const [event] = await getDb()
 				.select()
 				.from(crsEvents)
-				.where(eq(crsEvents.id, eventId))
+				.where(and(eq(crsEvents.id, eventId), isNull(crsEvents.deletedAt)))
 				.limit(1);
-			return event?.status === "approved";
+			return Boolean(event);
 		},
 		canEditLink: async (actor, linkId) => {
 			const { links } = await getRepositories();

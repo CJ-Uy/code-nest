@@ -7,7 +7,7 @@ import { createAuditRepository } from "./audit";
 import { createEventMediaRepository } from "./event-media";
 
 const member: Actor = { memberId: "mem_a", roles: ["member"] };
-const retentionAdmin: Actor = { memberId: "mem_a", roles: ["retention"] };
+const eventsAdmin: Actor = { memberId: "mem_a", roles: ["events"] };
 const START = new Date("2026-07-10T10:00:00.000Z");
 
 function makeRepo() {
@@ -30,9 +30,9 @@ describe("event media repository on D1", () => {
 			.run();
 	});
 
-	it("records and lists media for an approved event", async () => {
+	it("records and lists media for a visible event", async () => {
 		const { repo } = makeRepo();
-		const created = await repo.add(retentionAdmin, {
+		const created = await repo.add(eventsAdmin, {
 			eventId: "evt_1",
 			r2Key: "events/evt_1/mem_a/media_x.png",
 			caption: "Group photo",
@@ -47,8 +47,10 @@ describe("event media repository on D1", () => {
 		await expect(repo.add(member, { eventId: "evt_1", r2Key: "k", caption: null })).rejects.toThrow("Not authorized");
 	});
 
-	it("rejects recording media for a non-existent or unapproved event", async () => {
+	it("rejects recording media for a non-existent or deleted event", async () => {
 		const { repo } = makeRepo();
-		await expect(repo.add(retentionAdmin, { eventId: "missing", r2Key: "k", caption: null })).rejects.toThrow();
+		await expect(repo.add(eventsAdmin, { eventId: "missing", r2Key: "events/missing/x.png", caption: null })).rejects.toThrow();
+		await env.DB.prepare("UPDATE crs_events SET deleted_at = ? WHERE id = ?").bind(Date.now(), "evt_1").run();
+		await expect(repo.add(eventsAdmin, { eventId: "evt_1", r2Key: "events/evt_1/x.png", caption: null })).rejects.toThrow();
 	});
 });

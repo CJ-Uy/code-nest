@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import * as schema from "@/db/schema";
 import { crsEvents } from "@/db/schema";
@@ -30,11 +30,11 @@ export function createUploadsInternalHandlers({
 		storage,
 		canPostEvent: async (_actor, eventId) => {
 			const [event] = await db
-				.select({ status: crsEvents.status })
+				.select({ id: crsEvents.id })
 				.from(crsEvents)
-				.where(eq(crsEvents.id, eventId))
+				.where(and(eq(crsEvents.id, eventId), isNull(crsEvents.deletedAt)))
 				.limit(1);
-			return event?.status === "approved";
+			return Boolean(event);
 		},
 		canEditLink: async (actor, linkId) => {
 			try {

@@ -16,6 +16,10 @@ export const eventOutputSchema = z.object({
 	approvedBy: z.string().nullable(),
 	approvedAt: z.coerce.date().nullable(),
 	createdAt: z.coerce.date(),
+	myRole: z.enum(["owner", "admin", "scanner"]).nullable(),
+	canModerate: z.boolean(),
+	canSetPoints: z.boolean(),
+	deletedAt: z.coerce.date().nullable(),
 });
 
 export const attendanceOutputSchema = z.object({
@@ -24,6 +28,13 @@ export const attendanceOutputSchema = z.object({
 	name: z.string().nullable(),
 	scannedAt: z.coerce.date(),
 	scannedBy: z.string(),
+});
+
+export const eventStaffOutputSchema = z.object({
+	memberId: z.string(),
+	fullName: z.string().nullable(),
+	name: z.string().nullable(),
+	role: z.enum(["owner", "admin", "scanner"]),
 });
 
 const forumAuthorOutputSchema = z.object({
@@ -57,10 +68,15 @@ export const createEventInputSchema = z.object({
 	place: z.string().trim().min(1).max(160),
 	description: z.string().trim().min(1).max(4000),
 	startsAt: z.coerce.date(),
-	endsAt: z.coerce.date().nullable().default(null),
-	points: z.number().int().min(-100).max(100).nullable().default(null),
+	endsAt: z.coerce.date(),
 	capacity: z.number().int().min(1).max(100000).nullable().default(null),
 });
+
+export const updateEventInputSchema = createEventInputSchema.partial().extend({
+	eventId: z.string().min(1),
+});
+
+const staffRoleInputSchema = z.enum(["admin", "scanner"]);
 
 export const postForumInputSchema = z.object({
 	eventId: z.string().min(1),
@@ -76,7 +92,7 @@ export const addMediaInputSchema = z.object({
 });
 
 export const eventsContract = {
-	listApproved: operation({
+	listPublished: operation({
 		input: z.object({
 			limit: z.number().int().min(1).max(100).default(50),
 			offset: z.number().int().min(0).default(0),
@@ -88,16 +104,71 @@ export const eventsContract = {
 	create: operation({
 		input: createEventInputSchema,
 		output: z.object({ event: eventOutputSchema }),
-		auth: "admin",
-		permission: "event:approve",
+		auth: "member",
 		sharedDev: "deny",
 	}),
-	approve: operation({
-		input: z.object({ eventId: z.string().min(1) }),
+	update: operation({
+		input: updateEventInputSchema,
 		output: z.object({ event: eventOutputSchema }),
-		auth: "admin",
-		permission: "event:approve",
+		auth: "member",
 		sharedDev: "deny",
+	}),
+	delete: operation({
+		input: z.object({ eventId: z.string().min(1) }),
+		output: z.object({ ok: z.boolean() }),
+		auth: "member",
+		sharedDev: "deny",
+	}),
+	setPoints: operation({
+		input: z.object({ eventId: z.string().min(1), points: z.number().int().min(-100).max(100).nullable() }),
+		output: z.object({ updated: z.number().int().min(0) }),
+		auth: "admin",
+		permission: "event:points",
+		sharedDev: "deny",
+	}),
+	addStaff: operation({
+		input: z.object({ eventId: z.string().min(1), memberId: z.string().min(1), role: staffRoleInputSchema }),
+		output: z.object({ ok: z.boolean() }),
+		auth: "member",
+		sharedDev: "deny",
+	}),
+	removeStaff: operation({
+		input: z.object({ eventId: z.string().min(1), memberId: z.string().min(1) }),
+		output: z.object({ ok: z.boolean() }),
+		auth: "member",
+		sharedDev: "deny",
+	}),
+	transferOwnership: operation({
+		input: z.object({ eventId: z.string().min(1), toMemberId: z.string().min(1) }),
+		output: z.object({ ok: z.boolean() }),
+		auth: "member",
+		sharedDev: "deny",
+	}),
+	invite: operation({
+		input: z.object({ eventId: z.string().min(1), memberIds: z.array(z.string().min(1)).min(1) }),
+		output: z.object({ invited: z.number().int().min(0) }),
+		auth: "member",
+		sharedDev: "deny",
+	}),
+	listInvites: operation({
+		input: z.object({ eventId: z.string().min(1) }),
+		output: z.object({
+			invites: z.array(
+				z.object({
+					memberId: z.string(),
+					fullName: z.string().nullable(),
+					invitedAt: z.coerce.date(),
+				}),
+			),
+		}),
+		auth: "member",
+		sharedDev: "allow",
+	}),
+	listStaff: operation({
+		input: z.object({ eventId: z.string().min(1) }),
+		output: z.object({ staff: z.array(eventStaffOutputSchema) }),
+		auth: "member",
+		sharedDev: "allow",
 	}),
 	rsvp: operation({
 		input: z.object({ eventId: z.string().min(1), state: z.enum(["going", "none"]) }),
@@ -113,8 +184,7 @@ export const eventsContract = {
 			scannedAt: z.coerce.date(),
 			alreadyPresent: z.boolean(),
 		}),
-		auth: "admin",
-		permission: "points:assign",
+		auth: "member",
 		sharedDev: "deny",
 	}),
 	searchMembers: operation({
@@ -134,15 +204,13 @@ export const eventsContract = {
 				}),
 			),
 		}),
-		auth: "admin",
-		permission: "points:assign",
+		auth: "member",
 		sharedDev: "allow",
 	}),
 	listAttendance: operation({
 		input: z.object({ eventId: z.string().min(1) }),
 		output: z.object({ attendance: z.array(attendanceOutputSchema) }),
-		auth: "admin",
-		permission: "points:assign",
+		auth: "member",
 		sharedDev: "allow",
 	}),
 	post: operation({
@@ -172,7 +240,7 @@ export const eventsContract = {
 		input: addMediaInputSchema,
 		output: z.object({ media: mediaOutputSchema }),
 		auth: "admin",
-		permission: "event:approve",
+		permission: "event:moderate",
 		sharedDev: "deny",
 	}),
 	listMedia: operation({

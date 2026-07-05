@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { check, index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export type MemberStatus = "active" | "pending" | "inactive";
 export type EventType = "official" | "casual" | "birthday";
@@ -187,12 +187,51 @@ export const crsEvents = sqliteTable(
 		approvedAt: integer("approved_at", { mode: "timestamp_ms" }),
 		checkinSecret: text("checkin_secret").notNull(),
 		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+		deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
 	},
 	(table) => [
 		index("crs_events_status_idx").on(table.status),
 		index("crs_events_starts_at_idx").on(table.startsAt),
 		index("crs_events_type_idx").on(table.type),
 		index("crs_events_created_by_idx").on(table.createdBy),
+	],
+);
+
+export const eventStaff = sqliteTable(
+	"event_staff",
+	{
+		eventId: text("event_id")
+			.notNull()
+			.references(() => crsEvents.id, { onDelete: "cascade" }),
+		memberId: text("member_id")
+			.notNull()
+			.references(() => members.id, { onDelete: "cascade" }),
+		role: text("role").$type<"admin" | "scanner">().notNull(),
+		addedBy: text("added_by").references(() => members.id, { onDelete: "set null" }),
+		addedAt: integer("added_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+	},
+	(table) => [
+		primaryKey({ columns: [table.eventId, table.memberId] }),
+		index("event_staff_member_id_idx").on(table.memberId),
+		check("event_staff_role_check", sql`${table.role} in ('admin', 'scanner')`),
+	],
+);
+
+export const eventInvites = sqliteTable(
+	"event_invites",
+	{
+		eventId: text("event_id")
+			.notNull()
+			.references(() => crsEvents.id, { onDelete: "cascade" }),
+		memberId: text("member_id")
+			.notNull()
+			.references(() => members.id, { onDelete: "cascade" }),
+		invitedBy: text("invited_by").references(() => members.id, { onDelete: "set null" }),
+		invitedAt: integer("invited_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+	},
+	(table) => [
+		primaryKey({ columns: [table.eventId, table.memberId] }),
+		index("event_invites_member_invited_idx").on(table.memberId, table.invitedAt),
 	],
 );
 
