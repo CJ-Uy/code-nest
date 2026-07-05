@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { createElement, useState } from "react";
 import { ChevronLeft, ChevronRight, LogOut, Plus } from "lucide-react";
 import { MemberCodeCard } from "@/components/member-code-card";
 import { Separator } from "@/components/ui/separator";
@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { Breadcrumb } from "./breadcrumb";
 import { MemberAvatar } from "./member-avatar";
 import { adminNav, primaryNav, secondaryNav, type NavItem } from "./nav-items";
+import { navPinIconFor } from "./nav-pin-icons";
 import { adminHeading, crumbFor } from "@/app/portal/admin/nav";
 
 export type AdminNavGroup = { segment: string; label: string; href: string; pages: { href: string; label: string }[] };
@@ -18,7 +19,7 @@ export type AdminNavGroup = { segment: string; label: string; href: string; page
 export type PortalShellProps = {
 	member: { displayName: string; initials: string; subtitle?: string };
 	memberId: string;
-	navPins: { id: string; label: string; url: string }[];
+	navPins: { id: string; label: string; url: string; icon: string }[];
 	showAdmin: boolean;
 	adminGroups: AdminNavGroup[];
 	bell: React.ReactNode;
@@ -168,18 +169,17 @@ export function PortalShell({ member, memberId, navPins, showAdmin, adminGroups,
 							{secondaryNav.map((item) => (
 								<RailItem key={item.id} item={item} pathname={pathname} />
 							))}
-							{navPins.map((pin) => (
-								<a
-									key={pin.id}
-									href={pin.url}
-									target="_blank"
-									rel="noreferrer"
-									className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-primary-foreground/65 transition-colors hover:text-primary-foreground"
-								>
-									<ChevronRight className="size-5" />
-									<span className="flex-1 truncate">{pin.label}</span>
-								</a>
-							))}
+							{navPins.length > 0 ? (
+								<>
+									<Separator className="my-2 bg-white/10" />
+									<p className="px-3 pb-0.5 text-[0.6rem] font-semibold uppercase tracking-wider text-primary-foreground/45">
+										Pinned links
+									</p>
+									{navPins.map((pin) => (
+										<PinnedNavLink key={pin.id} pin={pin} />
+									))}
+								</>
+							) : null}
 						</nav>
 					</>
 				)}
@@ -333,21 +333,28 @@ export function PortalShell({ member, memberId, navPins, showAdmin, adminGroups,
 										</SheetClose>
 									);
 								})}
-								{navPins.map((pin) => (
-									<SheetClose asChild key={pin.id}>
-										<a
-											href={pin.url}
-											target="_blank"
-											rel="noreferrer"
-											className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold hover:bg-muted"
-										>
-											<span className="grid size-9 place-items-center rounded-lg bg-secondary text-accent">
-												<ChevronRight className="size-5" />
-											</span>
-											<span className="flex-1 truncate">{pin.label}</span>
-										</a>
-									</SheetClose>
-								))}
+								{navPins.length > 0 ? (
+									<div className="mt-2 border-t border-border pt-2">
+										<p className="px-3 pb-1 text-[0.6rem] font-semibold uppercase tracking-wider text-muted-foreground">
+											Pinned links
+										</p>
+										{navPins.map((pin) => (
+											<SheetClose asChild key={pin.id}>
+												<a
+													href={pin.url}
+													target="_blank"
+													rel="noreferrer"
+													className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold hover:bg-muted"
+												>
+													<span className="grid size-9 place-items-center rounded-lg bg-secondary text-accent">
+														<PinnedNavIcon name={pin.icon} className="size-5" />
+													</span>
+													<span className="flex-1 truncate">{pin.label}</span>
+												</a>
+											</SheetClose>
+										))}
+									</div>
+								) : null}
 							</>
 						)}
 					</nav>
@@ -368,6 +375,24 @@ export function PortalShell({ member, memberId, navPins, showAdmin, adminGroups,
 				</SheetContent>
 			</Sheet>
 		</div>
+	);
+}
+
+function PinnedNavIcon({ name, className }: { name: string; className?: string }) {
+	return createElement(navPinIconFor(name), { className });
+}
+
+function PinnedNavLink({ pin }: { pin: { id: string; label: string; url: string; icon: string } }) {
+	return (
+		<a
+			href={pin.url}
+			target="_blank"
+			rel="noreferrer"
+			className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-primary-foreground/65 transition-colors hover:text-primary-foreground"
+		>
+			<PinnedNavIcon name={pin.icon} className="size-5" />
+			<span className="flex-1 truncate">{pin.label}</span>
+		</a>
 	);
 }
 

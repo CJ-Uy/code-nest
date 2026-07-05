@@ -57,6 +57,14 @@ describe("nav pins repository on D1", () => {
 		).rejects.toThrow("Not authorized");
 	});
 
+	it("lets a signed-in member read visible pins", async () => {
+		const db = drizzle(env.DB, { schema });
+		const repository = createNavPinsRepository(db, createAuditRepository(db));
+		await repository.create(navAdmin, { label: "A", url: "https://a.test", icon: "Link2", position: 1 });
+
+		await expect(repository.listVisible(member)).resolves.toMatchObject([{ label: "A" }]);
+	});
+
 	it("returns pins ordered by ascending position", async () => {
 		const db = drizzle(env.DB, { schema });
 		const repository = createNavPinsRepository(db, createAuditRepository(db));

@@ -23,10 +23,11 @@ export default async function PortalLayout({ children }: { children: React.React
 	// notifications is unavailable through the shared-dev adapter until a future
 	// phase wires an internal proxy route for it; degrade to an empty feed
 	// instead of crashing every authed page.
-	const [member, feed, unreadCount] = await Promise.all([
+	const [member, feed, unreadCount, navPins] = await Promise.all([
 		repositories.members.getById(actor, actor.memberId),
 		repositories.notifications.listFeed(actor, { limit: 10 }).catch(() => []),
 		repositories.notifications.unreadCount(actor).catch(() => 0),
+		repositories.navPins.listVisible(actor).catch(() => []),
 	]);
 	if (!member) redirect("/signin");
 
@@ -40,9 +41,6 @@ export default async function PortalLayout({ children }: { children: React.React
 				pages: group.pages.map((page) => ({ href: page.href, label: page.label })),
 			}))
 		: [];
-
-	// TODO(phase-8): load nav_pins via a navPins repository once Phase 8 adds it.
-	const navPins: { id: string; label: string; url: string }[] = [];
 
 	return (
 		<>

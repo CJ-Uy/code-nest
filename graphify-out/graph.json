@@ -17758,20 +17758,20 @@
       "norm_label": "updatenavpinaction()"
     },
     {
-      "label": "reorderNavPinsAction()",
+      "label": "saveNavPinsAction()",
       "file_type": "code",
       "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
       "source_location": "L42",
       "_origin": "ast",
-      "id": "nav_pins_actions_reordernavpinsaction",
+      "id": "nav_pins_actions_savenavpinsaction",
       "community": 60,
-      "norm_label": "reordernavpinsaction()"
+      "norm_label": "savenavpinsaction()"
     },
     {
       "label": "deleteNavPinAction()",
       "file_type": "code",
       "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
-      "source_location": "L64",
+      "source_location": "L70",
       "_origin": "ast",
       "id": "nav_pins_actions_deletenavpinaction",
       "community": 60,
@@ -19621,7 +19621,7 @@
       "label": "navPinIconNames",
       "file_type": "code",
       "source_file": "src/components/portal/nav-pin-icons.ts",
-      "source_location": "L44",
+      "source_location": "L180",
       "_origin": "ast",
       "id": "portal_nav_pin_icons_navpiniconnames",
       "community": 47,
@@ -19631,7 +19631,7 @@
       "label": "navPinIconFor()",
       "file_type": "code",
       "source_file": "src/components/portal/nav-pin-icons.ts",
-      "source_location": "L46",
+      "source_location": "L182",
       "_origin": "ast",
       "id": "portal_nav_pin_icons_navpiniconfor",
       "community": 47,
@@ -19711,7 +19711,7 @@
       "label": "AdminNavGroup",
       "file_type": "code",
       "source_file": "src/components/portal/portal-shell.tsx",
-      "source_location": "L18",
+      "source_location": "L17",
       "_origin": "ast",
       "id": "portal_portal_shell_adminnavgroup",
       "community": 4,
@@ -19721,7 +19721,7 @@
       "label": "PortalShellProps",
       "file_type": "code",
       "source_file": "src/components/portal/portal-shell.tsx",
-      "source_location": "L20",
+      "source_location": "L19",
       "_origin": "ast",
       "id": "portal_portal_shell_portalshellprops",
       "community": 4,
@@ -19731,7 +19731,7 @@
       "label": "isActive()",
       "file_type": "code",
       "source_file": "src/components/portal/portal-shell.tsx",
-      "source_location": "L31",
+      "source_location": "L30",
       "_origin": "ast",
       "id": "portal_portal_shell_isactive",
       "community": 4,
@@ -19741,7 +19741,7 @@
       "label": "detailTitles",
       "file_type": "code",
       "source_file": "src/components/portal/portal-shell.tsx",
-      "source_location": "L35",
+      "source_location": "L34",
       "_origin": "ast",
       "id": "portal_portal_shell_detailtitles",
       "community": 4,
@@ -19751,7 +19751,7 @@
       "label": "getPageHeading()",
       "file_type": "code",
       "source_file": "src/components/portal/portal-shell.tsx",
-      "source_location": "L43",
+      "source_location": "L42",
       "_origin": "ast",
       "id": "portal_portal_shell_getpageheading",
       "community": 4,
@@ -19761,7 +19761,7 @@
       "label": "RailItem()",
       "file_type": "code",
       "source_file": "src/components/portal/portal-shell.tsx",
-      "source_location": "L73",
+      "source_location": "L72",
       "_origin": "ast",
       "id": "portal_portal_shell_railitem",
       "community": 4,
@@ -19771,7 +19771,7 @@
       "label": "AdminNavLink()",
       "file_type": "code",
       "source_file": "src/components/portal/portal-shell.tsx",
-      "source_location": "L98",
+      "source_location": "L97",
       "_origin": "ast",
       "id": "portal_portal_shell_adminnavlink",
       "community": 4,
@@ -19781,7 +19781,7 @@
       "label": "PortalShell()",
       "file_type": "code",
       "source_file": "src/components/portal/portal-shell.tsx",
-      "source_location": "L114",
+      "source_location": "L113",
       "_origin": "ast",
       "id": "portal_portal_shell_portalshell",
       "community": 4,
@@ -19791,7 +19791,7 @@
       "label": "PinnedNavIcon()",
       "file_type": "code",
       "source_file": "src/components/portal/portal-shell.tsx",
-      "source_location": "L367",
+      "source_location": "L381",
       "_origin": "ast",
       "id": "portal_portal_shell_pinnednavicon",
       "community": 4,
@@ -19801,7 +19801,7 @@
       "label": "PinnedNavLink()",
       "file_type": "code",
       "source_file": "src/components/portal/portal-shell.tsx",
-      "source_location": "L371",
+      "source_location": "L385",
       "_origin": "ast",
       "id": "portal_portal_shell_pinnednavlink",
       "community": 4,
@@ -19811,7 +19811,7 @@
       "label": "BarTab()",
       "file_type": "code",
       "source_file": "src/components/portal/portal-shell.tsx",
-      "source_location": "L385",
+      "source_location": "L399",
       "_origin": "ast",
       "id": "portal_portal_shell_bartab",
       "community": 4,
@@ -72818,9 +72818,9 @@
       "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
       "source_location": "L42",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "nav_pins_actions",
-      "target": "nav_pins_actions_reordernavpinsaction"
+      "target": "nav_pins_actions_savenavpinsaction",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -72994,7 +72994,7 @@
       "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
       "source_location": "L43",
       "weight": 1.0,
-      "source": "nav_pins_actions_reordernavpinsaction",
+      "source": "nav_pins_actions_savenavpinsaction",
       "target": "auth_actor_requireactor"
     },
     {
@@ -73003,9 +73003,9 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
-      "source_location": "L45",
+      "source_location": "L51",
       "weight": 1.0,
-      "source": "nav_pins_actions_reordernavpinsaction",
+      "source": "nav_pins_actions_savenavpinsaction",
       "target": "db_index_getrepositories"
     },
     {
@@ -73015,9 +73015,9 @@
       "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
       "source_location": "L9",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "nav_pins_nav_pins_manager",
-      "target": "nav_pins_actions_reordernavpinsaction"
+      "target": "nav_pins_actions_savenavpinsaction",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -73069,9 +73069,9 @@
       "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "nav_pins_nav_pins_manager",
-      "target": "nav_pins_nav_pins_manager_iconlabel",
-      "confidence_score": 1.0
+      "target": "nav_pins_nav_pins_manager_iconlabel"
     },
     {
       "relation": "contains",
@@ -73274,9 +73274,9 @@
       "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
       "source_location": "L48",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "nav_pins_nav_pins_manager_iconpicker",
-      "target": "nav_pins_nav_pins_manager_iconlabel",
-      "confidence_score": 1.0
+      "target": "nav_pins_nav_pins_manager_iconlabel"
     },
     {
       "relation": "calls",
@@ -115529,5 +115529,5 @@
       "source_file": "public/next.svg"
     }
   ],
-  "built_at_commit": "82f4c068fb58346c0540921855798602ba36b282"
+  "built_at_commit": "2303076668146d6c7a08b7dce5f249e99d2e7ef5"
 }

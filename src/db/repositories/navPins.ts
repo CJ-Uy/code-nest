@@ -31,6 +31,7 @@ export type NavPinDb = {
 
 export type NavPinsRepository = {
 	list(actor: Actor): Promise<NavPin[]>;
+	listVisible(actor: Actor): Promise<NavPin[]>;
 	create(actor: Actor, input: NavPinInput): Promise<NavPin>;
 	update(actor: Actor, id: string, input: NavPinInput): Promise<NavPin>;
 	remove(actor: Actor, id: string): Promise<void>;
@@ -42,6 +43,9 @@ export function createNavPinsRepository(db: NavPinDb, audit: AuditRepository): N
 			if (!can(actor, "nav:configure")) {
 				throw new Error("Not authorized to list nav pins.");
 			}
+			return db.select().from(navPins).orderBy(asc(navPins.position));
+		},
+		async listVisible() {
 			return db.select().from(navPins).orderBy(asc(navPins.position));
 		},
 		async create(actor, input) {
