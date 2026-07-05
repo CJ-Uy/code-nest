@@ -233,23 +233,23 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 
 			{status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
 
-			<div className="rounded-lg border bg-card">
-				<Table>
+			<div className="min-w-0 rounded-lg border bg-card">
+				<Table className="min-w-[960px] table-fixed">
 					<TableHeader>
 						<TableRow>
-							<SortHeader label="Title" column="title" sort={sort} onSort={toggleSort} />
-							<SortHeader label="Short link" column="slug" sort={sort} onSort={toggleSort} />
-							<TableHead>Tags</TableHead>
-							<SortHeader label="Clicks" column="clicks" sort={sort} onSort={toggleSort} align="right" />
-							<SortHeader label="Owner" column="owner" sort={sort} onSort={toggleSort} />
-							<SortHeader label="Created" column="created" sort={sort} onSort={toggleSort} />
-							<TableHead className="text-right">Actions</TableHead>
+							<SortHeader label="Title" column="title" sort={sort} onSort={toggleSort} className="w-[34%]" />
+							<SortHeader label="Short link" column="slug" sort={sort} onSort={toggleSort} className="w-[18%]" />
+							<TableHead className="w-[12%]">Tags</TableHead>
+							<SortHeader label="Clicks" column="clicks" sort={sort} onSort={toggleSort} align="right" className="w-[8%]" />
+							<SortHeader label="Owner" column="owner" sort={sort} onSort={toggleSort} className="w-[12%]" />
+							<SortHeader label="Created" column="created" sort={sort} onSort={toggleSort} className="w-[9%]" />
+							<TableHead className="w-[7%] text-right">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{sorted.map((link) => (
 							<TableRow key={link.id} className="cursor-pointer" onClick={() => openDialog(link.id)}>
-								<TableCell className="min-w-48"><p className="font-medium">{link.title}</p><p className="truncate text-xs text-muted-foreground">to {link.destinationUrl}</p></TableCell>
+								<TableCell><p className="truncate font-medium">{link.title}</p><p className="truncate text-xs text-muted-foreground">to {link.destinationUrl}</p></TableCell>
 								<TableCell><ShortLinkCell origin={origin} baseLabel={baseLabel} slug={link.slug} /></TableCell>
 								<TableCell><TagList tags={link.tags} /></TableCell>
 								<TableCell className="text-right tabular-nums">{link.clickCount}</TableCell>
@@ -286,11 +286,11 @@ function UrlToken({ children }: { children: string }) {
 	return <span className="rounded bg-secondary px-1.5 py-0.5 font-mono text-xs text-foreground">{children}</span>;
 }
 
-function SortHeader({ label, column, sort, onSort, align = "left" }: { label: string; column: SortKey; sort: SortState; onSort(key: SortKey): void; align?: "left" | "right" }) {
+function SortHeader({ label, column, sort, onSort, align = "left", className }: { label: string; column: SortKey; sort: SortState; onSort(key: SortKey): void; align?: "left" | "right"; className?: string }) {
 	const activeSort = sort.key === column;
 	const Icon = !activeSort ? ChevronsUpDown : sort.dir === "asc" ? ArrowUp : ArrowDown;
 	return (
-		<TableHead className={align === "right" ? "text-right" : undefined}>
+		<TableHead className={cn(align === "right" && "text-right", className)}>
 			<button type="button" onClick={() => onSort(column)} className={cn("inline-flex items-center gap-1 font-medium transition-colors hover:text-foreground", activeSort ? "text-foreground" : "text-muted-foreground", align === "right" && "flex-row-reverse")}>
 				{label}
 				<Icon className={cn("size-3.5", activeSort ? "opacity-100" : "opacity-40")} />
@@ -302,7 +302,7 @@ function SortHeader({ label, column, sort, onSort, align = "left" }: { label: st
 function ShortLinkCell({ origin, baseLabel, slug }: { origin: string; baseLabel: string; slug: string }) {
 	const href = origin ? shortLinkUrl(origin, slug) : `/${slug}`;
 	return (
-		<a href={href} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} className="inline-flex max-w-[16rem] items-center gap-1 font-medium text-primary hover:underline">
+		<a href={href} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} className="inline-flex max-w-full items-center gap-1 font-medium text-primary hover:underline">
 			<span className="truncate">{baseLabel}/{slug}</span>
 			<ExternalLink className="size-3.5 shrink-0 opacity-60" />
 		</a>
