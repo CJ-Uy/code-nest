@@ -171,7 +171,6 @@ export function PortalShell({ member, memberId, navPins, showAdmin, adminGroups,
 							))}
 							{navPins.length > 0 ? (
 								<>
-									<Separator className="my-2 bg-white/10" />
 									<p className="px-3 pb-0.5 text-[0.6rem] font-semibold uppercase tracking-wider text-primary-foreground/45">
 										Pinned links
 									</p>
