@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AdminIntro } from "@/components/portal/admin-intro";
 import { requireActor } from "@/server/auth/actor";
 import { can } from "@/server/auth/permissions";
 import { addRosterEntryAction, removeRosterEntryAction } from "./actions";
+import { BulkAdd } from "./bulk-add";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +27,11 @@ export default async function RosterAdminPage({ searchParams }: { searchParams: 
 
 	return (
 		<div className="grid gap-6">
+			<AdminIntro
+				title="Member List"
+				whoFor="The official members of CODE for a term"
+				effect="Adding an email lets that person sign in; they link automatically on first login"
+			/>
 			<Card>
 				<CardHeader>
 					<CardTitle>Pick a term</CardTitle>
@@ -41,14 +48,16 @@ export default async function RosterAdminPage({ searchParams }: { searchParams: 
 			{activeTermId ? (
 				<Card>
 					<CardHeader>
-						<CardTitle>Roster ({roster.length})</CardTitle>
+						<CardTitle>Member List ({roster.length})</CardTitle>
 					</CardHeader>
 					<CardContent className="grid gap-4">
 						<form action={addRosterEntryAction} className="flex flex-wrap items-end gap-2">
 							<input type="hidden" name="termId" value={activeTermId} />
 							<Input name="email" type="email" placeholder="member@example.com" required className="max-w-xs" />
-							<Button type="submit">Add to roster</Button>
+							<Button type="submit">Add one</Button>
 						</form>
+
+						<BulkAdd termId={activeTermId} />
 
 						<Table>
 							<TableHeader>
