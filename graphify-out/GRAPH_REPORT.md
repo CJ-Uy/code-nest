@@ -1,7 +1,7 @@
 # Graph Report - code-nest-main  (2026-07-05)
 
 ## Corpus Check
-- 171 files · ~279,611 words
+- 171 files · ~279,684 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5d3efa6c`
+- Built from commit: `3350297d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -173,8 +173,8 @@ Cohesion: 0.00
 Nodes (939): AbortController, AgentMemoryGetSummaryOptions, AgentMemoryGetSummaryResponse, AgentMemoryIncomingMemory, AgentMemoryIngestOptions, AgentMemoryListMemoriesOptions, AgentMemoryListMemoriesResult, AgentMemoryMemory (+931 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.16
-Nodes (21): getActor(), requireActor(), can(), getDb(), getRepositories(), crsEvents, createHandlers(), DELETE() (+13 more)
+Cohesion: 0.18
+Nodes (20): getActor(), requireActor(), can(), getDb(), getRepositories(), crsEvents, createHandlers(), DELETE() (+12 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.09
@@ -469,8 +469,8 @@ Cohesion: 0.18
 Nodes (17): getDatabaseAdapter(), GET(), CloudflareRuntimeEnv, getOptionalCloudflareEnv(), hasCloudflareBinding(), runInBackground(), AppConfig, AppEnv (+9 more)
 
 ### Community 120 - "Community 120"
-Cohesion: 0.29
-Nodes (11): assertSameOrigin(), Context, DELETE(), GET(), handlers(), PATCH(), createLinksHandlers(), GET() (+3 more)
+Cohesion: 0.24
+Nodes (12): assertSameOrigin(), Context, DELETE(), GET(), handlers(), PATCH(), createLinksHandlers(), GET() (+4 more)
 
 ### Community 122 - "Community 122"
 Cohesion: 0.83

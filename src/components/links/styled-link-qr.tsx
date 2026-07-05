@@ -1,8 +1,9 @@
 "use client";
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import QRCode from "qrcode";
-import { Download, Maximize2, Moon, Save, Sun, Upload } from "lucide-react";
+import { Download, Maximize2, Moon, Save, Sun, Upload, X } from "lucide-react";
 import type { QrStyle } from "@/db/repositories/links";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,6 +78,20 @@ export function StyledLinkQr({ url, style, downloadName = "short-link-qr", edita
 		if (!fullscreen) return;
 		renderCanvas(fullCanvasRef.current, qrContent, qrStyle, Math.min(window.innerWidth, window.innerHeight) * 0.72).catch(() => {});
 	}, [fullscreen, qrContent, qrStyle]);
+
+	useEffect(() => {
+		if (!fullscreen) return;
+		const previous = document.body.style.overflow;
+		document.body.style.overflow = "hidden";
+		const closeOnEscape = (event: KeyboardEvent) => {
+			if (event.key === "Escape") setFullscreen(false);
+		};
+		window.addEventListener("keydown", closeOnEscape);
+		return () => {
+			document.body.style.overflow = previous;
+			window.removeEventListener("keydown", closeOnEscape);
+		};
+	}, [fullscreen]);
 
 	function patch(patchStyle: Partial<QrStyle>) {
 		onChange?.({ ...qrStyle, ...patchStyle });
@@ -183,19 +198,22 @@ export function StyledLinkQr({ url, style, downloadName = "short-link-qr", edita
 				</details>
 			) : null}
 
-			{fullscreen ? (
-				<div className="fixed inset-0 z-50 grid bg-[#06192F] p-5 text-white" role="dialog" aria-modal="true">
-					<button type="button" className="absolute right-4 top-4 rounded-md border border-white/30 px-3 py-2 text-sm" onClick={() => setFullscreen(false)}>
-						Close
-					</button>
-					<div className="m-auto grid justify-items-center gap-5 text-center">
-						<div className={cn("rounded-xl bg-white p-4", qrStyle.background !== "#FFFFFF" && "border border-white/20")}>
-							<canvas ref={fullCanvasRef} aria-label={`Full screen QR code for ${url}`} className="block max-h-[76dvh] max-w-[86vw]" />
-						</div>
-						<p className="max-w-[90vw] break-all font-semibold">{url}</p>
-					</div>
-				</div>
-			) : null}
+			{fullscreen && typeof document !== "undefined"
+				? createPortal(
+						<div className="fixed inset-0 z-[100] grid bg-[#06192F] p-5 text-white" role="dialog" aria-modal="true">
+							<button type="button" aria-label="Close full screen QR code" className="absolute right-4 top-4 grid size-10 place-items-center rounded-md border border-white/30 text-white transition-colors hover:bg-white/10" onClick={() => setFullscreen(false)}>
+								<X className="size-5" />
+							</button>
+							<div className="m-auto grid justify-items-center gap-5 text-center">
+								<div className={cn("rounded-xl bg-white p-4", qrStyle.background !== "#FFFFFF" && "border border-white/20")}>
+									<canvas ref={fullCanvasRef} aria-label={`Full screen QR code for ${url}`} className="block max-h-[76dvh] max-w-[86vw]" />
+								</div>
+								<p className="max-w-[90vw] break-all font-semibold">{url}</p>
+							</div>
+						</div>,
+						document.body,
+					)
+				: null}
 		</div>
 	);
 }
