@@ -3,20 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { ChevronRight, LogOut, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, Plus } from "lucide-react";
 import { MemberCodeCard } from "@/components/member-code-card";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { Breadcrumb } from "./breadcrumb";
 import { MemberAvatar } from "./member-avatar";
 import { adminNav, primaryNav, secondaryNav, type NavItem } from "./nav-items";
 import { adminHeading, crumbFor } from "@/app/portal/admin/nav";
+
+export type AdminNavGroup = { segment: string; label: string; href: string; pages: { href: string; label: string }[] };
 
 export type PortalShellProps = {
 	member: { displayName: string; initials: string; subtitle?: string };
 	memberId: string;
 	navPins: { id: string; label: string; url: string }[];
 	showAdmin: boolean;
+	adminGroups: AdminNavGroup[];
 	bell: React.ReactNode;
 	signOutAction: () => Promise<void>;
 	children: React.ReactNode;
@@ -89,13 +93,29 @@ function RailItem({ item, pathname }: { item: NavItem; pathname: string }) {
 	);
 }
 
-export function PortalShell({ member, memberId, navPins, showAdmin, bell, signOutAction, children }: PortalShellProps) {
+function AdminNavLink({ href, label, pathname }: { href: string; label: string; pathname: string }) {
+	const on = isActive(pathname, href);
+	return (
+		<Link
+			href={href}
+			className={cn(
+				"relative rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+				on ? "bg-white/10 text-primary-foreground" : "text-primary-foreground/60 hover:text-primary-foreground",
+			)}
+		>
+			{on ? <span className="absolute -left-3 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r bg-secondary" aria-hidden /> : null}
+			{label}
+		</Link>
+	);
+}
+
+export function PortalShell({ member, memberId, navPins, showAdmin, adminGroups, bell, signOutAction, children }: PortalShellProps) {
 	const pathname = usePathname();
 	const [menuOpen, setMenuOpen] = useState(false);
+	const inAdmin = pathname.startsWith("/portal/admin");
 	const pageHeading = getPageHeading(pathname);
 
-	const railSecondary: NavItem[] = [...secondaryNav, ...(showAdmin ? [adminNav] : [])];
-	const sheetItems: NavItem[] = railSecondary;
+	const sheetItems: NavItem[] = [...secondaryNav, ...(showAdmin ? [adminNav] : [])];
 	const leftTabs = primaryNav.slice(0, 2);
 	const rightTabs = primaryNav.slice(2, 4);
 
@@ -113,30 +133,62 @@ export function PortalShell({ member, memberId, navPins, showAdmin, bell, signOu
 						<span className="font-heading text-xl font-bold leading-tight tracking-tight">CODE</span>
 					</span>
 				</Link>
-				<nav className="flex flex-col gap-1" aria-label="Portal modules">
-					{primaryNav.map((item) => (
-						<RailItem key={item.id} item={item} pathname={pathname} />
-					))}
-				</nav>
-				<Separator className="my-3 bg-white/10" />
-				<nav className="flex flex-col gap-1" aria-label="More modules">
-					{railSecondary.map((item) => (
-						<RailItem key={item.id} item={item} pathname={pathname} />
-					))}
-					{navPins.map((pin) => (
-						<a
-							key={pin.id}
-							href={pin.url}
-							target="_blank"
-							rel="noreferrer"
-							className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-primary-foreground/65 transition-colors hover:text-primary-foreground"
+				{inAdmin ? (
+					<>
+						<Link
+							href="/portal"
+							className="mb-1 flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-primary-foreground/70 transition-colors hover:bg-white/5 hover:text-primary-foreground"
 						>
-							<ChevronRight className="size-5" />
-							<span className="flex-1 truncate">{pin.label}</span>
-						</a>
-					))}
-				</nav>
+							<ChevronLeft className="size-5" />
+							Back to portal
+						</Link>
+						<Separator className="my-2 bg-white/10" />
+						<nav className="flex flex-1 flex-col gap-3 overflow-y-auto pr-1" aria-label="Admin sections">
+							{adminGroups.map((group) => (
+								<div key={group.segment} className="flex flex-col gap-0.5">
+									<p className="px-3 pb-0.5 text-[0.6rem] font-semibold uppercase tracking-wider text-primary-foreground/45">
+										{group.label}
+									</p>
+									{group.pages.map((page) => (
+										<AdminNavLink key={page.href} href={page.href} label={page.label} pathname={pathname} />
+									))}
+								</div>
+							))}
+						</nav>
+					</>
+				) : (
+					<>
+						<nav className="flex flex-col gap-1" aria-label="Portal modules">
+							{primaryNav.map((item) => (
+								<RailItem key={item.id} item={item} pathname={pathname} />
+							))}
+						</nav>
+						<Separator className="my-3 bg-white/10" />
+						<nav className="flex flex-col gap-1" aria-label="More modules">
+							{secondaryNav.map((item) => (
+								<RailItem key={item.id} item={item} pathname={pathname} />
+							))}
+							{navPins.map((pin) => (
+								<a
+									key={pin.id}
+									href={pin.url}
+									target="_blank"
+									rel="noreferrer"
+									className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-primary-foreground/65 transition-colors hover:text-primary-foreground"
+								>
+									<ChevronRight className="size-5" />
+									<span className="flex-1 truncate">{pin.label}</span>
+								</a>
+							))}
+						</nav>
+					</>
+				)}
 				<div className="mt-auto pt-2">
+					{!inAdmin && showAdmin ? (
+						<div className="pb-1">
+							<RailItem item={adminNav} pathname={pathname} />
+						</div>
+					) : null}
 					<Separator className="mb-2 bg-white/10" />
 					<div className="flex items-center gap-2 rounded-xl p-2 transition-colors hover:bg-white/5">
 						<MemberAvatar initials={member.initials} />
@@ -172,8 +224,14 @@ export function PortalShell({ member, memberId, navPins, showAdmin, bell, signOu
 						</span>
 					</Link>
 					<div className="hidden min-w-0 flex-1 lg:block">
-						<p className="text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">{pageHeading.section}</p>
-						<p className="truncate font-heading text-xl font-semibold text-foreground">{pageHeading.title}</p>
+						{inAdmin ? (
+							<Breadcrumb items={crumbFor(pathname)} />
+						) : (
+							<>
+								<p className="text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">{pageHeading.section}</p>
+								<p className="truncate font-heading text-xl font-semibold text-foreground">{pageHeading.title}</p>
+							</>
+						)}
 					</div>
 					<div className="flex items-center gap-2">
 						{bell}
@@ -227,38 +285,71 @@ export function PortalShell({ member, memberId, navPins, showAdmin, bell, signOu
 					</div>
 
 					<nav className="flex flex-col px-2 pt-3" aria-label="More modules">
-						{sheetItems.map((item) => {
-							const Icon = item.icon;
-							return (
-								<SheetClose asChild key={item.id}>
-									<Link
-										href={item.href}
-										className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold hover:bg-muted"
-									>
+						{inAdmin ? (
+							<>
+								<SheetClose asChild>
+									<Link href="/portal" className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold hover:bg-muted">
 										<span className="grid size-9 place-items-center rounded-lg bg-secondary text-accent">
-											<Icon className="size-5" />
+											<ChevronLeft className="size-5" />
 										</span>
-										<span className="flex-1">{item.label}</span>
-										<ChevronRight className="size-4 text-muted-foreground" />
+										<span className="flex-1">Back to portal</span>
 									</Link>
 								</SheetClose>
-							);
-						})}
-						{navPins.map((pin) => (
-							<SheetClose asChild key={pin.id}>
-								<a
-									href={pin.url}
-									target="_blank"
-									rel="noreferrer"
-									className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold hover:bg-muted"
-								>
-									<span className="grid size-9 place-items-center rounded-lg bg-secondary text-accent">
-										<ChevronRight className="size-5" />
-									</span>
-									<span className="flex-1 truncate">{pin.label}</span>
-								</a>
-							</SheetClose>
-						))}
+								{adminGroups.map((group) => (
+									<div key={group.segment} className="pt-2">
+										<p className="px-3 pb-1 text-[0.6rem] font-semibold uppercase tracking-wider text-muted-foreground">
+											{group.label}
+										</p>
+										{group.pages.map((page) => (
+											<SheetClose asChild key={page.href}>
+												<Link
+													href={page.href}
+													className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-muted"
+												>
+													<span className="flex-1">{page.label}</span>
+													<ChevronRight className="size-4 text-muted-foreground" />
+												</Link>
+											</SheetClose>
+										))}
+									</div>
+								))}
+							</>
+						) : (
+							<>
+								{sheetItems.map((item) => {
+									const Icon = item.icon;
+									return (
+										<SheetClose asChild key={item.id}>
+											<Link
+												href={item.href}
+												className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold hover:bg-muted"
+											>
+												<span className="grid size-9 place-items-center rounded-lg bg-secondary text-accent">
+													<Icon className="size-5" />
+												</span>
+												<span className="flex-1">{item.label}</span>
+												<ChevronRight className="size-4 text-muted-foreground" />
+											</Link>
+										</SheetClose>
+									);
+								})}
+								{navPins.map((pin) => (
+									<SheetClose asChild key={pin.id}>
+										<a
+											href={pin.url}
+											target="_blank"
+											rel="noreferrer"
+											className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold hover:bg-muted"
+										>
+											<span className="grid size-9 place-items-center rounded-lg bg-secondary text-accent">
+												<ChevronRight className="size-5" />
+											</span>
+											<span className="flex-1 truncate">{pin.label}</span>
+										</a>
+									</SheetClose>
+								))}
+							</>
+						)}
 					</nav>
 
 					<div className="mt-2 border-t border-border px-2 pt-2">

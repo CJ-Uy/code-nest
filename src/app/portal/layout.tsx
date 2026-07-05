@@ -4,6 +4,7 @@ import { NotificationBell } from "@/components/portal/notification-bell";
 import { PortalShell } from "@/components/portal/portal-shell";
 import { getActor } from "@/server/auth/actor";
 import { hasAnyAdminScope } from "@/server/auth/admin";
+import { visibleGroups } from "./admin/nav";
 import { signOutAction } from "./actions";
 import { markAllNotificationsReadAction, markNotificationReadAction } from "./notifications/actions";
 
@@ -31,6 +32,14 @@ export default async function PortalLayout({ children }: { children: React.React
 
 	const displayName = member.nickname ?? member.fullName ?? member.name ?? member.email;
 	const showAdmin = hasAnyAdminScope(actor);
+	const adminGroups = showAdmin
+		? visibleGroups(actor).map((group) => ({
+				segment: group.segment,
+				label: group.label,
+				href: group.href,
+				pages: group.pages.map((page) => ({ href: page.href, label: page.label })),
+			}))
+		: [];
 
 	// TODO(phase-8): load nav_pins via a navPins repository once Phase 8 adds it.
 	const navPins: { id: string; label: string; url: string }[] = [];
@@ -42,6 +51,7 @@ export default async function PortalLayout({ children }: { children: React.React
 				memberId={actor.memberId}
 				navPins={navPins}
 				showAdmin={showAdmin}
+				adminGroups={adminGroups}
 				signOutAction={signOutAction}
 				bell={
 					<NotificationBell
