@@ -14,6 +14,7 @@ import { createOverviewRepository, type OverviewRepository } from "./overview";
 import { createQuickLinksRepository } from "./quickLinks";
 import { createRetentionRepository } from "./retention";
 import { createUnavailableRetentionRepository } from "./retention-unavailable";
+import { createRolesRepository } from "./roles";
 import { createRosterRepository } from "./roster";
 import { createSessionsRepository } from "./sessions";
 import { createSubmissionsRepository, createUnavailableSubmissionsRepository } from "./submissions";
@@ -47,6 +48,7 @@ export function createDrizzleRepositories(db: DrizzleDb) {
 		navPins: createNavPinsRepository(db, audit),
 		quickLinks: createQuickLinksRepository(db, audit),
 		roster: createRosterRepository(db, audit),
+		roles: createRolesRepository(d1, audit),
 		surveys: createSurveysRepository(d1, audit),
 		notifications: createNotificationsRepository(d1),
 		overview: createOverviewRepository(d1),
@@ -97,6 +99,10 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 	return {
 		members: {
 			list: async (_actor, input) => adapter.listMembers().then((members) => members.slice(0, input?.limit ?? 25)),
+			search: async () => {
+				// Admin-critical read: fail loud in shared-dev rather than returning [] (spec §5).
+				throw new Error("Member search is only available through the shared /internal API.");
+			},
 			getById: async (_actor, id) => adapter.getMemberById(id),
 			create: async (_actor, input) => adapter.createMember(input),
 			updateProfile: async (_actor, id, input) => adapter.updateMemberProfile(id, input),
@@ -110,6 +116,7 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 		navPins: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createNavPinsRepository>,
 		quickLinks: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createQuickLinksRepository>,
 		roster: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createRosterRepository>,
+		roles: new Proxy({}, { get: () => unavailable }) as ReturnType<typeof createRolesRepository>,
 		surveys: createUnavailableSurveysRepository(),
 		notifications: createUnavailableNotificationsRepository(),
 		overview: createUnavailableOverviewRepository(),

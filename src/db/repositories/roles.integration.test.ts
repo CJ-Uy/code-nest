@@ -1,0 +1,122 @@
+import { env } from "cloudflare:test";
+import { drizzle } from "drizzle-orm/d1";
+import { beforeEach, describe, expect, it } from "vitest";
+import * as schema from "@/db/schema";
+import type { Actor } from "@/server/auth/permissions";
+import { createAuditRepository } from "./audit";
+import { createMembersRepository, type MemberDb } from "./members";
+import { createRolesRepository } from "./roles";
+
+const superActor: Actor = { memberId: "m_super", roles: ["super"] };
+const memberAdmin: Actor = { memberId: "m_admin", roles: ["member_admin"] };
+const plain: Actor = { memberId: "m_plain", roles: ["member"] };
+
+function repos() {
+	const db = drizzle(env.DB, { schema });
+	const audit = createAuditRepository(db);
+	return {
+		db,
+		members: createMembersRepository(db as unknown as MemberDb, audit),
+		roles: createRolesRepository(db, audit),
+	};
+}
+
+describe("roles + member search on D1", () => {
+	beforeEach(async () => {
+		for (const t of ["audit_logs", "member_roles", "roles", "members"]) {
+			await env.DB.prepare(`DELETE FROM ${t}`).run();
+		}
+		const roleSeed: [string, string, string][] = [
+			["role_super", "super", "Overall Admin"],
+			["role_member_admin", "member_admin", "Member Admin"],
+			["role_publishing", "publishing", "Publishing"],
+			["role_calendar", "calendar", "Events"],
+			["role_member", "member", "Member"],
+		];
+		for (const [id, key, label] of roleSeed) {
+			await env.DB.prepare("INSERT INTO roles (id, key, label, description, kind) VALUES (?,?,?,?,?)")
+				.bind(id, key, label, `${label} role`, "system")
+				.run();
+		}
+		const memberSeed: [string, string, string, string][] = [
+			["m_super", "super@code.org", "Super Admin", "active"],
+			["m_admin", "admin@code.org", "Member Admin", "active"],
+			["m_plain", "plain@code.org", "Plain Member", "active"],
+			["m_juan", "juan@code.org", "Juan Dela Cruz", "active"],
+			["m_old", "old@code.org", "Old Member", "inactive"],
+		];
+		for (const [id, email, name, status] of memberSeed) {
+			await env.DB.prepare("INSERT INTO members (id, email, name, status) VALUES (?,?,?,?)").bind(id, email, name, status).run();
+		}
+		const mr: [string, string][] = [
+			["m_super", "role_super"],
+			["m_admin", "role_member_admin"],
+			["m_plain", "role_publishing"],
+		];
+		for (const [mid, rid] of mr) {
+			await env.DB.prepare("INSERT INTO member_roles (member_id, role_id, assigned_by) VALUES (?,?,?)").bind(mid, rid, "m_super").run();
+		}
+	});
+
+	it("members.search: active only, name/email, min length, rejects unauthorized", async () => {
+		const { members } = repos();
+		expect((await members.search(memberAdmin, "dela")).map((m) => m.email)).toContain("juan@code.org");
+		expect((await members.search(memberAdmin, "JUAN@")).length).toBe(1);
+		expect(await members.search(memberAdmin, "old")).toEqual([]); // inactive excluded
+		expect(await members.search(memberAdmin, "d")).toEqual([]); // < 2 chars
+		await expect(members.search(plain, "dela")).rejects.toThrow(/Not authorized/);
+	});
+
+	it("lists assignable roles (no member, calendar inactive) and reads keys", async () => {
+		const { roles } = repos();
+		const list = await roles.listAssignableRoles(superActor);
+		expect(list.find((r) => r.key === "member")).toBeUndefined();
+		expect(list.find((r) => r.key === "calendar")?.assignable).toBe(false);
+		expect(await roles.getMemberRoleKeys(superActor, "m_plain")).toEqual(["publishing"]);
+		expect(roles.baseVersionOf(["publishing", "super"])).toBe("publishing|super");
+	});
+
+	it("saves a diff atomically: adds member_admin, keeps publishing, writes audit", async () => {
+		const { roles, db } = repos();
+		const base = roles.baseVersionOf(await roles.getMemberRoleKeys(superActor, "m_plain"));
+		const res = await roles.saveMemberRoles(superActor, {
+			memberId: "m_plain",
+			desiredRoleKeys: ["publishing", "member_admin"],
+			baseVersion: base,
+		});
+		expect(res.roleKeys).toEqual(["member_admin", "publishing"]);
+		const audits = await db.select().from(schema.auditLogs);
+		expect(audits.some((a) => a.action === "role:assign" && a.category === "role")).toBe(true);
+	});
+
+	it("rejects a stale baseVersion (optimistic concurrency)", async () => {
+		const { roles } = repos();
+		await expect(
+			roles.saveMemberRoles(superActor, { memberId: "m_plain", desiredRoleKeys: [], baseVersion: "stale" }),
+		).rejects.toThrow(/reload/i);
+	});
+
+	it("non-super cannot grant Overall Admin via a desired set", async () => {
+		const { roles } = repos();
+		const base = roles.baseVersionOf(await roles.getMemberRoleKeys(memberAdmin, "m_plain"));
+		await expect(
+			roles.saveMemberRoles(memberAdmin, { memberId: "m_plain", desiredRoleKeys: ["publishing", "super"], baseVersion: base }),
+		).rejects.toThrow(/Overall Admin/);
+	});
+
+	it("blocks removing the last Overall Admin", async () => {
+		const { roles } = repos();
+		const base = roles.baseVersionOf(await roles.getMemberRoleKeys(superActor, "m_super"));
+		await expect(
+			roles.saveMemberRoles(superActor, { memberId: "m_super", desiredRoleKeys: [], baseVersion: base }),
+		).rejects.toThrow(/Overall Admin/);
+	});
+
+	it("rejects assigning the inactive Events (calendar) placeholder role", async () => {
+		const { roles } = repos();
+		const base = roles.baseVersionOf(await roles.getMemberRoleKeys(superActor, "m_plain"));
+		await expect(
+			roles.saveMemberRoles(superActor, { memberId: "m_plain", desiredRoleKeys: ["publishing", "calendar"], baseVersion: base }),
+		).rejects.toThrow(/not assignable/);
+	});
+});
