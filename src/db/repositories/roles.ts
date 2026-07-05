@@ -3,15 +3,14 @@ import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { auditLogs, memberRoles, members, roles } from "@/db/schema";
 import { createId } from "@/lib/ids";
 import type { Actor, RoleKey } from "@/server/auth/permissions";
-import { can, roleKeys } from "@/server/auth/permissions";
+import { can, normalizeRoleKey, normalizeRoleKeys, roleKeys } from "@/server/auth/permissions";
 import type * as schema from "../schema";
-import type { AuditRepository } from "./audit";
 
 type Db = DrizzleD1Database<typeof schema>;
 
-/** Role keys that exist but grant nothing yet — shown disabled, never assignable. */
+/** Role keys that exist but grant nothing yet: shown disabled, never assignable. */
 const INACTIVE_ROLE_KEYS: RoleKey[] = ["calendar"];
-/** The implicit baseline role — never surfaced or assignable on the Roles page. */
+/** The implicit baseline role: never surfaced or assignable on the Roles page. */
 const NON_ASSIGNABLE: RoleKey[] = ["member"];
 
 export type AssignableRole = { key: RoleKey; label: string; description: string; assignable: boolean };
@@ -28,7 +27,7 @@ export type RolesRepository = {
 	saveMemberRoles(actor: Actor, input: SaveMemberRolesInput): Promise<{ roleKeys: RoleKey[] }>;
 };
 
-export function createRolesRepository(db: Db, _audit: AuditRepository): RolesRepository {
+export function createRolesRepository(db: Db): RolesRepository {
 	const baseVersionOf = (keys: RoleKey[]) => [...keys].sort().join("|");
 
 	async function loadKeys(memberId: string): Promise<RoleKey[]> {
@@ -37,7 +36,7 @@ export function createRolesRepository(db: Db, _audit: AuditRepository): RolesRep
 			.from(memberRoles)
 			.innerJoin(roles, eq(roles.id, memberRoles.roleId))
 			.where(eq(memberRoles.memberId, memberId));
-		return rows.map((r) => r.key as RoleKey).sort();
+		return normalizeRoleKeys(rows.map((r) => r.key)).sort();
 	}
 
 	function auditStmt(actor: Actor, targetId: string, action: "role:assign" | "role:revoke", key: RoleKey) {
@@ -61,14 +60,18 @@ export function createRolesRepository(db: Db, _audit: AuditRepository): RolesRep
 		async listAssignableRoles(actor) {
 			if (!can(actor, "role:assign")) throw new Error("Not authorized to view roles.");
 			const rows = await db.select().from(roles);
-			return rows
-				.filter((r) => !NON_ASSIGNABLE.includes(r.key as RoleKey))
-				.map((r) => ({
-					key: r.key as RoleKey,
+			const seen = new Set<RoleKey>();
+			return rows.flatMap((r) => {
+				const key = normalizeRoleKey(r.key);
+				if (!key || seen.has(key) || NON_ASSIGNABLE.includes(key)) return [];
+				seen.add(key);
+				return [{
+					key,
 					label: r.label,
 					description: r.description,
-					assignable: !INACTIVE_ROLE_KEYS.includes(r.key as RoleKey),
-				}));
+					assignable: !INACTIVE_ROLE_KEYS.includes(key),
+				}];
+			});
 		},
 
 		async listAdmins(actor) {
@@ -87,6 +90,8 @@ export function createRolesRepository(db: Db, _audit: AuditRepository): RolesRep
 				.where(ne(roles.key, "member"));
 			const byMember = new Map<string, AdminEntry>();
 			for (const row of rows) {
+				const key = normalizeRoleKey(row.key);
+				if (!key) continue;
 				let entry = byMember.get(row.memberId);
 				if (!entry) {
 					entry = {
@@ -97,7 +102,7 @@ export function createRolesRepository(db: Db, _audit: AuditRepository): RolesRep
 					};
 					byMember.set(row.memberId, entry);
 				}
-				entry.roleKeys.push(row.key as RoleKey);
+				if (!entry.roleKeys.includes(key)) entry.roleKeys.push(key);
 			}
 			return [...byMember.values()]
 				.map((entry) => ({ ...entry, roleKeys: [...entry.roleKeys].sort() }))
@@ -115,7 +120,7 @@ export function createRolesRepository(db: Db, _audit: AuditRepository): RolesRep
 
 			const current = await loadKeys(input.memberId);
 			if (baseVersionOf(current) !== input.baseVersion) {
-				throw new Error("Roles changed — reload and try again.");
+				throw new Error("Roles changed. Reload and try again.");
 			}
 
 			const desired = [...new Set(input.desiredRoleKeys)];
@@ -137,7 +142,11 @@ export function createRolesRepository(db: Db, _audit: AuditRepository): RolesRep
 			if (toAdd.length === 0 && toRemove.length === 0) return { roleKeys: current };
 
 			const roleRows = await db.select({ id: roles.id, key: roles.key }).from(roles);
-			const idByKey = new Map(roleRows.map((r) => [r.key as RoleKey, r.id]));
+			const idByKey = new Map<RoleKey, string>();
+			for (const row of roleRows) {
+				const key = normalizeRoleKey(row.key);
+				if (key && !idByKey.has(key)) idByKey.set(key, row.id);
+			}
 			const superId = idByKey.get("super");
 
 			// Race-safe last-super guard: single conditional delete, only if >1 super remains.
@@ -155,9 +164,7 @@ export function createRolesRepository(db: Db, _audit: AuditRepository): RolesRep
 				if (removed.length === 0) throw new Error("At least one Overall Admin is required.");
 			}
 
-			// Everything else (adds, non-super removes, and all audit rows) atomically.
-			// ponytail: rare crash between the guarded super-delete above and this batch can
-			// drop a super's audit row; acceptable, matches the codebase's post-op-crash stance.
+			// ponytail: adapter-neutral sequential writes; use a real transaction if role edits become high volume.
 			const statements: unknown[] = [];
 			for (const key of toAdd) {
 				const roleId = idByKey.get(key);
@@ -175,7 +182,7 @@ export function createRolesRepository(db: Db, _audit: AuditRepository): RolesRep
 				);
 			}
 			if (statements.length > 0) {
-				await db.batch(statements as unknown as Parameters<typeof db.batch>[0]);
+				for (const statement of statements) await statement;
 			}
 
 			return { roleKeys: await loadKeys(input.memberId) };

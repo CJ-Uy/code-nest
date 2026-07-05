@@ -8,7 +8,7 @@ import { createAuditRepository } from "@/db/repositories/audit";
 import { getAppConfig } from "@/server/env";
 import { isGoogleSignInAllowed, splitAuthList } from "@/server/auth/access";
 import { grantBootstrapSuperRole } from "@/server/auth/bootstrap";
-import { roleKeys, type RoleKey } from "@/server/auth/permissions";
+import { normalizeRoleKeys } from "@/server/auth/permissions";
 import { isRosterSignInAllowed } from "@/server/auth/roster";
 
 export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
@@ -25,7 +25,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 
 	// The roster gate (src/server/auth/roster.ts) looks members up by a
 	// lowercased email. Google's OIDC email claim is normally already
-	// lowercase, but nothing guarantees that, so normalize here too —
+	// lowercase, but nothing guarantees that, so normalize here too.
 	// otherwise a mixed-case claim would create a member row the gate
 	// can never find, silently breaking the super-admin bypass and the
 	// off-roster deactivation.
@@ -76,9 +76,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 				session.user.status = member.status;
 				session.user.roles = [
 					"member",
-					...elevated
-						.map((item) => item.roles.key)
-						.filter((role): role is RoleKey => roleKeys.includes(role as RoleKey) && role !== "member"),
+					...normalizeRoleKeys(elevated.map((item) => item.roles.key)).filter((role) => role !== "member"),
 				];
 				return session;
 			},

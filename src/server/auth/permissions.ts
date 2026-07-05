@@ -2,6 +2,25 @@ export const roleKeys = ["super", "member", "calendar", "link", "retention", "me
 
 export type RoleKey = (typeof roleKeys)[number];
 
+const roleKeyAliases: Record<string, RoleKey> = {
+	crs: "retention",
+};
+
+export function normalizeRoleKey(value: string | null | undefined): RoleKey | null {
+	if (!value) return null;
+	if ((roleKeys as readonly string[]).includes(value)) return value as RoleKey;
+	return roleKeyAliases[value] ?? null;
+}
+
+export function normalizeRoleKeys(values: Iterable<string | null | undefined>): RoleKey[] {
+	const normalized = new Set<RoleKey>();
+	for (const value of values) {
+		const key = normalizeRoleKey(value);
+		if (key) normalized.add(key);
+	}
+	return [...normalized];
+}
+
 export const permissionActions = [
 	"event:approve",
 	"points:assign",

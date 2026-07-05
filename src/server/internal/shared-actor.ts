@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import * as schema from "@/db/schema";
 import { memberRoles, members, roles, sharedDevTokens } from "@/db/schema";
-import { roleKeys, type Actor, type RoleKey } from "@/server/auth/permissions";
+import { normalizeRoleKeys, type Actor } from "@/server/auth/permissions";
 
 export async function hashSharedToken(token: string): Promise<string> {
 	const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
@@ -35,9 +35,7 @@ export async function resolveSharedActor(
 
 	if (rows.length === 0 || rows[0].status !== "active") return null;
 
-	const elevatedRoles = rows
-		.map((row) => row.role)
-		.filter((role): role is RoleKey => roleKeys.includes(role as RoleKey) && role !== "member");
+	const elevatedRoles = normalizeRoleKeys(rows.map((row) => row.role)).filter((role) => role !== "member");
 
 	return {
 		memberId: rows[0].memberId,

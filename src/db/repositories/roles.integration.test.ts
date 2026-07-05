@@ -17,7 +17,7 @@ function repos() {
 	return {
 		db,
 		members: createMembersRepository(db as unknown as MemberDb, audit),
-		roles: createRolesRepository(db, audit),
+		roles: createRolesRepository(db),
 	};
 }
 
@@ -76,11 +76,30 @@ describe("roles + member search on D1", () => {
 		expect(roles.baseVersionOf(["publishing", "super"])).toBe("publishing|super");
 	});
 
+	it("normalizes legacy CRS role rows to retention", async () => {
+		await env.DB.prepare("INSERT INTO roles (id, key, label, description, kind) VALUES (?,?,?,?,?)")
+			.bind("role_crs", "crs", "CRS", "Legacy CRS role", "system")
+			.run();
+		await env.DB.prepare("INSERT INTO member_roles (member_id, role_id, assigned_by) VALUES (?,?,?)")
+			.bind("m_juan", "role_crs", "m_super")
+			.run();
+
+		const { roles } = repos();
+		expect(await roles.getMemberRoleKeys(superActor, "m_juan")).toEqual(["retention"]);
+		const base = roles.baseVersionOf(await roles.getMemberRoleKeys(superActor, "m_plain"));
+		const res = await roles.saveMemberRoles(superActor, {
+			memberId: "m_plain",
+			desiredRoleKeys: ["publishing", "retention"],
+			baseVersion: base,
+		});
+		expect(res.roleKeys).toEqual(["publishing", "retention"]);
+	});
+
 	it("listAdmins returns only members with a non-member role, plus their keys", async () => {
 		const { roles } = repos();
 		const admins = await roles.listAdmins(superActor);
 		const byEmail = Object.fromEntries(admins.map((a) => [a.email, a.roleKeys]));
-		// m_juan / m_old have no member_roles → not admins
+		// m_juan / m_old have no member_roles, so they are not admins.
 		expect(Object.keys(byEmail).sort()).toEqual(["admin@code.org", "plain@code.org", "super@code.org"]);
 		expect(byEmail["super@code.org"]).toEqual(["super"]);
 		expect(byEmail["plain@code.org"]).toEqual(["publishing"]);

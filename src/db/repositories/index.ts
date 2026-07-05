@@ -48,7 +48,7 @@ export function createDrizzleRepositories(db: DrizzleDb) {
 		navPins: createNavPinsRepository(db, audit),
 		quickLinks: createQuickLinksRepository(db, audit),
 		roster: createRosterRepository(db, audit),
-		roles: createRolesRepository(d1, audit),
+		roles: createRolesRepository(d1),
 		surveys: createSurveysRepository(d1, audit),
 		notifications: createNotificationsRepository(d1),
 		overview: createOverviewRepository(d1),

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getRepositories } from "@/db";
 import { requireActor } from "@/server/auth/actor";
-import { can, roleKeys } from "@/server/auth/permissions";
+import { can, normalizeRoleKeys } from "@/server/auth/permissions";
 
 // Server actions get Next's built-in same-origin/POST protection (same as every
 // other mutation action in this app, e.g. members/list/actions.ts).
@@ -12,7 +12,7 @@ import { can, roleKeys } from "@/server/auth/permissions";
 const saveSchema = z.object({
 	memberId: z.string().min(1),
 	baseVersion: z.string(),
-	desiredRoleKeys: z.array(z.enum(roleKeys)).default([]),
+	desiredRoleKeys: z.array(z.string()).transform(normalizeRoleKeys).default([]),
 });
 
 export async function searchMembersAction(query: string) {
