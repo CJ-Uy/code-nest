@@ -14279,7 +14279,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "code_route_test",
-      "community": 103,
+      "community": 85,
       "norm_label": "route.test.ts"
     },
     {
@@ -14289,7 +14289,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "code_route_test_mocks",
-      "community": 103,
+      "community": 85,
       "norm_label": "mocks"
     },
     {
@@ -14299,7 +14299,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "code_route",
-      "community": 103,
+      "community": 85,
       "norm_label": "route.ts"
     },
     {
@@ -14309,7 +14309,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "code_route_get",
-      "community": 103,
+      "community": 85,
       "norm_label": "get()"
     },
     {
@@ -14329,7 +14329,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "health_route",
-      "community": 119,
+      "community": 118,
       "norm_label": "route.ts"
     },
     {
@@ -14339,7 +14339,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "health_route_get",
-      "community": 119,
+      "community": 118,
       "norm_label": "get()"
     },
     {
@@ -14349,7 +14349,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "id_route",
-      "community": 120,
+      "community": 118,
       "norm_label": "route.ts"
     },
     {
@@ -14359,7 +14359,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "id_route_context",
-      "community": 120,
+      "community": 118,
       "norm_label": "context"
     },
     {
@@ -14369,7 +14369,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "id_route_handlers",
-      "community": 120,
+      "community": 118,
       "norm_label": "handlers()"
     },
     {
@@ -14379,7 +14379,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "id_route_get",
-      "community": 120,
+      "community": 118,
       "norm_label": "get()"
     },
     {
@@ -14389,7 +14389,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "id_route_patch",
-      "community": 120,
+      "community": 118,
       "norm_label": "patch()"
     },
     {
@@ -14399,7 +14399,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "id_route_delete",
-      "community": 120,
+      "community": 118,
       "norm_label": "delete()"
     },
     {
@@ -14409,7 +14409,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "stats_route",
-      "community": 120,
+      "community": 118,
       "norm_label": "route.ts"
     },
     {
@@ -14419,7 +14419,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "stats_route_context",
-      "community": 120,
+      "community": 118,
       "norm_label": "context"
     },
     {
@@ -14429,7 +14429,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "stats_route_get",
-      "community": 120,
+      "community": 118,
       "norm_label": "get()"
     },
     {
@@ -14439,7 +14439,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "links_route",
-      "community": 120,
+      "community": 118,
       "norm_label": "route.ts"
     },
     {
@@ -14449,7 +14449,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "links_route_handlers",
-      "community": 120,
+      "community": 118,
       "norm_label": "handlers()"
     },
     {
@@ -14459,7 +14459,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "links_route_get",
-      "community": 120,
+      "community": 118,
       "norm_label": "get()"
     },
     {
@@ -14469,7 +14469,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "links_route_post",
-      "community": 120,
+      "community": 118,
       "norm_label": "post()"
     },
     {
@@ -14479,7 +14479,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "key_route",
-      "community": 1,
+      "community": 118,
       "norm_label": "route.ts"
     },
     {
@@ -14489,7 +14489,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "key_route_uploadroutecontext",
-      "community": 1,
+      "community": 118,
       "norm_label": "uploadroutecontext"
     },
     {
@@ -14499,7 +14499,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "key_route_get",
-      "community": 1,
+      "community": 118,
       "norm_label": "get()"
     },
     {
@@ -14509,7 +14509,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "key_route_delete",
-      "community": 1,
+      "community": 118,
       "norm_label": "delete()"
     },
     {
@@ -14519,7 +14519,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "key_route_handleobject",
-      "community": 1,
+      "community": 118,
       "norm_label": "handleobject()"
     },
     {
@@ -14529,7 +14529,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "key_route_createhandlers",
-      "community": 1,
+      "community": 118,
       "norm_label": "createhandlers()"
     },
     {
@@ -14539,7 +14539,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "uploads_route",
-      "community": 1,
+      "community": 118,
       "norm_label": "route.ts"
     },
     {
@@ -14549,7 +14549,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "uploads_route_post",
-      "community": 1,
+      "community": 118,
       "norm_label": "post()"
     },
     {
@@ -14559,7 +14559,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "uploads_route_createhandlers",
-      "community": 1,
+      "community": 118,
       "norm_label": "createhandlers()"
     },
     {
@@ -14653,6 +14653,566 @@
       "norm_label": "signoutaction()"
     },
     {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/content/links/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_app_portal_admin_content_links_page_tsx_links_page",
+      "community": 121,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "AdminShortLinksPage()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/content/links/page.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "links_page_adminshortlinkspage",
+      "community": 121,
+      "norm_label": "adminshortlinkspage()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/content/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "content_page",
+      "community": 103,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "ContentGroupPage()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/content/page.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "content_page_contentgrouppage",
+      "community": 103,
+      "norm_label": "contentgrouppage()"
+    },
+    {
+      "label": "group-index.tsx",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/group-index.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "admin_group_index",
+      "community": 103,
+      "norm_label": "group-index.tsx"
+    },
+    {
+      "label": "AdminGroupIndex()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/group-index.tsx",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "admin_group_index_admingroupindex",
+      "community": 103,
+      "norm_label": "admingroupindex()"
+    },
+    {
+      "label": "layout.tsx",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/layout.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "admin_layout",
+      "community": 1,
+      "norm_label": "layout.tsx"
+    },
+    {
+      "label": "AdminLayout()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/layout.tsx",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "admin_layout_adminlayout",
+      "community": 1,
+      "norm_label": "adminlayout()"
+    },
+    {
+      "label": "actions.ts",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "list_actions",
+      "community": 120,
+      "norm_label": "actions.ts"
+    },
+    {
+      "label": "inviteSchema",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "list_actions_inviteschema",
+      "community": 120,
+      "norm_label": "inviteschema"
+    },
+    {
+      "label": "statusSchema",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "list_actions_statusschema",
+      "community": 120,
+      "norm_label": "statusschema"
+    },
+    {
+      "label": "inviteMemberAction()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "list_actions_invitememberaction",
+      "community": 120,
+      "norm_label": "invitememberaction()"
+    },
+    {
+      "label": "updateMemberStatusAction()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L27",
+      "_origin": "ast",
+      "id": "list_actions_updatememberstatusaction",
+      "community": 120,
+      "norm_label": "updatememberstatusaction()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "list_page",
+      "community": 119,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "MemberListPage()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "list_page_memberlistpage",
+      "community": 86,
+      "norm_label": "memberlistpage()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "members_page",
+      "community": 103,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "MembersGroupPage()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/page.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "members_page_membersgrouppage",
+      "community": 103,
+      "norm_label": "membersgrouppage()"
+    },
+    {
+      "label": "actions.ts",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "roles_actions",
+      "community": 86,
+      "norm_label": "actions.ts"
+    },
+    {
+      "label": "saveSchema",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "roles_actions_saveschema",
+      "community": 86,
+      "norm_label": "saveschema"
+    },
+    {
+      "label": "searchMembersAction()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "roles_actions_searchmembersaction",
+      "community": 86,
+      "norm_label": "searchmembersaction()"
+    },
+    {
+      "label": "loadMemberRolesAction()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "roles_actions_loadmemberrolesaction",
+      "community": 86,
+      "norm_label": "loadmemberrolesaction()"
+    },
+    {
+      "label": "saveMemberRolesAction()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "roles_actions_savememberrolesaction",
+      "community": 86,
+      "norm_label": "savememberrolesaction()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "roles_page",
+      "community": 86,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "RolesAccessPage()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "roles_page_rolesaccesspage",
+      "community": 86,
+      "norm_label": "rolesaccesspage()"
+    },
+    {
+      "label": "roles-editor.tsx",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "roles_roles_editor",
+      "community": 86,
+      "norm_label": "roles-editor.tsx"
+    },
+    {
+      "label": "Editor",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "roles_roles_editor_editor",
+      "community": 86,
+      "norm_label": "editor"
+    },
+    {
+      "label": "RolesManager()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "roles_roles_editor_rolesmanager",
+      "community": 86,
+      "norm_label": "rolesmanager()"
+    },
+    {
+      "label": "nav.ts",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "admin_nav",
+      "community": 113,
+      "norm_label": "nav.ts"
+    },
+    {
+      "label": "AdminPermission",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "admin_nav_adminpermission",
+      "community": 113,
+      "norm_label": "adminpermission"
+    },
+    {
+      "label": "AdminPage",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "admin_nav_adminpage",
+      "community": 113,
+      "norm_label": "adminpage"
+    },
+    {
+      "label": "AdminGroup",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "admin_nav_admingroup",
+      "community": 113,
+      "norm_label": "admingroup"
+    },
+    {
+      "label": "G()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "admin_nav_g",
+      "community": 113,
+      "norm_label": "g()"
+    },
+    {
+      "label": "adminGroups",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "admin_nav_admingroups",
+      "community": 113,
+      "norm_label": "admingroups"
+    },
+    {
+      "label": "pageVisible()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "admin_nav_pagevisible",
+      "community": 113,
+      "norm_label": "pagevisible()"
+    },
+    {
+      "label": "visibleGroups()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L41",
+      "_origin": "ast",
+      "id": "admin_nav_visiblegroups",
+      "community": 103,
+      "norm_label": "visiblegroups()"
+    },
+    {
+      "label": "crumbFor()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L47",
+      "_origin": "ast",
+      "id": "admin_nav_crumbfor",
+      "community": 113,
+      "norm_label": "crumbfor()"
+    },
+    {
+      "label": "adminHeading()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L63",
+      "_origin": "ast",
+      "id": "admin_nav_adminheading",
+      "community": 113,
+      "norm_label": "adminheading()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "admin_page",
+      "community": 103,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "AdminHomePage()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/page.tsx",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "admin_page_adminhomepage",
+      "community": 103,
+      "norm_label": "adminhomepage()"
+    },
+    {
+      "label": "actions.ts",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "nav_pins_actions",
+      "community": 87,
+      "norm_label": "actions.ts"
+    },
+    {
+      "label": "pinSchema",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "nav_pins_actions_pinschema",
+      "community": 87,
+      "norm_label": "pinschema"
+    },
+    {
+      "label": "parsePin()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "nav_pins_actions_parsepin",
+      "community": 87,
+      "norm_label": "parsepin()"
+    },
+    {
+      "label": "createNavPinAction()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "nav_pins_actions_createnavpinaction",
+      "community": 87,
+      "norm_label": "createnavpinaction()"
+    },
+    {
+      "label": "updateNavPinAction()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L33",
+      "_origin": "ast",
+      "id": "nav_pins_actions_updatenavpinaction",
+      "community": 87,
+      "norm_label": "updatenavpinaction()"
+    },
+    {
+      "label": "saveNavPinsAction()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L42",
+      "_origin": "ast",
+      "id": "nav_pins_actions_savenavpinsaction",
+      "community": 87,
+      "norm_label": "savenavpinsaction()"
+    },
+    {
+      "label": "deleteNavPinAction()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L70",
+      "_origin": "ast",
+      "id": "nav_pins_actions_deletenavpinaction",
+      "community": 87,
+      "norm_label": "deletenavpinaction()"
+    },
+    {
+      "label": "nav-pins-manager.tsx",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "nav_pins_nav_pins_manager",
+      "community": 87,
+      "norm_label": "nav-pins-manager.tsx"
+    },
+    {
+      "label": "NavPin",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "nav_pins_nav_pins_manager_navpin",
+      "community": 87,
+      "norm_label": "navpin"
+    },
+    {
+      "label": "move()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "nav_pins_nav_pins_manager_move",
+      "community": 87,
+      "norm_label": "move()"
+    },
+    {
+      "label": "iconLabel()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "nav_pins_nav_pins_manager_iconlabel",
+      "community": 87,
+      "norm_label": "iconlabel()"
+    },
+    {
+      "label": "IconPicker()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "nav_pins_nav_pins_manager_iconpicker",
+      "community": 87,
+      "norm_label": "iconpicker()"
+    },
+    {
+      "label": "NavPinsManager()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L92",
+      "_origin": "ast",
+      "id": "nav_pins_nav_pins_manager_navpinsmanager",
+      "community": 86,
+      "norm_label": "navpinsmanager()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "nav_pins_page",
+      "community": 86,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "NavPinsAdminPage()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "nav_pins_page_navpinsadminpage",
+      "community": 86,
+      "norm_label": "navpinsadminpage()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "system_page",
+      "community": 103,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "SystemGroupPage()",
+      "file_type": "code",
+      "source_file": "src/app/portal/admin/system/page.tsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "system_page_systemgrouppage",
+      "community": 103,
+      "norm_label": "systemgrouppage()"
+    },
+    {
       "label": "layout.tsx",
       "file_type": "code",
       "source_file": "src/app/portal/layout.tsx",
@@ -14666,17 +15226,27 @@
       "label": "initialsFrom()",
       "file_type": "code",
       "source_file": "src/app/portal/layout.tsx",
-      "source_location": "L8",
+      "source_location": "L10",
       "_origin": "ast",
       "id": "portal_layout_initialsfrom",
       "community": 1,
       "norm_label": "initialsfrom()"
     },
     {
+      "label": "isExternalHref()",
+      "file_type": "code",
+      "source_file": "src/app/portal/layout.tsx",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "portal_layout_isexternalhref",
+      "community": 1,
+      "norm_label": "isexternalhref()"
+    },
+    {
       "label": "PortalLayout()",
       "file_type": "code",
       "source_file": "src/app/portal/layout.tsx",
-      "source_location": "L13",
+      "source_location": "L19",
       "_origin": "ast",
       "id": "portal_layout_portallayout",
       "community": 1,
@@ -14689,7 +15259,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "links_actions",
-      "community": 1,
+      "community": 86,
       "norm_label": "actions.ts"
     },
     {
@@ -14699,7 +15269,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "links_actions_createlinkaction",
-      "community": 1,
+      "community": 86,
       "norm_label": "createlinkaction()"
     },
     {
@@ -14708,8 +15278,8 @@
       "source_file": "src/app/portal/links/page.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "links_page",
-      "community": 87,
+      "id": "src_app_portal_links_page_tsx_links_page",
+      "community": 86,
       "norm_label": "page.tsx"
     },
     {
@@ -14719,7 +15289,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "links_page_linkspage",
-      "community": 1,
+      "community": 86,
       "norm_label": "linkspage()"
     },
     {
@@ -14929,7 +15499,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "links_link_qr",
-      "community": 94,
+      "community": 84,
       "norm_label": "link-qr.tsx"
     },
     {
@@ -14939,7 +15509,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "links_link_qr_linkqr",
-      "community": 94,
+      "community": 84,
       "norm_label": "linkqr()"
     },
     {
@@ -15019,7 +15589,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "links_links_workspace_linksworkspace",
-      "community": 94,
+      "community": 84,
       "norm_label": "linksworkspace()"
     },
     {
@@ -15059,7 +15629,7 @@
       "source_location": "L318",
       "_origin": "ast",
       "id": "links_links_workspace_shortlinkcell",
-      "community": 94,
+      "community": 84,
       "norm_label": "shortlinkcell()"
     },
     {
@@ -15249,7 +15819,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "links_urls",
-      "community": 94,
+      "community": 84,
       "norm_label": "urls.ts"
     },
     {
@@ -15259,7 +15829,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "links_urls_shortlinkurl",
-      "community": 94,
+      "community": 84,
       "norm_label": "shortlinkurl()"
     },
     {
@@ -15443,6 +16013,56 @@
       "norm_label": "home()"
     },
     {
+      "label": "admin-intro.tsx",
+      "file_type": "code",
+      "source_file": "src/components/portal/admin-intro.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "portal_admin_intro",
+      "community": 103,
+      "norm_label": "admin-intro.tsx"
+    },
+    {
+      "label": "AdminIntro()",
+      "file_type": "code",
+      "source_file": "src/components/portal/admin-intro.tsx",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "portal_admin_intro_adminintro",
+      "community": 103,
+      "norm_label": "adminintro()"
+    },
+    {
+      "label": "nav-pin-icons.ts",
+      "file_type": "code",
+      "source_file": "src/components/portal/nav-pin-icons.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "portal_nav_pin_icons",
+      "community": 87,
+      "norm_label": "nav-pin-icons.ts"
+    },
+    {
+      "label": "navPinIconNames",
+      "file_type": "code",
+      "source_file": "src/components/portal/nav-pin-icons.ts",
+      "source_location": "L180",
+      "_origin": "ast",
+      "id": "portal_nav_pin_icons_navpiniconnames",
+      "community": 87,
+      "norm_label": "navpiniconnames"
+    },
+    {
+      "label": "navPinIconFor()",
+      "file_type": "code",
+      "source_file": "src/components/portal/nav-pin-icons.ts",
+      "source_location": "L182",
+      "_origin": "ast",
+      "id": "portal_nav_pin_icons_navpiniconfor",
+      "community": 87,
+      "norm_label": "navpiniconfor()"
+    },
+    {
       "label": "avatar.tsx",
       "file_type": "code",
       "source_file": "src/components/ui/avatar.tsx",
@@ -15489,7 +16109,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_badge",
-      "community": 87,
+      "community": 100,
       "norm_label": "badge.tsx"
     },
     {
@@ -15499,7 +16119,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "ui_badge_badgevariants",
-      "community": 87,
+      "community": 100,
       "norm_label": "badgevariants"
     },
     {
@@ -15509,7 +16129,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "ui_badge_badgeprops",
-      "community": 87,
+      "community": 100,
       "norm_label": "badgeprops"
     },
     {
@@ -15519,7 +16139,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "ui_badge_badge",
-      "community": 87,
+      "community": 100,
       "norm_label": "badge()"
     },
     {
@@ -15689,7 +16309,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_table",
-      "community": 84,
+      "community": 119,
       "norm_label": "table.tsx"
     },
     {
@@ -15699,7 +16319,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "ui_table_table",
-      "community": 84,
+      "community": 119,
       "norm_label": "table"
     },
     {
@@ -15709,7 +16329,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "ui_table_tableheader",
-      "community": 84,
+      "community": 119,
       "norm_label": "tableheader"
     },
     {
@@ -15719,7 +16339,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "ui_table_tablebody",
-      "community": 84,
+      "community": 119,
       "norm_label": "tablebody"
     },
     {
@@ -15729,7 +16349,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "ui_table_tablerow",
-      "community": 84,
+      "community": 119,
       "norm_label": "tablerow"
     },
     {
@@ -15739,7 +16359,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "ui_table_tablehead",
-      "community": 84,
+      "community": 119,
       "norm_label": "tablehead"
     },
     {
@@ -15749,7 +16369,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "ui_table_tablecell",
-      "community": 84,
+      "community": 119,
       "norm_label": "tablecell"
     },
     {
@@ -15799,7 +16419,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_textarea",
-      "community": 100,
+      "community": 2,
       "norm_label": "textarea.tsx"
     },
     {
@@ -15809,7 +16429,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "ui_textarea_textareaprops",
-      "community": 100,
+      "community": 2,
       "norm_label": "textareaprops"
     },
     {
@@ -15819,7 +16439,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "ui_textarea_textarea",
-      "community": 100,
+      "community": 2,
       "norm_label": "textarea"
     },
     {
@@ -15829,7 +16449,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "adapters_d1",
-      "community": 86,
+      "community": 83,
       "norm_label": "d1.ts"
     },
     {
@@ -15839,7 +16459,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "adapters_d1_d1databaseadapter",
-      "community": 86,
+      "community": 83,
       "norm_label": "d1databaseadapter"
     },
     {
@@ -15849,7 +16469,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "adapters_d1_d1databaseadapter_db",
-      "community": 86,
+      "community": 83,
       "norm_label": ".db()"
     },
     {
@@ -15859,7 +16479,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "adapters_d1_d1databaseadapter_listmembers",
-      "community": 86,
+      "community": 83,
       "norm_label": ".listmembers()"
     },
     {
@@ -15869,7 +16489,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "adapters_d1_d1databaseadapter_createmember",
-      "community": 86,
+      "community": 83,
       "norm_label": ".createmember()"
     },
     {
@@ -15879,7 +16499,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "adapters_d1_d1databaseadapter_getmemberbyid",
-      "community": 86,
+      "community": 83,
       "norm_label": ".getmemberbyid()"
     },
     {
@@ -15889,7 +16509,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "adapters_local_sqlite",
-      "community": 86,
+      "community": 83,
       "norm_label": "local-sqlite.ts"
     },
     {
@@ -15899,7 +16519,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "adapters_local_sqlite_localdatabase",
-      "community": 86,
+      "community": 83,
       "norm_label": "localdatabase"
     },
     {
@@ -15909,7 +16529,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "adapters_local_sqlite_localsqlitedatabaseadapter",
-      "community": 86,
+      "community": 83,
       "norm_label": "localsqlitedatabaseadapter"
     },
     {
@@ -15919,7 +16539,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "adapters_local_sqlite_localsqlitedatabaseadapter_db",
-      "community": 86,
+      "community": 83,
       "norm_label": ".db()"
     },
     {
@@ -15929,7 +16549,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "adapters_local_sqlite_localsqlitedatabaseadapter_listmembers",
-      "community": 86,
+      "community": 83,
       "norm_label": ".listmembers()"
     },
     {
@@ -15939,7 +16559,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "adapters_local_sqlite_localsqlitedatabaseadapter_createmember",
-      "community": 86,
+      "community": 83,
       "norm_label": ".createmember()"
     },
     {
@@ -15949,7 +16569,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "adapters_local_sqlite_localsqlitedatabaseadapter_getmemberbyid",
-      "community": 86,
+      "community": 83,
       "norm_label": ".getmemberbyid()"
     },
     {
@@ -15959,7 +16579,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_db_adapters_shared_api_ts_adapters_shared_api",
-      "community": 86,
+      "community": 83,
       "norm_label": "shared-api.ts"
     },
     {
@@ -15969,7 +16589,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "adapters_shared_api_sharedapidatabaseadapter",
-      "community": 86,
+      "community": 83,
       "norm_label": "sharedapidatabaseadapter"
     },
     {
@@ -15979,7 +16599,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "adapters_shared_api_sharedapidatabaseadapter_request",
-      "community": 86,
+      "community": 83,
       "norm_label": ".request()"
     },
     {
@@ -15989,7 +16609,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "adapters_shared_api_sharedapidatabaseadapter_listmembers",
-      "community": 86,
+      "community": 83,
       "norm_label": ".listmembers()"
     },
     {
@@ -15999,7 +16619,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "adapters_shared_api_sharedapidatabaseadapter_createmember",
-      "community": 86,
+      "community": 83,
       "norm_label": ".createmember()"
     },
     {
@@ -16009,7 +16629,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "adapters_shared_api_sharedapidatabaseadapter_getmemberbyid",
-      "community": 86,
+      "community": 83,
       "norm_label": ".getmemberbyid()"
     },
     {
@@ -16019,7 +16639,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "db_client",
-      "community": 1,
+      "community": 118,
       "norm_label": "client.ts"
     },
     {
@@ -16029,7 +16649,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "db_client_getdb",
-      "community": 1,
+      "community": 118,
       "norm_label": "getdb()"
     },
     {
@@ -16099,7 +16719,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "contract_links",
-      "community": 98,
+      "community": 104,
       "norm_label": "links.ts"
     },
     {
@@ -16109,7 +16729,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "contract_links_qrstyleschema",
-      "community": 98,
+      "community": 104,
       "norm_label": "qrstyleschema"
     },
     {
@@ -16119,7 +16739,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "contract_links_linkoutputschema",
-      "community": 98,
+      "community": 104,
       "norm_label": "linkoutputschema"
     },
     {
@@ -16129,7 +16749,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "contract_links_linkownerschema",
-      "community": 98,
+      "community": 104,
       "norm_label": "linkownerschema"
     },
     {
@@ -16139,7 +16759,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "contract_links_linklistitemschema",
-      "community": 98,
+      "community": 104,
       "norm_label": "linklistitemschema"
     },
     {
@@ -16149,7 +16769,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "contract_links_tagsinputschema",
-      "community": 98,
+      "community": 104,
       "norm_label": "tagsinputschema"
     },
     {
@@ -16159,7 +16779,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "contract_links_qrstyleinputschema",
-      "community": 98,
+      "community": 104,
       "norm_label": "qrstyleinputschema"
     },
     {
@@ -16169,7 +16789,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "contract_links_createlinkinputschema",
-      "community": 98,
+      "community": 104,
       "norm_label": "createlinkinputschema"
     },
     {
@@ -16179,7 +16799,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "contract_links_updatelinkinputschema",
-      "community": 98,
+      "community": 104,
       "norm_label": "updatelinkinputschema"
     },
     {
@@ -16189,7 +16809,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "contract_links_linkstatsoutputschema",
-      "community": 98,
+      "community": 104,
       "norm_label": "linkstatsoutputschema"
     },
     {
@@ -16199,7 +16819,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "contract_links_pageinput",
-      "community": 98,
+      "community": 104,
       "norm_label": "pageinput"
     },
     {
@@ -16269,7 +16889,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "db_index",
-      "community": 119,
+      "community": 83,
       "norm_label": "index.ts"
     },
     {
@@ -16279,7 +16899,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "db_index_getdatabaseadapter",
-      "community": 119,
+      "community": 118,
       "norm_label": "getdatabaseadapter()"
     },
     {
@@ -16289,7 +16909,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "db_index_getrepositories",
-      "community": 1,
+      "community": 118,
       "norm_label": "getrepositories()"
     },
     {
@@ -16389,7 +17009,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_audit",
-      "community": 104,
+      "community": 83,
       "norm_label": "audit.ts"
     },
     {
@@ -16399,7 +17019,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "repositories_audit_auditrecordinput",
-      "community": 104,
+      "community": 83,
       "norm_label": "auditrecordinput"
     },
     {
@@ -16409,7 +17029,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "repositories_audit_auditrepository",
-      "community": 104,
+      "community": 83,
       "norm_label": "auditrepository"
     },
     {
@@ -16493,10 +17113,20 @@
       "norm_label": "index.ts"
     },
     {
+      "label": "DrizzleDb",
+      "file_type": "code",
+      "source_file": "src/db/repositories/index.ts",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "repositories_index_drizzledb",
+      "community": 83,
+      "norm_label": "drizzledb"
+    },
+    {
       "label": "createDrizzleRepositories()",
       "file_type": "code",
       "source_file": "src/db/repositories/index.ts",
-      "source_location": "L18",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "repositories_index_createdrizzlerepositories",
       "community": 83,
@@ -16506,7 +17136,7 @@
       "label": "Repositories",
       "file_type": "code",
       "source_file": "src/db/repositories/index.ts",
-      "source_location": "L36",
+      "source_location": "L44",
       "_origin": "ast",
       "id": "repositories_index_repositories",
       "community": 104,
@@ -16516,7 +17146,7 @@
       "label": "createSharedRepositories()",
       "file_type": "code",
       "source_file": "src/db/repositories/index.ts",
-      "source_location": "L38",
+      "source_location": "L46",
       "_origin": "ast",
       "id": "repositories_index_createsharedrepositories",
       "community": 83,
@@ -16669,7 +17299,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "repositories_links_resolvedlink",
-      "community": 113,
+      "community": 85,
       "norm_label": "resolvedlink"
     },
     {
@@ -16699,7 +17329,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "repositories_links_linkdb",
-      "community": 85,
+      "community": 83,
       "norm_label": "linkdb"
     },
     {
@@ -16889,7 +17519,7 @@
       "source_location": "L181",
       "_origin": "ast",
       "id": "repositories_links_createlinksrepository",
-      "community": 83,
+      "community": 116,
       "norm_label": "createlinksrepository()"
     },
     {
@@ -16909,24 +17539,24 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_members",
-      "community": 86,
+      "community": 83,
       "norm_label": "members.ts"
     },
     {
       "label": "MemberInsert",
       "file_type": "code",
       "source_file": "src/db/repositories/members.ts",
-      "source_location": "L9",
+      "source_location": "L11",
       "_origin": "ast",
       "id": "repositories_members_memberinsert",
-      "community": 86,
+      "community": 83,
       "norm_label": "memberinsert"
     },
     {
       "label": "MemberDb",
       "file_type": "code",
       "source_file": "src/db/repositories/members.ts",
-      "source_location": "L11",
+      "source_location": "L13",
       "_origin": "ast",
       "id": "repositories_members_memberdb",
       "community": 83,
@@ -16936,21 +17566,91 @@
       "label": "MembersRepository",
       "file_type": "code",
       "source_file": "src/db/repositories/members.ts",
-      "source_location": "L25",
+      "source_location": "L34",
       "_origin": "ast",
       "id": "repositories_members_membersrepository",
-      "community": 86,
+      "community": 83,
       "norm_label": "membersrepository"
     },
     {
       "label": "createMembersRepository()",
       "file_type": "code",
       "source_file": "src/db/repositories/members.ts",
-      "source_location": "L31",
+      "source_location": "L43",
       "_origin": "ast",
       "id": "repositories_members_createmembersrepository",
       "community": 83,
       "norm_label": "createmembersrepository()"
+    },
+    {
+      "label": "navPins.ts",
+      "file_type": "code",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "repositories_navpins",
+      "community": 83,
+      "norm_label": "navpins.ts"
+    },
+    {
+      "label": "NavPin",
+      "file_type": "code",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "repositories_navpins_navpin",
+      "community": 83,
+      "norm_label": "navpin"
+    },
+    {
+      "label": "NavPinInput",
+      "file_type": "code",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "repositories_navpins_navpininput",
+      "community": 83,
+      "norm_label": "navpininput"
+    },
+    {
+      "label": "NavPinDb",
+      "file_type": "code",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "repositories_navpins_navpindb",
+      "community": 83,
+      "norm_label": "navpindb"
+    },
+    {
+      "label": "NavPinsRepository",
+      "file_type": "code",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "repositories_navpins_navpinsrepository",
+      "community": 83,
+      "norm_label": "navpinsrepository"
+    },
+    {
+      "label": "createNavPinsRepository()",
+      "file_type": "code",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "repositories_navpins_createnavpinsrepository",
+      "community": 83,
+      "norm_label": "createnavpinsrepository()"
+    },
+    {
+      "label": "createUnavailableNavPinsRepository()",
+      "file_type": "code",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L89",
+      "_origin": "ast",
+      "id": "repositories_navpins_createunavailablenavpinsrepository",
+      "community": 83,
+      "norm_label": "createunavailablenavpinsrepository()"
     },
     {
       "label": "notifications.ts",
@@ -17011,6 +17711,116 @@
       "id": "repositories_points_createpointsrepository",
       "community": 83,
       "norm_label": "createpointsrepository()"
+    },
+    {
+      "label": "roles.ts",
+      "file_type": "code",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "repositories_roles",
+      "community": 122,
+      "norm_label": "roles.ts"
+    },
+    {
+      "label": "Db",
+      "file_type": "code",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "repositories_roles_db",
+      "community": 122,
+      "norm_label": "db"
+    },
+    {
+      "label": "RoleKeyRow",
+      "file_type": "code",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "repositories_roles_rolekeyrow",
+      "community": 122,
+      "norm_label": "rolekeyrow"
+    },
+    {
+      "label": "INACTIVE_ROLE_KEYS",
+      "file_type": "code",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "repositories_roles_inactive_role_keys",
+      "community": 122,
+      "norm_label": "inactive_role_keys"
+    },
+    {
+      "label": "NON_ASSIGNABLE",
+      "file_type": "code",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "repositories_roles_non_assignable",
+      "community": 122,
+      "norm_label": "non_assignable"
+    },
+    {
+      "label": "AssignableRole",
+      "file_type": "code",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "repositories_roles_assignablerole",
+      "community": 86,
+      "norm_label": "assignablerole"
+    },
+    {
+      "label": "AdminEntry",
+      "file_type": "code",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "repositories_roles_adminentry",
+      "community": 86,
+      "norm_label": "adminentry"
+    },
+    {
+      "label": "SaveMemberRolesInput",
+      "file_type": "code",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "repositories_roles_savememberrolesinput",
+      "community": 122,
+      "norm_label": "savememberrolesinput"
+    },
+    {
+      "label": "RolesRepository",
+      "file_type": "code",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "repositories_roles_rolesrepository",
+      "community": 122,
+      "norm_label": "rolesrepository"
+    },
+    {
+      "label": "createRolesRepository()",
+      "file_type": "code",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "repositories_roles_createrolesrepository",
+      "community": 83,
+      "norm_label": "createrolesrepository()"
+    },
+    {
+      "label": "createUnavailableRolesRepository()",
+      "file_type": "code",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L195",
+      "_origin": "ast",
+      "id": "repositories_roles_createunavailablerolesrepository",
+      "community": 83,
+      "norm_label": "createunavailablerolesrepository()"
     },
     {
       "label": "sessions.ts",
@@ -17109,7 +17919,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "repositories_types",
-      "community": 104,
+      "community": 85,
       "norm_label": "types.ts"
     },
     {
@@ -17119,7 +17929,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "repositories_types_pagerequest",
-      "community": 104,
+      "community": 85,
       "norm_label": "pagerequest"
     },
     {
@@ -17129,7 +17939,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "repositories_types_pageresult",
-      "community": 104,
+      "community": 85,
       "norm_label": "pageresult"
     },
     {
@@ -17139,7 +17949,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "repositories_types_repositorycontext",
-      "community": 104,
+      "community": 85,
       "norm_label": "repositorycontext"
     },
     {
@@ -17299,7 +18109,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "db_schema_members",
-      "community": 86,
+      "community": 83,
       "norm_label": "members"
     },
     {
@@ -17549,7 +18359,7 @@
       "source_location": "L381",
       "_origin": "ast",
       "id": "db_schema_crsevents",
-      "community": 1,
+      "community": 118,
       "norm_label": "crsevents"
     },
     {
@@ -17699,8 +18509,18 @@
       "source_location": "L634",
       "_origin": "ast",
       "id": "db_schema_auditlogs",
-      "community": 80,
+      "community": 122,
       "norm_label": "auditlogs"
+    },
+    {
+      "label": "navPins",
+      "file_type": "code",
+      "source_file": "src/db/schema.ts",
+      "source_location": "L655",
+      "_origin": "ast",
+      "id": "db_schema_navpins",
+      "community": 83,
+      "norm_label": "navpins"
     },
     {
       "label": "data.ts",
@@ -18009,7 +18829,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "db_types",
-      "community": 86,
+      "community": 83,
       "norm_label": "types.ts"
     },
     {
@@ -18019,7 +18839,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "db_types_member",
-      "community": 86,
+      "community": 83,
       "norm_label": "member"
     },
     {
@@ -18029,7 +18849,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "db_types_newmember",
-      "community": 86,
+      "community": 83,
       "norm_label": "newmember"
     },
     {
@@ -18049,17 +18869,37 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "db_types_creatememberinput",
-      "community": 86,
+      "community": 83,
       "norm_label": "creatememberinput"
+    },
+    {
+      "label": "updateMemberProfileInputSchema",
+      "file_type": "code",
+      "source_file": "src/db/types.ts",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "db_types_updatememberprofileinputschema",
+      "community": 83,
+      "norm_label": "updatememberprofileinputschema"
+    },
+    {
+      "label": "UpdateMemberProfileInput",
+      "file_type": "code",
+      "source_file": "src/db/types.ts",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "db_types_updatememberprofileinput",
+      "community": 83,
+      "norm_label": "updatememberprofileinput"
     },
     {
       "label": "DatabaseAdapter",
       "file_type": "code",
       "source_file": "src/db/types.ts",
-      "source_location": "L15",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "db_types_databaseadapter",
-      "community": 86,
+      "community": 83,
       "norm_label": "databaseadapter"
     },
     {
@@ -18069,7 +18909,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_crawlers",
-      "community": 113,
+      "community": 85,
       "norm_label": "crawlers.ts"
     },
     {
@@ -18079,7 +18919,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "lib_crawlers_iscrawleruseragent",
-      "community": 113,
+      "community": 85,
       "norm_label": "iscrawleruseragent()"
     },
     {
@@ -18089,7 +18929,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "lib_crawlers_escapehtml",
-      "community": 113,
+      "community": 85,
       "norm_label": "escapehtml()"
     },
     {
@@ -18099,7 +18939,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "lib_crawlers_renderpreviewhtml",
-      "community": 113,
+      "community": 85,
       "norm_label": "renderpreviewhtml()"
     },
     {
@@ -18109,7 +18949,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_ids",
-      "community": 86,
+      "community": 83,
       "norm_label": "ids.ts"
     },
     {
@@ -18119,7 +18959,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_ids_createid",
-      "community": 86,
+      "community": 83,
       "norm_label": "createid()"
     },
     {
@@ -18129,7 +18969,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "lib_ids_createobjectkey",
-      "community": 86,
+      "community": 83,
       "norm_label": "createobjectkey()"
     },
     {
@@ -18189,7 +19029,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "lib_links_devicebucket",
-      "community": 113,
+      "community": 85,
       "norm_label": "devicebucket()"
     },
     {
@@ -18279,8 +19119,28 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "auth_actor_requireactor",
-      "community": 1,
+      "community": 86,
       "norm_label": "requireactor()"
+    },
+    {
+      "label": "admin.ts",
+      "file_type": "code",
+      "source_file": "src/server/auth/admin.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "auth_admin",
+      "community": 122,
+      "norm_label": "admin.ts"
+    },
+    {
+      "label": "hasAnyAdminScope()",
+      "file_type": "code",
+      "source_file": "src/server/auth/admin.ts",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "auth_admin_hasanyadminscope",
+      "community": 1,
+      "norm_label": "hasanyadminscope()"
     },
     {
       "label": "permissions.ts",
@@ -18289,7 +19149,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "auth_permissions",
-      "community": 104,
+      "community": 122,
       "norm_label": "permissions.ts"
     },
     {
@@ -18299,7 +19159,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "auth_permissions_rolekeys",
-      "community": 104,
+      "community": 88,
       "norm_label": "rolekeys"
     },
     {
@@ -18319,14 +19179,14 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "auth_permissions_permissionactions",
-      "community": 104,
+      "community": 122,
       "norm_label": "permissionactions"
     },
     {
       "label": "PermissionAction",
       "file_type": "code",
       "source_file": "src/server/auth/permissions.ts",
-      "source_location": "L16",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "auth_permissions_permissionaction",
       "community": 98,
@@ -18336,31 +19196,51 @@
       "label": "Actor",
       "file_type": "code",
       "source_file": "src/server/auth/permissions.ts",
-      "source_location": "L18",
+      "source_location": "L20",
       "_origin": "ast",
       "id": "auth_permissions_actor",
-      "community": 104,
+      "community": 122,
       "norm_label": "actor"
     },
     {
       "label": "rolePermissions",
       "file_type": "code",
       "source_file": "src/server/auth/permissions.ts",
-      "source_location": "L26",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "auth_permissions_rolepermissions",
-      "community": 104,
+      "community": 122,
       "norm_label": "rolepermissions"
     },
     {
       "label": "can()",
       "file_type": "code",
       "source_file": "src/server/auth/permissions.ts",
-      "source_location": "L34",
+      "source_location": "L36",
       "_origin": "ast",
       "id": "auth_permissions_can",
-      "community": 1,
+      "community": 86,
       "norm_label": "can()"
+    },
+    {
+      "label": "normalizeRoleKey()",
+      "file_type": "code",
+      "source_file": "src/server/auth/permissions.ts",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "auth_permissions_normalizerolekey",
+      "community": 122,
+      "norm_label": "normalizerolekey()"
+    },
+    {
+      "label": "normalizeRoleKeys()",
+      "file_type": "code",
+      "source_file": "src/server/auth/permissions.ts",
+      "source_location": "L50",
+      "_origin": "ast",
+      "id": "auth_permissions_normalizerolekeys",
+      "community": 122,
+      "norm_label": "normalizerolekeys()"
     },
     {
       "label": "cloudflare.ts",
@@ -18369,7 +19249,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_cloudflare",
-      "community": 119,
+      "community": 118,
       "norm_label": "cloudflare.ts"
     },
     {
@@ -18379,7 +19259,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "server_cloudflare_cloudflareruntimeenv",
-      "community": 119,
+      "community": 118,
       "norm_label": "cloudflareruntimeenv"
     },
     {
@@ -18389,7 +19269,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "server_cloudflare_getcloudflareenv",
-      "community": 1,
+      "community": 118,
       "norm_label": "getcloudflareenv()"
     },
     {
@@ -18399,7 +19279,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "server_cloudflare_getoptionalcloudflareenv",
-      "community": 119,
+      "community": 118,
       "norm_label": "getoptionalcloudflareenv()"
     },
     {
@@ -18409,7 +19289,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "server_cloudflare_hascloudflarebinding",
-      "community": 119,
+      "community": 118,
       "norm_label": "hascloudflarebinding()"
     },
     {
@@ -18419,7 +19299,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "server_cloudflare_runinbackground",
-      "community": 119,
+      "community": 118,
       "norm_label": "runinbackground()"
     },
     {
@@ -18429,7 +19309,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_env_test",
-      "community": 119,
+      "community": 118,
       "norm_label": "env.test.ts"
     },
     {
@@ -18439,7 +19319,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_env",
-      "community": 119,
+      "community": 118,
       "norm_label": "env.ts"
     },
     {
@@ -18449,7 +19329,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "server_env_appenvschema",
-      "community": 119,
+      "community": 118,
       "norm_label": "appenvschema"
     },
     {
@@ -18459,7 +19339,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "server_env_deployenvschema",
-      "community": 119,
+      "community": 118,
       "norm_label": "deployenvschema"
     },
     {
@@ -18469,7 +19349,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "server_env_storagemodeschema",
-      "community": 119,
+      "community": 118,
       "norm_label": "storagemodeschema"
     },
     {
@@ -18479,7 +19359,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "server_env_rawenvschema",
-      "community": 119,
+      "community": 118,
       "norm_label": "rawenvschema"
     },
     {
@@ -18489,7 +19369,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "server_env_appconfig",
-      "community": 119,
+      "community": 118,
       "norm_label": "appconfig"
     },
     {
@@ -18499,7 +19379,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "server_env_appenv",
-      "community": 119,
+      "community": 118,
       "norm_label": "appenv"
     },
     {
@@ -18509,7 +19389,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "server_env_deployenv",
-      "community": 119,
+      "community": 118,
       "norm_label": "deployenv"
     },
     {
@@ -18519,7 +19399,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "server_env_storagemode",
-      "community": 119,
+      "community": 118,
       "norm_label": "storagemode"
     },
     {
@@ -18529,7 +19409,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "server_env_runtimeenvvalue",
-      "community": 119,
+      "community": 118,
       "norm_label": "runtimeenvvalue()"
     },
     {
@@ -18549,7 +19429,7 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "server_env_getpublicenvstatus",
-      "community": 119,
+      "community": 118,
       "norm_label": "getpublicenvstatus()"
     },
     {
@@ -18559,7 +19439,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "http_origin",
-      "community": 120,
+      "community": 118,
       "norm_label": "origin.ts"
     },
     {
@@ -18569,7 +19449,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "http_origin_assertsameorigin",
-      "community": 120,
+      "community": 118,
       "norm_label": "assertsameorigin()"
     },
     {
@@ -18609,7 +19489,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "links_handlers_createlinkshandlers",
-      "community": 120,
+      "community": 118,
       "norm_label": "createlinkshandlers()"
     },
     {
@@ -18619,7 +19499,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "links_redirect",
-      "community": 113,
+      "community": 85,
       "norm_label": "redirect.ts"
     },
     {
@@ -18629,7 +19509,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "links_redirect_redirectdependencies",
-      "community": 113,
+      "community": 85,
       "norm_label": "redirectdependencies"
     },
     {
@@ -18639,7 +19519,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "links_redirect_buildredirectresponse",
-      "community": 113,
+      "community": 85,
       "norm_label": "buildredirectresponse()"
     },
     {
@@ -18649,7 +19529,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_short_links_test",
-      "community": 103,
+      "community": 85,
       "norm_label": "short-links.test.ts"
     },
     {
@@ -18659,7 +19539,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_short_links",
-      "community": 103,
+      "community": 85,
       "norm_label": "short-links.ts"
     },
     {
@@ -18669,7 +19549,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_short_links_referrerbucket",
-      "community": 103,
+      "community": 85,
       "norm_label": "referrerbucket"
     },
     {
@@ -18679,7 +19559,7 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "server_short_links_devicebucket",
-      "community": 103,
+      "community": 85,
       "norm_label": "devicebucket"
     },
     {
@@ -18689,7 +19569,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "server_short_links_shortlinkvisit",
-      "community": 103,
+      "community": 85,
       "norm_label": "shortlinkvisit"
     },
     {
@@ -18699,7 +19579,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "server_short_links_publicshortlink",
-      "community": 103,
+      "community": 85,
       "norm_label": "publicshortlink"
     },
     {
@@ -18709,7 +19589,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "server_short_links_shortlinkhandlerdependencies",
-      "community": 103,
+      "community": 85,
       "norm_label": "shortlinkhandlerdependencies"
     },
     {
@@ -18719,7 +19599,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "server_short_links_parseredirectdestination",
-      "community": 103,
+      "community": 85,
       "norm_label": "parseredirectdestination()"
     },
     {
@@ -18729,7 +19609,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "server_short_links_classifyshortlinkrequest",
-      "community": 103,
+      "community": 85,
       "norm_label": "classifyshortlinkrequest()"
     },
     {
@@ -18739,7 +19619,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "server_short_links_createshortlinkhandler",
-      "community": 103,
+      "community": 85,
       "norm_label": "createshortlinkhandler()"
     },
     {
@@ -18749,7 +19629,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_uploads",
-      "community": 86,
+      "community": 118,
       "norm_label": "uploads.ts"
     },
     {
@@ -18759,7 +19639,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "server_uploads_allowedcontenttypes",
-      "community": 86,
+      "community": 118,
       "norm_label": "allowedcontenttypes"
     },
     {
@@ -18769,7 +19649,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "server_uploads_uploadhandlerdependencies",
-      "community": 86,
+      "community": 118,
       "norm_label": "uploadhandlerdependencies"
     },
     {
@@ -18779,7 +19659,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "server_uploads_createuploadhandlers",
-      "community": 1,
+      "community": 118,
       "norm_label": "createuploadhandlers()"
     },
     {
@@ -18789,7 +19669,7 @@
       "source_location": "L121",
       "_origin": "ast",
       "id": "server_uploads_parsenamespace",
-      "community": 86,
+      "community": 118,
       "norm_label": "parsenamespace()"
     },
     {
@@ -18799,7 +19679,7 @@
       "source_location": "L136",
       "_origin": "ast",
       "id": "server_uploads_issafesegment",
-      "community": 86,
+      "community": 118,
       "norm_label": "issafesegment()"
     },
     {
@@ -18879,7 +19759,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "adapters_r2_binding_r2bindingstorageadapter",
-      "community": 121,
+      "community": 118,
       "norm_label": "r2bindingstorageadapter"
     },
     {
@@ -18889,7 +19769,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "adapters_r2_binding_r2bindingstorageadapter_bucket",
-      "community": 121,
+      "community": 118,
       "norm_label": ".bucket()"
     },
     {
@@ -18899,7 +19779,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "adapters_r2_binding_r2bindingstorageadapter_putobject",
-      "community": 121,
+      "community": 118,
       "norm_label": ".putobject()"
     },
     {
@@ -18909,7 +19789,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "adapters_r2_binding_r2bindingstorageadapter_getobject",
-      "community": 121,
+      "community": 118,
       "norm_label": ".getobject()"
     },
     {
@@ -18919,7 +19799,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "adapters_r2_binding_r2bindingstorageadapter_deleteobject",
-      "community": 121,
+      "community": 118,
       "norm_label": ".deleteobject()"
     },
     {
@@ -19089,7 +19969,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "storage_index_getstorageadapter",
-      "community": 119,
+      "community": 118,
       "norm_label": "getstorageadapter()"
     },
     {
@@ -39011,6 +39891,2188 @@
       "target": "portal_actions_signoutaction"
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/content/links/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_app_portal_admin_content_links_page_tsx_links_page",
+      "target": "links_page_adminshortlinkspage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/content/page.tsx",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "content_page",
+      "target": "admin_group_index",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/content/page.tsx",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "content_page",
+      "target": "admin_group_index_admingroupindex",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/content/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "content_page",
+      "target": "content_page_contentgrouppage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/group-index.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "admin_group_index",
+      "target": "admin_group_index_admingroupindex",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/group-index.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "admin_group_index",
+      "target": "admin_nav",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/group-index.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "admin_group_index",
+      "target": "admin_nav_visiblegroups",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/group-index.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "admin_group_index",
+      "target": "auth_actor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/group-index.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "admin_group_index",
+      "target": "auth_actor_requireactor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/group-index.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "admin_group_index",
+      "target": "portal_admin_intro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/group-index.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "admin_group_index",
+      "target": "portal_admin_intro_adminintro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/page.tsx",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "members_page",
+      "target": "admin_group_index",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/page.tsx",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "system_page",
+      "target": "admin_group_index",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/group-index.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "admin_group_index_admingroupindex",
+      "target": "admin_nav_visiblegroups"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/group-index.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "admin_group_index_admingroupindex",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/page.tsx",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "members_page",
+      "target": "admin_group_index_admingroupindex",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/page.tsx",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "system_page",
+      "target": "admin_group_index_admingroupindex",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/layout.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "admin_layout",
+      "target": "admin_layout_adminlayout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/layout.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "admin_layout",
+      "target": "auth_actor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/layout.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "admin_layout",
+      "target": "auth_actor_getactor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/layout.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "admin_layout",
+      "target": "auth_admin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/layout.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "admin_layout",
+      "target": "auth_admin_hasanyadminscope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/layout.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "admin_layout_adminlayout",
+      "target": "auth_actor_getactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/layout.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "admin_layout_adminlayout",
+      "target": "auth_admin_hasanyadminscope"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "list_actions",
+      "target": "auth_actor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "list_actions",
+      "target": "auth_actor_requireactor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "list_actions",
+      "target": "db_index",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "list_actions",
+      "target": "db_index_getrepositories",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "list_actions",
+      "target": "list_actions_invitememberaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "list_actions",
+      "target": "list_actions_inviteschema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "list_actions",
+      "target": "list_actions_statusschema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "list_actions",
+      "target": "list_actions_updatememberstatusaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "list_actions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "list_actions_invitememberaction",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "list_actions_invitememberaction",
+      "target": "db_index_getrepositories"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "list_actions_invitememberaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "list_actions_updatememberstatusaction",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/list/actions.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "list_actions_updatememberstatusaction",
+      "target": "db_index_getrepositories"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "list_actions_updatememberstatusaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "auth_actor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "auth_actor_requireactor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "auth_permissions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "auth_permissions_can",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "db_index",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "db_index_getrepositories",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "list_page_memberlistpage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "portal_admin_intro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "portal_admin_intro_adminintro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_badge",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_badge_badge",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_button",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_button_button",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_card",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_card_card",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_card_cardcontent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_card_cardheader",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_card_cardtitle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_input",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_input_input",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_table",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_table_table",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_table_tablebody",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_table_tablecell",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_table_tablehead",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_table_tableheader",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "list_page",
+      "target": "ui_table_tablerow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "list_page_memberlistpage",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "list_page_memberlistpage",
+      "target": "auth_permissions_can"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/list/page.tsx",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "list_page_memberlistpage",
+      "target": "db_index_getrepositories"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "members_page",
+      "target": "members_page_membersgrouppage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "roles_actions",
+      "target": "auth_actor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "roles_actions",
+      "target": "auth_actor_requireactor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "roles_actions",
+      "target": "auth_permissions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "roles_actions",
+      "target": "auth_permissions_can",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "roles_actions",
+      "target": "auth_permissions_normalizerolekeys",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "roles_actions",
+      "target": "db_index",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "roles_actions",
+      "target": "db_index_getrepositories",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "roles_actions",
+      "target": "roles_actions_loadmemberrolesaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "roles_actions",
+      "target": "roles_actions_savememberrolesaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "roles_actions",
+      "target": "roles_actions_saveschema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "roles_actions",
+      "target": "roles_actions_searchmembersaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "roles_actions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "roles_actions_searchmembersaction",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "roles_actions_searchmembersaction",
+      "target": "db_index_getrepositories"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "roles_actions_searchmembersaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "roles_actions_loadmemberrolesaction",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "roles_actions_loadmemberrolesaction",
+      "target": "db_index_getrepositories"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "roles_actions_loadmemberrolesaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "roles_actions_savememberrolesaction",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "roles_actions_savememberrolesaction",
+      "target": "auth_permissions_can"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/roles/actions.ts",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "roles_actions_savememberrolesaction",
+      "target": "db_index_getrepositories"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "roles_actions_savememberrolesaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "roles_page",
+      "target": "auth_actor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "roles_page",
+      "target": "auth_actor_requireactor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "roles_page",
+      "target": "auth_permissions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "roles_page",
+      "target": "auth_permissions_can",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "roles_page",
+      "target": "db_index",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "roles_page",
+      "target": "db_index_getrepositories",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "roles_page",
+      "target": "portal_admin_intro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "roles_page",
+      "target": "portal_admin_intro_adminintro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "roles_page",
+      "target": "roles_page_rolesaccesspage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "roles_page",
+      "target": "roles_roles_editor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "roles_page",
+      "target": "roles_roles_editor_rolesmanager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "roles_page_rolesaccesspage",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "roles_page_rolesaccesspage",
+      "target": "auth_permissions_can"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/members/roles/page.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "roles_page_rolesaccesspage",
+      "target": "db_index_getrepositories"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "auth_permissions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "auth_permissions_rolekey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "db_types",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "db_types_member",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "repositories_roles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "repositories_roles_adminentry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "repositories_roles_assignablerole",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "roles_roles_editor_editor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "roles_roles_editor_rolesmanager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "ui_button",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "ui_button_button",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "ui_input",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/members/roles/roles-editor.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "roles_roles_editor",
+      "target": "ui_input_input",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "admin_nav",
+      "target": "admin_nav_admingroup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "admin_nav",
+      "target": "admin_nav_admingroups",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L63",
+      "weight": 1.0,
+      "source": "admin_nav",
+      "target": "admin_nav_adminheading",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "admin_nav",
+      "target": "admin_nav_adminpage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "admin_nav",
+      "target": "admin_nav_adminpermission",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "admin_nav",
+      "target": "admin_nav_crumbfor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "admin_nav",
+      "target": "admin_nav_g",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "admin_nav",
+      "target": "admin_nav_pagevisible",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "admin_nav",
+      "target": "admin_nav_visiblegroups",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "admin_nav",
+      "target": "auth_permissions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "admin_nav",
+      "target": "auth_permissions_actor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "admin_nav",
+      "target": "auth_permissions_can",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "admin_nav",
+      "target": "auth_permissions_permissionaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "admin_page",
+      "target": "admin_nav",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "admin_nav_pagevisible",
+      "target": "auth_permissions_can",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "admin_page",
+      "target": "admin_nav_visiblegroups",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/page.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "admin_page_adminhomepage",
+      "target": "admin_nav_visiblegroups"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/nav.ts",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "admin_nav_adminheading",
+      "target": "admin_nav_crumbfor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "admin_page",
+      "target": "admin_page_adminhomepage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/page.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "admin_page",
+      "target": "auth_actor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/page.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "admin_page",
+      "target": "auth_actor_requireactor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/page.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "admin_page",
+      "target": "portal_admin_intro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/page.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "admin_page",
+      "target": "portal_admin_intro_adminintro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "admin_page_adminhomepage",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "nav_pins_actions",
+      "target": "auth_actor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "nav_pins_actions",
+      "target": "auth_actor_requireactor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "nav_pins_actions",
+      "target": "db_index",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "nav_pins_actions",
+      "target": "db_index_getrepositories",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "nav_pins_actions",
+      "target": "nav_pins_actions_createnavpinaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "source": "nav_pins_actions",
+      "target": "nav_pins_actions_deletenavpinaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "nav_pins_actions",
+      "target": "nav_pins_actions_parsepin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "nav_pins_actions",
+      "target": "nav_pins_actions_pinschema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "nav_pins_actions",
+      "target": "nav_pins_actions_savenavpinsaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "nav_pins_actions",
+      "target": "nav_pins_actions_updatenavpinaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "nav_pins_actions",
+      "target": "portal_nav_pin_icons",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "nav_pins_actions",
+      "target": "portal_nav_pin_icons_navpiniconnames",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "nav_pins_actions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "nav_pins_actions_createnavpinaction",
+      "target": "nav_pins_actions_parsepin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "nav_pins_actions_updatenavpinaction",
+      "target": "nav_pins_actions_parsepin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "nav_pins_actions_createnavpinaction",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "nav_pins_actions_createnavpinaction",
+      "target": "db_index_getrepositories"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "nav_pins_actions_createnavpinaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "nav_pins_actions_updatenavpinaction",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "nav_pins_actions_updatenavpinaction",
+      "target": "db_index_getrepositories"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "nav_pins_actions_savenavpinsaction",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "nav_pins_actions_savenavpinsaction",
+      "target": "db_index_getrepositories"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "nav_pins_actions_savenavpinsaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "nav_pins_actions_deletenavpinaction",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/system/nav-pins/actions.ts",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "nav_pins_actions_deletenavpinaction",
+      "target": "db_index_getrepositories"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "nav_pins_actions_deletenavpinaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "nav_pins_nav_pins_manager_iconlabel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "nav_pins_nav_pins_manager_iconpicker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "nav_pins_nav_pins_manager_move",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "nav_pins_nav_pins_manager_navpin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L92",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "nav_pins_nav_pins_manager_navpinsmanager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "portal_nav_pin_icons",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "portal_nav_pin_icons_navpiniconfor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "portal_nav_pin_icons_navpiniconnames",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "ui_button",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "ui_button_button",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "ui_card",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "ui_card_card",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "ui_card_cardcontent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "ui_card_carddescription",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "ui_card_cardheader",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "ui_card_cardtitle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "ui_input",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager",
+      "target": "ui_input_input",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "nav_pins_page",
+      "target": "nav_pins_nav_pins_manager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager_iconpicker",
+      "target": "nav_pins_nav_pins_manager_iconlabel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "nav_pins_nav_pins_manager_iconpicker",
+      "target": "portal_nav_pin_icons_navpiniconfor"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "nav_pins_page",
+      "target": "nav_pins_nav_pins_manager_navpinsmanager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "nav_pins_page",
+      "target": "auth_actor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "nav_pins_page",
+      "target": "auth_actor_requireactor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "nav_pins_page",
+      "target": "auth_permissions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "nav_pins_page",
+      "target": "auth_permissions_can",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "nav_pins_page",
+      "target": "db_index",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "nav_pins_page",
+      "target": "db_index_getrepositories",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "nav_pins_page",
+      "target": "nav_pins_page_navpinsadminpage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "nav_pins_page_navpinsadminpage",
+      "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "nav_pins_page_navpinsadminpage",
+      "target": "auth_permissions_can"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/admin/system/nav-pins/page.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "nav_pins_page_navpinsadminpage",
+      "target": "db_index_getrepositories"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/admin/system/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "system_page",
+      "target": "system_page_systemgrouppage",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -39031,6 +42093,28 @@
       "confidence_score": 1.0,
       "source": "portal_layout",
       "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/layout.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "portal_layout",
+      "target": "auth_admin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/layout.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "portal_layout",
+      "target": "auth_admin_hasanyadminscope",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -39068,11 +42152,43 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/portal/layout.tsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "portal_layout",
+      "target": "portal_layout_isexternalhref",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/layout.tsx",
       "source_location": "L8",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "portal_layout",
       "target": "portal_layout_portallayout"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/layout.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "portal_layout",
+      "target": "portal_nav_pin_icons",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/layout.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "portal_layout",
+      "target": "portal_nav_pin_icons_navpiniconfor",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -39117,6 +42233,17 @@
       "weight": 1.0,
       "source": "portal_layout_portallayout",
       "target": "auth_actor_requireactor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/portal/layout.tsx",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "portal_layout_portallayout",
+      "target": "auth_admin_hasanyadminscope"
     },
     {
       "relation": "calls",
@@ -39184,17 +42311,6 @@
       "target": "links_actions_createlinkaction"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "links_actions"
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -39217,59 +42333,48 @@
       "target": "db_index_getrepositories"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/portal/links/page.tsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_app_portal_links_page_tsx_links_page",
+      "target": "auth_actor",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L8",
+      "source_location": "L3",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "links_actions_createlinkaction"
+      "source": "src_app_portal_links_page_tsx_links_page",
+      "target": "auth_actor_requireactor",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L7",
+      "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "auth_actor"
+      "source": "src_app_portal_links_page_tsx_links_page",
+      "target": "db_index",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L7",
+      "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "auth_actor_requireactor"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "db_index"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "db_index_getrepositories"
+      "source": "src_app_portal_links_page_tsx_links_page",
+      "target": "db_index_getrepositories",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -39278,9 +42383,9 @@
       "source_file": "src/app/portal/links/page.tsx",
       "source_location": "L2",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "links_links_workspace"
+      "source": "src_app_portal_links_page_tsx_links_page",
+      "target": "links_links_workspace",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -39289,151 +42394,19 @@
       "source_file": "src/app/portal/links/page.tsx",
       "source_location": "L2",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "links_links_workspace_linksworkspace"
+      "source": "src_app_portal_links_page_tsx_links_page",
+      "target": "links_links_workspace_linksworkspace",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L12",
+      "source_location": "L7",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "links_page_linkspage"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "ui_badge"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "ui_badge_badge"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "ui_button"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "ui_button_button"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "ui_card"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "ui_card_card"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "ui_card_cardcontent"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "ui_card_carddescription"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "ui_card_cardheader"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "ui_card_cardtitle"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "ui_input"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/portal/links/page.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "links_page",
-      "target": "ui_input_input"
+      "source": "src_app_portal_links_page_tsx_links_page",
+      "target": "links_page_linkspage",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -41134,6 +44107,36 @@
       "target": "ui_textarea_textarea"
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/portal/admin-intro.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "portal_admin_intro",
+      "target": "portal_admin_intro_adminintro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/portal/nav-pin-icons.ts",
+      "source_location": "L182",
+      "weight": 1.0,
+      "source": "portal_nav_pin_icons",
+      "target": "portal_nav_pin_icons_navpiniconfor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/portal/nav-pin-icons.ts",
+      "source_location": "L180",
+      "weight": 1.0,
+      "source": "portal_nav_pin_icons",
+      "target": "portal_nav_pin_icons_navpiniconnames",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -42587,12 +45590,34 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/index.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "repositories_index",
+      "target": "db_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/db/repositories/links.ts",
       "source_location": "L7",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "repositories_links",
       "target": "db_client"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "db_client",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -42631,12 +45656,34 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/index.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "repositories_index",
+      "target": "db_client_getdb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/db/repositories/links.ts",
       "source_location": "L7",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "repositories_links",
       "target": "db_client_getdb"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "db_client_getdb",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -43391,6 +46438,28 @@
       "target": "repositories_audit"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/members.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "repositories_members",
+      "target": "repositories_audit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "repositories_audit",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -43400,6 +46469,28 @@
       "confidence_score": 1.0,
       "source": "repositories_links",
       "target": "repositories_audit_auditrepository"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/members.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "repositories_members",
+      "target": "repositories_audit_auditrepository",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "repositories_audit_auditrepository",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -43619,6 +46710,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/db/repositories/index.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "repositories_index",
+      "target": "repositories_index_drizzledb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/index.ts",
       "source_location": "L36",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -43729,6 +46830,39 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/db/repositories/index.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "repositories_index",
+      "target": "repositories_navpins",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/index.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "repositories_index",
+      "target": "repositories_navpins_createnavpinsrepository",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/index.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "repositories_index",
+      "target": "repositories_navpins_createunavailablenavpinsrepository",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/index.ts",
       "source_location": "L9",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -43767,6 +46901,39 @@
       "confidence_score": 1.0,
       "source": "repositories_index",
       "target": "repositories_points_createpointsrepository"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/index.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "repositories_index",
+      "target": "repositories_roles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/index.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "repositories_index",
+      "target": "repositories_roles_createrolesrepository",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/index.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "repositories_index",
+      "target": "repositories_roles_createunavailablerolesrepository",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -43873,6 +47040,17 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/db/repositories/index.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "repositories_index_createdrizzlerepositories",
+      "target": "repositories_navpins_createnavpinsrepository"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/db/repositories/index.ts",
       "source_location": "L29",
       "weight": 1.0,
       "source": "repositories_index_createdrizzlerepositories",
@@ -43888,6 +47066,17 @@
       "weight": 1.0,
       "source": "repositories_index_createdrizzlerepositories",
       "target": "repositories_points_createpointsrepository"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/db/repositories/index.ts",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "repositories_index_createdrizzlerepositories",
+      "target": "repositories_roles_createrolesrepository"
     },
     {
       "relation": "calls",
@@ -43961,6 +47150,17 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/db/repositories/index.ts",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "repositories_index_createsharedrepositories",
+      "target": "repositories_navpins_createunavailablenavpinsrepository"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/db/repositories/index.ts",
       "source_location": "L53",
       "weight": 1.0,
       "source": "repositories_index_createsharedrepositories",
@@ -43976,6 +47176,17 @@
       "weight": 1.0,
       "source": "repositories_index_createsharedrepositories",
       "target": "repositories_points_createpointsrepository"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/db/repositories/index.ts",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "repositories_index_createsharedrepositories",
+      "target": "repositories_roles_createunavailablerolesrepository"
     },
     {
       "relation": "calls",
@@ -44933,6 +48144,17 @@
       "target": "db_types_member"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/members.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "repositories_members",
+      "target": "db_types_updatememberprofileinput",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -44995,6 +48217,143 @@
       "target": "repositories_members_membersrepository"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "auth_permissions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "auth_permissions_actor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "auth_permissions_can",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "db_schema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "db_schema_navpins",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "lib_ids",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "lib_ids_createid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "repositories_navpins_createnavpinsrepository",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "repositories_navpins_createunavailablenavpinsrepository",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "repositories_navpins_navpin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "repositories_navpins_navpindb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "repositories_navpins_navpininput",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/navPins.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "repositories_navpins",
+      "target": "repositories_navpins_navpinsrepository",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/db/repositories/notifications.ts",
@@ -45033,6 +48392,260 @@
       "confidence_score": 1.0,
       "source": "repositories_points",
       "target": "repositories_points_pointsrepository"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "auth_permissions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "auth_permissions_actor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "auth_permissions_can",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "auth_permissions_normalizerolekey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "auth_permissions_normalizerolekeys",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "auth_permissions_rolekey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "auth_permissions_rolekeys",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "db_schema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "db_schema_auditlogs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "db_schema_memberroles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "db_schema_members",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "db_schema_roles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "lib_ids",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "lib_ids_createid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "repositories_roles_adminentry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "repositories_roles_assignablerole",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "repositories_roles_createrolesrepository",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L195",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "repositories_roles_createunavailablerolesrepository",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "repositories_roles_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "repositories_roles_inactive_role_keys",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "repositories_roles_non_assignable",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "repositories_roles_rolekeyrow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "repositories_roles_rolesrepository",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/repositories/roles.ts",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "repositories_roles",
+      "target": "repositories_roles_savememberrolesinput",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -45485,6 +49098,16 @@
       "confidence_score": 1.0,
       "source": "db_schema",
       "target": "db_schema_memberstatus"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/schema.ts",
+      "source_location": "L655",
+      "weight": 1.0,
+      "source": "db_schema",
+      "target": "db_schema_navpins",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -46568,6 +50191,26 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "src/db/types.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "db_types",
+      "target": "db_types_updatememberprofileinput",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/types.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "db_types",
+      "target": "db_types_updatememberprofileinputschema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "src/lib/crawlers.ts",
       "source_location": "L9",
       "weight": 1.0,
@@ -46893,6 +50536,60 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/admin.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "auth_admin",
+      "target": "auth_admin_hasanyadminscope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/admin.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "auth_admin",
+      "target": "auth_permissions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/admin.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "auth_admin",
+      "target": "auth_permissions_actor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/admin.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "auth_admin",
+      "target": "auth_permissions_can",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/admin.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "auth_admin",
+      "target": "auth_permissions_permissionactions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "src/server/auth/permissions.ts",
       "source_location": "L18",
       "weight": 1.0,
@@ -46909,6 +50606,26 @@
       "confidence_score": 1.0,
       "source": "auth_permissions",
       "target": "auth_permissions_can"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/permissions.ts",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "auth_permissions",
+      "target": "auth_permissions_normalizerolekey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/permissions.ts",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "auth_permissions",
+      "target": "auth_permissions_normalizerolekeys",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -47047,6 +50764,17 @@
       "confidence_score": 1.0,
       "source": "server_uploads",
       "target": "auth_permissions_can"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server/auth/permissions.ts",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "auth_permissions_normalizerolekeys",
+      "target": "auth_permissions_normalizerolekey",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -51997,5 +55725,5 @@
       "source_file": "docs/operations/migrations.md"
     }
   ],
-  "built_at_commit": "3350297db0cc0d454da66da56df48dffe10d53ed"
+  "built_at_commit": "89a0ef48cc0abbd25a0de2b2b12876f392fcfc13"
 }

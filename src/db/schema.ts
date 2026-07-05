@@ -651,3 +651,18 @@ export const auditLogs = sqliteTable(
 		index("audit_logs_actor_member_id_idx").on(table.actorMemberId),
 	],
 );
+
+export const navPins = sqliteTable(
+	"nav_pins",
+	{
+		id: text("id").primaryKey(),
+		label: text("label").notNull(),
+		url: text("url").notNull(),
+		icon: text("icon").notNull(),
+		position: integer("position").notNull().default(0),
+		createdBy: text("created_by").references(() => members.id, { onDelete: "set null" }),
+		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+	},
+	(table) => [index("nav_pins_position_idx").on(table.position)],
+);

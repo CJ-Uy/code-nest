@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Link2, LogOut } from "lucide-react";
+import { Link2, LogOut, ShieldCheck } from "lucide-react";
+import { navPinIconFor } from "@/components/portal/nav-pin-icons";
 import { getRepositories } from "@/db";
 import { requireActor } from "@/server/auth/actor";
+import { hasAnyAdminScope } from "@/server/auth/admin";
 import { signOutAction } from "./actions";
 
 function initialsFrom(value: string): string {
@@ -10,11 +12,16 @@ function initialsFrom(value: string): string {
 	return parts.map((part) => part[0]?.toUpperCase() ?? "").join("") || "M";
 }
 
+function isExternalHref(href: string): boolean {
+	return /^https?:\/\//.test(href);
+}
+
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
 	const actor = await requireActor();
-	const isAdmin = actor.roles.includes("super");
-	const { members } = await getRepositories();
+	const isAdmin = hasAnyAdminScope(actor);
+	const { members, navPins } = await getRepositories();
 	const member = await members.getById(actor, actor.memberId).catch(() => null);
+	const pins = await navPins.listVisible(actor).catch(() => []);
 	const displayName = member?.nickname ?? member?.fullName ?? member?.name ?? member?.email ?? "Member";
 	const subtitle = member?.email ?? "Signed in";
 	const initials = initialsFrom(displayName);
@@ -36,6 +43,38 @@ export default async function PortalLayout({ children }: { children: React.React
 						<Link2 className="size-5" />
 						<span className="flex-1">Link shortener</span>
 					</Link>
+					{isAdmin ? (
+						<Link href="/portal/admin" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-primary-foreground/70 transition hover:bg-white/10 hover:text-primary-foreground">
+							<ShieldCheck className="size-5" />
+							<span className="flex-1">Admin</span>
+						</Link>
+					) : null}
+					{pins.length > 0 ? (
+						<div className="mt-4 border-t border-white/10 pt-4">
+							<p className="px-3 pb-2 text-[0.65rem] font-semibold uppercase text-primary-foreground/45">Pinned</p>
+							<div className="flex flex-col gap-1">
+								{pins.map((pin) => {
+									const Icon = navPinIconFor(pin.icon);
+									const className = "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-primary-foreground/70 transition hover:bg-white/10 hover:text-primary-foreground";
+									const body = (
+										<>
+											<Icon className="size-5" />
+											<span className="min-w-0 flex-1 truncate">{pin.label}</span>
+										</>
+									);
+									return isExternalHref(pin.url) ? (
+										<a key={pin.id} href={pin.url} target="_blank" rel="noreferrer" className={className}>
+											{body}
+										</a>
+									) : (
+										<Link key={pin.id} href={pin.url} className={className}>
+											{body}
+										</Link>
+									);
+								})}
+							</div>
+						</div>
+					) : null}
 				</nav>
 
 				<div className="mt-auto pt-3">
@@ -76,7 +115,11 @@ export default async function PortalLayout({ children }: { children: React.React
 						<p className="truncate font-heading text-xl font-semibold text-foreground">Link shortener</p>
 					</div>
 					<div className="flex items-center gap-2">
-						{isAdmin ? <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80 lg:bg-secondary lg:text-primary">Admin</span> : null}
+						{isAdmin ? (
+							<Link href="/portal/admin" className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80 lg:bg-secondary lg:text-primary">
+								Admin
+							</Link>
+						) : null}
 						<form action={signOutAction} className="lg:hidden">
 							<button
 								type="submit"
@@ -93,11 +136,36 @@ export default async function PortalLayout({ children }: { children: React.React
 			</div>
 
 			<nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-primary text-primary-foreground lg:hidden" aria-label="Portal modules">
-				<div className="mx-auto flex h-16 max-w-md items-center justify-center px-4">
+				<div className="mx-auto flex h-16 max-w-md items-center gap-4 overflow-x-auto px-4">
 					<Link href="/portal/links" className="flex min-w-24 flex-col items-center gap-1 py-2 text-[0.7rem] font-semibold text-secondary">
 						<Link2 className="size-5" />
 						Link shortener
 					</Link>
+					{isAdmin ? (
+						<Link href="/portal/admin" className="flex min-w-20 flex-col items-center gap-1 py-2 text-[0.7rem] font-semibold text-primary-foreground/70">
+							<ShieldCheck className="size-5" />
+							Admin
+						</Link>
+					) : null}
+					{pins.map((pin) => {
+						const Icon = navPinIconFor(pin.icon);
+						const className = "flex min-w-20 flex-col items-center gap-1 py-2 text-[0.7rem] font-semibold text-primary-foreground/70";
+						const body = (
+							<>
+								<Icon className="size-5" />
+								<span className="max-w-20 truncate">{pin.label}</span>
+							</>
+						);
+						return isExternalHref(pin.url) ? (
+							<a key={pin.id} href={pin.url} target="_blank" rel="noreferrer" className={className}>
+								{body}
+							</a>
+						) : (
+							<Link key={pin.id} href={pin.url} className={className}>
+								{body}
+							</Link>
+						);
+					})}
 				</div>
 			</nav>
 		</div>

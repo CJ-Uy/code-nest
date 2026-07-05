@@ -10,6 +10,8 @@ export const permissionActions = [
 	"role:assign",
 	"survey:configure",
 	"member:manage",
+	"roster:manage",
+	"nav:configure",
 	"library:read_confidential",
 ] as const;
 
@@ -28,7 +30,7 @@ const rolePermissions: Record<Exclude<RoleKey, "super" | "member">, PermissionAc
 	publishing: ["content:publish", "library:read_confidential"],
 	link: ["link:moderate"],
 	crs: ["event:approve", "points:assign"],
-	member_admin: ["member:manage", "role:assign"],
+	member_admin: ["member:manage", "role:assign", "roster:manage", "nav:configure"],
 };
 
 export function can(actor: Actor | null, action: PermissionAction): boolean {
@@ -38,4 +40,18 @@ export function can(actor: Actor | null, action: PermissionAction): boolean {
 		if (role === "member" || role === "super") return false;
 		return rolePermissions[role].includes(action);
 	});
+}
+
+export function normalizeRoleKey(value: string | null | undefined): RoleKey | null {
+	if (!value) return null;
+	return roleKeys.includes(value as RoleKey) ? (value as RoleKey) : null;
+}
+
+export function normalizeRoleKeys(values: Iterable<string | null | undefined>): RoleKey[] {
+	const seen = new Set<RoleKey>();
+	for (const value of values) {
+		const key = normalizeRoleKey(value);
+		if (key) seen.add(key);
+	}
+	return [...seen];
 }

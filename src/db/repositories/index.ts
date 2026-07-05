@@ -7,17 +7,23 @@ import { createLibraryRepository } from "./library";
 import { createLinksRepository, createUnavailableLinksRepository } from "./links";
 import { createMembersRepository } from "./members";
 import { createNotificationsRepository } from "./notifications";
+import { createNavPinsRepository, createUnavailableNavPinsRepository } from "./navPins";
 import { createPointsRepository } from "./points";
+import { createRolesRepository, createUnavailableRolesRepository } from "./roles";
 import { createSessionsRepository } from "./sessions";
 import { createSurveysRepository } from "./surveys";
 import { createTeamsRepository } from "./teams";
 import type { MemberDb } from "./members";
 import type { LinkDb } from "./links";
+import type { getDb } from "../client";
 import type { DatabaseAdapter } from "../types";
 
-export function createDrizzleRepositories(db: MemberDb & LinkDb) {
+type DrizzleDb = ReturnType<typeof getDb>;
+
+export function createDrizzleRepositories(db: DrizzleDb & MemberDb & LinkDb) {
+	const audit = createAuditRepository();
 	return {
-		members: createMembersRepository(db),
+		members: createMembersRepository(db, audit),
 		sessions: createSessionsRepository(),
 		articles: createArticlesRepository(),
 		library: createLibraryRepository(),
@@ -28,7 +34,9 @@ export function createDrizzleRepositories(db: MemberDb & LinkDb) {
 		announcements: createAnnouncementsRepository(),
 		notifications: createNotificationsRepository(),
 		calendar: createCalendarRepository(),
-		audit: createAuditRepository(),
+		audit,
+		roles: createRolesRepository(db),
+		navPins: createNavPinsRepository(db, audit),
 		teams: createTeamsRepository(),
 	};
 }
@@ -41,6 +49,13 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 			list: async (_actor, input) => adapter.listMembers().then((members) => members.slice(0, input?.limit ?? 25)),
 			getById: async (_actor, id) => adapter.getMemberById(id),
 			create: async (_actor, input) => adapter.createMember(input),
+			search: async () => [],
+			updateProfile: async () => {
+				throw new Error("Members are unavailable in shared mode.");
+			},
+			updateStatus: async () => {
+				throw new Error("Members are unavailable in shared mode.");
+			},
 		},
 		sessions: createSessionsRepository(),
 		articles: createArticlesRepository(),
@@ -53,6 +68,8 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 		notifications: createNotificationsRepository(),
 		calendar: createCalendarRepository(),
 		audit: createAuditRepository(),
+		roles: createUnavailableRolesRepository(),
+		navPins: createUnavailableNavPinsRepository(),
 		teams: createTeamsRepository(),
 	};
 }

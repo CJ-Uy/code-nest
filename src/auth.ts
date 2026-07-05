@@ -33,7 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 			Google({
 				clientId: required(config.AUTH_GOOGLE_ID, "AUTH_GOOGLE_ID"),
 				clientSecret: required(config.AUTH_GOOGLE_SECRET, "AUTH_GOOGLE_SECRET"),
-				// Safe here because signIn only allows active members with Google-verified email.
+				// Safe here because signIn only allows invited members with Google-verified email.
 				allowDangerousEmailAccountLinking: true,
 			}),
 		],
@@ -44,7 +44,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 			async signIn({ account, profile }) {
 				if (account?.provider !== "google" || profile?.email_verified !== true || !profile.email) return false;
 				const [member] = await db.select().from(members).where(eq(members.email, profile.email.toLowerCase())).limit(1);
-				return member?.status === "active";
+				if (!member || member.status === "inactive") return false;
+				if (member.status === "pending") {
+					await db.update(members).set({ status: "active", updatedAt: new Date() }).where(eq(members.id, member.id));
+				}
+				return true;
 			},
 			async session({ session, user }) {
 				const [member] = await db.select().from(members).where(eq(members.id, user.id)).limit(1);

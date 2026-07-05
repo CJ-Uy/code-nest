@@ -12,6 +12,14 @@ export const createMemberInputSchema = z.object({
 
 export type CreateMemberInput = z.infer<typeof createMemberInputSchema>;
 
+export const updateMemberProfileInputSchema = z.object({
+	name: z.string().trim().min(1).max(120).nullable().optional(),
+	fullName: z.string().trim().min(1).max(160).nullable().optional(),
+	nickname: z.string().trim().min(1).max(80).nullable().optional(),
+});
+
+export type UpdateMemberProfileInput = z.infer<typeof updateMemberProfileInputSchema>;
+
 export interface DatabaseAdapter {
 	readonly adapterType: "d1-binding" | "local-sqlite" | "shared-api";
 	listMembers(): Promise<Member[]>;
