@@ -29,12 +29,12 @@ export default async function RosterAdminPage({ searchParams }: { searchParams: 
 		<div className="grid gap-6">
 			<AdminIntro
 				title="Member List"
-				whoFor="The official members of CODE for a term"
+				whoFor="The official members of CODE for a school year"
 				effect="Adding an email lets that person sign in; they link automatically on first login"
 			/>
 			<Card>
 				<CardHeader>
-					<CardTitle>Pick a term</CardTitle>
+					<CardTitle>Pick a school year</CardTitle>
 				</CardHeader>
 				<CardContent className="flex flex-wrap gap-2">
 					{termList.map((term) => (
@@ -88,7 +88,7 @@ export default async function RosterAdminPage({ searchParams }: { searchParams: 
 					</CardContent>
 				</Card>
 			) : (
-				<p className="text-sm text-muted-foreground">No terms exist yet. Create a term first.</p>
+				<p className="text-sm text-muted-foreground">No school years exist yet. Create a school year first.</p>
 			)}
 		</div>
 	);

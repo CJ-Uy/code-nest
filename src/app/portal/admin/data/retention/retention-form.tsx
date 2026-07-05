@@ -32,7 +32,7 @@ export function RetentionForm({
 			</fieldset>
 
 			<label className="grid gap-2 text-sm font-medium">
-				Term
+				School year
 				<Select name="termId" defaultValue={termOptions[0]?.id ?? ""} required>
 					{termOptions.map((term) => (
 						<option key={term.id} value={term.id}>

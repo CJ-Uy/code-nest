@@ -29,7 +29,7 @@ export default async function ReportingAdminPage() {
 
 	return (
 		<div className="grid gap-6 lg:grid-cols-3">
-			<ExportCard title="Whole-term master" description="Every retention record in a term, one row per record.">
+			<ExportCard title="Whole-year master" description="Every retention record in a school year, one row per record.">
 				<input type="hidden" name="kind" value="term" />
 				<Select name="termId" required>
 					{termList.map((term) => (
@@ -51,7 +51,7 @@ export default async function ReportingAdminPage() {
 				</Select>
 			</ExportCard>
 
-			<ExportCard title="Per-member history" description="One member's full-year retention history for a selected term.">
+			<ExportCard title="Per-member history" description="One member's full-year retention history for a selected school year.">
 				<input type="hidden" name="kind" value="member" />
 				<Select name="termId" required>
 					{termList.map((term) => (
