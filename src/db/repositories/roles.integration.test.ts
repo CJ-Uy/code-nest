@@ -76,6 +76,16 @@ describe("roles + member search on D1", () => {
 		expect(roles.baseVersionOf(["publishing", "super"])).toBe("publishing|super");
 	});
 
+	it("listAdmins returns only members with a non-member role, plus their keys", async () => {
+		const { roles } = repos();
+		const admins = await roles.listAdmins(superActor);
+		const byEmail = Object.fromEntries(admins.map((a) => [a.email, a.roleKeys]));
+		// m_juan / m_old have no member_roles → not admins
+		expect(Object.keys(byEmail).sort()).toEqual(["admin@code.org", "plain@code.org", "super@code.org"]);
+		expect(byEmail["super@code.org"]).toEqual(["super"]);
+		expect(byEmail["plain@code.org"]).toEqual(["publishing"]);
+	});
+
 	it("saves a diff atomically: adds member_admin, keeps publishing, writes audit", async () => {
 		const { roles, db } = repos();
 		const base = roles.baseVersionOf(await roles.getMemberRoleKeys(superActor, "m_plain"));

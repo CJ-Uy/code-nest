@@ -1,6 +1,6 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, ne, sql } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
-import { auditLogs, memberRoles, roles } from "@/db/schema";
+import { auditLogs, memberRoles, members, roles } from "@/db/schema";
 import { createId } from "@/lib/ids";
 import type { Actor, RoleKey } from "@/server/auth/permissions";
 import { can, roleKeys } from "@/server/auth/permissions";
@@ -16,10 +16,13 @@ const NON_ASSIGNABLE: RoleKey[] = ["member"];
 
 export type AssignableRole = { key: RoleKey; label: string; description: string; assignable: boolean };
 
+export type AdminEntry = { memberId: string; displayName: string; email: string; roleKeys: RoleKey[] };
+
 export type SaveMemberRolesInput = { memberId: string; desiredRoleKeys: RoleKey[]; baseVersion: string };
 
 export type RolesRepository = {
 	listAssignableRoles(actor: Actor): Promise<AssignableRole[]>;
+	listAdmins(actor: Actor): Promise<AdminEntry[]>;
 	getMemberRoleKeys(actor: Actor, memberId: string): Promise<RoleKey[]>;
 	baseVersionOf(keys: RoleKey[]): string;
 	saveMemberRoles(actor: Actor, input: SaveMemberRolesInput): Promise<{ roleKeys: RoleKey[] }>;
@@ -66,6 +69,39 @@ export function createRolesRepository(db: Db, _audit: AuditRepository): RolesRep
 					description: r.description,
 					assignable: !INACTIVE_ROLE_KEYS.includes(r.key as RoleKey),
 				}));
+		},
+
+		async listAdmins(actor) {
+			if (!can(actor, "role:assign")) throw new Error("Not authorized to view admins.");
+			const rows = await db
+				.select({
+					memberId: members.id,
+					name: members.name,
+					fullName: members.fullName,
+					email: members.email,
+					key: roles.key,
+				})
+				.from(memberRoles)
+				.innerJoin(roles, eq(roles.id, memberRoles.roleId))
+				.innerJoin(members, eq(members.id, memberRoles.memberId))
+				.where(ne(roles.key, "member"));
+			const byMember = new Map<string, AdminEntry>();
+			for (const row of rows) {
+				let entry = byMember.get(row.memberId);
+				if (!entry) {
+					entry = {
+						memberId: row.memberId,
+						displayName: row.fullName || row.name || row.email,
+						email: row.email,
+						roleKeys: [],
+					};
+					byMember.set(row.memberId, entry);
+				}
+				entry.roleKeys.push(row.key as RoleKey);
+			}
+			return [...byMember.values()]
+				.map((entry) => ({ ...entry, roleKeys: [...entry.roleKeys].sort() }))
+				.sort((a, b) => a.displayName.localeCompare(b.displayName));
 		},
 
 		async getMemberRoleKeys(actor, memberId) {
