@@ -1,12 +1,12 @@
 {
   ".remember/tmp/last-ndc.ts": {
-    "mtime": 1783255010.51411,
-    "ast_hash": "25a6b2b60f917847fd625366282f4886",
+    "mtime": 1783269337.4917774,
+    "ast_hash": "bd22fa901405e7d20986549c8ab30629",
     "semantic_hash": ""
   },
   ".remember/tmp/last-save.json": {
-    "mtime": 1783255009.8928316,
-    "ast_hash": "135d97f37c69df5cadca28d7aa3ed928",
+    "mtime": 1783270357.5906615,
+    "ast_hash": "7eba68815240f9a509fbda886019714b",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -725,8 +725,8 @@
     "semantic_hash": ""
   },
   ".remember/now.md": {
-    "mtime": 1783255036.6372867,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "mtime": 1783270357.3396075,
+    "ast_hash": "db6fcd286d9bed419a7f63bd15c511aa",
     "semantic_hash": ""
   },
   ".remember/recent.md": {
@@ -1590,8 +1590,8 @@
     "semantic_hash": ""
   },
   "src/components/event-scan-panel.tsx": {
-    "mtime": 1782181750.16378,
-    "ast_hash": "a77e1c15d67cee396c986180c03b501c",
+    "mtime": 1783270973.2564847,
+    "ast_hash": "f258c0fdcd6d57b3b760de6481cadec9",
     "semantic_hash": ""
   },
   "src/components/member-code-card.tsx": {
@@ -1755,8 +1755,8 @@
     "semantic_hash": ""
   },
   "src/app/portal/calendar/[eventId]/page.tsx": {
-    "mtime": 1783253659.9511926,
-    "ast_hash": "64919d58a0bfb0509071189935aa799a",
+    "mtime": 1783270944.2859323,
+    "ast_hash": "1487fcee51c4adc40fc6d48f399f42b7",
     "semantic_hash": ""
   },
   "src/app/portal/calendar/page.tsx": {
@@ -2134,11 +2134,6 @@
     "ast_hash": "299947b5e6890b11b007b119b72d74cf",
     "semantic_hash": ""
   },
-  "src/components/event-checkin-qr.tsx": {
-    "mtime": 1782181708.8315115,
-    "ast_hash": "70c0d7e148c17c1871b2b599993cecc0",
-    "semantic_hash": ""
-  },
   "src/components/links/link-qr-customizer.tsx": {
     "mtime": 1783177871.4452407,
     "ast_hash": "2b7068d36786d47062a8c9dccb0ea99c",
@@ -2280,8 +2275,8 @@
     "semantic_hash": ""
   },
   "pnpm-workspace.yaml": {
-    "mtime": 1783166121.3239934,
-    "ast_hash": "bfaa212e24d539c06eb75c63f6419375",
+    "mtime": 1783269801.6534781,
+    "ast_hash": "1e6d6d1232773ebe7e1c47410bf93747",
     "semantic_hash": ""
   },
   "public/code-falcon-white.svg": {
@@ -2480,13 +2475,13 @@
     "semantic_hash": ""
   },
   "src/app/portal/admin/system/nav-pins/actions.ts": {
-    "mtime": 1783231200.4519165,
-    "ast_hash": "818e48e69ca49d133ac9e7d7679615f4",
+    "mtime": 1783269478.1641164,
+    "ast_hash": "3782bda4eee97f18a2a3982c73a5db0a",
     "semantic_hash": ""
   },
   "src/app/portal/admin/system/nav-pins/nav-pins-manager.tsx": {
-    "mtime": 1783255675.196136,
-    "ast_hash": "fb0c36559916ee03cc14cbb220ae9c7b",
+    "mtime": 1783269478.1651013,
+    "ast_hash": "d8def90878254f105906037eba6d09d3",
     "semantic_hash": ""
   },
   "src/app/portal/admin/system/nav-pins/page.tsx": {
@@ -2590,8 +2585,18 @@
     "semantic_hash": ""
   },
   "src/app/portal/calendar/[eventId]/event-manage-panel.tsx": {
-    "mtime": 1783253985.0730362,
-    "ast_hash": "4a26b816d9a68066723a9093adb9bc2b",
+    "mtime": 1783270899.842856,
+    "ast_hash": "1740161001f9f92d0e7616e848960c26",
+    "semantic_hash": ""
+  },
+  ".remember/today-2026-07-06.md": {
+    "mtime": 1783269355.037903,
+    "ast_hash": "f1e0fb2a857b20760682c0450f898590",
+    "semantic_hash": ""
+  },
+  "src/components/camera-scanner.tsx": {
+    "mtime": 1783271048.966321,
+    "ast_hash": "f492c426f59a4c569cd34c51ea2d3cba",
     "semantic_hash": ""
   }
 }

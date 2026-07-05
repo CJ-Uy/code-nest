@@ -3,11 +3,9 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { EventCheckinQr } from "@/components/event-checkin-qr";
+import { MemberCodeCard } from "@/components/member-code-card";
 import { getRepositories } from "@/db";
-import { createCheckinToken } from "@/lib/checkin-token";
 import { requireActor } from "@/server/auth/actor";
-import { getAppConfig } from "@/server/env";
 import { EventManagePanel } from "./event-manage-panel";
 
 export const dynamic = "force-dynamic";
@@ -30,14 +28,6 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 					repositories.events.listInvites(actor, eventId).catch(() => []),
 				])
 			: [[], [], []];
-
-	const config = getAppConfig();
-	// Tokens require AUTH_SECRET, which is intentionally absent in shared-dev; the
-	// static profile member code stays the fallback there.
-	const checkinToken =
-		!event.iAttended && config.AUTH_SECRET
-			? await createCheckinToken(config.AUTH_SECRET, { memberId: actor.memberId, eventId })
-			: null;
 
 	return (
 		<div className="grid gap-5">
@@ -68,28 +58,26 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 					</CardContent>
 				</Card>
 
-				<Card>
-					<CardHeader>
-						<CardTitle className="text-base">Check in</CardTitle>
-						<CardDescription>
-							{event.iAttended ? "You are marked present for this event." : "Show your code to an organizer."}
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						{event.iAttended ? (
+				{event.iAttended ? (
+					<Card>
+						<CardHeader>
+							<CardTitle className="text-base">Check in</CardTitle>
+							<CardDescription>You are marked present for this event.</CardDescription>
+						</CardHeader>
+						<CardContent>
 							<div className="flex flex-col items-center gap-2 py-4 text-center">
 								<CheckCircle2 className="size-10 text-accent" />
 								<p className="text-sm font-medium">Checked in</p>
 							</div>
-						) : checkinToken ? (
-							<EventCheckinQr token={checkinToken} />
-						) : (
-							<p className="text-sm text-muted-foreground">
-								Use the member code from your profile menu to check in at this event.
-							</p>
-						)}
-					</CardContent>
-				</Card>
+						</CardContent>
+					</Card>
+				) : (
+					<MemberCodeCard
+						memberId={actor.memberId}
+						title="Check in"
+						description="Show this code to an organizer to be marked present."
+					/>
+				)}
 			</div>
 
 			{managed && isStaff ? (

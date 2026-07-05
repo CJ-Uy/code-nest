@@ -19,6 +19,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CameraScanner } from "@/components/camera-scanner";
+import { decodeMemberCode } from "@/lib/member-code";
 import { cn } from "@/lib/utils";
 import {
 	addStaffAction,
@@ -223,18 +225,32 @@ function CheckinsSection({
 	const closesAt = event.endsAt?.getTime() ?? event.startsAt.getTime();
 	const windowOpen = now >= opensAt && now <= closesAt;
 
-	function mark(m: FoundMember) {
+	function markById(memberId: string, label?: string) {
 		setError(null);
 		setFlash(null);
 		startTransition(async () => {
 			try {
-				const res = await markPresentAction(event.id, m.memberId);
-				setFlash(res.alreadyPresent ? `${displayName(m)} was already checked in.` : `Checked in ${displayName(m)}.`);
+				const res = await markPresentAction(event.id, memberId);
+				const who = label ?? "Member";
+				setFlash(res.alreadyPresent ? `${who} was already checked in.` : `Checked in ${who}.`);
 				router.refresh();
 			} catch (e) {
 				setError(e instanceof Error ? e.message : "Could not mark present.");
 			}
 		});
+	}
+
+	function mark(m: FoundMember) {
+		markById(m.memberId, displayName(m));
+	}
+
+	function onScanCode(code: string) {
+		const memberId = decodeMemberCode(code);
+		if (!memberId) {
+			setError("That QR isn’t a CODE member code.");
+			return;
+		}
+		markById(memberId);
 	}
 
 	return (
@@ -248,27 +264,33 @@ function CheckinsSection({
 				)}
 			>
 				{windowOpen
-					? "Check-in is open. Search a member to mark them present."
+					? "Check-in is open. Scan a member's code or search by name to mark them present."
 					: canOverrideWindow
 						? "Check-in is closed, but your role can mark members present anytime."
 						: "Check-in opens 30 minutes before the start and closes when the event ends."}
 			</div>
 
 			{windowOpen || canOverrideWindow ? (
-				<MemberPicker
-					eventId={event.id}
-					placeholder="Search a member to check in…"
-					onPick={mark}
-					renderMeta={(m) =>
-						m.alreadyScanned ? (
-							<Badge variant="secondary" className="text-[10px]">
-								Present
-							</Badge>
-						) : (
-							<span className="text-xs text-accent">Mark present</span>
-						)
-					}
-				/>
+				<div className="grid gap-3">
+					<CameraScanner onCode={onScanCode} />
+					<div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+						<span className="h-px flex-1 bg-border" /> or search <span className="h-px flex-1 bg-border" />
+					</div>
+					<MemberPicker
+						eventId={event.id}
+						placeholder="Search a member to check in…"
+						onPick={mark}
+						renderMeta={(m) =>
+							m.alreadyScanned ? (
+								<Badge variant="secondary" className="text-[10px]">
+									Present
+								</Badge>
+							) : (
+								<span className="text-xs text-accent">Mark present</span>
+							)
+						}
+					/>
+				</div>
 			) : null}
 
 			{flash ? <p className="text-sm text-accent">{flash}</p> : null}

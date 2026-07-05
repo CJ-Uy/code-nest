@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { CameraScanner } from "@/components/camera-scanner";
 import { isCheckinToken } from "@/lib/checkin-token";
 import { decodeMemberCode } from "@/lib/member-code";
 
@@ -78,6 +79,17 @@ export function EventScanPanel({ eventId, termId }: { eventId: string; termId: s
 				<CardDescription>Scan or paste a member code, or search by name or email if scanning fails.</CardDescription>
 			</CardHeader>
 			<CardContent className="flex flex-col gap-6">
+				<CameraScanner
+					onCode={(code) => {
+						const memberId = decodeMemberCode(code);
+						if (!memberId) {
+							setError("That QR isn’t a CODE member code.");
+							return;
+						}
+						void scanMember(memberId);
+					}}
+				/>
+
 				<form
 					className="flex gap-2"
 					onSubmit={(event) => {
