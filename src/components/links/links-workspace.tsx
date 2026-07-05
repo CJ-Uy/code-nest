@@ -236,16 +236,16 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 			<MobileLinksList links={sorted} baseLabel={baseLabel} onOpen={openDialog} />
 
 			<div className="hidden min-w-0 rounded-lg border bg-card md:block">
-				<Table className="min-w-[1180px] table-fixed">
+				<Table className="table-fixed">
 					<TableHeader>
 						<TableRow>
-							<SortHeader label="Title" column="title" sort={sort} onSort={toggleSort} className="w-[30%]" />
+							<SortHeader label="Title" column="title" sort={sort} onSort={toggleSort} className="w-[26%]" />
 							<SortHeader label="Short link" column="slug" sort={sort} onSort={toggleSort} className="w-[18%]" />
-							<TableHead className="w-[9%]">Tags</TableHead>
+							<TableHead className="hidden w-[8%] lg:table-cell">Tags</TableHead>
 							<SortHeader label="Clicks" column="clicks" sort={sort} onSort={toggleSort} align="right" className="w-[7%]" />
-							<SortHeader label="Owner" column="owner" sort={sort} onSort={toggleSort} className="w-[15%]" />
-							<SortHeader label="Created" column="created" sort={sort} onSort={toggleSort} className="w-[10%]" />
-							<TableHead className="w-[11%] text-right">Actions</TableHead>
+							<SortHeader label="Owner" column="owner" sort={sort} onSort={toggleSort} className="w-[17%]" />
+							<SortHeader label="Created" column="created" sort={sort} onSort={toggleSort} className="hidden w-[10%] lg:table-cell" />
+							<TableHead className="w-[120px] text-right">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -253,12 +253,12 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 							<TableRow key={link.id} className="cursor-pointer" onClick={() => openDialog(link.id)}>
 								<TableCell><p className="truncate font-medium">{link.title}</p><p className="truncate text-xs text-muted-foreground">to {link.destinationUrl}</p></TableCell>
 								<TableCell><ShortLinkCell origin={origin} baseLabel={baseLabel} slug={link.slug} /></TableCell>
-								<TableCell><TagList tags={link.tags} /></TableCell>
+								<TableCell className="hidden lg:table-cell"><TagList tags={link.tags} /></TableCell>
 								<TableCell className="text-right tabular-nums">{link.clickCount}</TableCell>
 								<TableCell><Owner owner={link.owner} /></TableCell>
-								<TableCell className="whitespace-nowrap text-muted-foreground">{new Date(link.createdAt).toLocaleDateString()}</TableCell>
+								<TableCell className="hidden whitespace-nowrap text-muted-foreground lg:table-cell">{new Date(link.createdAt).toLocaleDateString()}</TableCell>
 								<TableCell>
-									<div className="flex justify-end gap-1">
+									<div className="flex justify-end gap-1" onClick={(event) => event.stopPropagation()}>
 										<Button variant="outline" size="icon" aria-label="Copy link" onClick={(event) => copy(event, link)}><Copy /></Button>
 										<Button variant="outline" size="icon" aria-label="View details and QR code" onClick={(event) => { event.stopPropagation(); void openDialog(link.id); }}><QrCode /></Button>
 										{canEdit(link) ? <Button variant="ghost" size="icon" aria-label="Delete link" onClick={(event) => removeLink(event, link.id)}><Trash2 /></Button> : null}
