@@ -1425,8 +1425,8 @@
     "semantic_hash": ""
   },
   "src/components/portal/nav-items.ts": {
-    "mtime": 1782183612.85224,
-    "ast_hash": "d227071193575d67977563e0d2acf5da",
+    "mtime": 1783250295.3644075,
+    "ast_hash": "63fa557798b15f80ca0a027bbf18e5b1",
     "semantic_hash": ""
   },
   "src/components/portal/notification-bell.tsx": {
@@ -1435,8 +1435,8 @@
     "semantic_hash": ""
   },
   "src/components/portal/portal-shell.tsx": {
-    "mtime": 1783231261.4221334,
-    "ast_hash": "cd353c007d955734c3d454d791a92659",
+    "mtime": 1783250295.3694289,
+    "ast_hash": "942740811d53dad1580212cf6f6430a5",
     "semantic_hash": ""
   },
   "src/components/ui/dropdown-menu.tsx": {

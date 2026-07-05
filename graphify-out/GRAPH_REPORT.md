@@ -1,16 +1,16 @@
 # Graph Report - code-nest-main  (2026-07-05)
 
 ## Corpus Check
-- 206 files · ~288,818 words
+- 206 files · ~288,674 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2376 nodes · 3309 edges · 130 communities (92 shown, 38 thin omitted)
+- 2376 nodes · 3309 edges · 129 communities (91 shown, 38 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 36 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c789a8f8`
+- Built from commit: `f6da888f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -120,7 +120,6 @@
 - [[_COMMUNITY_Community 109|Community 109]]
 - [[_COMMUNITY_Community 110|Community 110]]
 - [[_COMMUNITY_Community 111|Community 111]]
-- [[_COMMUNITY_Community 113|Community 113]]
 - [[_COMMUNITY_Community 114|Community 114]]
 - [[_COMMUNITY_Community 115|Community 115]]
 - [[_COMMUNITY_Community 116|Community 116]]
@@ -172,7 +171,7 @@
 - **Shared Dev Worker Migrate + Deploy + Reseed Flow** — code_portal_master_plan_dev_worker_lifecycle, migrations_db_migrate_dev, commands_deploy_dev, secrets_and_env_token_rotation [EXTRACTED 0.85]
 - **Drizzle Migration Pipeline (generate to apply per target)** — migrations_drizzle_schema, migrations_db_generate, migrations_db_migrate_local, migrations_db_migrate_dev, migrations_db_migrate_prod [EXTRACTED 0.85]
 
-## Communities (130 total, 38 thin omitted)
+## Communities (129 total, 38 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.00
@@ -375,8 +374,8 @@ Cohesion: 0.11
 Nodes (24): isValidDestinationUrl(), isValidSlugFormat(), normalizeSlug(), RESERVED_SLUG_DEFAULTS, CreateLinkInput, DEFAULT_QR_STYLE, enrichLink(), LinkDb (+16 more)
 
 ### Community 86 - "Community 86"
-Cohesion: 0.16
-Nodes (23): requireActor(), can(), getRepositories(), createLinkAction(), LinksPage(), inviteMemberAction(), inviteSchema, statusSchema (+15 more)
+Cohesion: 0.18
+Nodes (20): requireActor(), can(), getRepositories(), createLinkAction(), LinksPage(), inviteMemberAction(), inviteSchema, statusSchema (+12 more)
 
 ### Community 87 - "Community 87"
 Cohesion: 0.12
@@ -439,16 +438,12 @@ Cohesion: 0.50
 Nodes (3): Runtime Shape, Setup Overview, Stack
 
 ### Community 103 - "Community 103"
-Cohesion: 0.24
-Nodes (4): AdminGroupIndex(), visibleGroups(), AdminHomePage(), AdminIntro()
+Cohesion: 0.15
+Nodes (9): AdminGroupIndex(), AdminGroup, adminGroups, AdminPage, AdminPermission, pageVisible(), visibleGroups(), AdminHomePage() (+1 more)
 
 ### Community 104 - "Community 104"
 Cohesion: 0.27
 Nodes (8): linksContract, createLinksHandlers(), fail(), LinksHandlerDependencies, Repositories, linkErrorStatus(), Context, GET()
-
-### Community 113 - "Community 113"
-Cohesion: 0.29
-Nodes (5): AdminGroup, adminGroups, AdminPage, AdminPermission, pageVisible()
 
 ### Community 114 - "Community 114"
 Cohesion: 0.28
@@ -479,8 +474,8 @@ Cohesion: 0.22
 Nodes (9): LocalDatabase, LocalSqliteDatabaseAdapter, SharedApiDatabaseAdapter, members, CreateMemberInput, DatabaseAdapter, Member, NewMember (+1 more)
 
 ### Community 122 - "Community 122"
-Cohesion: 0.13
-Nodes (19): Actor, normalizeRoleKey(), normalizeRoleKeys(), permissionActions, RoleKey, rolePermissions, auditLogs, MemberStatus (+11 more)
+Cohesion: 0.12
+Nodes (22): Actor, normalizeRoleKey(), normalizeRoleKeys(), permissionActions, RoleKey, rolePermissions, auditLogs, MemberStatus (+14 more)
 
 ### Community 123 - "Community 123"
 Cohesion: 0.13

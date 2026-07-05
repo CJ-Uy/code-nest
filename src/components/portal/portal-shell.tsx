@@ -164,12 +164,14 @@ export function PortalShell({ member, memberId, navPins, showAdmin, adminGroups,
 								<RailItem key={item.id} item={item} pathname={pathname} />
 							))}
 						</nav>
-						<Separator className="my-3 bg-white/10" />
-						<nav className="flex flex-col gap-1" aria-label="More modules">
-							{secondaryNav.map((item) => (
-								<RailItem key={item.id} item={item} pathname={pathname} />
-							))}
-							{navPins.length > 0 ? (
+						{secondaryNav.length > 0 || navPins.length > 0 ? (
+							<>
+								<Separator className="my-3 bg-white/10" />
+								<nav className="flex flex-col gap-1" aria-label="More modules">
+									{secondaryNav.map((item) => (
+										<RailItem key={item.id} item={item} pathname={pathname} />
+									))}
+									{navPins.length > 0 ? (
 								<>
 									<Separator className="my-2 bg-white/10" />
 									<p className="px-3 pb-0.5 text-[0.6rem] font-semibold uppercase tracking-wider text-primary-foreground/45">
@@ -179,8 +181,10 @@ export function PortalShell({ member, memberId, navPins, showAdmin, adminGroups,
 										<PinnedNavLink key={pin.id} pin={pin} />
 									))}
 								</>
-							) : null}
-						</nav>
+									) : null}
+								</nav>
+							</>
+						) : null}
 					</>
 				)}
 				<div className="mt-auto pt-2">
