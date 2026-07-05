@@ -70,7 +70,7 @@ export default async function AdminSurveysPage() {
 							surveys.map((survey) => (
 								<Link
 									key={survey.id}
-									href={`/portal/admin/surveys/${survey.id}`}
+									href={`/portal/admin/content/surveys/${survey.id}`}
 									className="flex items-center justify-between rounded-md border border-border px-4 py-3 text-sm hover:bg-accent"
 								>
 									<span className="font-medium">{survey.title}</span>

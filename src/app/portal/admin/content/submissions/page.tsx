@@ -37,8 +37,8 @@ export default async function AdminSubmissionsPage({
 	]);
 
 	const tabs = [
-		{ id: "contact", label: `Contact (${contact.length})`, href: "/portal/admin/submissions" },
-		{ id: "feedback", label: `Article feedback (${feedback.length})`, href: "/portal/admin/submissions?tab=feedback" },
+		{ id: "contact", label: `Contact (${contact.length})`, href: "/portal/admin/content/submissions" },
+		{ id: "feedback", label: `Article feedback (${feedback.length})`, href: "/portal/admin/content/submissions?tab=feedback" },
 	];
 
 	return (

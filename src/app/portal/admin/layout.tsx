@@ -1,8 +1,9 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminTabs } from "@/components/portal/admin-tabs";
 import { getActor } from "@/server/auth/actor";
 import { hasAnyAdminScope } from "@/server/auth/admin";
-import { can } from "@/server/auth/permissions";
+import { visibleGroups } from "./nav";
 
 export const dynamic = "force-dynamic";
 
@@ -11,29 +12,25 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 	if (!actor) redirect("/signin");
 	if (!hasAnyAdminScope(actor)) redirect("/portal");
 
-	const tabs = [
-		{ href: "/portal/admin", label: "Dashboard", show: true },
-		{ href: "/portal/admin/reporting", label: "Reporting", show: can(actor, "retention:record") },
-		{ href: "/portal/admin/retention", label: "Retention", show: can(actor, "retention:record") },
-		{ href: "/portal/admin/roster", label: "Roster", show: can(actor, "roster:manage") },
-		{ href: "/portal/admin/nav-pins", label: "Nav pins", show: can(actor, "nav:configure") },
-		{ href: "/portal/admin/quick-links", label: "Quick links", show: can(actor, "nav:configure") },
-		{ href: "/portal/admin/links", label: "Links", show: can(actor, "link:moderate") },
-		{ href: "/portal/admin/surveys", label: "Surveys", show: can(actor, "survey:configure") },
-		{ href: "/portal/admin/announcements", label: "Announcements", show: can(actor, "announcement:manage") },
-		{ href: "/portal/admin/library", label: "Library", show: can(actor, "library:manage") },
-		{ href: "/portal/admin/submissions", label: "Submissions", show: true },
-		{ href: "/portal/admin/audit", label: "Audit log", show: true },
-	].filter((tab) => tab.show);
+	const groups = visibleGroups(actor);
 
 	return (
 		<div className="grid gap-6">
 			<div className="grid gap-4">
 				<div>
 					<p className="text-xs font-semibold uppercase tracking-wide text-primary">Admin</p>
-					<h1 className="font-heading text-3xl text-foreground">Console</h1>
+					<Link href="/portal/admin" className="font-heading text-3xl text-foreground transition-colors hover:text-accent">
+						Console
+					</Link>
 				</div>
-				<AdminTabs tabs={tabs} />
+				<div className="grid gap-3">
+					{groups.map((group) => (
+						<div key={group.segment} className="grid gap-1">
+							<p className="text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground">{group.label}</p>
+							<AdminTabs tabs={group.pages.map((page) => ({ href: page.href, label: page.label }))} />
+						</div>
+					))}
+				</div>
 			</div>
 			{children}
 		</div>

@@ -24,8 +24,8 @@ export async function createSurveyAction(formData: FormData) {
 	});
 	const repositories = await getRepositories();
 	const survey = await repositories.surveys.create(actor, input);
-	revalidatePath("/portal/admin/surveys");
-	redirect(`/portal/admin/surveys/${survey.id}`);
+	revalidatePath("/portal/admin/content/surveys");
+	redirect(`/portal/admin/content/surveys/${survey.id}`);
 }
 
 export async function sampleSurveyAction(formData: FormData) {
@@ -37,7 +37,7 @@ export async function sampleSurveyAction(formData: FormData) {
 	});
 	const repositories = await getRepositories();
 	await repositories.surveys.sample(actor, input);
-	revalidatePath(`/portal/admin/surveys/${input.surveyId}`);
+	revalidatePath(`/portal/admin/content/surveys/${input.surveyId}`);
 }
 
 function nullableText(value: FormDataEntryValue | null): string | null {

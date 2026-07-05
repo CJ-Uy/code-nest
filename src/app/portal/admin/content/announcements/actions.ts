@@ -24,7 +24,7 @@ function parse(formData: FormData) {
 }
 
 function revalidate(): void {
-	revalidatePath("/portal/admin/announcements");
+	revalidatePath("/portal/admin/content/announcements");
 	revalidatePath("/portal/announcements");
 }
 

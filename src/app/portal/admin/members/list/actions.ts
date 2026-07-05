@@ -20,7 +20,7 @@ export async function addRosterEntryAction(formData: FormData) {
 	const input = addSchema.parse({ termId: formData.get("termId"), email: formData.get("email") });
 	const repositories = await getRepositories();
 	await repositories.roster.add(actor, input);
-	revalidatePath("/portal/admin/roster");
+	revalidatePath("/portal/admin/members/list");
 }
 
 export async function removeRosterEntryAction(formData: FormData) {
@@ -28,5 +28,5 @@ export async function removeRosterEntryAction(formData: FormData) {
 	const input = removeSchema.parse({ termId: formData.get("termId"), email: formData.get("email") });
 	const repositories = await getRepositories();
 	await repositories.roster.remove(actor, input.termId, input.email);
-	revalidatePath("/portal/admin/roster");
+	revalidatePath("/portal/admin/members/list");
 }

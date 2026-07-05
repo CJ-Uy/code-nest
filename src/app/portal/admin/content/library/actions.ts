@@ -53,7 +53,7 @@ function parseItem(formData: FormData): LibraryItemInput {
 }
 
 function revalidate(id?: string): void {
-	revalidatePath("/portal/admin/library");
+	revalidatePath("/portal/admin/content/library");
 	revalidatePath("/portal/library");
 	if (id) revalidatePath(`/portal/library/${id}`);
 }

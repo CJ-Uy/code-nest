@@ -32,7 +32,7 @@ export default async function RosterAdminPage({ searchParams }: { searchParams: 
 				<CardContent className="flex flex-wrap gap-2">
 					{termList.map((term) => (
 						<Button key={term.id} asChild size="sm" variant={term.id === activeTermId ? "default" : "outline"}>
-							<a href={`/portal/admin/roster?termId=${term.id}`}>{term.name}</a>
+							<a href={`/portal/admin/members/list?termId=${term.id}`}>{term.name}</a>
 						</Button>
 					))}
 				</CardContent>

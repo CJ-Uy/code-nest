@@ -48,9 +48,9 @@ export default async function AdminAuditPage({
 			</div>
 
 			<div className="flex flex-wrap gap-2">
-				<FilterChip label="All" href="/portal/admin/audit" active={!category} />
+				<FilterChip label="All" href="/portal/admin/system/audit" active={!category} />
 				{CATEGORIES.map((cat) => (
-					<FilterChip key={cat} label={cat} href={`/portal/admin/audit?category=${cat}`} active={category === cat} />
+					<FilterChip key={cat} label={cat} href={`/portal/admin/system/audit?category=${cat}`} active={category === cat} />
 				))}
 			</div>
 
