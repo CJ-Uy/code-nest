@@ -233,17 +233,19 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 
 			{status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
 
-			<div className="min-w-0 rounded-lg border bg-card">
-				<Table className="min-w-[960px] table-fixed">
+			<MobileLinksList links={sorted} baseLabel={baseLabel} onOpen={openDialog} />
+
+			<div className="hidden min-w-0 rounded-lg border bg-card md:block">
+				<Table className="min-w-[1180px] table-fixed">
 					<TableHeader>
 						<TableRow>
-							<SortHeader label="Title" column="title" sort={sort} onSort={toggleSort} className="w-[34%]" />
+							<SortHeader label="Title" column="title" sort={sort} onSort={toggleSort} className="w-[30%]" />
 							<SortHeader label="Short link" column="slug" sort={sort} onSort={toggleSort} className="w-[18%]" />
-							<TableHead className="w-[12%]">Tags</TableHead>
-							<SortHeader label="Clicks" column="clicks" sort={sort} onSort={toggleSort} align="right" className="w-[8%]" />
-							<SortHeader label="Owner" column="owner" sort={sort} onSort={toggleSort} className="w-[12%]" />
-							<SortHeader label="Created" column="created" sort={sort} onSort={toggleSort} className="w-[9%]" />
-							<TableHead className="w-[7%] text-right">Actions</TableHead>
+							<TableHead className="w-[9%]">Tags</TableHead>
+							<SortHeader label="Clicks" column="clicks" sort={sort} onSort={toggleSort} align="right" className="w-[7%]" />
+							<SortHeader label="Owner" column="owner" sort={sort} onSort={toggleSort} className="w-[15%]" />
+							<SortHeader label="Created" column="created" sort={sort} onSort={toggleSort} className="w-[10%]" />
+							<TableHead className="w-[11%] text-right">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -278,6 +280,20 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 					</DialogPrimitive.Content>
 				</DialogPrimitive.Portal>
 			</DialogPrimitive.Root>
+		</div>
+	);
+}
+
+function MobileLinksList({ links, baseLabel, onOpen }: { links: LinkView[]; baseLabel: string; onOpen(id: string): void }) {
+	return (
+		<div className="overflow-hidden rounded-lg border bg-card md:hidden">
+			{links.map((link) => (
+				<button key={link.id} type="button" onClick={() => onOpen(link.id)} className="grid w-full gap-1 border-b p-4 text-left last:border-b-0 active:bg-secondary">
+					<span className="truncate font-medium text-foreground">{link.title}</span>
+					<span className="truncate text-sm text-primary">{baseLabel}/{link.slug}</span>
+				</button>
+			))}
+			{!links.length ? <p className="p-6 text-center text-sm text-muted-foreground">No links match these filters.</p> : null}
 		</div>
 	);
 }
