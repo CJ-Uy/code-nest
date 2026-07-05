@@ -37,6 +37,7 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 	const [sort, setSort] = useState<SortState>({ key: "created", dir: "desc" });
 	const [createOpen, setCreateOpen] = useState(false);
 	const [activeId, setActiveId] = useState("");
+	const [confirmDeleteId, setConfirmDeleteId] = useState("");
 	const [stats, setStats] = useState<StatsView | null>(null);
 	const [statsLoading, setStatsLoading] = useState(false);
 	const [form, setForm] = useState({ slug: "", destinationUrl: "", title: "", tags: [] as string[] });
@@ -129,15 +130,16 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 		setStatus("Link saved.");
 	}
 
-	async function removeLink(event: MouseEvent, id: string) {
-		event.stopPropagation();
+	async function removeLink(id: string) {
 		const response = await fetch(`/api/links/${encodeURIComponent(id)}`, { method: "DELETE", credentials: "same-origin" });
 		if (!response.ok) {
 			setStatus("Could not delete link.");
+			setConfirmDeleteId("");
 			return;
 		}
 		setLinks((current) => current.filter((link) => link.id !== id));
 		if (activeId === id) setActiveId("");
+		setConfirmDeleteId("");
 		setStatus("Link deleted.");
 	}
 
@@ -259,7 +261,7 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 									<div className="flex justify-end gap-1">
 										<Button variant="outline" size="icon" aria-label="Copy link" onClick={(event) => copy(event, link)}><Copy /></Button>
 										<Button variant="outline" size="icon" aria-label="View details and QR code" onClick={(event) => { event.stopPropagation(); void openDialog(link.id); }}><QrCode /></Button>
-										{canEdit(link) ? <Button variant="ghost" size="icon" aria-label="Delete link" onClick={(event) => removeLink(event, link.id)}><Trash2 /></Button> : null}
+										{canEdit(link) ? <Button variant="ghost" size="icon" aria-label="Delete link" onClick={(event) => { event.stopPropagation(); setConfirmDeleteId(link.id); }}><Trash2 /></Button> : null}
 									</div>
 								</TableCell>
 							</TableRow>
@@ -268,6 +270,33 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 					</TableBody>
 				</Table>
 			</div>
+
+			<DialogPrimitive.Root open={Boolean(confirmDeleteId)} onOpenChange={(open) => !open && setConfirmDeleteId("")}>
+				<DialogPrimitive.Portal>
+					<DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-black/45" />
+					<DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 w-[min(100%-1.5rem,420px)] -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-background p-6 shadow-lg">
+						<DialogPrimitive.Title className="font-heading text-xl">Delete this link?</DialogPrimitive.Title>
+						<DialogPrimitive.Description className="mt-1 text-sm text-muted-foreground">
+							{(() => {
+								const target = links.find((link) => link.id === confirmDeleteId);
+								if (!target) return "This link will stop working immediately.";
+								return `“${target.title || target.slug}” (/${target.slug}) will stop working immediately. This can’t be undone.`;
+							})()}
+						</DialogPrimitive.Description>
+						<div className="mt-5 flex justify-end gap-2">
+							<DialogPrimitive.Close asChild>
+								<Button variant="outline">Cancel</Button>
+							</DialogPrimitive.Close>
+							<Button
+								className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+								onClick={() => void removeLink(confirmDeleteId)}
+							>
+								<Trash2 /> Delete link
+							</Button>
+						</div>
+					</DialogPrimitive.Content>
+				</DialogPrimitive.Portal>
+			</DialogPrimitive.Root>
 
 			<DialogPrimitive.Root open={Boolean(active)} onOpenChange={(open) => !open && setActiveId("")}>
 				<DialogPrimitive.Portal>
