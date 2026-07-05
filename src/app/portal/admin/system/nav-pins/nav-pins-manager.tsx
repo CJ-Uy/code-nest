@@ -100,6 +100,7 @@ function IconPicker({
 export function NavPinsManager({ pins }: { pins: NavPin[] }) {
 	const [items, setItems] = useState(pins);
 	const [draggingId, setDraggingId] = useState<string | null>(null);
+	const [deletingId, setDeletingId] = useState<string | null>(null);
 	const saveFormId = "nav-pins-save-form";
 
 	function dragOver(id: string) {
@@ -107,6 +108,16 @@ export function NavPinsManager({ pins }: { pins: NavPin[] }) {
 		const from = items.findIndex((item) => item.id === draggingId);
 		const to = items.findIndex((item) => item.id === id);
 		if (from >= 0 && to >= 0) setItems((current) => move(current, from, to));
+	}
+
+	async function deletePin(id: string) {
+		setDeletingId(id);
+		try {
+			await deleteNavPinAction(id);
+			setItems((current) => current.filter((item) => item.id !== id));
+		} finally {
+			setDeletingId(null);
+		}
 	}
 
 	return (
@@ -168,13 +179,10 @@ export function NavPinsManager({ pins }: { pins: NavPin[] }) {
 								<Input form={saveFormId} name="labels" defaultValue={pin.label} aria-label="Label" required />
 								<Input form={saveFormId} name="urls" type="url" defaultValue={pin.url} aria-label="URL" required />
 								<IconPicker form={saveFormId} name="icons" defaultValue={pin.icon} />
-								<form action={deleteNavPinAction}>
-									<input type="hidden" name="id" value={pin.id} />
-									<Button type="submit" variant="outline" title="Delete">
-										<Trash2 className="size-4" />
-										Delete
-									</Button>
-								</form>
+								<Button type="button" variant="outline" title="Delete" disabled={deletingId === pin.id} onClick={() => void deletePin(pin.id)}>
+									<Trash2 className="size-4" />
+									Delete
+								</Button>
 							</li>
 						))}
 					</ol>
