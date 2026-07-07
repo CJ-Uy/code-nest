@@ -6,44 +6,34 @@ import { getRepositories } from "@/db";
 import { parseEmailColumn } from "@/lib/roster-emails";
 import { requireActor } from "@/server/auth/actor";
 
-const addSchema = z.object({
-	termId: z.string().min(1),
+const inviteSchema = z.object({
 	email: z.string().trim().toLowerCase().email(),
+	name: z.string().trim().optional(),
 });
 
-const removeSchema = z.object({
-	termId: z.string().min(1),
-	email: z.string().min(1),
-});
-
-export async function addRosterEntryAction(formData: FormData) {
+export async function inviteMemberAction(formData: FormData) {
 	const actor = await requireActor();
-	const input = addSchema.parse({ termId: formData.get("termId"), email: formData.get("email") });
+	const input = inviteSchema.parse({ email: formData.get("email"), name: formData.get("name") });
 	const repositories = await getRepositories();
-	await repositories.roster.add(actor, input);
+	await repositories.members.create(actor, { email: input.email, name: input.name || null });
 	revalidatePath("/portal/admin/members/list");
+	revalidatePath("/portal/admin/members/roles");
 }
 
-export type BulkAddResult = { added: number; alreadyMembers: number; dedupedInput: number; invalid: string[] };
+export type BulkAddResult = { processed: number; dedupedInput: number; invalid: string[] };
 
-export async function bulkAddRosterAction(input: { termId: string; raw: string }): Promise<BulkAddResult> {
+export async function bulkAddMembersAction(input: { raw: string }): Promise<BulkAddResult> {
 	const actor = await requireActor();
-	const termId = z.string().min(1).parse(input.termId);
 	const raw = z.string().max(64 * 1024, "Too much text pasted — split into smaller batches.").parse(input.raw);
 	const { valid, invalid, dedupedInput } = parseEmailColumn(raw);
 	if (valid.length > 500) {
 		throw new Error("Too many emails (max 500 per submission). Split into smaller batches.");
 	}
 	const repositories = await getRepositories();
-	const { added, alreadyMembers } = await repositories.roster.bulkAdd(actor, { termId, emails: valid });
+	for (const email of valid) {
+		await repositories.members.create(actor, { email, name: null });
+	}
 	revalidatePath("/portal/admin/members/list");
-	return { added, alreadyMembers, dedupedInput, invalid };
-}
-
-export async function removeRosterEntryAction(formData: FormData) {
-	const actor = await requireActor();
-	const input = removeSchema.parse({ termId: formData.get("termId"), email: formData.get("email") });
-	const repositories = await getRepositories();
-	await repositories.roster.remove(actor, input.termId, input.email);
-	revalidatePath("/portal/admin/members/list");
+	revalidatePath("/portal/admin/members/roles");
+	return { processed: valid.length, dedupedInput, invalid };
 }

@@ -82,7 +82,10 @@ export function createMembersRepository(db: MemberDb, audit: AuditRepository): M
 			if (!can(actor, "member:manage")) {
 				throw new Error("Not authorized to create members.");
 			}
-			const [member] = await db.insert(members).values({ id: createId("mem"), email: input.email, name: input.name ?? null }).returning();
+			const email = input.email.trim().toLowerCase();
+			const [existing] = await db.select().from(members).where(eq(members.email, email)).limit(1);
+			if (existing) return existing;
+			const [member] = await db.insert(members).values({ id: createId("mem"), email, name: input.name ?? null }).returning();
 			await audit.record(actor, {
 				action: "member:create",
 				targetType: "member",
