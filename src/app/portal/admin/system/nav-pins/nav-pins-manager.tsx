@@ -161,9 +161,7 @@ export function NavPinsManager({ pins }: { pins: NavPin[] }) {
 									<IconPicker name="icons" defaultValue={pin.icon} />
 									<Button
 										type="submit"
-										name="id"
-										value={pin.id}
-										formAction={deleteNavPinAction}
+										form={`delete-nav-pin-${pin.id}`}
 										formNoValidate
 										variant="outline"
 										title="Delete"
@@ -175,6 +173,11 @@ export function NavPinsManager({ pins }: { pins: NavPin[] }) {
 							))}
 						</ol>
 					</form>
+					{items.map((pin) => (
+						<form key={pin.id} id={`delete-nav-pin-${pin.id}`} action={deleteNavPinAction} className="hidden">
+							<input type="hidden" name="id" value={pin.id} />
+						</form>
+					))}
 				</CardContent>
 			</Card>
 		</div>
