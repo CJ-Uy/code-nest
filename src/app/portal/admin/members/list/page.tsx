@@ -4,11 +4,11 @@ import { AdminIntro } from "@/components/portal/admin-intro";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { requireActor } from "@/server/auth/actor";
 import { can } from "@/server/auth/permissions";
-import { inviteMemberAction, updateMemberStatusAction } from "./actions";
+import { updateMemberStatusAction } from "./actions";
+import { AddMembers } from "./add-members";
 
 export const dynamic = "force-dynamic";
 
@@ -23,21 +23,10 @@ export default async function MemberListPage() {
 			<AdminIntro title="Member List" whoFor="Invite members by exact email" effect="Pending members can receive admin roles before first sign-in" />
 			<Card>
 				<CardHeader>
-					<CardTitle>Invite member</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<form action={inviteMemberAction} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-						<Input name="email" type="email" placeholder="member@student.ateneo.edu" required />
-						<Input name="name" placeholder="Name optional" />
-						<Button type="submit">Invite</Button>
-					</form>
-				</CardContent>
-			</Card>
-			<Card>
-				<CardHeader>
 					<CardTitle>Members ({members.length})</CardTitle>
 				</CardHeader>
-				<CardContent>
+				<CardContent className="grid gap-4">
+					<AddMembers />
 					<Table>
 						<TableHeader>
 							<TableRow>
