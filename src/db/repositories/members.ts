@@ -28,6 +28,9 @@ export type MemberDb = {
 			};
 		};
 	};
+	delete(table: typeof members): {
+		where(condition: unknown): Promise<unknown> | unknown;
+	};
 };
 
 export type MembersRepository = {
@@ -36,6 +39,7 @@ export type MembersRepository = {
 	getById(actor: Actor, id: string): Promise<Member | null>;
 	create(actor: Actor, input: CreateMemberInput): Promise<Member>;
 	updateProfile(actor: Actor, id: string, input: UpdateMemberProfileInput): Promise<Member>;
+	delete(actor: Actor, id: string): Promise<void>;
 };
 
 export function createMembersRepository(db: MemberDb, audit: AuditRepository): MembersRepository {
@@ -85,7 +89,7 @@ export function createMembersRepository(db: MemberDb, audit: AuditRepository): M
 			const email = input.email.trim().toLowerCase();
 			const [existing] = await db.select().from(members).where(eq(members.email, email)).limit(1);
 			if (existing) return existing;
-			const [member] = await db.insert(members).values({ id: createId("mem"), email, name: input.name ?? null }).returning();
+			const [member] = await db.insert(members).values({ id: createId("mem"), email, name: input.name ?? null, status: "pending" }).returning();
 			await audit.record(actor, {
 				action: "member:create",
 				targetType: "member",
@@ -113,6 +117,21 @@ export function createMembersRepository(db: MemberDb, audit: AuditRepository): M
 				category: "member",
 			});
 			return member;
+		},
+		async delete(actor, id) {
+			if (!can(actor, "member:manage")) {
+				throw new Error("Not authorized to delete members.");
+			}
+			if (actor.memberId === id) {
+				throw new Error("You cannot delete your own member record.");
+			}
+			await db.delete(members).where(eq(members.id, id));
+			await audit.record(actor, {
+				action: "member:delete",
+				targetType: "member",
+				targetId: id,
+				category: "member",
+			});
 		},
 	};
 }

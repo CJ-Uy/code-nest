@@ -37,3 +37,12 @@ export async function bulkAddMembersAction(input: { raw: string }): Promise<Bulk
 	revalidatePath("/portal/admin/members/roles");
 	return { processed: valid.length, dedupedInput, invalid };
 }
+
+export async function deleteMemberAction(formData: FormData) {
+	const actor = await requireActor();
+	const id = z.string().min(1).parse(formData.get("id"));
+	const repositories = await getRepositories();
+	await repositories.members.delete(actor, id);
+	revalidatePath("/portal/admin/members/list");
+	revalidatePath("/portal/admin/members/roles");
+}

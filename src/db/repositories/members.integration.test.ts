@@ -38,6 +38,7 @@ describe("members repository on D1", () => {
 		const [audit] = await db.select().from(auditLogs);
 
 		expect(created.email).toBe("new-member@example.com");
+		expect(created.status).toBe("pending");
 		expect(listed.map((member) => member.id)).toContain(created.id);
 		expect(audit).toMatchObject({
 			actorMemberId: adminActor.memberId,
@@ -46,6 +47,32 @@ describe("members repository on D1", () => {
 			targetId: created.id,
 			category: "member",
 		});
+	});
+
+	it("deletes members for an authorized actor and audits the change", async () => {
+		await env.DB.prepare("INSERT INTO members (id, email, name) VALUES (?, ?, ?)")
+			.bind(adminActor.memberId, "admin@example.com", "Admin")
+			.run();
+		await env.DB.prepare("INSERT INTO members (id, email, name) VALUES (?, ?, ?)")
+			.bind(memberActor.memberId, "member@example.com", "Member")
+			.run();
+		const db = drizzle(env.DB, { schema });
+		const repository = createMembersRepository(db, createAuditRepository(db));
+
+		await repository.delete(adminActor, memberActor.memberId);
+		const listed = await repository.list(adminActor, { limit: 10 });
+		const logs = await db.select().from(auditLogs);
+
+		expect(listed.map((member) => member.id)).not.toContain(memberActor.memberId);
+		expect(logs).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					actorMemberId: adminActor.memberId,
+					action: "member:delete",
+					targetId: memberActor.memberId,
+				}),
+			]),
+		);
 	});
 
 	it("rejects an admin read without member management permission", async () => {

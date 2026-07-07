@@ -115,3 +115,14 @@ export async function isRosterSignInAllowed(
 
 	return true;
 }
+
+export async function syncSignedInMemberProfile(
+	db: Pick<Db, "update">,
+	profile: { email?: string | null; name?: unknown; picture?: unknown },
+): Promise<void> {
+	if (!profile.email) return;
+	const update: MemberUpdate = { status: "active", updatedAt: new Date() };
+	if (typeof profile.name === "string" && profile.name.trim()) update.name = profile.name.trim();
+	if (typeof profile.picture === "string" && profile.picture.trim()) update.image = profile.picture.trim();
+	await db.update(members).set(update).where(eq(members.email, normalizeEmail(profile.email)));
+}

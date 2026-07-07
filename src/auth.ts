@@ -9,7 +9,7 @@ import { getAppConfig } from "@/server/env";
 import { isGoogleSignInAllowed, splitAuthList } from "@/server/auth/access";
 import { grantBootstrapSuperRole } from "@/server/auth/bootstrap";
 import { normalizeRoleKeys } from "@/server/auth/permissions";
-import { isRosterSignInAllowed } from "@/server/auth/roster";
+import { isRosterSignInAllowed, syncSignedInMemberProfile } from "@/server/auth/roster";
 
 export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 	const config = getAppConfig();
@@ -60,7 +60,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 				if (!allowed) return false;
 				if (!profile?.email) return false;
 
-				return isRosterSignInAllowed(db, profile.email, new Date(), config.AUTH_BOOTSTRAP_SUPER_ADMIN_EMAIL);
+				const rosterAllowed = await isRosterSignInAllowed(db, profile.email, new Date(), config.AUTH_BOOTSTRAP_SUPER_ADMIN_EMAIL);
+				if (rosterAllowed) await syncSignedInMemberProfile(db, profile);
+				return rosterAllowed;
 			},
 			async session({ session, user }) {
 				const [member] = await db.select().from(members).where(eq(members.id, user.id)).limit(1);

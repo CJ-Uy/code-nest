@@ -106,6 +106,9 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 			getById: async (_actor, id) => adapter.getMemberById(id),
 			create: async (_actor, input) => adapter.createMember(input),
 			updateProfile: async (_actor, id, input) => adapter.updateMemberProfile(id, input),
+			delete: async () => {
+				throw new Error("Member deletion is unavailable through this repository adapter.");
+			},
 		},
 		sessions: createSessionsRepository(),
 		links: createUnavailableLinksRepository(),

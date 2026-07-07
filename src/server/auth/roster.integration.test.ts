@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { beforeEach, describe, expect, it } from "vitest";
 import * as schema from "@/db/schema";
-import { isRosterSignInAllowed } from "./roster";
+import { isRosterSignInAllowed, syncSignedInMemberProfile } from "./roster";
 
 const NOW = new Date("2026-06-18T00:00:00.000Z");
 
@@ -80,5 +80,28 @@ describe("isRosterSignInAllowed", () => {
 				"bootstrap@example.com",
 			),
 		).resolves.toBe(true);
+	});
+
+	it("backfills a pre-invited member's Google profile on sign-in", async () => {
+		await env.DB.prepare("INSERT INTO members (id, email, status) VALUES (?, ?, ?)")
+			.bind("mem_invited", "invited@example.com", "pending")
+			.run();
+		const db = drizzle(env.DB, { schema });
+
+		await syncSignedInMemberProfile(db, {
+			email: " Invited@Example.com ",
+			name: "Invited Member",
+			picture: "https://example.com/avatar.png",
+		});
+		const [member] = await db
+			.select({ name: schema.members.name, image: schema.members.image, status: schema.members.status })
+			.from(schema.members)
+			.where(eq(schema.members.id, "mem_invited"));
+
+		expect(member).toEqual({
+			name: "Invited Member",
+			image: "https://example.com/avatar.png",
+			status: "active",
+		});
 	});
 });

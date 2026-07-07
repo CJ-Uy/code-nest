@@ -2,11 +2,13 @@ import { redirect } from "next/navigation";
 import { getRepositories } from "@/db";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AdminIntro } from "@/components/portal/admin-intro";
 import { requireActor } from "@/server/auth/actor";
 import { can } from "@/server/auth/permissions";
 import { AddMembers } from "./add-members";
+import { deleteMemberAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +37,7 @@ export default async function MemberListPage() {
 								<TableHead>Name</TableHead>
 								<TableHead>Email</TableHead>
 								<TableHead>Status</TableHead>
+								<TableHead className="text-right">Action</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -46,6 +49,14 @@ export default async function MemberListPage() {
 										<Badge variant={member.status === "active" ? "success" : member.status === "pending" ? "warn" : "outline"}>
 											{member.status}
 										</Badge>
+									</TableCell>
+									<TableCell className="text-right">
+										<form action={deleteMemberAction}>
+											<input type="hidden" name="id" value={member.id} />
+											<Button type="submit" variant="outline" size="sm" className="text-destructive" disabled={member.id === actor.memberId}>
+												Delete
+											</Button>
+										</form>
 									</TableCell>
 								</TableRow>
 							))}
