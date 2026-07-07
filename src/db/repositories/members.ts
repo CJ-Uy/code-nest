@@ -50,7 +50,7 @@ export function createMembersRepository(db: MemberDb, audit?: AuditRepository): 
 			if (!can(actor, "member:manage")) {
 				throw new Error("Not authorized to list members.");
 			}
-			return db.select().from(members).orderBy(members.createdAt).limit(Math.min(input?.limit ?? 25, 50));
+			return db.select().from(members).orderBy(members.createdAt).limit(Math.min(input?.limit ?? 25, 1000));
 		},
 		async search(actor, query) {
 			if (!can(actor, "role:assign") && !can(actor, "member:manage")) {
