@@ -5,13 +5,12 @@ import { AdminIntro } from "@/components/portal/admin-intro";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { requireActor } from "@/server/auth/actor";
 import { can } from "@/server/auth/permissions";
 import { deleteMemberAction } from "./actions";
 import { AddMembers } from "./add-members";
+import { MemberListFilters } from "./member-list-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -57,17 +56,10 @@ export default async function MemberListPage({ searchParams }: { searchParams?: 
 						<CardTitle>Members ({filtered.length})</CardTitle>
 						<AddMembers />
 					</div>
-					<form className="flex flex-wrap items-end gap-2">
-						<input type="hidden" name="page" value="1" />
-						<Input name="q" defaultValue={q} placeholder="Search name or email" className="max-w-sm" />
-						<Select name="rows" defaultValue={String(rows)} className="w-28">
-							<option value="25">25 rows</option>
-							<option value="50">50 rows</option>
-							<option value="100">100 rows</option>
-						</Select>
-						<Button type="submit" variant="outline">Search</Button>
+					<div className="flex flex-wrap items-end gap-2">
+						<MemberListFilters q={q} rows={rows} />
 						{q ? <Button asChild variant="ghost"><Link href="/portal/admin/members/list">Clear</Link></Button> : null}
-					</form>
+					</div>
 				</CardHeader>
 				<CardContent className="grid gap-4">
 					<Table>
