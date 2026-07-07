@@ -11,11 +11,6 @@ const inviteSchema = z.object({
 	name: z.string().trim().optional(),
 });
 
-const statusSchema = z.object({
-	id: z.string().min(1),
-	status: z.enum(["active", "pending", "inactive"]),
-});
-
 export async function inviteMemberAction(formData: FormData) {
 	const actor = await requireActor();
 	const input = inviteSchema.parse({ email: formData.get("email"), name: formData.get("name") });
@@ -43,10 +38,11 @@ export async function bulkAddMembersAction(input: { raw: string }): Promise<Bulk
 	return { processed: valid.length, dedupedInput, invalid };
 }
 
-export async function updateMemberStatusAction(formData: FormData) {
+export async function deleteMemberAction(formData: FormData) {
 	const actor = await requireActor();
-	const input = statusSchema.parse({ id: formData.get("id"), status: formData.get("status") });
+	const id = z.string().min(1).parse(formData.get("id"));
 	const repositories = await getRepositories();
-	await repositories.members.updateStatus(actor, input.id, input.status);
+	await repositories.members.delete(actor, id);
 	revalidatePath("/portal/admin/members/list");
+	revalidatePath("/portal/admin/members/roles");
 }

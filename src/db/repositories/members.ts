@@ -29,6 +29,9 @@ export type MemberDb = {
 			};
 		};
 	};
+	delete(table: typeof members): {
+		where(condition: unknown): Promise<unknown> | unknown;
+	};
 };
 
 export type MembersRepository = {
@@ -38,6 +41,7 @@ export type MembersRepository = {
 	create(actor: Actor, input: CreateMemberInput): Promise<Member>;
 	updateProfile(actor: Actor, id: string, input: UpdateMemberProfileInput): Promise<Member>;
 	updateStatus(actor: Actor, id: string, status: Member["status"]): Promise<Member>;
+	delete(actor: Actor, id: string): Promise<void>;
 };
 
 export function createMembersRepository(db: MemberDb, audit?: AuditRepository): MembersRepository {
@@ -93,6 +97,21 @@ export function createMembersRepository(db: MemberDb, audit?: AuditRepository): 
 			if (!member) throw new Error("Member not found.");
 			await audit?.record(actor, { action: `member:${status}`, targetType: "member", targetId: member.id, category: "member" });
 			return member;
+		},
+		async delete(actor, id) {
+			if (!can(actor, "member:manage")) {
+				throw new Error("Not authorized to delete members.");
+			}
+			if (actor.memberId === id) {
+				throw new Error("You cannot delete your own member record.");
+			}
+			await db.delete(members).where(eq(members.id, id));
+			await audit?.record(actor, {
+				action: "member:delete",
+				targetType: "member",
+				targetId: id,
+				category: "member",
+			});
 		},
 	};
 }

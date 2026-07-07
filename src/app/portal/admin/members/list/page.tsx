@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { requireActor } from "@/server/auth/actor";
 import { can } from "@/server/auth/permissions";
-import { updateMemberStatusAction } from "./actions";
+import { deleteMemberAction } from "./actions";
 import { AddMembers } from "./add-members";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +33,7 @@ export default async function MemberListPage() {
 								<TableHead>Name</TableHead>
 								<TableHead>Email</TableHead>
 								<TableHead>Status</TableHead>
-								<TableHead className="text-right">Set status</TableHead>
+								<TableHead className="text-right">Action</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -43,11 +43,11 @@ export default async function MemberListPage() {
 									<TableCell>{member.email}</TableCell>
 									<TableCell><Badge variant={member.status === "active" ? "success" : member.status === "pending" ? "warn" : "outline"}>{member.status}</Badge></TableCell>
 									<TableCell className="text-right">
-										<form action={updateMemberStatusAction} className="inline-flex gap-1">
+										<form action={deleteMemberAction}>
 											<input type="hidden" name="id" value={member.id} />
-											<Button name="status" value="pending" type="submit" size="sm" variant="outline">Pending</Button>
-											<Button name="status" value="active" type="submit" size="sm" variant="outline">Active</Button>
-											<Button name="status" value="inactive" type="submit" size="sm" variant="outline">Inactive</Button>
+											<Button type="submit" variant="outline" size="sm" className="text-destructive" disabled={member.id === actor.memberId}>
+												Delete
+											</Button>
 										</form>
 									</TableCell>
 								</TableRow>

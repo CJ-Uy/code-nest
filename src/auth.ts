@@ -45,8 +45,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 				if (account?.provider !== "google" || profile?.email_verified !== true || !profile.email) return false;
 				const [member] = await db.select().from(members).where(eq(members.email, profile.email.toLowerCase())).limit(1);
 				if (!member || member.status === "inactive") return false;
-				if (member.status === "pending") {
-					await db.update(members).set({ status: "active", updatedAt: new Date() }).where(eq(members.id, member.id));
+				const update: { status: "active"; updatedAt: Date; name?: string; image?: string } = { status: "active", updatedAt: new Date() };
+				if (typeof profile.name === "string" && profile.name.trim()) update.name = profile.name.trim();
+				if (typeof profile.picture === "string" && profile.picture.trim()) update.image = profile.picture.trim();
+				if (member.status === "pending" || update.name || update.image) {
+					await db.update(members).set(update).where(eq(members.id, member.id));
 				}
 				return true;
 			},

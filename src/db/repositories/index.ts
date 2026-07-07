@@ -56,6 +56,9 @@ export function createSharedRepositories(adapter: DatabaseAdapter): Repositories
 			updateStatus: async () => {
 				throw new Error("Members are unavailable in shared mode.");
 			},
+			delete: async () => {
+				throw new Error("Member deletion is unavailable through this repository adapter.");
+			},
 		},
 		sessions: createSessionsRepository(),
 		articles: createArticlesRepository(),
