@@ -10,7 +10,7 @@ import { requireActor } from "@/server/auth/actor";
 import { can } from "@/server/auth/permissions";
 import { deleteMemberAction } from "./actions";
 import { AddMembers } from "./add-members";
-import { MemberListFilters } from "./member-list-filters";
+import { MemberRowsSelect, MemberSearchBox } from "./member-list-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +57,7 @@ export default async function MemberListPage({ searchParams }: { searchParams?: 
 						<AddMembers />
 					</div>
 					<div className="flex flex-wrap items-end gap-2">
-						<MemberListFilters q={q} rows={rows} />
+						<MemberSearchBox q={q} rows={rows} />
 						{q ? <Button asChild variant="ghost"><Link href="/portal/admin/members/list">Clear</Link></Button> : null}
 					</div>
 				</CardHeader>
@@ -100,7 +100,8 @@ export default async function MemberListPage({ searchParams }: { searchParams?: 
 						<p>
 							Showing {filtered.length === 0 ? 0 : start + 1}-{Math.min(start + rows, filtered.length)} of {filtered.length}
 						</p>
-						<div className="flex items-center gap-2">
+						<div className="flex flex-wrap items-center gap-3">
+							<MemberRowsSelect q={q} rows={rows} />
 							<Button asChild variant="outline" size="sm" aria-disabled={currentPage <= 1}>
 								<Link href={href(Math.max(1, currentPage - 1), q, rows)} className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}>
 									Previous
