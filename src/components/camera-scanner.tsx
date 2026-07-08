@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import jsQR from "jsqr";
 import { Camera, CameraOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { canUseCameraScanner } from "@/lib/camera-scanner-support";
 
 // BarcodeDetector is a native browser API not yet in the TS DOM lib.
 type DetectedBarcode = { rawValue: string };
@@ -13,13 +15,11 @@ declare global {
 	}
 }
 
-// ponytail: native BarcodeDetector — zero deps, works on Android Chrome/Edge + desktop Chrome.
-// iOS Safari lacks it, so unsupported browsers fall back to the name search beside this. Upgrade
-// path if iOS camera scanning is needed: add a jsQR/@zxing decoder behind the same onCode prop.
 export function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const onCodeRef = useRef(onCode);
 	const lastRef = useRef<{ code: string; at: number }>({ code: "", at: 0 });
+	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const [active, setActive] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -27,22 +27,20 @@ export function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
 		onCodeRef.current = onCode;
 	}, [onCode]);
 
-	const supported =
-		typeof window !== "undefined" && "BarcodeDetector" in window && Boolean(navigator.mediaDevices?.getUserMedia);
+	const supported = canUseCameraScanner();
 
 	useEffect(() => {
 		if (!active || !supported) return;
 		let stream: MediaStream | null = null;
 		let raf = 0;
 		let cancelled = false;
-		const detector = new window.BarcodeDetector!({ formats: ["qr_code"] });
+		const detector = window.BarcodeDetector ? new window.BarcodeDetector({ formats: ["qr_code"] }) : null;
 
 		async function loop() {
 			const video = videoRef.current;
 			if (cancelled || !video) return;
 			try {
-				const [hit] = await detector.detect(video);
-				const code = hit?.rawValue;
+				const code = detector ? (await detector.detect(video))[0]?.rawValue : scanWithJsQr(video);
 				if (code) {
 					const now = Date.now();
 					// Debounce: one badge held in front of the camera marks once, not every frame.
@@ -55,6 +53,18 @@ export function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
 				// frame not ready yet — keep scanning
 			}
 			raf = requestAnimationFrame(loop);
+		}
+
+		function scanWithJsQr(video: HTMLVideoElement) {
+			if (!video.videoWidth || !video.videoHeight) return null;
+			const canvas = (canvasRef.current ??= document.createElement("canvas"));
+			canvas.width = video.videoWidth;
+			canvas.height = video.videoHeight;
+			const ctx = canvas.getContext("2d", { willReadFrequently: true });
+			if (!ctx) return null;
+			ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+			const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+			return jsQR(frame.data, frame.width, frame.height)?.data ?? null;
 		}
 
 		(async () => {
