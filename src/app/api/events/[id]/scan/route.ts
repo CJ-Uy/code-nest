@@ -17,6 +17,8 @@ const bodySchema = z
 		message: "Provide a member code or a check-in token.",
 	});
 
+const undoBodySchema = z.object({ memberId: z.string().min(1) });
+
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
 	const config = getAppConfig();
 	try {
@@ -55,6 +57,31 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 		}
 		const repositories = await getRepositories();
 		const result = await repositories.events.recordScan(actor, { eventId: id, memberId, termId: body.termId });
+		return NextResponse.json(result);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "Request failed.";
+		const status = message.startsWith("Not authorized") ? 403 : 400;
+		return NextResponse.json({ error: message }, { status });
+	}
+}
+
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+	const config = getAppConfig();
+	try {
+		assertSameOrigin(request, config.APP_BASE_URL);
+	} catch {
+		return NextResponse.json({ error: "Cross-origin request rejected." }, { status: 403 });
+	}
+	const { id } = await params;
+	if (config.APP_ENV === "shared") {
+		return proxySharedApiRequest(request, `/internal/events?op=undoScan&eventId=${encodeURIComponent(id)}`);
+	}
+	const actor = await getActor();
+	if (!actor) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+	try {
+		const body = undoBodySchema.parse(await request.json());
+		const repositories = await getRepositories();
+		const result = await repositories.events.undoScan(actor, { eventId: id, memberId: body.memberId });
 		return NextResponse.json(result);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : "Request failed.";

@@ -232,4 +232,23 @@ describe("events repository on D1", () => {
 		expect(second.scannedAt.toISOString()).toBe("2026-07-10T10:05:00.000Z");
 		expect(second.scannedByName).toBe("Owner");
 	});
+
+	it("lets owners undo a scan and removes the points with it, but blocks scanners", async () => {
+		const event = await makeApprovedEvent();
+		const { repo, db } = makeRepos();
+		await repo.setPoints(eventsAdmin, event.id, 5);
+		await repo.addStaff(owner, event.id, scanner.memberId, "scanner");
+		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
+
+		await expect(repo.undoScan(scanner, { eventId: event.id, memberId: "mem_a" })).rejects.toThrow("Not authorized");
+
+		await expect(repo.undoScan(owner, { eventId: event.id, memberId: "mem_a" })).resolves.toEqual({ removed: true });
+		expect(await db.select().from(schema.crsAttendance)).toHaveLength(0);
+		// The points row must die with the attendance row, or the member keeps
+		// credit for an event they were removed from.
+		expect(await db.select().from(schema.retentionRecords)).toHaveLength(0);
+
+		// Undoing something that is not there is a no-op, not an error.
+		await expect(repo.undoScan(owner, { eventId: event.id, memberId: "mem_a" })).resolves.toEqual({ removed: false });
+	});
 });

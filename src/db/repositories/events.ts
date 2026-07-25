@@ -42,6 +42,7 @@ export type UpdateEventInput = Partial<{
 export type ListEventsInput = { limit?: number; offset?: number };
 export type SetRsvpInput = { eventId: string; state: RsvpState };
 export type RecordScanInput = { eventId: string; memberId: string; termId: string };
+export type UndoScanInput = { eventId: string; memberId: string };
 export type RecordScanResult = {
 	eventId: string;
 	memberId: string;
@@ -88,6 +89,7 @@ export type EventsRepository = {
 	): Promise<Array<{ memberId: string; fullName: string | null; name: string | null; role: "owner" | "admin" | "scanner" }>>;
 	setRsvp(actor: Actor, input: SetRsvpInput): Promise<{ state: RsvpState }>;
 	recordScan(actor: Actor, input: RecordScanInput): Promise<RecordScanResult>;
+	undoScan(actor: Actor, input: UndoScanInput): Promise<{ removed: boolean }>;
 	searchAttendableMembers(actor: Actor, input: MemberSearchInput): Promise<AttendableMember[]>;
 	listAttendance(actor: Actor, eventId: string): Promise<AttendanceRow[]>;
 };
@@ -473,6 +475,38 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 			const inserted = await loadScanRow(db, input.eventId, input.memberId);
 			if (!inserted) throw new Error("Scan was recorded but could not be read back.");
 			return toScanResult(input.eventId, input.memberId, inserted, false);
+		},
+
+		async undoScan(actor, input) {
+			const { role } = await requireEvent(actor, input.eventId);
+			// Owner, event admin, or a CRS moderator. Plain scanners cannot undo.
+			if (!canManage(role, actor)) throw new Error("Not authorized to undo attendance.");
+
+			const existing = await loadScanRow(db, input.eventId, input.memberId);
+			if (!existing) return { removed: false };
+
+			await runAtomic(db, [
+				db
+					.delete(crsAttendance)
+					.where(and(eq(crsAttendance.eventId, input.eventId), eq(crsAttendance.memberId, input.memberId))),
+				db
+					.delete(retentionRecords)
+					.where(
+						and(
+							eq(retentionRecords.eventId, input.eventId),
+							eq(retentionRecords.memberId, input.memberId),
+							eq(retentionRecords.source, "event_attendance"),
+						),
+					),
+			]);
+			await audit.record(actor, {
+				action: "event:undo_scan",
+				targetType: "event",
+				targetId: input.eventId,
+				category: "event",
+				detail: `member=${input.memberId}`,
+			});
+			return { removed: true };
 		},
 
 		async searchAttendableMembers(actor, input) {

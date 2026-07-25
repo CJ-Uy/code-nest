@@ -190,6 +190,12 @@ export const eventsContract = {
 		auth: "member",
 		sharedDev: "deny",
 	}),
+	undoScan: operation({
+		input: z.object({ eventId: z.string().min(1), memberId: z.string().min(1) }),
+		output: z.object({ removed: z.boolean() }),
+		auth: "member",
+		sharedDev: "deny",
+	}),
 	searchMembers: operation({
 		input: z.object({
 			eventId: z.string().min(1),
