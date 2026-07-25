@@ -36,6 +36,7 @@ describe("events repository on D1", () => {
 			"event_invites",
 			"event_staff",
 			"event_rsvps",
+			"event_type_rules",
 			"crs_events",
 			"terms",
 			"members",
@@ -61,6 +62,11 @@ describe("events repository on D1", () => {
 		)
 			.bind("term_1", "Term 1", 20, 10, TERM_START.getTime(), TERM_END.getTime())
 			.run();
+		await env.DB.prepare("INSERT INTO event_type_rules (type, required_permission) VALUES ('casual', NULL)").run();
+		await env.DB.prepare("INSERT INTO event_type_rules (type, required_permission) VALUES ('birthday', NULL)").run();
+		await env.DB.prepare(
+			"INSERT INTO event_type_rules (type, required_permission) VALUES ('official', 'event:create_restricted')",
+		).run();
 	});
 
 	afterEach(() => {
@@ -71,7 +77,7 @@ describe("events repository on D1", () => {
 		const { repo } = makeRepos();
 		return repo.create(actor, {
 			title: "Practice Night",
-			type: "official",
+			type: "casual",
 			place: "SOM 111",
 			description: "Practice",
 			startsAt: START,
@@ -250,5 +256,27 @@ describe("events repository on D1", () => {
 
 		// Undoing something that is not there is a no-op, not an error.
 		await expect(repo.undoScan(owner, { eventId: event.id, memberId: "mem_a" })).resolves.toEqual({ removed: false });
+	});
+
+	it("gates event creation on the configured type rules", async () => {
+		await env.DB.prepare("DELETE FROM event_type_rules").run();
+		await env.DB.prepare("INSERT INTO event_type_rules (type, required_permission) VALUES ('casual', NULL)").run();
+		await env.DB.prepare("INSERT INTO event_type_rules (type, required_permission) VALUES ('birthday', NULL)").run();
+		await env.DB.prepare(
+			"INSERT INTO event_type_rules (type, required_permission) VALUES ('official', 'event:create_restricted')",
+		).run();
+		const { repo } = makeRepos();
+		const base = {
+			title: "Gated",
+			place: "SOM 111",
+			description: "Gated",
+			startsAt: START,
+			endsAt: END,
+			capacity: null,
+		};
+
+		await expect(repo.create(owner, { ...base, type: "official" })).rejects.toThrow("Not authorized");
+		await expect(repo.create(owner, { ...base, type: "casual" })).resolves.toMatchObject({ type: "casual" });
+		await expect(repo.create(eventsAdmin, { ...base, type: "official" })).resolves.toMatchObject({ type: "official" });
 	});
 });

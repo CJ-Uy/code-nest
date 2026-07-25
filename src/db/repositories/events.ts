@@ -7,6 +7,7 @@ import type { EventType, RsvpState } from "@/db/schema";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
 import type { AuditRepository } from "./audit";
+import { canCreateType, createEventTypeRulesRepository } from "./eventTypeRules";
 import { notify } from "./notifications";
 
 export const CHECKIN_LEAD_MS = 30 * 60 * 1000;
@@ -221,6 +222,10 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 		resolveCapability,
 
 		async create(actor, input) {
+			const rules = await createEventTypeRulesRepository(db, audit).list();
+			if (!canCreateType(actor, rules, input.type)) {
+				throw new Error(`Not authorized to create ${input.type} events.`);
+			}
 			const [event] = await db
 				.insert(crsEvents)
 				.values({
