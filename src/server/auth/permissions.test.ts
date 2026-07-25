@@ -12,6 +12,7 @@ const cases: Array<{ role: RoleKey; allowed: PermissionAction[] }> = [
 const actions: PermissionAction[] = [
 	"event:moderate",
 	"event:points",
+	"event:create_restricted",
 	"points:assign",
 	"retention:record",
 	"link:moderate",
