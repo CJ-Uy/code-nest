@@ -65,4 +65,15 @@ describe("event type rules on D1", () => {
 	it("rejects a write from an actor without role:assign", async () => {
 		await expect(makeRepo().setRequiredPermission(plainMember, "casual", null)).rejects.toThrow("Not authorized");
 	});
+
+	it("fails closed when required_permission is an unrecognized value written out-of-band", async () => {
+		await env.DB.prepare("UPDATE event_type_rules SET required_permission = ? WHERE type = ?")
+			.bind("event:create_restrictedd", "birthday")
+			.run();
+		const rules = await makeRepo().list();
+		expect(rules).toEqual(expect.arrayContaining([{ type: "birthday", requiredPermission: "event:create_restrictedd" }]));
+		expect(canCreateType(plainMember, rules, "birthday")).toBe(false);
+		expect(canCreateType(eventsAdmin, rules, "birthday")).toBe(false);
+		expect(canCreateType(superAdmin, rules, "birthday")).toBe(true);
+	});
 });
