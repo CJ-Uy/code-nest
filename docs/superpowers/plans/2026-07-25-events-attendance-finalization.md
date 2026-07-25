@@ -958,13 +958,15 @@ Also add the `event_type_rules` table to the `beforeEach` truncation list in tha
 		).run();
 ```
 
-Because `makeApprovedEvent` creates an `official` event as `owner`, change its default actor to `eventsAdmin`:
+`makeApprovedEvent` currently creates an **`official`** event as `owner`, which the new rule forbids. All 8 of its call sites depend on `owner` being the event owner, and **no test asserts the type is `official`** — so change the type, not the actor. In `makeApprovedEvent` (line 74):
 
 ```ts
-	async function makeApprovedEvent(actor: Actor = eventsAdmin) {
+			type: "casual",
 ```
 
-and update the three assertions that expect `owner` to hold the owner role — pass `owner` explicitly where the test is about ownership, using `type: "casual"`. Run the suite and fix each failure it surfaces; every one is a call site that assumed unrestricted `official` creation.
+Leave `async function makeApprovedEvent(actor: Actor = owner)` exactly as it is. Do **not** change the default actor to `eventsAdmin` — that would strip `owner` of its owner role at all 8 call sites and cascade failures through the staff, scan, and undo tests.
+
+The only test that should create an `official` event is the new gating test above, which passes `eventsAdmin` explicitly.
 
 - [ ] **Step 7: Run test to verify it fails**
 
