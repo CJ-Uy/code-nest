@@ -79,6 +79,13 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 	const actor = await getActor();
 	if (!actor) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 	try {
+		const { getDb } = await import("@/db/client");
+		const limited = await enforceRateLimit(getDb(), "scan:undo", actor.memberId, RATE_LIMITS.scanSubmit);
+		if (limited) return limited;
+	} catch {
+		// ponytail: include getDb failure in fail-open path for tests and degraded local DB.
+	}
+	try {
 		const body = undoBodySchema.parse(await request.json());
 		const repositories = await getRepositories();
 		const result = await repositories.events.undoScan(actor, { eventId: id, memberId: body.memberId });
