@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, isNull, like, or, sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
+import { alias } from "drizzle-orm/sqlite-core";
 import { createId } from "@/lib/ids";
 import { crsAttendance, crsEvents, eventInvites, eventRsvps, eventStaff, members, retentionRecords } from "@/db/schema";
 import type { EventType, RsvpState } from "@/db/schema";
@@ -41,7 +42,15 @@ export type UpdateEventInput = Partial<{
 export type ListEventsInput = { limit?: number; offset?: number };
 export type SetRsvpInput = { eventId: string; state: RsvpState };
 export type RecordScanInput = { eventId: string; memberId: string; termId: string };
-export type RecordScanResult = { eventId: string; memberId: string; scannedAt: Date; alreadyPresent: boolean };
+export type RecordScanResult = {
+	eventId: string;
+	memberId: string;
+	memberName: string | null;
+	memberImage: string | null;
+	scannedAt: Date;
+	scannedByName: string | null;
+	alreadyPresent: boolean;
+};
 export type MemberSearchInput = { eventId: string; query: string; limit?: number };
 export type AttendableMember = {
 	memberId: string;
@@ -132,6 +141,50 @@ async function runAtomic(db: Db, queries: unknown[]): Promise<void> {
 	for (const query of queries) {
 		await query;
 	}
+}
+
+const scannerMember = alias(members, "scanner_member");
+
+type ScanRow = {
+	scannedAt: Date;
+	memberFullName: string | null;
+	memberName: string | null;
+	memberEmail: string;
+	memberImage: string | null;
+	scannedByFullName: string | null;
+	scannedByName: string | null;
+};
+
+/** The attendance row joined to both the attendee and whoever scanned them. */
+async function loadScanRow(db: Db, eventId: string, memberId: string): Promise<ScanRow | null> {
+	const [row] = await db
+		.select({
+			scannedAt: crsAttendance.scannedAt,
+			memberFullName: members.fullName,
+			memberName: members.name,
+			memberEmail: members.email,
+			memberImage: members.image,
+			scannedByFullName: scannerMember.fullName,
+			scannedByName: scannerMember.name,
+		})
+		.from(crsAttendance)
+		.innerJoin(members, eq(members.id, crsAttendance.memberId))
+		.leftJoin(scannerMember, eq(scannerMember.id, crsAttendance.scannedBy))
+		.where(and(eq(crsAttendance.eventId, eventId), eq(crsAttendance.memberId, memberId)))
+		.limit(1);
+	return row ?? null;
+}
+
+function toScanResult(eventId: string, memberId: string, row: ScanRow, alreadyPresent: boolean): RecordScanResult {
+	return {
+		eventId,
+		memberId,
+		memberName: row.memberFullName ?? row.memberName ?? row.memberEmail,
+		memberImage: row.memberImage,
+		scannedAt: row.scannedAt,
+		scannedByName: row.scannedByFullName ?? row.scannedByName,
+		alreadyPresent,
+	};
 }
 
 export function createEventsRepository(db: Db, audit: AuditRepository): EventsRepository {
@@ -371,16 +424,10 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 			if (!canOperate(role, actor)) throw new Error("Not authorized to scan attendance.");
 			if (role === "scanner" && !inCheckinWindow(event, new Date())) throw new Error("Check-in is closed.");
 
-			const [existing] = await db
-				.select({ memberId: crsAttendance.memberId })
-				.from(crsAttendance)
-				.where(and(eq(crsAttendance.eventId, input.eventId), eq(crsAttendance.memberId, input.memberId)))
-				.limit(1);
-			const scannedAt = new Date();
-			if (existing) {
-				return { eventId: input.eventId, memberId: input.memberId, scannedAt, alreadyPresent: true };
-			}
+			const existing = await loadScanRow(db, input.eventId, input.memberId);
+			if (existing) return toScanResult(input.eventId, input.memberId, existing, true);
 
+			const scannedAt = new Date();
 			try {
 				await runAtomic(db, [
 					db
@@ -398,8 +445,11 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 						recordedAt: scannedAt,
 					}),
 				]);
-			} catch {
-				return { eventId: input.eventId, memberId: input.memberId, scannedAt, alreadyPresent: true };
+			} catch (error) {
+				// Two scanners hit the same badge at once: the loser reports the winner's row.
+				const raced = await loadScanRow(db, input.eventId, input.memberId);
+				if (raced) return toScanResult(input.eventId, input.memberId, raced, true);
+				throw error;
 			}
 			await audit.record(actor, {
 				action: "event:scan_attendance",
@@ -408,7 +458,9 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 				category: "event",
 				detail: `member=${input.memberId}`,
 			});
-			return { eventId: input.eventId, memberId: input.memberId, scannedAt, alreadyPresent: false };
+			const inserted = await loadScanRow(db, input.eventId, input.memberId);
+			if (!inserted) throw new Error("Scan was recorded but could not be read back.");
+			return toScanResult(input.eventId, input.memberId, inserted, false);
 		},
 
 		async searchAttendableMembers(actor, input) {

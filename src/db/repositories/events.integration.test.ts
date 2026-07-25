@@ -210,4 +210,26 @@ describe("events repository on D1", () => {
 		await expect(repo.listAttendance(outsider, event.id)).rejects.toThrow("Not authorized");
 		expect(await repo.listAttendance(scanner, event.id)).toMatchObject([{ memberId: "mem_a" }]);
 	});
+
+	it("returns the original scan time and scanner on a duplicate scan", async () => {
+		const event = await makeApprovedEvent();
+		const { repo } = makeRepos();
+		await repo.addStaff(owner, event.id, adminStaff.memberId, "admin");
+
+		vi.setSystemTime(new Date("2026-07-10T10:05:00.000Z"));
+		const first = await repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
+		expect(first.alreadyPresent).toBe(false);
+		expect(first.memberName).toBe("Member A");
+		expect(first.scannedByName).toBe("Owner");
+		expect(first.scannedAt.toISOString()).toBe("2026-07-10T10:05:00.000Z");
+
+		// A different scanner re-scans the same badge 20 minutes later.
+		vi.setSystemTime(new Date("2026-07-10T10:25:00.000Z"));
+		const second = await repo.recordScan(adminStaff, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
+		expect(second.alreadyPresent).toBe(true);
+		expect(second.memberName).toBe("Member A");
+		// The bug being fixed: this used to report now() and omit the scanner.
+		expect(second.scannedAt.toISOString()).toBe("2026-07-10T10:05:00.000Z");
+		expect(second.scannedByName).toBe("Owner");
+	});
 });

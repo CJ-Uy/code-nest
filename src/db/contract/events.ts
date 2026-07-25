@@ -181,7 +181,10 @@ export const eventsContract = {
 		output: z.object({
 			eventId: z.string(),
 			memberId: z.string(),
+			memberName: z.string().nullable(),
+			memberImage: z.string().nullable(),
 			scannedAt: z.coerce.date(),
+			scannedByName: z.string().nullable(),
 			alreadyPresent: z.boolean(),
 		}),
 		auth: "member",
