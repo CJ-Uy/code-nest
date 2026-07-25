@@ -25,6 +25,7 @@ export function normalizeRoleKeys(values: Iterable<string | null | undefined>): 
 export const permissionActions = [
 	"event:moderate",
 	"event:points",
+	"event:create_restricted",
 	"points:assign",
 	"retention:record",
 	"link:moderate",
@@ -49,7 +50,7 @@ export type Actor = {
 };
 
 const rolePermissions: Record<Exclude<RoleKey, "super" | "member">, PermissionAction[]> = {
-	events: ["event:moderate", "event:points"],
+	events: ["event:moderate", "event:points", "event:create_restricted"],
 	link: ["link:moderate"],
 	retention: ["points:assign", "retention:record"],
 	member_admin: ["member:manage", "role:assign", "roster:manage", "nav:configure"],

@@ -3,7 +3,7 @@ import { can, normalizeRoleKey, type Actor, type PermissionAction, type RoleKey 
 
 const cases: Array<{ role: RoleKey; allowed: PermissionAction[] }> = [
 	{ role: "member", allowed: [] },
-	{ role: "events", allowed: ["event:moderate", "event:points"] },
+	{ role: "events", allowed: ["event:moderate", "event:points", "event:create_restricted"] },
 	{ role: "link", allowed: ["link:moderate"] },
 	{ role: "retention", allowed: ["points:assign", "retention:record"] },
 	{ role: "member_admin", allowed: ["member:manage", "role:assign", "roster:manage", "nav:configure"] },

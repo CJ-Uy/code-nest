@@ -2,7 +2,8 @@ import { sql } from "drizzle-orm";
 import { check, index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export type MemberStatus = "active" | "pending" | "inactive";
-export type EventType = "official" | "casual" | "birthday";
+export const eventTypes = ["official", "casual", "birthday"] as const;
+export type EventType = (typeof eventTypes)[number];
 export type EventStatus = "pending" | "approved" | "rejected";
 export type RsvpState = "going" | "none";
 export type SurveyStatus = "draft" | "running" | "closed";
@@ -266,6 +267,14 @@ export const crsAttendance = sqliteTable(
 	},
 	(table) => [primaryKey({ columns: [table.eventId, table.memberId] }), index("crs_attendance_member_id_idx").on(table.memberId)],
 );
+
+export const eventTypeRules = sqliteTable("event_type_rules", {
+	type: text("type").$type<EventType>().primaryKey(),
+	// NULL means any member may create this event type.
+	requiredPermission: text("required_permission"),
+	updatedBy: text("updated_by").references(() => members.id, { onDelete: "set null" }),
+	updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+});
 
 export const eventMedia = sqliteTable(
 	"event_media",
