@@ -1,12 +1,12 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "code-nest",
+	"name": "code-nest-beta",
 	"account_id": "8527ec1369d46f55304a6f59ab5356e4",
 	"main": ".open-next/worker.js",
 	"workers_dev": true,
 	"routes": [
 		{
-			"pattern": "ateneocode.org",
+			"pattern": "beta.ateneocode.org",
 			"custom_domain": true
 		}
 	],
@@ -25,7 +25,7 @@
 	"services": [
 		{
 			"binding": "WORKER_SELF_REFERENCE",
-			"service": "code-nest"
+			"service": "code-nest-beta"
 		}
 	],
 	"observability": {
@@ -34,7 +34,7 @@
 	"upload_source_maps": true,
 	"vars": {
 		"APP_ENV": "production",
-		"DEPLOY_ENV": "prod",
+		"DEPLOY_ENV": "dev",
 		"STORAGE_MODE": "binding",
 		"LOCAL_SQLITE_PATH": "./.local/dev.db",
 		"LOCAL_STORAGE_DIR": "./.local/uploads",
@@ -43,15 +43,15 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "code-nest-prod-db",
-			"database_id": "a66fac5e-c122-466d-b7fe-5910ba6a98b9",
+			"database_name": "code-nest-dev-db",
+			"database_id": "f9d2b16f-3358-49c2-a88e-e72c9339a22b",
 			"migrations_dir": "drizzle/migrations"
 		}
 	],
 	"r2_buckets": [
 		{
 			"binding": "BUCKET",
-			"bucket_name": "code-nest-prod-uploads"
+			"bucket_name": "code-nest-dev-uploads"
 		}
 	]
 }

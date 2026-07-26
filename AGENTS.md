@@ -33,7 +33,7 @@
 
 ## Shared dev Worker
 
-The `shared` access mode depends on the deployed dev Worker `code-nest-dev`. It owns `code-nest-dev-db`, `code-nest-dev-uploads`, and the `/internal/*` API used by outside developers.
+The `shared` access mode depends on the deployed beta Worker `code-nest-beta`. It owns `code-nest-dev-db`, `code-nest-dev-uploads`, and the `/internal/*` API used by outside developers.
 
 Redeploy the dev Worker, and migrate or seed dev D1 when needed, after changes to:
 

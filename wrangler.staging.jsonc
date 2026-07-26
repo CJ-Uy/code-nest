@@ -1,12 +1,12 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "code-nest",
+	"name": "code-nest-stagged",
 	"account_id": "8527ec1369d46f55304a6f59ab5356e4",
 	"main": ".open-next/worker.js",
 	"workers_dev": true,
 	"routes": [
 		{
-			"pattern": "ateneocode.org",
+			"pattern": "stagged.ateneocode.org",
 			"custom_domain": true
 		}
 	],
@@ -25,7 +25,7 @@
 	"services": [
 		{
 			"binding": "WORKER_SELF_REFERENCE",
-			"service": "code-nest"
+			"service": "code-nest-stagged"
 		}
 	],
 	"observability": {
@@ -43,15 +43,15 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "code-nest-prod-db",
-			"database_id": "a66fac5e-c122-466d-b7fe-5910ba6a98b9",
+			"database_name": "code-nest-staged-db",
+			"database_id": "18b0f067-101b-4aac-b724-6382a7d3cdd0",
 			"migrations_dir": "drizzle/migrations"
 		}
 	],
 	"r2_buckets": [
 		{
 			"binding": "BUCKET",
-			"bucket_name": "code-nest-prod-uploads"
+			"bucket_name": "code-nest-staged-uploads"
 		}
 	]
 }

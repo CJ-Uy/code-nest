@@ -2,17 +2,17 @@
 
 This is the full setup path for CODE Nest on Cloudflare Workers.
 
-The short version: production is the top-level Worker config, beta is `env.dev`, staged is `env.staged`, Drizzle generates SQLite SQL migrations, Wrangler applies those migrations to D1, and uploads go to R2 through a Worker binding.
+The short version: production, beta, and staging use separate Wrangler configs and Workers. Drizzle generates SQLite SQL migrations, Wrangler applies those migrations to D1, and uploads go to R2 through a Worker binding.
 
 ## Runtime Map
 
 | Target | Worker | Public host | `APP_ENV` | `DEPLOY_ENV` | D1 | R2 |
 | --- | --- | --- | --- | --- | --- | --- |
 | Local Next dev | none | `localhost:3000` | `local` | blank | SQLite at `LOCAL_SQLITE_PATH` | local files unless changed |
-| Local Cloudflare preview | local Wrangler runtime | local Wrangler URL | `production` from `env.dev` | `dev` | local D1 binding | local R2 binding |
+| Local Cloudflare preview | local Wrangler runtime | local Wrangler URL | `production` from `wrangler.beta.jsonc` | `dev` | local D1 binding | local R2 binding |
 | Shared outside-dev mode | none | local app talks to beta API | `shared` | blank | beta Worker internal API | beta API, dev R2 S3, or local files |
-| Beta | `code-nest-dev` | `beta.ateneocode.org` | `production` | `dev` | `code-nest-dev-db` | `code-nest-dev-uploads` |
-| Staged | `code-nest-staged` | `stagged.ateneocode.org` | `production` | `prod` | `code-nest-staged-db` | `code-nest-staged-uploads` |
+| Beta | `code-nest-beta` | `beta.ateneocode.org` | `production` | `dev` | `code-nest-dev-db` | `code-nest-dev-uploads` |
+| Staging | `code-nest-stagged` | `stagged.ateneocode.org` | `production` | `prod` | `code-nest-staged-db` | `code-nest-staged-uploads` |
 | Production | `code-nest` | `ateneocode.org` | `production` | `prod` | `code-nest-prod-db` | `code-nest-prod-uploads` |
 
 `APP_ENV=production` means "use Cloudflare bindings." `DEPLOY_ENV=dev` is what keeps the beta Worker separated from real production data.
@@ -69,9 +69,9 @@ pnpm exec wrangler r2 bucket create code-nest-dev-uploads
 pnpm exec wrangler r2 bucket create code-nest-prod-uploads
 ```
 
-Bind beta resources under `env.dev` and production resources at the top level of `wrangler.jsonc`.
+Bind production resources in `wrangler.jsonc`, beta resources in `wrangler.beta.jsonc`, and staging resources in `wrangler.staging.jsonc`.
 
-## Worker Environments
+## Worker Configs
 
 Production is the top-level Wrangler environment:
 
@@ -87,20 +87,16 @@ Production is the top-level Wrangler environment:
 }
 ```
 
-Beta is `env.dev`:
+Beta is a standalone Worker:
 
 ```jsonc
 {
-	"env": {
-		"dev": {
-			"name": "code-nest-dev",
-			"routes": [{ "pattern": "beta.ateneocode.org", "custom_domain": true }],
-			"vars": {
-				"APP_ENV": "production",
-				"DEPLOY_ENV": "dev",
-				"STORAGE_MODE": "binding"
-			}
-		}
+	"name": "code-nest-beta",
+	"routes": [{ "pattern": "beta.ateneocode.org", "custom_domain": true }],
+	"vars": {
+		"APP_ENV": "production",
+		"DEPLOY_ENV": "dev",
+		"STORAGE_MODE": "binding"
 	}
 }
 ```
@@ -123,21 +119,21 @@ Deploy production with:
 pnpm deploy:prod
 ```
 
-The production upload script uses `wrangler deploy --env=""` so Wrangler uses the top-level Worker config instead of `env.dev`.
+Each upload script passes its matching Wrangler config explicitly.
 
 ## Secrets
 
 Do not put real secrets in `wrangler.jsonc` or committed env files.
 
-Set beta secrets with `--env dev`:
+Set beta secrets with `wrangler.beta.jsonc`:
 
 ```bash
-pnpm exec wrangler secret put AUTH_SECRET --env dev
-pnpm exec wrangler secret put AUTH_GOOGLE_ID --env dev
-pnpm exec wrangler secret put AUTH_GOOGLE_SECRET --env dev
-pnpm exec wrangler secret put AUTH_URL --env dev
-pnpm exec wrangler secret put APP_BASE_URL --env dev
-pnpm exec wrangler secret put SHARED_API_ALLOWED_ORIGINS --env dev
+pnpm exec wrangler secret put AUTH_SECRET --config wrangler.beta.jsonc
+pnpm exec wrangler secret put AUTH_GOOGLE_ID --config wrangler.beta.jsonc
+pnpm exec wrangler secret put AUTH_GOOGLE_SECRET --config wrangler.beta.jsonc
+pnpm exec wrangler secret put AUTH_URL --config wrangler.beta.jsonc
+pnpm exec wrangler secret put APP_BASE_URL --config wrangler.beta.jsonc
+pnpm exec wrangler secret put SHARED_API_ALLOWED_ORIGINS --config wrangler.beta.jsonc
 ```
 
 Set production secrets without an env flag:
@@ -258,7 +254,7 @@ pnpm typecheck
 pnpm build
 pnpm db:migrate:beta
 pnpm db:seed:dev:export
-pnpm exec wrangler d1 execute DB --env dev --remote --file .local/dev-seed.sql
+pnpm exec wrangler d1 execute DB --config wrangler.beta.jsonc --remote --file .local/dev-seed.sql
 pnpm deploy:beta
 ```
 
@@ -290,10 +286,10 @@ After deploy, check `/api/health`:
 
 ```bash
 pnpm exec wrangler d1 list
-pnpm exec wrangler d1 migrations list DB --env dev --remote
+pnpm exec wrangler d1 migrations list DB --config wrangler.beta.jsonc --remote
 pnpm exec wrangler d1 migrations list code-nest-prod-db --remote
 pnpm exec wrangler r2 bucket list
-pnpm exec wrangler tail code-nest-dev
+pnpm exec wrangler tail code-nest-beta
 pnpm exec wrangler tail code-nest
 pnpm cf-typegen:dev
 pnpm cf-typegen:prod
