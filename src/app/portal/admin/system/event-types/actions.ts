@@ -1,28 +1,25 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { getRepositories } from "@/db";
-import { eventTypes } from "@/db/schema";
 import { requireActor } from "@/server/auth/actor";
-import { permissionActions } from "@/server/auth/permissions";
-
-// "" is the form's representation of "any member may create this type".
-const schema = z.object({
-	type: z.enum(eventTypes),
-	requiredPermission: z
-		.union([z.enum(permissionActions), z.literal("")])
-		.transform((value) => (value === "" ? null : value)),
-});
+import type { PermissionAction } from "@/server/auth/permissions";
+import { parseEventTypeRuleInput } from "./input";
 
 export async function setEventTypeRuleAction(formData: FormData) {
 	const actor = await requireActor();
-	const input = schema.parse({
-		type: formData.get("type"),
-		requiredPermission: formData.get("requiredPermission") ?? "",
-	});
+	const input = parseEventTypeRuleInput(formData);
 	const repositories = await getRepositories();
-	await repositories.eventTypeRules.setRequiredPermission(actor, input.type, input.requiredPermission);
+	// `input.requiredPermission` is deliberately unvalidated string | null here (see input.ts).
+	// setRequiredPermission validates it against permissionActions itself and throws "Unknown
+	// permission." for anything unrecognized, so this cast doesn't widen what's actually
+	// accepted — it just lets that repository-side check run instead of a second one here
+	// short-circuiting an unrecognized value back to "any member".
+	await repositories.eventTypeRules.setRequiredPermission(
+		actor,
+		input.type,
+		input.requiredPermission as PermissionAction | null,
+	);
 	revalidatePath("/portal/admin/system/event-types");
 	revalidatePath("/portal/calendar");
 }

@@ -28,6 +28,16 @@ export function EventTypeRulesManager({ rules }: { rules: EventTypeRule[] }) {
 					// A rule can hold a permission string written out-of-band (not through setRequiredPermission),
 					// which fails closed rather than falling open — see eventTypeRules.ts. Surface it rather than
 					// silently defaulting the <select> to "Any member", which would misrepresent a locked-down type.
+					//
+					// This option is deliberately NOT `disabled`: per the HTML form-data-set construction
+					// algorithm, a selected-but-disabled <option>'s value is dropped from the submitted
+					// FormData entirely. That would make a no-op Save (the admin opens the row, sees it's
+					// locked, and clicks Save without changing anything) submit no requiredPermission field
+					// at all — and actions.ts's parseEventTypeRuleInput throws rather than defaulting an
+					// absent field to "any member", but the row must still submit *something* for that to be
+					// reachable via the actual form flow. Leaving it enabled makes Save resubmit the same
+					// unrecognized string, which setRequiredPermission (repository-side) rejects with
+					// "Unknown permission." — a loud, safe failure instead of a silent open.
 					const isUnrecognized = current !== "" && !(permissionActions as readonly string[]).includes(current);
 					return (
 						<form key={type} action={setEventTypeRuleAction} className="flex flex-wrap items-end gap-3">
@@ -41,9 +51,7 @@ export function EventTypeRulesManager({ rules }: { rules: EventTypeRule[] }) {
 								>
 									<option value="">Any member</option>
 									{isUnrecognized ? (
-										<option value={current} disabled>
-											{current} (unrecognized — locked to Super)
-										</option>
+										<option value={current}>{current} (unrecognized — locked to Super)</option>
 									) : null}
 									{permissionActions.map((action) => (
 										<option key={action} value={action}>
