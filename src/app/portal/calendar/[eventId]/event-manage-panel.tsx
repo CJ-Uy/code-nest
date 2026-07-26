@@ -19,9 +19,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CameraScanner } from "@/components/camera-scanner";
 import { DateTimePicker } from "@/components/date-time-picker";
-import { decodeMemberCode } from "@/lib/member-code";
+import { EventScanOverlay } from "@/components/event-scan-overlay";
 import { cn } from "@/lib/utils";
 import {
 	addStaffAction,
@@ -77,11 +76,13 @@ export function EventManagePanel({
 	staff,
 	attendance,
 	invites,
+	termId,
 }: {
 	event: ManageEvent;
 	staff: StaffMember[];
 	attendance: AttendanceRow[];
 	invites: InviteRow[];
+	termId: string;
 }) {
 	const isOwner = event.myRole === "owner";
 	const canManage = isOwner || event.myRole === "admin" || event.canModerate;
@@ -128,7 +129,12 @@ export function EventManagePanel({
 				</div>
 
 				{section === "checkins" ? (
-					<CheckinsSection event={event} attendance={attendance} canOverrideWindow={canOverrideWindow} />
+					<CheckinsSection
+						event={event}
+						attendance={attendance}
+						canOverrideWindow={canOverrideWindow}
+						termId={termId}
+					/>
 				) : null}
 				{section === "people" ? <PeopleSection event={event} staff={staff} invites={invites} isOwner={isOwner} /> : null}
 				{section === "details" ? <DetailsSection event={event} /> : null}
@@ -209,14 +215,17 @@ function CheckinsSection({
 	event,
 	attendance,
 	canOverrideWindow,
+	termId,
 }: {
 	event: ManageEvent;
 	attendance: AttendanceRow[];
 	canOverrideWindow: boolean;
+	termId: string;
 }) {
 	const router = useRouter();
 	const [flash, setFlash] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const [overlayOpen, setOverlayOpen] = useState(false);
 	const [, startTransition] = useTransition();
 
 	// ponytail: snapshot "now" at mount — this banner is advisory; recordScan enforces the
@@ -245,15 +254,6 @@ function CheckinsSection({
 		markById(m.memberId, displayName(m));
 	}
 
-	function onScanCode(code: string) {
-		const memberId = decodeMemberCode(code);
-		if (!memberId) {
-			setError("That QR isn’t a CODE member code.");
-			return;
-		}
-		markById(memberId);
-	}
-
 	return (
 		<div className="grid gap-3">
 			<div
@@ -273,7 +273,21 @@ function CheckinsSection({
 
 			{windowOpen || canOverrideWindow ? (
 				<div className="grid gap-3">
-					<CameraScanner onCode={onScanCode} />
+					<Button type="button" onClick={() => setOverlayOpen(true)}>
+						<ScanLine className="size-4" />
+						Scan attendance
+					</Button>
+					{overlayOpen ? (
+						<EventScanOverlay
+							eventId={event.id}
+							termId={termId}
+							canUndo={canOverrideWindow}
+							onClose={() => {
+								setOverlayOpen(false);
+								router.refresh();
+							}}
+						/>
+					) : null}
 					<div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
 						<span className="h-px flex-1 bg-border" /> or search <span className="h-px flex-1 bg-border" />
 					</div>

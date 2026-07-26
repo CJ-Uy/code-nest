@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { CameraScanner } from "@/components/camera-scanner";
-import { isCheckinToken } from "@/lib/checkin-token";
-import { decodeMemberCode } from "@/lib/member-code";
+import { EventScanOverlay } from "@/components/event-scan-overlay";
+import { classifyScan } from "@/lib/scan-feedback";
 
 type ScanResult = { memberId: string; alreadyPresent: boolean };
 type FoundMember = {
@@ -17,12 +17,21 @@ type FoundMember = {
 	alreadyScanned: boolean;
 };
 
-export function EventScanPanel({ eventId, termId }: { eventId: string; termId: string }) {
+export function EventScanPanel({
+	eventId,
+	termId,
+	canUndo,
+}: {
+	eventId: string;
+	termId: string;
+	canUndo: boolean;
+}) {
 	const [scanInput, setScanInput] = useState("");
 	const [log, setLog] = useState<string[]>([]);
 	const [query, setQuery] = useState("");
 	const [results, setResults] = useState<FoundMember[]>([]);
 	const [error, setError] = useState<string | null>(null);
+	const [overlayOpen, setOverlayOpen] = useState(false);
 
 	async function postScan(body: { memberId: string } | { token: string }, displayId: string) {
 		setError(null);
@@ -46,19 +55,18 @@ export function EventScanPanel({ eventId, termId }: { eventId: string; termId: s
 
 	async function submitScan() {
 		const raw = scanInput.trim();
-		// Accept either a short-lived event check-in token or the static member code.
-		if (isCheckinToken(raw)) {
-			setScanInput("");
-			await postScan({ token: raw }, "check-in code");
-			return;
-		}
-		const memberId = decodeMemberCode(raw);
-		if (!memberId) {
+		// Same classifier the overlay uses, so the manual form and the camera agree on what's valid.
+		const classified = classifyScan(raw);
+		if (classified.kind === "invalid") {
 			setError("That code is not a CODE member or check-in code.");
 			return;
 		}
 		setScanInput("");
-		await scanMember(memberId);
+		if (classified.kind === "token") {
+			await postScan({ token: classified.token }, "check-in code");
+			return;
+		}
+		await scanMember(classified.memberId);
 	}
 
 	async function runSearch() {
@@ -79,16 +87,13 @@ export function EventScanPanel({ eventId, termId }: { eventId: string; termId: s
 				<CardDescription>Scan or paste a member code, or search by name or email if scanning fails.</CardDescription>
 			</CardHeader>
 			<CardContent className="flex flex-col gap-6">
-				<CameraScanner
-					onCode={(code) => {
-						const memberId = decodeMemberCode(code);
-						if (!memberId) {
-							setError("That QR isn’t a CODE member code.");
-							return;
-						}
-						void scanMember(memberId);
-					}}
-				/>
+				<Button type="button" onClick={() => setOverlayOpen(true)}>
+					<Camera className="size-4" />
+					Scan attendance
+				</Button>
+				{overlayOpen ? (
+					<EventScanOverlay eventId={eventId} termId={termId} canUndo={canUndo} onClose={() => setOverlayOpen(false)} />
+				) : null}
 
 				<form
 					className="flex gap-2"

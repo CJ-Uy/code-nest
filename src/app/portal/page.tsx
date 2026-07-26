@@ -141,7 +141,13 @@ export default async function PortalOverviewPage() {
 				</Card>
 			</div>
 
-			{scanEvent ? <EventScanPanel eventId={scanEvent.id} termId={currentTermId} /> : null}
+			{scanEvent ? (
+				<EventScanPanel
+					eventId={scanEvent.id}
+					termId={currentTermId}
+					canUndo={scanEvent.myRole === "owner" || scanEvent.myRole === "admin" || scanEvent.canModerate}
+				/>
+			) : null}
 		</div>
 	);
 }

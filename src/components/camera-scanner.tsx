@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import jsQR from "jsqr";
-import { Camera, CameraOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { canUseCameraScanner } from "@/lib/camera-scanner-support";
+import { supportsTorch } from "@/lib/scan-feedback";
+import { cn } from "@/lib/utils";
 
 // BarcodeDetector is a native browser API not yet in the TS DOM lib.
 type DetectedBarcode = { rawValue: string };
@@ -15,13 +16,31 @@ declare global {
 	}
 }
 
-export function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
+export type CameraFacingMode = "environment" | "user";
+export type CameraScannerControls = { torchAvailable: boolean; torchOn: boolean; toggleTorch: () => void };
+
+export function CameraScanner({
+	onCode,
+	facingMode = "environment",
+	className,
+	children,
+	onControls,
+}: {
+	onCode: (code: string) => void | Promise<void>;
+	facingMode?: CameraFacingMode;
+	className?: string;
+	children?: ReactNode;
+	onControls?: (controls: CameraScannerControls) => void;
+}) {
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const onCodeRef = useRef(onCode);
 	const lastRef = useRef<{ code: string; at: number }>({ code: "", at: 0 });
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
-	const [active, setActive] = useState(false);
+	const trackRef = useRef<MediaStreamTrack | undefined>(undefined);
+	const inFlightRef = useRef(false);
 	const [error, setError] = useState<string | null>(null);
+	const [torchOn, setTorchOn] = useState(false);
+	const [torchAvailable, setTorchAvailable] = useState(false);
 
 	useEffect(() => {
 		onCodeRef.current = onCode;
@@ -30,7 +49,7 @@ export function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
 	const supported = canUseCameraScanner();
 
 	useEffect(() => {
-		if (!active || !supported) return;
+		if (!supported) return;
 		let stream: MediaStream | null = null;
 		let raf = 0;
 		let cancelled = false;
@@ -46,7 +65,15 @@ export function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
 					// Debounce: one badge held in front of the camera marks once, not every frame.
 					if (code !== lastRef.current.code || now - lastRef.current.at > 2500) {
 						lastRef.current = { code, at: now };
-						onCodeRef.current(code);
+						// One badge held in frame must not fire two concurrent requests.
+						if (!inFlightRef.current) {
+							inFlightRef.current = true;
+							try {
+								await onCodeRef.current(code);
+							} finally {
+								inFlightRef.current = false;
+							}
+						}
 					}
 				}
 			} catch {
@@ -69,25 +96,48 @@ export function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
 
 		(async () => {
 			try {
-				stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+				stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
 				if (cancelled) return;
 				const video = videoRef.current;
 				if (!video) return;
 				video.srcObject = stream;
 				await video.play();
+				const track = stream.getVideoTracks()[0];
+				trackRef.current = track;
+				setTorchAvailable(supportsTorch(track));
 				loop();
 			} catch {
 				setError("Camera access was blocked. Allow the camera, or use the search below.");
-				setActive(false);
 			}
 		})();
 
 		return () => {
 			cancelled = true;
 			cancelAnimationFrame(raf);
+			// Always stop tracks on unmount/facing-mode change — a leaked stream leaves the camera light on.
 			stream?.getTracks().forEach((track) => track.stop());
+			trackRef.current = undefined;
+			setTorchAvailable(false);
+			setTorchOn(false);
 		};
-	}, [active, supported]);
+	}, [supported, facingMode]);
+
+	const toggleTorch = useCallback(async () => {
+		const track = trackRef.current;
+		if (!track) return;
+		const next = !torchOn;
+		try {
+			// `torch` isn't in the standard MediaTrackConstraintSet lib types yet.
+			await track.applyConstraints({ advanced: [{ torch: next }] } as unknown as MediaTrackConstraints);
+			setTorchOn(next);
+		} catch {
+			setTorchAvailable(false);
+		}
+	}, [torchOn]);
+
+	useEffect(() => {
+		onControls?.({ torchAvailable, torchOn, toggleTorch });
+	}, [torchAvailable, torchOn, toggleTorch, onControls]);
 
 	if (!supported) {
 		return (
@@ -98,33 +148,14 @@ export function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
 	}
 
 	return (
-		<div className="grid gap-2">
-			{active ? (
-				<div className="relative overflow-hidden rounded-lg border border-border bg-black">
-					<video ref={videoRef} className="h-56 w-full object-cover" playsInline muted />
-					<div className="pointer-events-none absolute inset-10 rounded-lg border-2 border-white/70" aria-hidden />
-				</div>
+		<div className={cn("relative h-full w-full overflow-hidden bg-black", className)}>
+			<video ref={videoRef} className="absolute inset-0 h-full w-full object-cover" playsInline muted />
+			{children}
+			{error ? (
+				<p className="absolute inset-x-4 bottom-4 rounded-md bg-black/70 px-3 py-2 text-center text-xs text-white">
+					{error}
+				</p>
 			) : null}
-			<Button
-				type="button"
-				variant={active ? "outline" : "default"}
-				size="sm"
-				onClick={() => {
-					setError(null);
-					setActive((a) => !a);
-				}}
-			>
-				{active ? (
-					<>
-						<CameraOff className="size-4" /> Stop camera
-					</>
-				) : (
-					<>
-						<Camera className="size-4" /> Scan with camera
-					</>
-				)}
-			</Button>
-			{error ? <p className="text-xs text-destructive">{error}</p> : null}
 		</div>
 	);
 }

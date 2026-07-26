@@ -20,14 +20,17 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 	// Management view keys off the viewer-scoped capability flags on the event record.
 	const managed = await repositories.events.getById(actor, eventId).catch(() => null);
 	const isStaff = managed ? managed.myRole !== null || managed.canModerate : false;
-	const [staff, attendance, invites] =
+	const [staff, attendance, invites, terms] =
 		managed && isStaff
 			? await Promise.all([
 					repositories.events.listStaff(actor, eventId).catch(() => []),
 					repositories.events.listAttendance(actor, eventId).catch(() => []),
 					repositories.events.listInvites(actor, eventId).catch(() => []),
+					repositories.retention.listTerms(actor).catch(() => []),
 				])
-			: [[], [], []];
+			: [[], [], [], []];
+	// Points attach to a term; resolve the active one server-side, same as markPresentAction.
+	const currentTerm = terms.find((t) => t.isCurrent) ?? terms[0];
 
 	return (
 		<div className="grid gap-5">
@@ -99,6 +102,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 					staff={staff}
 					attendance={attendance}
 					invites={invites}
+					termId={currentTerm?.id ?? ""}
 				/>
 			) : null}
 		</div>
