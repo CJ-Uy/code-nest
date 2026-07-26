@@ -6,6 +6,6 @@ Shared-mode developers depend on the deployed dev Worker staying current. After 
 
 1. Apply the new clean schema to `code-nest-dev-db`.
 2. Seed `code-nest-dev-db` with the dev seed data.
-3. Deploy `code-nest-dev`.
+3. Deploy `code-nest-beta`.
 
 Exact Wrangler commands must be shown for approval before any D1 reset, migration, seed, or production database operation.
