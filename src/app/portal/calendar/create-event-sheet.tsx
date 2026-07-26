@@ -14,7 +14,7 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { DateTimePicker } from "@/components/date-time-picker";
-import { deriveEnd, toLocalInput } from "@/lib/date-slots";
+import { deriveEnd, fromLocalInput, toLocalInput } from "@/lib/date-slots";
 import type { EventType } from "@/db/schema";
 import { createEventAction } from "./actions";
 
@@ -64,8 +64,8 @@ export function CreateEventSheet({ allowedTypes }: { allowedTypes: EventType[] }
 					type,
 					place,
 					description,
-					startsAt,
-					endsAt,
+					startsAt: fromLocalInput(startsAt).toISOString(),
+					endsAt: fromLocalInput(endsAt).toISOString(),
 					capacity: capacity ? Number(capacity) : null,
 				});
 				setOpen(false);

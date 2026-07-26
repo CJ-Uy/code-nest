@@ -258,6 +258,22 @@ describe("events repository on D1", () => {
 		await expect(repo.undoScan(owner, { eventId: event.id, memberId: "mem_a" })).resolves.toEqual({ removed: false });
 	});
 
+	it("rejects attendance for an inactive or client-selected school year", async () => {
+		const event = await makeApprovedEvent();
+		const { repo, db } = makeRepos();
+		await env.DB.prepare(
+			"INSERT INTO terms (id, name, retained_at, probation_below, starts_at, ends_at) VALUES (?, ?, ?, ?, ?, ?)",
+		)
+			.bind("term_old", "Old Term", 20, 10, new Date("2025-01-01").getTime(), new Date("2025-06-01").getTime())
+			.run();
+
+		await expect(repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_old" })).rejects.toThrow(
+			"No active school year",
+		);
+		expect(await db.select().from(schema.crsAttendance)).toHaveLength(0);
+		expect(await db.select().from(schema.retentionRecords)).toHaveLength(0);
+	});
+
 	it("gates event creation on the configured type rules", async () => {
 		await env.DB.prepare("DELETE FROM event_type_rules").run();
 		await env.DB.prepare("INSERT INTO event_type_rules (type, required_permission) VALUES ('casual', NULL)").run();

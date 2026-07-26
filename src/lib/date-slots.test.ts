@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildMonthGrid, deriveEnd, timeSlots, toLocalInput } from "./date-slots";
+import { buildMonthGrid, deriveEnd, fromLocalInput, timeSlots, toLocalInput } from "./date-slots";
 
 describe("buildMonthGrid", () => {
 	it("always returns six full weeks so the grid never jumps height", () => {
@@ -52,5 +52,10 @@ describe("toLocalInput", () => {
 	it("formats local wall-clock time, not UTC", () => {
 		const date = new Date(2026, 6, 25, 13, 5);
 		expect(toLocalInput(date)).toBe("2026-07-25T13:05");
+	});
+
+	it("round-trips a browser datetime-local value without changing the instant", () => {
+		const value = "2026-07-25T13:05";
+		expect(toLocalInput(fromLocalInput(value))).toBe(value);
 	});
 });

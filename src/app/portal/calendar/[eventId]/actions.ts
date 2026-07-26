@@ -52,7 +52,7 @@ export async function markPresentAction(eventId: string, memberId: string) {
 	const repositories = await getRepositories();
 	// Points attach to a term; resolve the active one server-side so the client can't set it.
 	const terms = await repositories.retention.listTerms(actor).catch(() => []);
-	const currentTerm = terms.find((t) => t.isCurrent) ?? terms[0];
+	const currentTerm = terms.find((t) => t.isCurrent);
 	if (!currentTerm) throw new Error("No active school year to record attendance against.");
 	const result = await repositories.events.recordScan(actor, { eventId, memberId, termId: currentTerm.id });
 	revalidate(eventId);

@@ -11,6 +11,10 @@ export function toLocalDate(date: Date): string {
 	return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+export function fromLocalInput(value: string): Date {
+	return new Date(value);
+}
+
 /**
  * Six weeks starting on the Monday on or before the 1st. Fixed 42 cells so the
  * calendar does not change height between months.

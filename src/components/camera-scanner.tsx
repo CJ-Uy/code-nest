@@ -53,7 +53,12 @@ export function CameraScanner({
 		let stream: MediaStream | null = null;
 		let raf = 0;
 		let cancelled = false;
-		const detector = window.BarcodeDetector ? new window.BarcodeDetector({ formats: ["qr_code"] }) : null;
+		let detector: Detector | null = null;
+		try {
+			detector = window.BarcodeDetector ? new window.BarcodeDetector({ formats: ["qr_code"] }) : null;
+		} catch {
+			// Some browsers expose BarcodeDetector without QR support. jsQR remains the fallback.
+		}
 
 		async function loop() {
 			const video = videoRef.current;
@@ -64,9 +69,9 @@ export function CameraScanner({
 					const now = Date.now();
 					// Debounce: one badge held in front of the camera marks once, not every frame.
 					if (code !== lastRef.current.code || now - lastRef.current.at > 2500) {
-						lastRef.current = { code, at: now };
 						// One badge held in frame must not fire two concurrent requests.
 						if (!inFlightRef.current) {
+							lastRef.current = { code, at: now };
 							inFlightRef.current = true;
 							try {
 								await onCodeRef.current(code);
@@ -97,17 +102,24 @@ export function CameraScanner({
 		(async () => {
 			try {
 				stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
-				if (cancelled) return;
+				if (cancelled) {
+					stream.getTracks().forEach((track) => track.stop());
+					return;
+				}
 				const video = videoRef.current;
-				if (!video) return;
+				if (!video) {
+					stream.getTracks().forEach((track) => track.stop());
+					return;
+				}
 				video.srcObject = stream;
 				await video.play();
+				setError(null);
 				const track = stream.getVideoTracks()[0];
 				trackRef.current = track;
 				setTorchAvailable(supportsTorch(track));
 				loop();
 			} catch {
-				setError("Camera access was blocked. Allow the camera, or use the search below.");
+				if (!cancelled) setError("Camera access was blocked. Close the scanner and use member search.");
 			}
 		})();
 
@@ -142,7 +154,7 @@ export function CameraScanner({
 	if (!supported) {
 		return (
 			<p className="text-xs text-muted-foreground">
-				Camera scanning isn’t supported on this browser. Use the search below to mark members present.
+				Camera scanning isn’t supported on this browser. Close the scanner and use member search.
 			</p>
 		);
 	}

@@ -42,7 +42,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 				])
 			: [[], [], [], []];
 	// Points attach to a term; resolve the active one server-side, same as markPresentAction.
-	const currentTerm = terms.find((t) => t.isCurrent) ?? terms[0];
+	const currentTerm = terms.find((t) => t.isCurrent);
 
 	return (
 		<div className="grid gap-5">

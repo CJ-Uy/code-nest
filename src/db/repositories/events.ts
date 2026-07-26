@@ -1,8 +1,8 @@
-import { and, asc, desc, eq, isNull, like, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNull, like, lte, or, sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
 import { createId } from "@/lib/ids";
-import { crsAttendance, crsEvents, eventInvites, eventRsvps, eventStaff, members, retentionRecords } from "@/db/schema";
+import { crsAttendance, crsEvents, eventInvites, eventRsvps, eventStaff, members, retentionRecords, terms } from "@/db/schema";
 import type { EventType, RsvpState } from "@/db/schema";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
@@ -450,12 +450,22 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 		async recordScan(actor, input) {
 			const { event, role } = await requireEvent(actor, input.eventId);
 			if (!canOperate(role, actor)) throw new Error("Not authorized to scan attendance.");
-			if (role === "scanner" && !inCheckinWindow(event, new Date())) throw new Error("Check-in is closed.");
+			const scannedAt = new Date();
+			if (role === "scanner" && !inCheckinWindow(event, scannedAt)) throw new Error("Check-in is closed.");
 
 			const existing = await loadScanRow(db, input.eventId, input.memberId);
 			if (existing) return toScanResult(input.eventId, input.memberId, existing, true);
 
-			const scannedAt = new Date();
+			const [currentTerm] = await db
+				.select({ id: terms.id })
+				.from(terms)
+				.where(and(lte(terms.startsAt, scannedAt), gte(terms.endsAt, scannedAt)))
+				.orderBy(desc(terms.startsAt))
+				.limit(1);
+			if (currentTerm?.id !== input.termId) {
+				throw new Error("No active school year to record attendance against.");
+			}
+
 			try {
 				await runAtomic(db, [
 					db

@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard, RetentionProgress } from "@/components/portal/overview-metrics";
 import { getActor } from "@/server/auth/actor";
-import { can } from "@/server/auth/permissions";
 import type { OverviewSummary } from "@/db/repositories/overview";
 
 export const dynamic = "force-dynamic";
@@ -26,27 +25,21 @@ export default async function PortalOverviewPage() {
 	const repositories = await getRepositories();
 	// Each read degrades to an empty/zeroed value so the dashboard never crashes
 	// when a repository is unavailable through the shared-dev adapter.
-	const [member, summary, announcements, libraryItems] = await Promise.all([
+	const [member, summary, announcements, libraryItems, scanEvents, terms] = await Promise.all([
 		repositories.members.getById(actor, actor.memberId).catch(() => null),
 		repositories.overview.getSummary(actor).catch(() => EMPTY_SUMMARY),
 		repositories.announcements.listForMember(actor, { limit: 3 }).catch(() => []),
 		repositories.library.listItems(actor, { limit: 3 }).catch(() => []),
+		repositories.events.listPublished(actor, { limit: 100 }).catch(() => []),
+		repositories.retention.listTerms(actor).catch(() => []),
 	]);
+	const scanEvent = scanEvents.find(
+		(event) => event.canModerate || event.myRole === "owner" || event.myRole === "admin" || event.myRole === "scanner",
+	);
+	const currentTerm = terms.find((term) => term.isCurrent);
 
 	const firstName = (member?.nickname ?? member?.fullName ?? member?.name ?? "there").split(/\s+/)[0];
 	const today = new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric" }).format(new Date());
-
-	const canScanAttendance = can(actor, "points:assign");
-	let scanEvent: Awaited<ReturnType<typeof repositories.events.listPublished>>[number] | null = null;
-	if (canScanAttendance) {
-		try {
-			const [event] = await repositories.events.listPublished(actor, { limit: 1 });
-			scanEvent = event ?? null;
-		} catch {
-			scanEvent = null;
-		}
-	}
-	const currentTermId = "term_2026_1";
 
 	return (
 		<div className="grid gap-6">
@@ -141,10 +134,10 @@ export default async function PortalOverviewPage() {
 				</Card>
 			</div>
 
-			{scanEvent ? (
+			{scanEvent && currentTerm ? (
 				<EventScanPanel
 					eventId={scanEvent.id}
-					termId={currentTermId}
+					termId={currentTerm.id}
 					canUndo={scanEvent.myRole === "owner" || scanEvent.myRole === "admin" || scanEvent.canModerate}
 				/>
 			) : null}

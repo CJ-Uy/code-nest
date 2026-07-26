@@ -53,6 +53,13 @@ export function EventScanOverlay({
 		return () => clearTimeout(timer);
 	}, [result]);
 
+	useEffect(
+		() => () => {
+			void audioRef.current?.close();
+		},
+		[],
+	);
+
 	function play(kind: "success" | "duplicate" | "invalid") {
 		if (typeof window === "undefined") return;
 		navigator.vibrate?.(kind === "success" ? 60 : [40, 60, 40]);
@@ -84,46 +91,58 @@ export function EventScanOverlay({
 			return;
 		}
 		const body = classified.kind === "member" ? { memberId: classified.memberId } : { token: classified.token };
-		const response = await fetch(`/api/events/${eventId}/scan`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ ...body, termId }),
-		});
-		if (!response.ok) {
-			const error = (await response.json().catch(() => null)) as { error?: string } | null;
+		try {
+			const response = await fetch(`/api/events/${eventId}/scan`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ ...body, termId }),
+			});
+			if (!response.ok) {
+				const error = (await response.json().catch(() => null)) as { error?: string } | null;
+				setMemberImage(null);
+				setResult({ state: "error", title: "Scan failed", detail: error?.error ?? "Use the search instead." });
+				play("invalid");
+				return;
+			}
+			const raw2 = (await response.json()) as Omit<ScanResponse, "scannedAt"> & { scannedAt: string };
+			const parsed: ScanResponse = { ...raw2, scannedAt: new Date(raw2.scannedAt) };
+			const described = describeScan(parsed, new Date());
+			setResult(described);
+			setMemberImage(parsed.memberImage);
+			setLastMemberId(parsed.memberId);
+			if (!parsed.alreadyPresent) setCount((value) => value + 1);
+			setLog((entries) => [{ ...described, at: new Date() }, ...entries].slice(0, 50));
+			play(described.state === "success" ? "success" : "duplicate");
+		} catch {
 			setMemberImage(null);
-			setResult({ state: "error", title: "Scan failed", detail: error?.error ?? "Use the search instead." });
+			setResult({ state: "error", title: "Scan failed", detail: "Check your connection and try again." });
 			play("invalid");
-			return;
 		}
-		const raw2 = (await response.json()) as Omit<ScanResponse, "scannedAt"> & { scannedAt: string };
-		const parsed: ScanResponse = { ...raw2, scannedAt: new Date(raw2.scannedAt) };
-		const described = describeScan(parsed, new Date());
-		setResult(described);
-		setMemberImage(parsed.memberImage);
-		setLastMemberId(parsed.memberId);
-		if (!parsed.alreadyPresent) setCount((value) => value + 1);
-		setLog((entries) => [{ ...described, at: new Date() }, ...entries].slice(0, 50));
-		play(described.state === "success" ? "success" : "duplicate");
 	}
 
 	async function undoLast() {
 		if (!lastMemberId) return;
-		const response = await fetch(`/api/events/${eventId}/scan`, {
-			method: "DELETE",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ memberId: lastMemberId }),
-		});
-		if (!response.ok) {
-			const error = (await response.json().catch(() => null)) as { error?: string } | null;
-			setResult({ state: "error", title: "Undo failed", detail: error?.error ?? "Try again or use the search instead." });
+		try {
+			const response = await fetch(`/api/events/${eventId}/scan`, {
+				method: "DELETE",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ memberId: lastMemberId }),
+			});
+			if (!response.ok) {
+				const error = (await response.json().catch(() => null)) as { error?: string } | null;
+				setResult({ state: "error", title: "Undo failed", detail: error?.error ?? "Try again or use the search instead." });
+				play("invalid");
+				return;
+			}
+			const { removed } = (await response.json()) as { removed: boolean };
+			if (removed) setCount((value) => Math.max(0, value - 1));
+			setResult({ state: "idle", title: "", detail: "" });
+			setLastMemberId(null);
+			setMemberImage(null);
+		} catch {
+			setResult({ state: "error", title: "Undo failed", detail: "Check your connection and try again." });
 			play("invalid");
-			return;
 		}
-		setCount((value) => Math.max(0, value - 1));
-		setResult({ state: "idle", title: "", detail: "" });
-		setLastMemberId(null);
-		setMemberImage(null);
 	}
 
 	const bannerState = result.state;

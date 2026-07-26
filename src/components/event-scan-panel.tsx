@@ -96,7 +96,7 @@ export function EventScanPanel({
 				) : null}
 
 				<form
-					className="flex gap-2"
+					className="flex flex-col gap-2 sm:flex-row"
 					onSubmit={(event) => {
 						event.preventDefault();
 						void submitScan();
@@ -108,12 +108,14 @@ export function EventScanPanel({
 						placeholder="Member code (code:m:...)"
 						aria-label="Member code"
 					/>
-					<Button type="submit">Mark present</Button>
+					<Button type="submit" className="sm:shrink-0">
+						Mark present
+					</Button>
 				</form>
 
 				<div className="flex flex-col gap-2">
 					<form
-						className="flex gap-2"
+						className="flex flex-col gap-2 sm:flex-row"
 						onSubmit={(event) => {
 							event.preventDefault();
 							void runSearch();
@@ -131,8 +133,11 @@ export function EventScanPanel({
 					</form>
 					<ul className="flex flex-col gap-1">
 						{results.map((member) => (
-							<li key={member.memberId} className="flex items-center justify-between gap-2 rounded-md border px-3 py-2">
-								<span className="text-sm">
+							<li
+								key={member.memberId}
+								className="flex flex-col items-start justify-between gap-2 rounded-md border px-3 py-2 sm:flex-row sm:items-center"
+							>
+								<span className="min-w-0 break-words text-sm">
 									{member.fullName ?? member.name ?? member.email}
 									{member.alreadyScanned ? <span className="ml-2 text-xs text-muted-foreground">present</span> : null}
 								</span>

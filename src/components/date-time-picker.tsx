@@ -32,7 +32,9 @@ export function DateTimePicker({
 		const base = day ? new Date(`${day}T00:00`) : new Date();
 		return { year: base.getFullYear(), month: base.getMonth() };
 	});
-	const [custom, setCustom] = useState(false);
+	const [custom, setCustom] = useState(
+		() => Boolean(startsAt && endsAt) && !DURATIONS.some(({ minutes }) => deriveEnd(startsAt, minutes) === endsAt),
+	);
 
 	const grid = useMemo(() => buildMonthGrid(cursor.year, cursor.month), [cursor]);
 	const monthLabel = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(
@@ -43,7 +45,7 @@ export function DateTimePicker({
 
 	function pick(nextStart: string, minutes?: number) {
 		const duration = minutes ?? activeDuration?.minutes ?? 60;
-		onChange({ startsAt: nextStart, endsAt: custom ? endsAt : deriveEnd(nextStart, duration) });
+		onChange({ startsAt: nextStart, endsAt: custom && minutes === undefined ? endsAt : deriveEnd(nextStart, duration) });
 	}
 
 	function shiftMonth(delta: number) {

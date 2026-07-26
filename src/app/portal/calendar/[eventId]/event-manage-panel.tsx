@@ -22,6 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DateTimePicker } from "@/components/date-time-picker";
 import { EventScanOverlay } from "@/components/event-scan-overlay";
 import type { EventType } from "@/db/schema";
+import { fromLocalInput, toLocalInput } from "@/lib/date-slots";
 import { cn } from "@/lib/utils";
 import {
 	addStaffAction,
@@ -69,10 +70,6 @@ type Section = "checkins" | "people" | "details" | "points";
 
 function displayName(m: { fullName?: string | null; name?: string | null }): string {
 	return m.fullName ?? m.name ?? "Member";
-}
-function toLocalInput(d: Date): string {
-	const off = d.getTimezoneOffset() * 60000;
-	return new Date(d.getTime() - off).toISOString().slice(0, 16);
 }
 
 export function EventManagePanel({
@@ -520,8 +517,8 @@ function DetailsSection({ event, allowedEventTypes }: { event: ManageEvent; allo
 					type,
 					place,
 					description,
-					startsAt,
-					endsAt,
+					startsAt: fromLocalInput(startsAt).toISOString(),
+					endsAt: fromLocalInput(endsAt).toISOString(),
 					capacity: capacity ? Number(capacity) : null,
 				});
 				setSaved(true);
