@@ -12,7 +12,7 @@ The short version: production, beta, and staging use separate Wrangler configs a
 | Local Cloudflare preview | local Wrangler runtime | local Wrangler URL | `production` from `wrangler.beta.jsonc` | `dev` | local D1 binding | local R2 binding |
 | Shared outside-dev mode | none | local app talks to beta API | `shared` | blank | beta Worker internal API | beta API, dev R2 S3, or local files |
 | Beta | `code-nest-beta` | `beta.ateneocode.org` | `production` | `dev` | `code-nest-dev-db` | `code-nest-dev-uploads` |
-| Staging | `code-nest-stagged` | `stagged.ateneocode.org` | `production` | `prod` | `code-nest-staged-db` | `code-nest-staged-uploads` |
+| Staging | `code-nest-staged` | `staged.ateneocode.org` | `production` | `prod` | `code-nest-staged-db` | `code-nest-staged-uploads` |
 | Production | `code-nest` | `ateneocode.org` | `production` | `prod` | `code-nest-prod-db` | `code-nest-prod-uploads` |
 
 `APP_ENV=production` means "use Cloudflare bindings." `DEPLOY_ENV=dev` is what keeps the beta Worker separated from real production data.
