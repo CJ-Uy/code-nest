@@ -1,12 +1,12 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "code-nest-stagged",
+	"name": "code-nest-staged",
 	"account_id": "8527ec1369d46f55304a6f59ab5356e4",
 	"main": ".open-next/worker.js",
 	"workers_dev": true,
 	"routes": [
 		{
-			"pattern": "stagged.ateneocode.org",
+			"pattern": "staged.ateneocode.org",
 			"custom_domain": true
 		}
 	],
@@ -25,7 +25,7 @@
 	"services": [
 		{
 			"binding": "WORKER_SELF_REFERENCE",
-			"service": "code-nest-stagged"
+			"service": "code-nest-staged"
 		}
 	],
 	"observability": {
