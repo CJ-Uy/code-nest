@@ -98,6 +98,50 @@
 					"bucket_name": "code-nest-dev-uploads"
 				}
 			]
+		},
+		"staged": {
+			"name": "code-nest-staged",
+			"routes": [
+				{
+					"pattern": "stagged.ateneocode.org",
+					"custom_domain": true
+				}
+			],
+			"assets": {
+				"binding": "ASSETS",
+				"directory": ".open-next/assets"
+			},
+			"images": {
+				"binding": "IMAGES"
+			},
+			"services": [
+				{
+					"binding": "WORKER_SELF_REFERENCE",
+					"service": "code-nest-staged"
+				}
+			],
+			"vars": {
+				"APP_ENV": "production",
+				"DEPLOY_ENV": "prod",
+				"STORAGE_MODE": "binding",
+				"LOCAL_SQLITE_PATH": "./.local/dev.db",
+				"LOCAL_STORAGE_DIR": "./.local/uploads",
+				"NEXT_PRIVATE_MINIMAL_MODE": "1"
+			},
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "code-nest-staged-db",
+					"database_id": "18b0f067-101b-4aac-b724-6382a7d3cdd0",
+					"migrations_dir": "drizzle/migrations"
+				}
+			],
+			"r2_buckets": [
+				{
+					"binding": "BUCKET",
+					"bucket_name": "code-nest-staged-uploads"
+				}
+			]
 		}
 	}
 }

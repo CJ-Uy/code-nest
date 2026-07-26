@@ -2,7 +2,7 @@
 
 This is the full setup path for CODE Nest on Cloudflare Workers.
 
-The short version: production is the top-level Worker config, beta is `env.dev`, Drizzle generates SQLite SQL migrations, Wrangler applies those migrations to D1, and uploads go to R2 through a Worker binding.
+The short version: production is the top-level Worker config, beta is `env.dev`, staged is `env.staged`, Drizzle generates SQLite SQL migrations, Wrangler applies those migrations to D1, and uploads go to R2 through a Worker binding.
 
 ## Runtime Map
 
@@ -12,6 +12,7 @@ The short version: production is the top-level Worker config, beta is `env.dev`,
 | Local Cloudflare preview | local Wrangler runtime | local Wrangler URL | `production` from `env.dev` | `dev` | local D1 binding | local R2 binding |
 | Shared outside-dev mode | none | local app talks to beta API | `shared` | blank | beta Worker internal API | beta API, dev R2 S3, or local files |
 | Beta | `code-nest-dev` | `beta.ateneocode.org` | `production` | `dev` | `code-nest-dev-db` | `code-nest-dev-uploads` |
+| Staged | `code-nest-staged` | `stagged.ateneocode.org` | `production` | `prod` | `code-nest-staged-db` | `code-nest-staged-uploads` |
 | Production | `code-nest` | `ateneocode.org` | `production` | `prod` | `code-nest-prod-db` | `code-nest-prod-uploads` |
 
 `APP_ENV=production` means "use Cloudflare bindings." `DEPLOY_ENV=dev` is what keeps the beta Worker separated from real production data.
@@ -23,8 +24,10 @@ Current resource names live in `wrangler.jsonc`.
 | Purpose | Resource | Name | Binding |
 | --- | --- | --- | --- |
 | Beta database | D1 | `code-nest-dev-db` | `DB` |
+| Staged database | D1 | `code-nest-staged-db` | `DB` |
 | Production database | D1 | `code-nest-prod-db` | `DB` |
 | Beta uploads | R2 | `code-nest-dev-uploads` | `BUCKET` |
+| Staged uploads | R2 | `code-nest-staged-uploads` | `BUCKET` |
 | Production uploads | R2 | `code-nest-prod-uploads` | `BUCKET` |
 
 The database IDs are checked into `wrangler.jsonc` because D1 bindings need them. R2 bindings only need bucket names.
@@ -105,7 +108,13 @@ Beta is `env.dev`:
 Deploy beta with:
 
 ```bash
-pnpm deploy:dev
+pnpm deploy:beta
+```
+
+Deploy staged from the production branch with:
+
+```bash
+pnpm deploy:staged
 ```
 
 Deploy production with:
@@ -176,7 +185,13 @@ pnpm db:migrate:local
 Apply migrations to beta:
 
 ```bash
-pnpm db:migrate:dev
+pnpm db:migrate:beta
+```
+
+Apply migrations to staged from the production branch:
+
+```bash
+pnpm db:migrate:staged
 ```
 
 Apply migrations to production:
@@ -241,10 +256,10 @@ Run this after schema, migrations, internal contracts, permissions, shared actor
 pnpm lint
 pnpm typecheck
 pnpm build
-pnpm db:migrate:dev
+pnpm db:migrate:beta
 pnpm db:seed:dev:export
 pnpm exec wrangler d1 execute DB --env dev --remote --file .local/dev-seed.sql
-pnpm deploy:dev
+pnpm deploy:beta
 ```
 
 Before the D1 migration or seed command, show the exact command and wait for approval.
