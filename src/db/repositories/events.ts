@@ -283,6 +283,15 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 		async update(actor, eventId, patch) {
 			const { event, role } = await requireEvent(actor, eventId);
 			if (!canManage(role, actor)) throw new Error("Not authorized to update this event.");
+			// Only gate on the type rules when the patch actually changes the type — an owner
+			// or manager must always be able to edit an existing event's other fields, even one
+			// whose type they could no longer create themselves.
+			if (patch.type !== undefined && patch.type !== event.type) {
+				const rules = await createEventTypeRulesRepository(db, audit).list();
+				if (!canCreateType(actor, rules, patch.type)) {
+					throw new Error(`Not authorized to change this event to ${patch.type}.`);
+				}
+			}
 			const [updated] = await db
 				.update(crsEvents)
 				.set({

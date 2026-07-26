@@ -279,4 +279,36 @@ describe("events repository on D1", () => {
 		await expect(repo.create(owner, { ...base, type: "casual" })).resolves.toMatchObject({ type: "casual" });
 		await expect(repo.create(eventsAdmin, { ...base, type: "official" })).resolves.toMatchObject({ type: "official" });
 	});
+
+	it("gates a type-changing update the same way as create, without blocking unrelated edits", async () => {
+		const { repo } = makeRepos();
+
+		// A plain member who owns a casual event cannot promote it to official themselves...
+		const casualEvent = await makeApprovedEvent(owner);
+		await expect(repo.update(owner, casualEvent.id, { type: "official" })).rejects.toThrow("Not authorized");
+		expect((await repo.getById(owner, casualEvent.id))?.type).toBe("casual");
+
+		// ...but an actor holding event:create_restricted can make that same change.
+		await expect(repo.update(eventsAdmin, casualEvent.id, { type: "official" })).resolves.toMatchObject({
+			type: "official",
+		});
+
+		// An existing official event owned by a plain member (e.g. after a transfer) must
+		// still let its owner edit unrelated fields — the type-rule check must only fire
+		// when the patch actually changes the type, not on every update.
+		const officialEvent = await repo.create(eventsAdmin, {
+			title: "Formal Assembly",
+			type: "official",
+			place: "Gym",
+			description: "Formal",
+			startsAt: START,
+			endsAt: END,
+			capacity: null,
+		});
+		await repo.transferOwnership(eventsAdmin, officialEvent.id, owner.memberId);
+		await expect(repo.update(owner, officialEvent.id, { title: "Formal Assembly (Updated)" })).resolves.toMatchObject({
+			type: "official",
+			title: "Formal Assembly (Updated)",
+		});
+	});
 });

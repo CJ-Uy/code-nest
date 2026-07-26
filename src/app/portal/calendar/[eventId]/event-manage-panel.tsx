@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DateTimePicker } from "@/components/date-time-picker";
 import { EventScanOverlay } from "@/components/event-scan-overlay";
+import type { EventType } from "@/db/schema";
 import { cn } from "@/lib/utils";
 import {
 	addStaffAction,
@@ -80,12 +81,14 @@ export function EventManagePanel({
 	attendance,
 	invites,
 	termId,
+	allowedEventTypes,
 }: {
 	event: ManageEvent;
 	staff: StaffMember[];
 	attendance: AttendanceRow[];
 	invites: InviteRow[];
 	termId: string | null;
+	allowedEventTypes: EventType[];
 }) {
 	const isOwner = event.myRole === "owner";
 	const canManage = isOwner || event.myRole === "admin" || event.canModerate;
@@ -140,7 +143,7 @@ export function EventManagePanel({
 					/>
 				) : null}
 				{section === "people" ? <PeopleSection event={event} staff={staff} invites={invites} isOwner={isOwner} /> : null}
-				{section === "details" ? <DetailsSection event={event} /> : null}
+				{section === "details" ? <DetailsSection event={event} allowedEventTypes={allowedEventTypes} /> : null}
 				{section === "points" ? <PointsSection event={event} /> : null}
 			</CardContent>
 		</Card>
@@ -486,7 +489,7 @@ function PeopleSection({
 
 /* ---------- Details (edit + delete) ---------- */
 
-function DetailsSection({ event }: { event: ManageEvent }) {
+function DetailsSection({ event, allowedEventTypes }: { event: ManageEvent; allowedEventTypes: EventType[] }) {
 	const router = useRouter();
 	const [pending, startTransition] = useTransition();
 	const [error, setError] = useState<string | null>(null);
@@ -501,6 +504,10 @@ function DetailsSection({ event }: { event: ManageEvent }) {
 	const [capacity, setCapacity] = useState(event.capacity?.toString() ?? "");
 
 	const endBeforeStart = Boolean(startsAt && endsAt && new Date(endsAt) <= new Date(startsAt));
+	// The event's own current type must always be selectable, even if it fell outside the
+	// actor's allowed types after the rules changed — leaving it unchanged is always legal,
+	// and dropping it from the options would make an unrelated save silently change the type.
+	const typeOptions = allowedEventTypes.includes(event.type) ? allowedEventTypes : [...allowedEventTypes, event.type];
 
 	function save() {
 		setError(null);
@@ -547,9 +554,11 @@ function DetailsSection({ event }: { event: ManageEvent }) {
 				<label className="grid gap-1.5 text-sm">
 					<span className="font-medium">Type</span>
 					<select className={FIELD} value={type} onChange={(e) => setType(e.target.value as typeof type)}>
-						<option value="casual">Casual</option>
-						<option value="official">Official</option>
-						<option value="birthday">Birthday</option>
+						{typeOptions.map((option) => (
+							<option key={option} value={option}>
+								{option.charAt(0).toUpperCase() + option.slice(1)}
+							</option>
+						))}
 					</select>
 				</label>
 				<label className="grid gap-1.5 text-sm">
