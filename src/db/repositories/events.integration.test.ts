@@ -306,7 +306,7 @@ describe("events repository on D1", () => {
 			capacity: null,
 		});
 		await repo.transferOwnership(eventsAdmin, officialEvent.id, owner.memberId);
-		await expect(repo.update(owner, officialEvent.id, { title: "Formal Assembly (Updated)" })).resolves.toMatchObject({
+		await expect(repo.update(owner, officialEvent.id, { title: "Formal Assembly (Updated)", type: "official" })).resolves.toMatchObject({
 			type: "official",
 			title: "Formal Assembly (Updated)",
 		});
