@@ -36,6 +36,9 @@ import {
 
 const FIELD = "w-full rounded-lg border border-border bg-background p-2 text-sm";
 const CHECKIN_LEAD_MS = 30 * 60 * 1000;
+// Matches the message markPresentAction() throws when no term is current, so the
+// camera path and the search path never disagree about why scanning can't proceed.
+const NO_ACTIVE_TERM_MESSAGE = "No active school year to record attendance against.";
 
 export type StaffMember = {
 	memberId: string;
@@ -82,7 +85,7 @@ export function EventManagePanel({
 	staff: StaffMember[];
 	attendance: AttendanceRow[];
 	invites: InviteRow[];
-	termId: string;
+	termId: string | null;
 }) {
 	const isOwner = event.myRole === "owner";
 	const canManage = isOwner || event.myRole === "admin" || event.canModerate;
@@ -220,7 +223,7 @@ function CheckinsSection({
 	event: ManageEvent;
 	attendance: AttendanceRow[];
 	canOverrideWindow: boolean;
-	termId: string;
+	termId: string | null;
 }) {
 	const router = useRouter();
 	const [flash, setFlash] = useState<string | null>(null);
@@ -273,11 +276,17 @@ function CheckinsSection({
 
 			{windowOpen || canOverrideWindow ? (
 				<div className="grid gap-3">
-					<Button type="button" onClick={() => setOverlayOpen(true)}>
-						<ScanLine className="size-4" />
-						Scan attendance
-					</Button>
-					{overlayOpen ? (
+					{termId ? (
+						<Button type="button" onClick={() => setOverlayOpen(true)}>
+							<ScanLine className="size-4" />
+							Scan attendance
+						</Button>
+					) : (
+						<p className="rounded-lg border border-dashed border-border bg-secondary/40 px-3 py-2 text-sm text-muted-foreground">
+							{NO_ACTIVE_TERM_MESSAGE}
+						</p>
+					)}
+					{overlayOpen && termId ? (
 						<EventScanOverlay
 							eventId={event.id}
 							termId={termId}

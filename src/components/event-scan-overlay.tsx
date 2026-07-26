@@ -114,7 +114,12 @@ export function EventScanOverlay({
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ memberId: lastMemberId }),
 		});
-		if (!response.ok) return;
+		if (!response.ok) {
+			const error = (await response.json().catch(() => null)) as { error?: string } | null;
+			setResult({ state: "error", title: "Undo failed", detail: error?.error ?? "Try again or use the search instead." });
+			play("invalid");
+			return;
+		}
 		setCount((value) => Math.max(0, value - 1));
 		setResult({ state: "idle", title: "", detail: "" });
 		setLastMemberId(null);
@@ -215,7 +220,7 @@ export function EventScanOverlay({
 			</div>
 
 			{logOpen ? (
-				<div className="fixed inset-0 z-60 flex flex-col justify-end bg-black/60" onClick={() => setLogOpen(false)}>
+				<div className="fixed inset-0 z-[60] flex flex-col justify-end bg-black/60" onClick={() => setLogOpen(false)}>
 					<div
 						className="max-h-[70vh] overflow-y-auto rounded-t-2xl bg-neutral-900 p-4"
 						style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}

@@ -102,7 +102,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 					staff={staff}
 					attendance={attendance}
 					invites={invites}
-					termId={currentTerm?.id ?? ""}
+					termId={currentTerm?.id ?? null}
 				/>
 			) : null}
 		</div>
