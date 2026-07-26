@@ -45,6 +45,12 @@ export const adminGroups: AdminGroup[] = [
 		{ segment: "exports", label: "Data Exports", description: "CSV exports of retention data.", permission: "retention:record" },
 	]),
 	G("system", "System", [
+		{
+			segment: "event-types",
+			label: "Event Type Rules",
+			description: "Which permission each event type requires to create.",
+			permission: "role:assign",
+		},
 		{ segment: "nav-pins", label: "Pinned Nav Links", description: "Links shown in every member's top nav.", permission: "nav:configure" },
 		{
 			segment: "quick-links",
