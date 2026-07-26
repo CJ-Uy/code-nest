@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CameraScanner } from "@/components/camera-scanner";
+import { DateTimePicker } from "@/components/date-time-picker";
 import { decodeMemberCode } from "@/lib/member-code";
 import { cn } from "@/lib/utils";
 import {
@@ -544,22 +545,14 @@ function DetailsSection({ event }: { event: ManageEvent }) {
 				<span className="font-medium">Place</span>
 				<input className={FIELD} value={place} onChange={(e) => setPlace(e.target.value)} />
 			</label>
-			<div className="grid grid-cols-2 gap-3">
-				<label className="grid gap-1.5 text-sm">
-					<span className="font-medium">Starts</span>
-					<input type="datetime-local" className={FIELD} value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
-				</label>
-				<label className="grid gap-1.5 text-sm">
-					<span className="font-medium">Ends</span>
-					<input
-						type="datetime-local"
-						className={FIELD}
-						value={endsAt}
-						min={startsAt || undefined}
-						onChange={(e) => setEndsAt(e.target.value)}
-					/>
-				</label>
-			</div>
+			<DateTimePicker
+				startsAt={startsAt}
+				endsAt={endsAt}
+				onChange={(next) => {
+					setStartsAt(next.startsAt);
+					setEndsAt(next.endsAt);
+				}}
+			/>
 			{endBeforeStart ? <p className="-mt-2 text-xs text-destructive">End must be after the start.</p> : null}
 			<label className="grid gap-1.5 text-sm">
 				<span className="font-medium">Description</span>

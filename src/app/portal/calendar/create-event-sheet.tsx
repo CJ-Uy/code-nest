@@ -13,6 +13,9 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "@/components/ui/sheet";
+import { DateTimePicker } from "@/components/date-time-picker";
+import { deriveEnd, toLocalInput } from "@/lib/date-slots";
+import type { EventType } from "@/db/schema";
 import { createEventAction } from "./actions";
 
 const FIELD = "w-full rounded-lg border border-border bg-background p-2 text-sm";
@@ -24,12 +27,8 @@ function defaultStart(): string {
 	d.setHours(d.getHours() + 1);
 	return toLocalInput(d);
 }
-function toLocalInput(d: Date): string {
-	const off = d.getTimezoneOffset() * 60000;
-	return new Date(d.getTime() - off).toISOString().slice(0, 16);
-}
 
-export function CreateEventSheet() {
+export function CreateEventSheet({ allowedTypes }: { allowedTypes: EventType[] }) {
 	const router = useRouter();
 	// The mobile "+" quick action links to /portal/calendar?create=1 to open this directly.
 	const openFromUrl = useSearchParams().get("create") === "1";
@@ -38,14 +37,12 @@ export function CreateEventSheet() {
 	const [error, setError] = useState<string | null>(null);
 
 	const [title, setTitle] = useState("");
-	const [type, setType] = useState<"official" | "casual" | "birthday">("casual");
+	const [type, setType] = useState<EventType>(allowedTypes[0] ?? "casual");
 	const [place, setPlace] = useState("");
 	const [description, setDescription] = useState("");
 	const [startsAt, setStartsAt] = useState(defaultStart);
-	const [endsAt, setEndsAt] = useState("");
+	const [endsAt, setEndsAt] = useState(() => deriveEnd(defaultStart(), 60));
 	const [capacity, setCapacity] = useState("");
-
-	const endBeforeStart = Boolean(startsAt && endsAt && new Date(endsAt) <= new Date(startsAt));
 
 	function reset() {
 		setTitle("");
@@ -53,7 +50,7 @@ export function CreateEventSheet() {
 		setPlace("");
 		setDescription("");
 		setStartsAt(defaultStart());
-		setEndsAt("");
+		setEndsAt(deriveEnd(defaultStart(), 60));
 		setCapacity("");
 		setError(null);
 	}
@@ -80,7 +77,7 @@ export function CreateEventSheet() {
 		});
 	}
 
-	const canSubmit = title.trim() && place.trim() && description.trim() && startsAt && endsAt && !endBeforeStart;
+	const canSubmit = title.trim() && place.trim() && description.trim() && startsAt && endsAt;
 
 	return (
 		<Sheet
@@ -113,10 +110,12 @@ export function CreateEventSheet() {
 
 					<label className="grid gap-1.5 text-sm">
 						<span className="font-medium">Type</span>
-						<select className={FIELD} value={type} onChange={(e) => setType(e.target.value as typeof type)}>
-							<option value="casual">Casual</option>
-							<option value="official">Official</option>
-							<option value="birthday">Birthday</option>
+						<select className={FIELD} value={type} onChange={(e) => setType(e.target.value as EventType)}>
+							{allowedTypes.map((option) => (
+								<option key={option} value={option}>
+									{option.charAt(0).toUpperCase() + option.slice(1)}
+								</option>
+							))}
 						</select>
 					</label>
 
@@ -130,28 +129,14 @@ export function CreateEventSheet() {
 						/>
 					</label>
 
-					<div className="grid grid-cols-2 gap-3">
-						<label className="grid gap-1.5 text-sm">
-							<span className="font-medium">Starts</span>
-							<input
-								type="datetime-local"
-								className={FIELD}
-								value={startsAt}
-								onChange={(e) => setStartsAt(e.target.value)}
-							/>
-						</label>
-						<label className="grid gap-1.5 text-sm">
-							<span className="font-medium">Ends</span>
-							<input
-								type="datetime-local"
-								className={FIELD}
-								value={endsAt}
-								min={startsAt || undefined}
-								onChange={(e) => setEndsAt(e.target.value)}
-							/>
-						</label>
-					</div>
-					{endBeforeStart ? <p className="-mt-2 text-xs text-destructive">End must be after the start.</p> : null}
+					<DateTimePicker
+						startsAt={startsAt}
+						endsAt={endsAt}
+						onChange={(next) => {
+							setStartsAt(next.startsAt);
+							setEndsAt(next.endsAt);
+						}}
+					/>
 
 					<label className="grid gap-1.5 text-sm">
 						<span className="font-medium">Description</span>
