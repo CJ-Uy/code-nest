@@ -1877,3 +1877,46 @@ Checked against the spec:
 - Spec §1 → Task 1. §2 → Task 3. §3 → Task 4. §4 → Task 8. §5 → Task 7. §6 → Tasks 2, 5, 6. §7 is explicitly deferred. §8 build order is followed exactly. §9 → the Deployment section.
 - Type consistency verified: `RecordScanResult` (Task 3) matches the contract `scan` output (Task 3) and `ScanResponse` (Task 8); `EventTypeRule` (Task 5) is what Tasks 6 and 7 import; `deriveEnd`/`toLocalInput` (Task 7) are used with the same signatures in the create sheet.
 - Two spots deliberately say "read the file first and match its existing names" rather than quoting code: Task 7 Step 7 (`calendar/page.tsx`) and Step 8 (`event-manage-panel.tsx`, 651 lines). Those files were not read in full during planning, so quoting their internals would be invention. Both steps state exactly what to change and what to leave alone.
+
+---
+
+## Post-implementation follow-ups
+
+All 8 tasks shipped. Final whole-branch review triaged every deferred finding as
+non-blocking; the list below is the punch list, ordered by value.
+
+**Recommended next:**
+
+1. **`termId` is client-supplied on `POST /api/events/[id]/scan`.** The server-action path
+   (`calendar/[eventId]/actions.ts`) deliberately resolves the term server-side "so the client
+   can't set it"; the REST route takes it from the request body. An actor who can already scan can
+   direct attendance points into any real term they name, including a closed past one. The FK
+   rejects non-existent terms, so this cannot fabricate data — but it can misfile points.
+   Pre-existing, not introduced by this work, and now the primary scanning path. Closing it means
+   moving term resolution behind the API so both paths agree.
+2. **`retention.recordEventAttendance` also writes `source='event_attendance'`.** `undoScan`
+   deletes by `(eventId, memberId, source)`, so if that method ever gains a production caller,
+   undo could delete a points row it did not create. Currently unreachable — no production caller.
+3. **`surveys.ts` calls `db.batch(...)` directly**, bypassing `runAtomic` and therefore the
+   local-sqlite transactional fix from Task 3.
+
+**Cosmetic / debt:**
+
+- Editing a legacy event with `NULL ends_at` surfaces a raw ZodError blob; resolved by the
+  deferred `ends_at NOT NULL` backfill.
+- The create sheet's `catch` renders `e.message`, which is raw JSON for a `ZodError`.
+- `runAtomic`'s local path calls `.run()` on each builder, so a future call site adding
+  `.returning()` or a select-shaped builder throws at runtime. Worth one comment line.
+- No `deriveEnd` test across a DST transition or a year boundary (same code path as the
+  covered month-boundary case).
+- `event-manage-panel.tsx` keeps its own `toLocalInput` duplicating `date-slots.ts`.
+- A failed undo replaces the success banner, so the retry affordance is lost until the next scan.
+- `[eventId]/page.tsx` reads `eventTypeRules.list()` on every event-detail view, including for
+  non-staff viewers who never render the manage panel.
+
+**Verification still outstanding (needs hardware/browser, could not be automated):**
+
+- The full-screen scanner on a real phone: torch present on Android, absent on iPhone; success /
+  already-scanned / invalid-QR banners; undo.
+- The booking-style date picker end-to-end in a browser.
+- The admin Event Type Rules screen click-through.
