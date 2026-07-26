@@ -46,7 +46,7 @@ export function CreateEventSheet({ allowedTypes }: { allowedTypes: EventType[] }
 
 	function reset() {
 		setTitle("");
-		setType("casual");
+		setType(allowedTypes[0] ?? "casual");
 		setPlace("");
 		setDescription("");
 		setStartsAt(defaultStart());
@@ -77,7 +77,10 @@ export function CreateEventSheet({ allowedTypes }: { allowedTypes: EventType[] }
 		});
 	}
 
-	const canSubmit = title.trim() && place.trim() && description.trim() && startsAt && endsAt;
+	const noAllowedTypes = allowedTypes.length === 0;
+	const endBeforeStart = Boolean(startsAt && endsAt && new Date(endsAt) <= new Date(startsAt));
+	const canSubmit =
+		title.trim() && place.trim() && description.trim() && startsAt && endsAt && !endBeforeStart && !noAllowedTypes;
 
 	return (
 		<Sheet
@@ -110,13 +113,19 @@ export function CreateEventSheet({ allowedTypes }: { allowedTypes: EventType[] }
 
 					<label className="grid gap-1.5 text-sm">
 						<span className="font-medium">Type</span>
-						<select className={FIELD} value={type} onChange={(e) => setType(e.target.value as EventType)}>
-							{allowedTypes.map((option) => (
-								<option key={option} value={option}>
-									{option.charAt(0).toUpperCase() + option.slice(1)}
-								</option>
-							))}
-						</select>
+						{noAllowedTypes ? (
+							<p className="text-sm text-destructive">
+								You aren’t allowed to create any event type right now. Ask an admin to update the rules.
+							</p>
+						) : (
+							<select className={FIELD} value={type} onChange={(e) => setType(e.target.value as EventType)}>
+								{allowedTypes.map((option) => (
+									<option key={option} value={option}>
+										{option.charAt(0).toUpperCase() + option.slice(1)}
+									</option>
+								))}
+							</select>
+						)}
 					</label>
 
 					<label className="grid gap-1.5 text-sm">
@@ -137,6 +146,7 @@ export function CreateEventSheet({ allowedTypes }: { allowedTypes: EventType[] }
 							setEndsAt(next.endsAt);
 						}}
 					/>
+					{endBeforeStart ? <p className="-mt-2 text-xs text-destructive">End must be after the start.</p> : null}
 
 					<label className="grid gap-1.5 text-sm">
 						<span className="font-medium">Description</span>
