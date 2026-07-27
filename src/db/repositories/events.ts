@@ -1,12 +1,27 @@
-import { and, asc, desc, eq, gte, isNull, like, lte, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNull, like, lte, notInArray, or, sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
 import { createId } from "@/lib/ids";
-import { crsAttendance, crsEvents, eventInvites, eventRsvps, eventStaff, members, retentionRecords, terms } from "@/db/schema";
+import {
+	auditLogs,
+	crsAttendance,
+	crsEvents,
+	eventInvites,
+	eventPointAwards,
+	eventRsvps,
+	eventStaff,
+	members,
+	pointTypes,
+	retentionRecords,
+	terms,
+} from "@/db/schema";
 import type { EventType, RsvpState } from "@/db/schema";
+import type { EventAwardInput } from "@/db/types";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
+import { auditInsertValues } from "./audit";
 import type { AuditRepository } from "./audit";
+import { buildExistingAttendanceAwardUpsert } from "./event-awards";
 import { canCreateType, createEventTypeRulesRepository } from "./eventTypeRules";
 import { notify } from "./notifications";
 
@@ -79,6 +94,7 @@ export type EventsRepository = {
 	update(actor: Actor, eventId: string, patch: UpdateEventInput): Promise<EventRecord>;
 	softDelete(actor: Actor, eventId: string): Promise<void>;
 	setPoints(actor: Actor, eventId: string, points: number | null): Promise<{ updated: number }>;
+	setAwards(actor: Actor, eventId: string, awards: EventAwardInput[]): Promise<{ updated: number }>;
 	addStaff(actor: Actor, eventId: string, memberId: string, role: "admin" | "scanner"): Promise<void>;
 	removeStaff(actor: Actor, eventId: string, memberId: string): Promise<void>;
 	transferOwnership(actor: Actor, eventId: string, toMemberId: string): Promise<void>;
@@ -343,6 +359,113 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 				}
 			}
 			await audit.record(actor, { action: "event:set_points", targetType: "event", targetId: eventId, category: "event" });
+			return { updated: attendees.length };
+		},
+
+		async setAwards(actor, eventId, awards) {
+			if (!can(actor, "event:points")) throw new Error("Not authorized to set event point awards.");
+			if (awards.length > 100) throw new Error("Set at most 100 point awards per event.");
+
+			const ids = awards.map((award) => award.pointTypeId);
+			if (new Set(ids).size !== ids.length) throw new Error("Point type IDs must be unique.");
+			for (const award of awards) {
+				if (!Number.isInteger(award.points) || award.points < -100 || award.points > 100) {
+					throw new Error("Award points must be an integer from -100 to 100.");
+				}
+			}
+
+			if (ids.length > 0) {
+				const types = await db
+					.select({ id: pointTypes.id, active: pointTypes.active })
+					.from(pointTypes)
+					.where(inArray(pointTypes.id, ids));
+				if (types.length !== ids.length || types.some((type: { active: boolean }) => !type.active)) {
+					throw new Error("Point types must exist and be active.");
+				}
+			}
+
+			const event = await loadEvent(db, eventId);
+			if (!event) throw new Error("Event not found.");
+
+			const activePointTypeIds = db
+				.select({ id: pointTypes.id })
+				.from(pointTypes)
+				.where(eq(pointTypes.active, true));
+			const configuredPointTypeIds = db
+				.select({ pointTypeId: eventPointAwards.pointTypeId })
+				.from(eventPointAwards)
+				.where(eq(eventPointAwards.eventId, eventId));
+			const retentionPoints = db
+				.select({ points: eventPointAwards.points })
+				.from(eventPointAwards)
+				.innerJoin(
+					pointTypes,
+					and(eq(pointTypes.id, eventPointAwards.pointTypeId), eq(pointTypes.key, "retention")),
+				)
+				.where(eq(eventPointAwards.eventId, eventId))
+				.limit(1);
+			const queries = [
+				db.delete(eventPointAwards).where(eq(eventPointAwards.eventId, eventId)),
+			];
+			if (awards.length > 0) {
+				queries.push(
+					db.insert(eventPointAwards).values(
+						awards.map((award) => ({
+							eventId,
+							pointTypeId: award.pointTypeId,
+							points: award.points,
+						})),
+					),
+				);
+			}
+			queries.push(
+				buildExistingAttendanceAwardUpsert(db, eventId),
+				db
+					.delete(retentionRecords)
+					.where(
+						and(
+							eq(retentionRecords.source, "event_attendance"),
+							eq(retentionRecords.eventId, eventId),
+							inArray(retentionRecords.pointTypeId, activePointTypeIds),
+							notInArray(retentionRecords.pointTypeId, configuredPointTypeIds),
+						),
+					),
+				db
+					.update(crsEvents)
+					.set({ points: sql<number | null>`(${retentionPoints})` })
+					.where(eq(crsEvents.id, eventId)),
+				db.insert(auditLogs).values(
+					auditInsertValues(actor, {
+						action: "event:set_awards",
+						targetType: "event",
+						targetId: eventId,
+						category: "event",
+					}),
+				),
+			);
+			await runAtomic(db, queries);
+
+			const attendees = await db
+				.selectDistinct({ memberId: crsAttendance.memberId })
+				.from(crsAttendance)
+				.where(eq(crsAttendance.eventId, eventId));
+			for (const attendee of attendees) {
+				try {
+					await notify(db, {
+						memberId: attendee.memberId,
+						kind: "points_awarded",
+						title: "Points updated",
+						body: `${event.title} point awards were updated.`,
+						href: `/portal/calendar/${eventId}`,
+					});
+				} catch (error) {
+					console.error("Failed to notify attendee about event point awards.", {
+						eventId,
+						memberId: attendee.memberId,
+						error,
+					});
+				}
+			}
 			return { updated: attendees.length };
 		},
 

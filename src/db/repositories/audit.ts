@@ -43,21 +43,25 @@ export type AuditDb = {
 	};
 };
 
+export function auditInsertValues(actor: Actor, input: AuditRecordInput): AuditInsert {
+	return {
+		id: createId("aud"),
+		actorMemberId: actor.memberId,
+		actorContext: actor.context ?? "session",
+		sharedTokenHash: actor.sharedTokenHash ?? null,
+		sharedTokenLabel: actor.sharedTokenLabel ?? null,
+		action: input.action,
+		targetType: input.targetType,
+		targetId: input.targetId,
+		detail: input.detail ?? null,
+		category: input.category,
+	};
+}
+
 export function createAuditRepository(db: Db): AuditRepository {
 	return {
 		async record(actor, input) {
-			await db.insert(auditLogs).values({
-				id: createId("aud"),
-				actorMemberId: actor.memberId,
-				actorContext: actor.context ?? "session",
-				sharedTokenHash: actor.sharedTokenHash ?? null,
-				sharedTokenLabel: actor.sharedTokenLabel ?? null,
-				action: input.action,
-				targetType: input.targetType,
-				targetId: input.targetId,
-				detail: input.detail ?? null,
-				category: input.category,
-			} satisfies AuditInsert);
+			await db.insert(auditLogs).values(auditInsertValues(actor, input));
 		},
 		async list(actor, options) {
 			if (!hasAnyAdminScope(actor)) {

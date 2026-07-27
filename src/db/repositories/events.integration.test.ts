@@ -1,4 +1,5 @@
 import { env } from "cloudflare:test";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as schema from "@/db/schema";
@@ -33,12 +34,14 @@ describe("events repository on D1", () => {
 			"audit_logs",
 			"retention_records",
 			"crs_attendance",
+			"event_point_awards",
 			"event_invites",
 			"event_staff",
 			"event_rsvps",
 			"event_type_rules",
 			"crs_events",
 			"terms",
+			"point_types",
 			"members",
 		]) {
 			await env.DB.prepare(`DELETE FROM ${table}`).run();
@@ -55,6 +58,19 @@ describe("events repository on D1", () => {
 		]) {
 			await env.DB.prepare("INSERT INTO members (id, email, name, full_name) VALUES (?, ?, ?, ?)")
 				.bind(id, email, name, name)
+				.run();
+		}
+		for (const [id, key, label, countsTowardRetention, active, position] of [
+			["pt_retention", "retention", "Retention", 1, 1, 0],
+			["pt_frontliner", "frontliner", "Frontliner", 0, 1, 1],
+			["pt_retired", "retired", "Retired", 0, 0, 2],
+		] as const) {
+			await env.DB.prepare(
+				`INSERT INTO point_types
+					(id, key, label, counts_toward_retention, active, position, updated_by)
+				 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+			)
+				.bind(id, key, label, countsTowardRetention, active, position, "mem_retention")
 				.run();
 		}
 		await env.DB.prepare(
@@ -188,6 +204,128 @@ describe("events repository on D1", () => {
 		await expect(repo.setPoints(eventsAdmin, event.id, null)).resolves.toEqual({ updated: 2 });
 		expect((await db.select().from(schema.retentionRecords)).map((row) => row.points)).toEqual([null, null]);
 		expect(await db.select().from(schema.notifications)).toHaveLength(1);
+	});
+
+	it("validates every setAwards value inside the repository", async () => {
+		const event = await makeApprovedEvent();
+		const { repo } = makeRepos();
+
+		for (const awards of [
+			[
+				{ pointTypeId: "pt_retention", points: 2 },
+				{ pointTypeId: "pt_retention", points: 3 },
+			],
+			[{ pointTypeId: "pt_retention", points: 2.5 }],
+			[{ pointTypeId: "pt_retention", points: 101 }],
+			[{ pointTypeId: "pt_missing", points: 2 }],
+			[{ pointTypeId: "pt_retired", points: 2 }],
+		]) {
+			await expect(repo.setAwards(eventsAdmin, event.id, awards)).rejects.toThrow();
+		}
+
+		const tooMany = Array.from({ length: 101 }, (_, index) => ({
+			pointTypeId: `pt_${index}`,
+			points: 1,
+		}));
+		await expect(repo.setAwards(eventsAdmin, event.id, tooMany)).rejects.toThrow("at most 100");
+		await expect(
+			repo.setAwards(retentionAdmin, event.id, [{ pointTypeId: "pt_retention", points: 2 }]),
+		).rejects.toThrow("Not authorized");
+	});
+
+	it("reconciles attendance awards while preserving their scan provenance", async () => {
+		const event = await makeApprovedEvent();
+		const { repo, db } = makeRepos();
+
+		await repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_retention", points: 2 }]);
+		vi.setSystemTime(new Date("2026-07-10T10:05:00.000Z"));
+		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
+
+		const [original] = await db.select().from(schema.retentionRecords);
+		const [attendance] = await db.select().from(schema.crsAttendance);
+		const originalRecordedAt = original.recordedAt;
+
+		vi.setSystemTime(new Date("2026-07-10T11:00:00.000Z"));
+		await repo.setAwards(eventsAdmin, event.id, [
+			{ pointTypeId: "pt_retention", points: 2 },
+			{ pointTypeId: "pt_frontliner", points: 3 },
+		]);
+
+		const rowsAfterAdd = await db
+			.select()
+			.from(schema.retentionRecords)
+			.orderBy(schema.retentionRecords.pointTypeId);
+		expect(rowsAfterAdd.map((row) => [row.pointTypeId, row.points])).toEqual([
+			["pt_frontliner", 3],
+			["pt_retention", 2],
+		]);
+		const retentionAfterAdd = rowsAfterAdd.find((row) => row.pointTypeId === "pt_retention")!;
+		const frontlinerAfterAdd = rowsAfterAdd.find((row) => row.pointTypeId === "pt_frontliner")!;
+		expect(retentionAfterAdd.recordedAt).toEqual(originalRecordedAt);
+		expect(frontlinerAfterAdd.recordedBy).toBe(owner.memberId);
+		expect(frontlinerAfterAdd.recordedAt).toEqual(attendance.scannedAt);
+
+		await repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_retention", points: 4 }]);
+		const rowsAfterRemove = await db
+			.select()
+			.from(schema.retentionRecords)
+			.orderBy(schema.retentionRecords.pointTypeId);
+		expect(rowsAfterRemove.map((row) => [row.pointTypeId, row.points])).toEqual([
+			["pt_retention", 4],
+		]);
+	});
+
+	it("rolls back award reconciliation when its audit insert fails", async () => {
+		const event = await makeApprovedEvent();
+		const { repo, db } = makeRepos();
+		await env.DB.prepare(`
+			CREATE TRIGGER fail_set_awards_audit
+			BEFORE INSERT ON audit_logs
+			WHEN NEW.action = 'event:set_awards'
+			BEGIN
+				SELECT RAISE(ABORT, 'audit unavailable');
+			END
+		`).run();
+
+		try {
+			await expect(
+				repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_retention", points: 2 }]),
+			).rejects.toThrow();
+			expect(await db.select().from(schema.eventPointAwards)).toHaveLength(0);
+			expect((await db.select().from(schema.crsEvents))[0].points).toBeNull();
+		} finally {
+			await env.DB.prepare("DROP TRIGGER fail_set_awards_audit").run();
+		}
+	});
+
+	it("keeps point awards committed when attendee notifications fail", async () => {
+		const event = await makeApprovedEvent();
+		const { repo, db } = makeRepos();
+		vi.setSystemTime(new Date("2026-07-10T10:05:00.000Z"));
+		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
+		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_b", termId: "term_1" });
+		await env.DB.prepare(`
+			CREATE TRIGGER fail_points_awarded_notification
+			BEFORE INSERT ON notifications
+			WHEN NEW.kind = 'points_awarded'
+			BEGIN
+				SELECT RAISE(ABORT, 'notifications unavailable');
+			END
+		`).run();
+		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+		try {
+			await expect(
+				repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_retention", points: 5 }]),
+			).resolves.toEqual({ updated: 2 });
+			expect(
+				await db.select().from(schema.auditLogs).where(eq(schema.auditLogs.action, "event:set_awards")),
+			).toHaveLength(1);
+			expect(errorSpy).toHaveBeenCalledTimes(2);
+		} finally {
+			await env.DB.prepare("DROP TRIGGER fail_points_awarded_notification").run();
+			errorSpy.mockRestore();
+		}
 	});
 
 	it("invites members idempotently without changing event visibility", async () => {
