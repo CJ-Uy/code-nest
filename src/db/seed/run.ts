@@ -12,6 +12,7 @@ import {
 	seedForumPosts,
 	seedLibraryItems,
 	seedLinkDailyStats,
+	seedLinkHourlyStats,
 	seedMemberRoles,
 	seedMembers,
 	seedNavPins,
@@ -65,6 +66,7 @@ async function seedLocal() {
 	await insertChunks(db, schema.reservedSlugs, seedReservedSlugs);
 	await insertChunks(db, schema.shortLinks, seedShortLinks);
 	await insertChunks(db, schema.linkDailyStats, seedLinkDailyStats);
+	await insertChunks(db, schema.linkHourlyStats, seedLinkHourlyStats);
 	await insertChunks(db, schema.crsEvents, seedEvents);
 	await insertChunks(db, schema.retentionRecords, seedRetentionRecords);
 	await insertChunks(db, schema.crsAttendance, seedAttendance);

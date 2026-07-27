@@ -2,7 +2,7 @@ import { desc, eq, sql } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type { InferSelectModel } from "drizzle-orm";
 import * as schema from "@/db/schema";
-import { linkDailyStats, members, reservedSlugs, shortLinks } from "@/db/schema";
+import { linkDailyStats, linkHourlyStats, members, reservedSlugs, shortLinks } from "@/db/schema";
 import { createId } from "@/lib/ids";
 import { isValidDestinationUrl, isValidSlugFormat, normalizeSlug, RESERVED_SLUG_DEFAULTS } from "@/lib/links";
 import type { Actor } from "@/server/auth/permissions";
@@ -53,6 +53,7 @@ export type ResolvedLink = {
 export type LinkStats = {
 	link: ShortLink;
 	series: Array<{ date: string; count: number }>;
+	hourly: Array<{ hour: string; count: number }>;
 	referrers: Array<{ bucket: string; count: number }>;
 	devices: Array<{ bucket: string; count: number }>;
 };
@@ -67,7 +68,7 @@ export type LinksRepository = {
 	remove(actor: Actor, id: string): Promise<void>;
 	getStats(actor: Actor, id: string): Promise<LinkStats>;
 	resolveForRedirect(slug: string): Promise<ResolvedLink | null>;
-	recordClick(linkId: string, input: { date: string; referrerBucket: string; deviceBucket: string }): Promise<void>;
+	recordClick(linkId: string, input: { date: string; hour?: string; referrerBucket: string; deviceBucket: string }): Promise<void>;
 };
 
 export type LinkDb = DrizzleD1Database<typeof schema>;
@@ -273,7 +274,9 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository): Links
 			void actor;
 			const link = await loadReadable(db, id);
 			const rows = await db.select().from(linkDailyStats).where(eq(linkDailyStats.linkId, link.id)).limit(2000);
+			const hourlyRows = await db.select().from(linkHourlyStats).where(eq(linkHourlyStats.linkId, link.id)).limit(5000);
 			const byDate = new Map<string, number>();
+			const byHour = new Map<string, number>();
 			const byReferrer = new Map<string, number>();
 			const byDevice = new Map<string, number>();
 			for (const row of rows) {
@@ -281,9 +284,13 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository): Links
 				byReferrer.set(row.referrerBucket, (byReferrer.get(row.referrerBucket) ?? 0) + row.count);
 				byDevice.set(row.deviceBucket, (byDevice.get(row.deviceBucket) ?? 0) + row.count);
 			}
+			for (const row of hourlyRows) {
+				byHour.set(row.hour, (byHour.get(row.hour) ?? 0) + row.count);
+			}
 			return {
 				link,
 				series: sortedBuckets(byDate).map(({ key, count }) => ({ date: key, count })),
+				hourly: sortedBuckets(byHour).map(({ key, count }) => ({ hour: key, count })),
 				referrers: sortedBuckets(byReferrer).map(({ key, count }) => ({ bucket: key, count })),
 				devices: sortedBuckets(byDevice).map(({ key, count }) => ({ bucket: key, count })),
 			};
@@ -307,12 +314,20 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository): Links
 		},
 
 		async recordClick(linkId, input) {
+			const hour = input.hour ?? `${input.date}T00:00`;
 			await db
 				.insert(linkDailyStats)
 				.values({ linkId, date: input.date, referrerBucket: input.referrerBucket, deviceBucket: input.deviceBucket, count: 1 })
 				.onConflictDoUpdate({
 					target: [linkDailyStats.linkId, linkDailyStats.date, linkDailyStats.referrerBucket, linkDailyStats.deviceBucket],
 					set: { count: sql`${linkDailyStats.count} + 1` },
+				});
+			await db
+				.insert(linkHourlyStats)
+				.values({ linkId, hour, referrerBucket: input.referrerBucket, deviceBucket: input.deviceBucket, count: 1 })
+				.onConflictDoUpdate({
+					target: [linkHourlyStats.linkId, linkHourlyStats.hour, linkHourlyStats.referrerBucket, linkHourlyStats.deviceBucket],
+					set: { count: sql`${linkHourlyStats.count} + 1` },
 				});
 			await db.update(shortLinks).set({ clickCount: sql`${shortLinks.clickCount} + 1` }).where(eq(shortLinks.id, linkId));
 		},

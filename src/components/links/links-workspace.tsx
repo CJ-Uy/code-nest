@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, MouseEvent, useMemo, useState } from "react";
+import { FormEvent, MouseEvent, useMemo, useState, useSyncExternalStore } from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { ArrowDown, ArrowUp, CalendarDays, ChevronsUpDown, Copy, ExternalLink, ImageUp, Info, Plus, QrCode, RefreshCw, Save, Search, SlidersHorizontal, Trash2, X } from "lucide-react";
 import type { LinkListItem, LinkStats, QrStyle } from "@/db/repositories/links";
@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { ClicksOverTime, DonutChart, formatBucket } from "./charts";
 import { LinkQrCustomizer } from "./link-qr-customizer";
-import { normalizeDateRange, presetDateRange, summarizeTrend, trendSeries, type DateRangePreset, type TrendGranularity } from "./stats-utils";
+import { hourlyTrendSeries, normalizeDateRange, presetDateRange, summarizeTrend, trendSeries, type DateRangePreset, type TrendGranularity } from "./stats-utils";
 import { shortLinkUrl } from "./urls";
 
 type LinkView = Omit<LinkListItem, "createdAt" | "updatedAt"> & { createdAt: Date | string; updatedAt: Date | string };
@@ -29,9 +29,21 @@ type LinksWorkspaceProps = {
 	canModerate: boolean;
 };
 
+function subscribeOrigin() {
+	return () => {};
+}
+
+function getClientOrigin() {
+	return window.location.origin;
+}
+
+function getServerOrigin() {
+	return "";
+}
+
 export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: LinksWorkspaceProps) {
 	const [links, setLinks] = useState(initialLinks);
-	const [origin] = useState(() => (typeof window === "undefined" ? "" : window.location.origin));
+	const origin = useSyncExternalStore(subscribeOrigin, getClientOrigin, getServerOrigin);
 	const [status, setStatus] = useState("");
 	const [view, setView] = useState<ViewMode>("all");
 	const [search, setSearch] = useState("");
@@ -468,6 +480,7 @@ const RANGE_TABS: Array<{ id: DateRangePreset; label: string }> = [
 ];
 
 const GRANULARITY_TABS: Array<{ id: TrendGranularity; label: string }> = [
+	{ id: "hour", label: "Hour" },
 	{ id: "day", label: "Day" },
 	{ id: "week", label: "Week" },
 	{ id: "month", label: "Month" },
@@ -493,8 +506,16 @@ function StatsDetails({ stats }: { stats: StatsView }) {
 			? normalizeDateRange(customStart || allRange.start, customEnd || allRange.end)
 			: presetDateRange(rangeMode, nowIso, stats.series)
 	), [allRange.end, allRange.start, customEnd, customStart, nowIso, rangeMode, stats.series]);
-	const chartData = useMemo(() => trendSeries(stats.series, selectedRange, granularity), [granularity, selectedRange, stats.series]);
+	const chartData = useMemo(() => (
+		granularity === "hour"
+			? hourlyTrendSeries(stats.hourly ?? [], selectedRange)
+			: trendSeries(stats.series, selectedRange, granularity)
+	), [granularity, selectedRange, stats.hourly, stats.series]);
 	const summary = useMemo(() => summarizeTrend(stats.series, selectedRange), [selectedRange, stats.series]);
+	const chartTotal = chartData.reduce((sum, row) => sum + row.count, 0);
+	const chartAverage = chartTotal / Math.max(1, chartData.length);
+	const chartActive = chartData.filter((row) => row.count > 0).length;
+	const chartPeak = chartData.reduce((best, point) => (point.count > best.count ? point : best), { date: selectedRange.start, count: 0 });
 	const total = stats.series.reduce((sum, row) => sum + row.count, 0);
 	const topDevice = [...stats.devices].sort((a, b) => b.count - a.count)[0]?.bucket;
 	const sourceData = stats.referrers.map((row) => ({ ...row, bucket: formatBucket(row.bucket) }));
@@ -517,7 +538,7 @@ function StatsDetails({ stats }: { stats: StatsView }) {
 							<h2 className="font-semibold">Click trends</h2>
 						</div>
 						<p className="mt-1 text-sm text-muted-foreground">
-							{formatRange(selectedRange.start, selectedRange.end)} with {chartData.length} {granularity === "day" ? "points" : `${granularity} buckets`}.
+							{formatRange(selectedRange.start, selectedRange.end)} grouped by {granularity}.
 						</p>
 					</div>
 					<TabsList className="grid w-full grid-cols-2 sm:flex sm:w-auto sm:flex-wrap">
@@ -529,45 +550,60 @@ function StatsDetails({ stats }: { stats: StatsView }) {
 					</TabsList>
 				</div>
 
-				<div className="mt-4 grid gap-3 rounded-lg border bg-background p-3 lg:grid-cols-[minmax(0,1fr)_auto]">
-					<div className="grid gap-3 sm:grid-cols-2">
-						<label className="grid gap-1 text-sm font-medium">
-							Start date
-							<Input type="date" value={customStart} onChange={(event) => { setRangeMode("custom"); setCustomStart(event.target.value); }} />
-						</label>
-						<label className="grid gap-1 text-sm font-medium">
-							End date
-							<Input type="date" value={customEnd} onChange={(event) => { setRangeMode("custom"); setCustomEnd(event.target.value); }} />
-						</label>
-					</div>
-					<div className="grid gap-3 sm:grid-cols-[auto_auto] lg:grid-cols-1">
-						<fieldset className="grid gap-1">
-							<legend className="flex items-center gap-1 text-sm font-medium"><SlidersHorizontal className="size-4 text-primary" />Group by</legend>
-							<TabsList className="w-full">
-								{GRANULARITY_TABS.map((item) => (
-									<TabButton key={item.id} type="button" active={granularity === item.id} onClick={() => setGranularity(item.id)} className="flex-1 px-2 text-xs">
-										{item.label}
-									</TabButton>
-								))}
-							</TabsList>
-						</fieldset>
-						<div className="flex flex-wrap items-end gap-2">
-							<SettingToggle checked={showAverage} label="Average line" onChange={setShowAverage} />
-							<SettingToggle checked={cumulative} label="Cumulative" onChange={setCumulative} />
-						</div>
-					</div>
-				</div>
-
 				<div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
 					<Stat label="Range clicks" value={formatWhole(summary.total)} />
-					<Stat label="Average per day" value={formatAverage(summary.averagePerDay)} />
-					<Stat label="Active days" value={`${summary.activeDays}/${chartDaysLabel(selectedRange)}`} />
-					<Stat label="Best day" value={summary.peak.count ? `${summary.peak.count} on ${formatShortDate(summary.peak.date)}` : "None"} />
+					<Stat label={granularity === "hour" ? "Average per hour" : "Average per day"} value={formatAverage(granularity === "hour" ? chartAverage : summary.averagePerDay)} />
+					<Stat label={granularity === "hour" ? "Active hours" : "Active days"} value={granularity === "hour" ? `${chartActive}/${Math.max(1, chartData.length)}` : `${summary.activeDays}/${chartDaysLabel(selectedRange)}`} />
+					<Stat label={granularity === "hour" ? "Best hour" : "Best day"} value={chartPeak.count ? `${chartPeak.count} on ${formatShortPoint(chartPeak.date)}` : "None"} />
 					<Stat label="Previous period" value={formatChange(summary.change, summary.changePct)} />
 				</div>
 
+				<details className="mt-4 rounded-lg border bg-background p-3">
+					<summary className="flex cursor-pointer items-center justify-between gap-3 text-sm font-semibold text-foreground">
+						<span className="inline-flex items-center gap-2"><SlidersHorizontal className="size-4 text-primary" />Advanced settings</span>
+						<span className="text-xs font-normal text-muted-foreground">{formatRange(selectedRange.start, selectedRange.end)} by {granularity}</span>
+					</summary>
+					<div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+						<div className="grid gap-3 sm:grid-cols-2">
+							<label className="grid gap-1 text-sm font-medium">
+								Start date
+								<Input type="date" value={customStart} onChange={(event) => { setRangeMode("custom"); setCustomStart(event.target.value); }} />
+							</label>
+							<label className="grid gap-1 text-sm font-medium">
+								End date
+								<Input type="date" value={customEnd} onChange={(event) => { setRangeMode("custom"); setCustomEnd(event.target.value); }} />
+							</label>
+						</div>
+						<div className="grid gap-3 sm:grid-cols-[auto_auto] lg:grid-cols-1">
+							<fieldset className="grid gap-1">
+								<legend className="text-sm font-medium">Group by</legend>
+								<TabsList className="grid w-full grid-cols-2 sm:flex">
+									{GRANULARITY_TABS.map((item) => (
+										<TabButton
+											key={item.id}
+											type="button"
+											active={granularity === item.id}
+											onClick={() => setGranularity(item.id)}
+											className={cn(
+												"flex-1 px-2 text-xs",
+												granularity === item.id && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+											)}
+										>
+											{item.label}
+										</TabButton>
+									))}
+								</TabsList>
+							</fieldset>
+							<div className="flex flex-wrap items-end gap-2">
+								<SettingToggle checked={showAverage} label="Average line" onChange={setShowAverage} />
+								<SettingToggle checked={cumulative} label="Cumulative" onChange={setCumulative} />
+							</div>
+						</div>
+					</div>
+				</details>
+
 				<div className="mt-4">
-					<ClicksOverTime data={chartData} average={showAverage && !cumulative ? summary.averagePerDay : undefined} cumulative={cumulative} verbose />
+					<ClicksOverTime data={chartData} average={showAverage && !cumulative ? (granularity === "hour" ? chartAverage : summary.averagePerDay) : undefined} cumulative={cumulative} verbose />
 				</div>
 			</div>
 
@@ -621,6 +657,13 @@ function formatAverage(value: number): string {
 function formatShortDate(value: string): string {
 	const [year, month, day] = value.split("-").map(Number);
 	return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
+function formatShortPoint(value: string): string {
+	if (value.includes("T")) {
+		return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", hour: "numeric", timeZone: "UTC" }).format(new Date(`${value}:00.000Z`));
+	}
+	return formatShortDate(value);
 }
 
 function formatRange(start: string, end: string): string {

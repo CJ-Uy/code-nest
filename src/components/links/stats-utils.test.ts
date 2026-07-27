@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dailyTrendSeries, normalizeDateRange, presetDateRange, summarizeTrend, trendSeries } from "./stats-utils";
+import { dailyTrendSeries, hourlyTrendSeries, normalizeDateRange, presetDateRange, summarizeTrend, trendSeries } from "./stats-utils";
 
 const series = [
 	{ date: "2026-06-17", count: 3 },
@@ -40,5 +40,20 @@ describe("link stats utilities", () => {
 			{ date: "2026-06-22", count: 4 },
 		]);
 		expect(trendSeries(series, { start: "2026-06-01", end: "2026-06-30" }, "month")).toEqual([{ date: "2026-06", count: 14 }]);
+	});
+
+	it("fills hourly buckets for short ranges", () => {
+		const hourly = hourlyTrendSeries(
+			[
+				{ hour: "2026-06-24T09:00", count: 2 },
+				{ hour: "2026-06-24T11:00", count: 5 },
+			],
+			{ start: "2026-06-24", end: "2026-06-24" },
+		);
+
+		expect(hourly).toHaveLength(24);
+		expect(hourly[9]).toEqual({ date: "2026-06-24T09:00", count: 2 });
+		expect(hourly[10]).toEqual({ date: "2026-06-24T10:00", count: 0 });
+		expect(hourly[11]).toEqual({ date: "2026-06-24T11:00", count: 5 });
 	});
 });

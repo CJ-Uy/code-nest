@@ -6,6 +6,10 @@ function maxCount(rows: Array<{ count: number }>): number {
 }
 
 function formatDateLabel(value: string): string {
+	if (/^\d{4}-\d{2}-\d{2}T\d{2}:00$/.test(value)) {
+		const date = new Date(`${value}:00.000Z`);
+		return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", hour: "numeric", timeZone: "UTC" }).format(date);
+	}
 	if (/^\d{4}-\d{2}$/.test(value)) {
 		const [year, month] = value.split("-").map(Number);
 		return new Intl.DateTimeFormat("en", { month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(year, month - 1, 1)));

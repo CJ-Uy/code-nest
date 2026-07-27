@@ -19,6 +19,7 @@ function repo() {
 describe("links repository on D1", () => {
 	beforeEach(async () => {
 		await env.DB.batch([
+			env.DB.prepare("DELETE FROM link_hourly_stats"),
 			env.DB.prepare("DELETE FROM link_daily_stats"),
 			env.DB.prepare("DELETE FROM short_links"),
 			env.DB.prepare("DELETE FROM reserved_slugs"),
@@ -99,7 +100,7 @@ describe("links repository on D1", () => {
 	it("lets non-owners read link details and stats", async () => {
 		const repository = repo();
 		const link = await repository.create(owner, { slug: "welcome", destinationUrl: "https://e.com", title: "x" });
-		await repository.recordClick(link.id, { date: "2026-06-19", referrerBucket: "direct", deviceBucket: "desktop" });
+		await repository.recordClick(link.id, { date: "2026-06-19", hour: "2026-06-19T10:00", referrerBucket: "direct", deviceBucket: "desktop" });
 
 		await expect(repository.getById(other, link.id)).resolves.toMatchObject({ id: link.id });
 		await expect(repository.getStats(other, link.id)).resolves.toMatchObject({ link: { id: link.id } });
@@ -112,10 +113,11 @@ describe("links repository on D1", () => {
 		expect(resolved?.destinationUrl).toBe("https://e.com/dest");
 		expect(await repository.resolveForRedirect("missing")).toBeNull();
 
-		await repository.recordClick(link.id, { date: "2026-06-19", referrerBucket: "direct", deviceBucket: "desktop" });
-		await repository.recordClick(link.id, { date: "2026-06-19", referrerBucket: "direct", deviceBucket: "desktop" });
+		await repository.recordClick(link.id, { date: "2026-06-19", hour: "2026-06-19T10:00", referrerBucket: "direct", deviceBucket: "desktop" });
+		await repository.recordClick(link.id, { date: "2026-06-19", hour: "2026-06-19T10:00", referrerBucket: "direct", deviceBucket: "desktop" });
 		const stats = await repository.getStats(owner, link.id);
 		expect(stats.series.find((d) => d.date === "2026-06-19")?.count).toBe(2);
+		expect(stats.hourly.find((d) => d.hour === "2026-06-19T10:00")?.count).toBe(2);
 		const [row] = await drizzle(env.DB, { schema }).select().from(schema.shortLinks);
 		expect(row.clickCount).toBe(2);
 	});

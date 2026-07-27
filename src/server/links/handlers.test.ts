@@ -14,7 +14,7 @@ function depsWith(overrides: Record<string, unknown>) {
 		create: vi.fn(async () => ({ id: "lnk_1", slug: "welcome" })),
 		update: vi.fn(async () => ({ id: "lnk_1", slug: "welcome", title: "Updated" })),
 		remove: vi.fn(async () => {}),
-		getStats: vi.fn(async () => ({ link: { id: "lnk_1" }, series: [], referrers: [], devices: [] })),
+		getStats: vi.fn(async () => ({ link: { id: "lnk_1" }, series: [], hourly: [], referrers: [], devices: [] })),
 		...overrides,
 	};
 	return {

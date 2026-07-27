@@ -34,6 +34,7 @@ describe("buildRedirectResponse", () => {
 		expect(res.headers.get("location")).toBe("https://example.com/dest");
 		expect(d.scheduleBackground).toHaveBeenCalledOnce();
 		expect(d.recordClick).toHaveBeenCalledOnce();
+		expect(d.recordClick).toHaveBeenCalledWith("lnk_1", expect.objectContaining({ hour: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:00$/) }));
 	});
 
 	it("records a QR scan (?s=qr) as its own bucket, not a referrer", async () => {

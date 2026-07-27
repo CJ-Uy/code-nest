@@ -6,6 +6,7 @@ import {
 	eventForumPosts,
 	libraryItems,
 	linkDailyStats,
+	linkHourlyStats,
 	members,
 	memberRoles,
 	navPins,
@@ -132,6 +133,13 @@ export const seedLinkDailyStats: InferInsertModel<typeof linkDailyStats>[] = [
 	{ linkId: "lnk_demo", date: "2026-06-17", referrerBucket: "direct", deviceBucket: "desktop", count: 3 },
 	{ linkId: "lnk_demo", date: "2026-06-18", referrerBucket: "www.facebook.com", deviceBucket: "mobile", count: 4 },
 	{ linkId: "lnk_demo", date: "2026-06-18", referrerBucket: "direct", deviceBucket: "desktop", count: 2 },
+];
+
+export const seedLinkHourlyStats: InferInsertModel<typeof linkHourlyStats>[] = [
+	{ linkId: "lnk_demo", hour: "2026-06-17T09:00", referrerBucket: "direct", deviceBucket: "desktop", count: 1 },
+	{ linkId: "lnk_demo", hour: "2026-06-17T10:00", referrerBucket: "direct", deviceBucket: "desktop", count: 2 },
+	{ linkId: "lnk_demo", hour: "2026-06-18T14:00", referrerBucket: "www.facebook.com", deviceBucket: "mobile", count: 4 },
+	{ linkId: "lnk_demo", hour: "2026-06-18T18:00", referrerBucket: "direct", deviceBucket: "desktop", count: 2 },
 ];
 
 export const seedEvents: InferInsertModel<typeof crsEvents>[] = [

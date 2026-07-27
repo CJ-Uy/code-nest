@@ -168,6 +168,23 @@ export const linkDailyStats = sqliteTable(
 	],
 );
 
+export const linkHourlyStats = sqliteTable(
+	"link_hourly_stats",
+	{
+		linkId: text("link_id")
+			.notNull()
+			.references(() => shortLinks.id, { onDelete: "cascade" }),
+		hour: text("hour").notNull(),
+		referrerBucket: text("referrer_bucket").notNull(),
+		deviceBucket: text("device_bucket").notNull(),
+		count: integer("count").notNull().default(0),
+	},
+	(table) => [
+		primaryKey({ columns: [table.linkId, table.hour, table.referrerBucket, table.deviceBucket] }),
+		index("link_hourly_stats_link_hour_idx").on(table.linkId, table.hour),
+	],
+);
+
 export const crsEvents = sqliteTable(
 	"crs_events",
 	{
