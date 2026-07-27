@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import { createId } from "@/lib/ids";
-import { crsAttendance, crsEvents, eventRsvps, members, retentionRecords, terms } from "@/db/schema";
+import { crsAttendance, crsEvents, eventRsvps, members, pointTypes, retentionRecords, terms } from "@/db/schema";
 import type { RetentionRecordSource } from "@/db/schema";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
@@ -34,14 +34,6 @@ export type EventRosterRow = {
 	scannedAt: Date | null;
 };
 
-export type RecordEventAttendanceInput = {
-	memberId: string;
-	termId: string;
-	eventId: string;
-	points: number | null;
-	reason: string;
-};
-
 export type ListForMemberInput = { memberId: string; termId: string; limit?: number; offset?: number };
 export type MemberTermSummaryInput = { memberId: string; termId: string };
 export type RetentionStatus = "retained" | "on_track" | "probation";
@@ -68,7 +60,6 @@ export type MyHistorySummary = {
 export type TermOption = { id: string; name: string; isCurrent: boolean };
 
 export type RetentionRepository = {
-	recordEventAttendance(actor: Actor, input: RecordEventAttendanceInput): Promise<RetentionRecord>;
 	listForMember(actor: Actor, input: ListForMemberInput): Promise<RetentionRecord[]>;
 	getMemberTermSummary(actor: Actor, input: MemberTermSummaryInput): Promise<RetentionSummary>;
 	leaderboard(actor: Actor, input: LeaderboardInput): Promise<LeaderboardRow[]>;
@@ -119,33 +110,6 @@ const reportBaseColumns = {
 
 export function createRetentionRepository(db: Db, audit: AuditRepository): RetentionRepository {
 	return {
-		async recordEventAttendance(actor, input) {
-			if (!can(actor, "points:assign")) {
-				throw new Error("Not authorized to record retention points.");
-			}
-			const [record] = await db
-				.insert(retentionRecords)
-				.values({
-					id: createId("ret"),
-					memberId: input.memberId,
-					termId: input.termId,
-					eventId: input.eventId,
-					points: input.points,
-					reason: input.reason,
-					source: "event_attendance",
-					recordedBy: actor.memberId,
-				})
-				.returning();
-			await audit.record(actor, {
-				action: "retention:record_attendance",
-				targetType: "member",
-				targetId: input.memberId,
-				category: "retention",
-				detail: input.eventId ? `event=${input.eventId}` : null,
-			});
-			return record;
-		},
-
 		async listForMember(actor, input) {
 			if (actor.memberId !== input.memberId && !can(actor, "retention:record")) {
 				throw new Error("Not authorized to read these retention records.");
@@ -236,6 +200,14 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 			if (!term) {
 				throw new Error("Term not found.");
 			}
+			const [pointType] = await db
+				.select({ id: pointTypes.id })
+				.from(pointTypes)
+				.where(and(eq(pointTypes.id, input.pointTypeId), eq(pointTypes.active, true)))
+				.limit(1);
+			if (!pointType) {
+				throw new Error("Point type is not active.");
+			}
 
 			const recordedAt = new Date();
 			const rows = input.memberIds.map((memberId) => ({
@@ -243,6 +215,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				memberId,
 				termId: input.termId,
 				eventId: input.eventId,
+				pointTypeId: input.pointTypeId,
 				points: input.points,
 				reason: input.reason,
 				source: "manual" as const,

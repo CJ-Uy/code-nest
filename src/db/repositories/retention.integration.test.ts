@@ -17,6 +17,31 @@ function makeRepo() {
 	return { db, repo: createRetentionRepository(db, createAuditRepository(db)) };
 }
 
+async function insertRecord(input: {
+	id: string;
+	memberId?: string;
+	termId?: string;
+	pointTypeId?: string;
+	points: number | null;
+	reason?: string;
+}) {
+	await env.DB.prepare(`
+		INSERT INTO retention_records
+			(id, member_id, term_id, point_type_id, points, reason, source, recorded_by, recorded_at)
+		VALUES (?, ?, ?, ?, ?, ?, 'manual', 'mem_admin', ?)
+	`)
+		.bind(
+			input.id,
+			input.memberId ?? "mem_a",
+			input.termId ?? "term_1",
+			input.pointTypeId ?? "pt_retention",
+			input.points,
+			input.reason ?? input.id,
+			TERM_START.getTime() + 1000,
+		)
+		.run();
+}
+
 describe("retention repository on D1", () => {
 	beforeEach(async () => {
 		await env.DB.prepare("DELETE FROM audit_logs").run();
@@ -25,6 +50,7 @@ describe("retention repository on D1", () => {
 		await env.DB.prepare("DELETE FROM event_rsvps").run();
 		await env.DB.prepare("DELETE FROM crs_events").run();
 		await env.DB.prepare("DELETE FROM terms").run();
+		await env.DB.prepare("DELETE FROM point_types").run();
 		await env.DB.prepare("DELETE FROM members").run();
 		await env.DB.prepare("INSERT INTO members (id, email, name, full_name) VALUES (?, ?, ?, ?)")
 			.bind("mem_a", "a@example.com", "A", "Member A")
@@ -40,49 +66,19 @@ describe("retention repository on D1", () => {
 		)
 			.bind("term_1", "Term 1", 20, 10, TERM_START.getTime(), TERM_END.getTime())
 			.run();
-	});
-
-	it("records an event-attendance retention row and audits it", async () => {
-		const { db, repo } = makeRepo();
-		const created = await repo.recordEventAttendance(retentionAdmin, {
-			memberId: "mem_a",
-			termId: "term_1",
-			eventId: null as unknown as string,
-			points: 5,
-			reason: "Attended Practice Night",
-		});
-		expect(created.source).toBe("event_attendance");
-		expect(created.points).toBe(5);
-		const [audit] = await db.select().from(schema.auditLogs);
-		expect(audit).toMatchObject({
-			action: "retention:record_attendance",
-			category: "retention",
-			targetId: "mem_a",
-		});
-	});
-
-	it("denies a plain member from recording attendance", async () => {
-		const { repo } = makeRepo();
-		await expect(
-			repo.recordEventAttendance(plainMember, {
-				memberId: "mem_a",
-				termId: "term_1",
-				eventId: null as unknown as string,
-				points: 5,
-				reason: "x",
-			}),
-		).rejects.toThrow("Not authorized");
+		await env.DB.prepare(`
+			INSERT INTO point_types
+				(id, key, label, counts_toward_retention, active, position, updated_by)
+			VALUES
+				('pt_retention', 'retention', 'Retention', 1, 1, 0, 'mem_admin'),
+				('pt_frontliner', 'frontliner', 'Frontliner', 0, 1, 1, 'mem_admin'),
+				('pt_retired', 'retired', 'Retired', 0, 0, 2, 'mem_admin')
+		`).run();
 	});
 
 	it("lets a member read their own term records but not another member's", async () => {
 		const { repo } = makeRepo();
-		await repo.recordEventAttendance(retentionAdmin, {
-			memberId: "mem_a",
-			termId: "term_1",
-			eventId: null as unknown as string,
-			points: 5,
-			reason: "x",
-		});
+		await insertRecord({ id: "ret_read", points: 5, reason: "x" });
 		const own = await repo.listForMember(plainMember, { memberId: "mem_a", termId: "term_1" });
 		expect(own).toHaveLength(1);
 		await expect(repo.listForMember(plainMember, { memberId: "mem_b", termId: "term_1" })).rejects.toThrow(
@@ -92,20 +88,8 @@ describe("retention repository on D1", () => {
 
 	it("derives a per-term summary with status from the term thresholds", async () => {
 		const { repo } = makeRepo();
-		await repo.recordEventAttendance(retentionAdmin, {
-			memberId: "mem_a",
-			termId: "term_1",
-			eventId: null as unknown as string,
-			points: 12,
-			reason: "x",
-		});
-		await repo.recordEventAttendance(retentionAdmin, {
-			memberId: "mem_a",
-			termId: "term_1",
-			eventId: null as unknown as string,
-			points: 12,
-			reason: "y",
-		});
+		await insertRecord({ id: "ret_summary_a", points: 12, reason: "x" });
+		await insertRecord({ id: "ret_summary_b", points: 12, reason: "y" });
 		const summary = await repo.getMemberTermSummary(plainMember, { memberId: "mem_a", termId: "term_1" });
 		expect(summary.totalPoints).toBe(24);
 		expect(summary.recordCount).toBe(2);
@@ -114,20 +98,8 @@ describe("retention repository on D1", () => {
 
 	it("ranks members by total points for the term leaderboard", async () => {
 		const { repo } = makeRepo();
-		await repo.recordEventAttendance(retentionAdmin, {
-			memberId: "mem_a",
-			termId: "term_1",
-			eventId: null as unknown as string,
-			points: 5,
-			reason: "x",
-		});
-		await repo.recordEventAttendance(retentionAdmin, {
-			memberId: "mem_b",
-			termId: "term_1",
-			eventId: null as unknown as string,
-			points: 15,
-			reason: "y",
-		});
+		await insertRecord({ id: "ret_board_a", memberId: "mem_a", points: 5, reason: "x" });
+		await insertRecord({ id: "ret_board_b", memberId: "mem_b", points: 15, reason: "y" });
 		const board = await repo.leaderboard(retentionAdmin, { termId: "term_1" });
 		expect(board.map((row) => row.memberId)).toEqual(["mem_b", "mem_a"]);
 		expect(board[0].totalPoints).toBe(15);
@@ -141,14 +113,25 @@ describe("retention repository on D1", () => {
 			.bind("evt_report", "Practice Night", "official", "approved", 5, "SOM 111", 1000, "Practice", "mem_admin", "secret")
 			.run();
 		await env.DB.prepare(
-			"INSERT INTO retention_records (id, member_id, term_id, event_id, points, reason, source, recorded_by, recorded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			"INSERT INTO retention_records (id, member_id, term_id, event_id, point_type_id, points, reason, source, recorded_by, recorded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		)
-			.bind("ret_report_1", "mem_a", "term_1", "evt_report", 5, "Attended Practice Night", "event_attendance", "mem_admin", 2000)
+			.bind(
+				"ret_report_1",
+				"mem_a",
+				"term_1",
+				"evt_report",
+				"pt_retention",
+				5,
+				"Attended Practice Night",
+				"event_attendance",
+				"mem_admin",
+				2000,
+			)
 			.run();
 		await env.DB.prepare(
-			"INSERT INTO retention_records (id, member_id, term_id, event_id, points, reason, source, recorded_by, recorded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			"INSERT INTO retention_records (id, member_id, term_id, event_id, point_type_id, points, reason, source, recorded_by, recorded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		)
-			.bind("ret_report_2", "mem_a", "term_1", null, null, "Submitted waiver", "manual", "mem_admin", 3000)
+			.bind("ret_report_2", "mem_a", "term_1", null, "pt_retention", null, "Submitted waiver", "manual", "mem_admin", 3000)
 			.run();
 		await env.DB.prepare("INSERT INTO event_rsvps (event_id, member_id, state) VALUES (?, ?, ?)")
 			.bind("evt_report", "mem_a", "going")
@@ -185,6 +168,7 @@ describe("retention repository on D1", () => {
 			memberIds: ["mem_a", "mem_b"],
 			termId: "term_1",
 			eventId: null,
+			pointTypeId: "pt_retention",
 			points: null,
 			reason: "Submitted the required medical waiver",
 		});
@@ -205,12 +189,48 @@ describe("retention repository on D1", () => {
 			memberIds: ["mem_a"],
 			termId: "term_1",
 			eventId: null,
+			pointTypeId: "pt_retention",
 			points: -5,
 			reason: "Logged violation",
 		});
 
 		const [row] = await db.select().from(schema.retentionRecords);
 		expect(row.points).toBe(-5);
+	});
+
+	it("requires an active point type and records it", async () => {
+		const { db, repo } = makeRepo();
+		await repo.createManual(retentionAdmin, {
+			memberIds: ["mem_a"],
+			termId: "term_1",
+			eventId: null,
+			pointTypeId: "pt_frontliner",
+			points: 3,
+			reason: "Led a project",
+		});
+		expect((await db.select().from(schema.retentionRecords))[0].pointTypeId).toBe("pt_frontliner");
+
+		await expect(
+			repo.createManual(retentionAdmin, {
+				memberIds: ["mem_a"],
+				termId: "term_1",
+				eventId: null,
+				pointTypeId: "pt_missing",
+				points: 3,
+				reason: "Unknown type",
+			}),
+		).rejects.toThrow("Point type is not active");
+
+		await expect(
+			repo.createManual(retentionAdmin, {
+				memberIds: ["mem_a"],
+				termId: "term_1",
+				eventId: null,
+				pointTypeId: "pt_retired",
+				points: 3,
+				reason: "Retired type",
+			}),
+		).rejects.toThrow("Point type is not active");
 	});
 
 	it("writes one manual retention audit row per member", async () => {
@@ -220,6 +240,7 @@ describe("retention repository on D1", () => {
 			memberIds: ["mem_a", "mem_b"],
 			termId: "term_1",
 			eventId: null,
+			pointTypeId: "pt_retention",
 			points: 3,
 			reason: "Attended makeup session",
 		});
@@ -238,6 +259,7 @@ describe("retention repository on D1", () => {
 				memberIds: ["mem_a"],
 				termId: "term_1",
 				eventId: null,
+				pointTypeId: "pt_retention",
 				points: null,
 				reason: "Nope",
 			}),
@@ -253,6 +275,7 @@ describe("retention repository on D1", () => {
 				memberIds: ["mem_a"],
 				termId: "term_missing",
 				eventId: null,
+				pointTypeId: "pt_retention",
 				points: null,
 				reason: "Bad term",
 			}),
@@ -273,34 +296,17 @@ describe("retention repository on D1", () => {
 
 		it("summarizes the current term and excludes past-term and other members' records", async () => {
 			const { repo } = makeRepo();
-			await repo.recordEventAttendance(retentionAdmin, {
-				memberId: "mem_a",
-				termId: "term_1",
-				eventId: null as unknown as string,
-				points: 5,
-				reason: "Attended",
-			});
+			await insertRecord({ id: "ret_history_a", memberId: "mem_a", termId: "term_1", points: 5, reason: "Attended" });
 			await repo.createManual(retentionAdmin, {
 				memberIds: ["mem_a"],
 				termId: "term_1",
 				eventId: null,
+				pointTypeId: "pt_retention",
 				points: -2,
 				reason: "Violation",
 			});
-			await repo.recordEventAttendance(retentionAdmin, {
-				memberId: "mem_a",
-				termId: "term_past",
-				eventId: null as unknown as string,
-				points: 50,
-				reason: "Old points",
-			});
-			await repo.recordEventAttendance(retentionAdmin, {
-				memberId: "mem_b",
-				termId: "term_1",
-				eventId: null as unknown as string,
-				points: 99,
-				reason: "Theirs",
-			});
+			await insertRecord({ id: "ret_history_past", memberId: "mem_a", termId: "term_past", points: 50, reason: "Old points" });
+			await insertRecord({ id: "ret_history_b", memberId: "mem_b", termId: "term_1", points: 99, reason: "Theirs" });
 
 			const { summary, records } = await repo.myHistory(plainMember, { termId: "term_1" }, NOW);
 			expect(summary?.totalPoints).toBe(3);

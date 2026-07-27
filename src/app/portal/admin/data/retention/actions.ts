@@ -16,6 +16,7 @@ export async function recordRetentionAction(
 	const parsed = createManualRetentionRecordInputSchema.safeParse({
 		memberIds: formData.getAll("memberIds").map(String),
 		termId: nullableText(formData.get("termId")) ?? "",
+		pointTypeId: nullableText(formData.get("pointTypeId")) ?? "",
 		eventId: nullableText(formData.get("eventId")),
 		points: parsePoints(formData.get("points")),
 		reason: nullableText(formData.get("reason")) ?? "",

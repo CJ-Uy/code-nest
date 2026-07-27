@@ -9,15 +9,18 @@ import { recordRetentionAction, type RecordRetentionResult } from "./actions";
 import { MemberChecklist, type MemberOption } from "./member-checklist";
 
 type Option = { id: string; label: string };
+type PointTypeOption = { id: string; key: string; label: string };
 
 export function RetentionForm({
 	members,
 	termOptions,
 	eventOptions,
+	pointTypeOptions,
 }: {
 	members: MemberOption[];
 	termOptions: Option[];
 	eventOptions: Option[];
+	pointTypeOptions: PointTypeOption[];
 }) {
 	const [state, formAction, pending] = useActionState<RecordRetentionResult | null, FormData>(
 		recordRetentionAction,
@@ -37,6 +40,21 @@ export function RetentionForm({
 					{termOptions.map((term) => (
 						<option key={term.id} value={term.id}>
 							{term.label}
+						</option>
+					))}
+				</Select>
+			</label>
+
+			<label className="grid gap-2 text-sm font-medium">
+				Point type
+				<Select
+					name="pointTypeId"
+					defaultValue={pointTypeOptions.find((option) => option.key === "retention")?.id ?? ""}
+					required
+				>
+					{pointTypeOptions.map((option) => (
+						<option key={option.id} value={option.id}>
+							{option.label}
 						</option>
 					))}
 				</Select>

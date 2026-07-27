@@ -12,10 +12,11 @@ export default async function RetentionAdminPage() {
 	if (!actor) redirect("/signin");
 	if (!can(actor, "retention:record")) notFound();
 
-	const { members, terms, events } = await loadRetentionPickers(actor).catch(() => ({
+	const { members, terms, events, pointTypes } = await loadRetentionPickers(actor).catch(() => ({
 		members: [],
 		terms: [],
 		events: [],
+		pointTypes: [],
 	}));
 
 	return (
@@ -28,7 +29,7 @@ export default async function RetentionAdminPage() {
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<RetentionForm members={members} termOptions={terms} eventOptions={events} />
+				<RetentionForm members={members} termOptions={terms} eventOptions={events} pointTypeOptions={pointTypes} />
 			</CardContent>
 		</Card>
 	);

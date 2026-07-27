@@ -2,15 +2,25 @@ import { describe, expect, it } from "vitest";
 import { createManualRetentionRecordInputSchema, eventAwardsInputSchema } from "./types";
 
 describe("createManualRetentionRecordInputSchema", () => {
-	it("accepts a minimal valid manual entry and defaults optional fields", () => {
+	it("requires a point type for a manual entry", () => {
+		expect(() =>
+			createManualRetentionRecordInputSchema.parse({
+				memberIds: ["mem_a"],
+				termId: "term_1",
+				reason: "Submitted the required medical waiver",
+			}),
+		).toThrow();
+
 		const parsed = createManualRetentionRecordInputSchema.parse({
 			memberIds: ["mem_a"],
 			termId: "term_1",
+			pointTypeId: "pt_retention",
 			reason: "Submitted the required medical waiver",
 		});
 		expect(parsed).toEqual({
 			memberIds: ["mem_a"],
 			termId: "term_1",
+			pointTypeId: "pt_retention",
 			eventId: null,
 			points: null,
 			reason: "Submitted the required medical waiver",
@@ -21,6 +31,7 @@ describe("createManualRetentionRecordInputSchema", () => {
 		const parsed = createManualRetentionRecordInputSchema.parse({
 			memberIds: ["mem_a"],
 			termId: "term_1",
+			pointTypeId: "pt_retention",
 			points: -5,
 			reason: "Logged violation",
 		});
@@ -31,6 +42,7 @@ describe("createManualRetentionRecordInputSchema", () => {
 		const parsed = createManualRetentionRecordInputSchema.parse({
 			memberIds: ["mem_a", "mem_a", "mem_b"],
 			termId: "term_1",
+			pointTypeId: "pt_retention",
 			reason: "Attended makeup session",
 		});
 		expect(parsed.memberIds).toEqual(["mem_a", "mem_b"]);

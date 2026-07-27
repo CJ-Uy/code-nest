@@ -39,6 +39,7 @@ export const createManualRetentionRecordInputSchema = z.object({
 		.max(100, "Select at most 100 members per entry.")
 		.transform((ids) => Array.from(new Set(ids))),
 	termId: z.string().trim().min(1),
+	pointTypeId: z.string().trim().min(1, "Select a point type."),
 	eventId: z.string().trim().min(1).nullable().default(null),
 	points: z.number().int().nullable().default(null),
 	reason: z.string().trim().min(1, "A reason is required.").max(500),
