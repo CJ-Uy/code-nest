@@ -43,7 +43,7 @@ export function CreateEventSheet({
 	const [error, setError] = useState<string | null>(null);
 
 	const [title, setTitle] = useState("");
-	const [type, setType] = useState(allowedTypes[0]?.type ?? "casual");
+	const [type, setType] = useState(allowedTypes[0]?.type ?? "");
 	const [place, setPlace] = useState("");
 	const [description, setDescription] = useState("");
 	const [startsAt, setStartsAt] = useState(defaultStart);
@@ -52,7 +52,7 @@ export function CreateEventSheet({
 
 	function reset() {
 		setTitle("");
-		setType(allowedTypes[0]?.type ?? "casual");
+		setType(allowedTypes[0]?.type ?? "");
 		setPlace("");
 		setDescription("");
 		setStartsAt(defaultStart());

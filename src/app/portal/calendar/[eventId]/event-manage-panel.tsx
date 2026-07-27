@@ -545,7 +545,7 @@ function DetailsSection({
 				await updateEventAction({
 					eventId: event.id,
 					title,
-					type,
+					type: typesUnavailable ? event.type : type,
 					place,
 					description,
 					startsAt: fromLocalInput(startsAt).toISOString(),
@@ -623,7 +623,7 @@ function DetailsSection({
 			{error ? <p className="text-sm text-destructive">{error}</p> : null}
 
 			<div className="flex items-center gap-3">
-				<Button type="button" onClick={save} disabled={pending || endBeforeStart || typesUnavailable}>
+				<Button type="button" onClick={save} disabled={pending || endBeforeStart}>
 					{pending ? "Saving…" : "Save changes"}
 				</Button>
 				{saved ? (

@@ -342,6 +342,8 @@ describe("events repository on D1", () => {
 				description: "Ghost", startsAt: START, endsAt: END, capacity: null,
 			}),
 		).rejects.toThrow("Not authorized");
+		const event = await makeApprovedEvent();
+		await expect(repo.update(owner, event.id, { type: "does_not_exist" })).rejects.toThrow("Not authorized");
 	});
 
 	it("rejects an inactive type for new events but still allows editing an existing one", async () => {
@@ -368,5 +370,11 @@ describe("events repository on D1", () => {
 		await expect(repo.update(owner, event.id, { type: "casual", title: "Again" })).resolves.toMatchObject({
 			title: "Again",
 		});
+
+		const officialEvent = await repo.create(eventsAdmin, {
+			title: "Formal Assembly", type: "official", place: "Gym",
+			description: "Formal", startsAt: START, endsAt: END, capacity: null,
+		});
+		await expect(repo.update(eventsAdmin, officialEvent.id, { type: "casual" })).rejects.toThrow("Not authorized");
 	});
 });

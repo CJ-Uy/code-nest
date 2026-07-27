@@ -46,7 +46,7 @@ function Row({ event, types }: { event: EventListItem; types: EventTypeRow[] }) 
 			<div className="min-w-0 flex-1">
 				<div className="flex items-center gap-2">
 					<span className="truncate font-medium">{event.title}</span>
-					<Badge className={cn("shrink-0", chip)}>{labelFor(types, event.type)}</Badge>
+					<Badge className={cn("min-w-0 max-w-32 truncate", chip)}>{labelFor(types, event.type)}</Badge>
 					{event.myRole ? (
 						<Badge variant="secondary" className="shrink-0 text-[10px]">
 							{ROLE_LABEL[event.myRole]}
