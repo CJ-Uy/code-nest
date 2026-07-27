@@ -24,6 +24,7 @@ async function insertRecord(input: {
 	pointTypeId?: string;
 	points: number | null;
 	reason?: string;
+	recordedAt?: number;
 }) {
 	await env.DB.prepare(`
 		INSERT INTO retention_records
@@ -37,7 +38,7 @@ async function insertRecord(input: {
 			input.pointTypeId ?? "pt_retention",
 			input.points,
 			input.reason ?? input.id,
-			TERM_START.getTime() + 1000,
+			input.recordedAt ?? TERM_START.getTime() + 1000,
 		)
 		.run();
 }
@@ -96,6 +97,29 @@ describe("retention repository on D1", () => {
 		expect(summary.status).toBe("retained");
 	});
 
+	it("counts only retention-bearing point types for retention totals and status", async () => {
+		const { repo } = makeRepo();
+		await insertRecord({ id: "ret_keep", pointTypeId: "pt_retention", points: 20 });
+		await insertRecord({ id: "ret_ignore", pointTypeId: "pt_frontliner", points: -50 });
+
+		const summary = await repo.getMemberTermSummary(plainMember, {
+			memberId: "mem_a",
+			termId: "term_1",
+		});
+		const adminBoard = await repo.leaderboard(retentionAdmin, { termId: "term_1" });
+		const publicBoard = await repo.publicLeaderboard(plainMember, { termId: "term_1" });
+		const history = await repo.myHistory(plainMember, { termId: "term_1" });
+
+		expect(summary.totalPoints).toBe(20);
+		expect(summary.status).toBe("retained");
+		expect(adminBoard[0].totalPoints).toBe(20);
+		expect(publicBoard[0].totalPoints).toBe(20);
+		expect(history.summary?.totalPoints).toBe(20);
+		expect(history.summary?.status).toBe("retained");
+		expect(history.summary?.recordCount).toBe(2);
+		expect(history.records).toHaveLength(2);
+	});
+
 	it("ranks members by total points for the term leaderboard", async () => {
 		const { repo } = makeRepo();
 		await insertRecord({ id: "ret_board_a", memberId: "mem_a", points: 5, reason: "x" });
@@ -152,6 +176,37 @@ describe("retention repository on D1", () => {
 			expect.objectContaining({ memberEmail: "a@example.com", rsvped: true, attended: false }),
 			expect.objectContaining({ memberEmail: "b@example.com", rsvped: false, attended: true }),
 		]);
+	});
+
+	it("returns point-type metadata without filtering row projections", async () => {
+		const { repo } = makeRepo();
+		await insertRecord({
+			id: "ret_projection_retention",
+			pointTypeId: "pt_retention",
+			points: 5,
+			recordedAt: TERM_START.getTime() + 1000,
+		});
+		await insertRecord({
+			id: "ret_projection_frontliner",
+			pointTypeId: "pt_frontliner",
+			points: 7,
+			recordedAt: TERM_START.getTime() + 2000,
+		});
+
+		const termRows = await repo.listForTerm(retentionAdmin, "term_1");
+		const memberRows = await repo.listMemberTermHistory(retentionAdmin, "mem_a", "term_1");
+		const ownRows = await repo.listForMember(plainMember, { memberId: "mem_a", termId: "term_1" });
+		const history = await repo.myHistory(plainMember, { termId: "term_1" });
+
+		expect(termRows.map((row) => row.pointTypeLabel)).toEqual(["Retention", "Frontliner"]);
+		expect(memberRows.map((row) => row.pointTypeId)).toEqual(["pt_retention", "pt_frontliner"]);
+		expect(ownRows).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ pointTypeLabel: "Retention" }),
+				expect.objectContaining({ pointTypeLabel: "Frontliner" }),
+			]),
+		);
+		expect(history.records.map((row) => row.pointTypeLabel).sort()).toEqual(["Frontliner", "Retention"]);
 	});
 
 	it("rejects reporting reads from actors without retention scope", async () => {

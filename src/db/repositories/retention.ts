@@ -9,6 +9,7 @@ import type { CreateManualRetentionRecordInput } from "../types";
 import type { AuditRepository } from "./audit";
 
 export type RetentionRecord = InferSelectModel<typeof retentionRecords>;
+export type TypedRetentionRecord = RetentionRecord & { pointTypeId: string; pointTypeLabel: string };
 
 export type TermMasterRow = {
 	recordId: string;
@@ -17,6 +18,8 @@ export type TermMasterRow = {
 	memberName: string | null;
 	eventId: string | null;
 	eventTitle: string | null;
+	pointTypeId: string;
+	pointTypeLabel: string;
 	points: number | null;
 	reason: string;
 	source: RetentionRecordSource;
@@ -60,7 +63,7 @@ export type MyHistorySummary = {
 export type TermOption = { id: string; name: string; isCurrent: boolean };
 
 export type RetentionRepository = {
-	listForMember(actor: Actor, input: ListForMemberInput): Promise<RetentionRecord[]>;
+	listForMember(actor: Actor, input: ListForMemberInput): Promise<TypedRetentionRecord[]>;
 	getMemberTermSummary(actor: Actor, input: MemberTermSummaryInput): Promise<RetentionSummary>;
 	leaderboard(actor: Actor, input: LeaderboardInput): Promise<LeaderboardRow[]>;
 	publicLeaderboard(actor: Actor, input: LeaderboardInput): Promise<LeaderboardRow[]>;
@@ -72,7 +75,7 @@ export type RetentionRepository = {
 		actor: Actor,
 		input: { termId?: string },
 		now?: Date,
-	): Promise<{ summary: MyHistorySummary | null; records: RetentionRecord[] }>;
+	): Promise<{ summary: MyHistorySummary | null; records: TypedRetentionRecord[] }>;
 	listTerms(actor: Actor, now?: Date): Promise<TermOption[]>;
 };
 
@@ -102,9 +105,25 @@ const reportBaseColumns = {
 	memberName: members.fullName,
 	eventId: retentionRecords.eventId,
 	eventTitle: crsEvents.title,
+	pointTypeId: retentionRecords.pointTypeId,
+	pointTypeLabel: pointTypes.label,
 	points: retentionRecords.points,
 	reason: retentionRecords.reason,
 	source: retentionRecords.source,
+	recordedAt: retentionRecords.recordedAt,
+};
+
+const typedRecordColumns = {
+	id: retentionRecords.id,
+	memberId: retentionRecords.memberId,
+	termId: retentionRecords.termId,
+	eventId: retentionRecords.eventId,
+	pointTypeId: retentionRecords.pointTypeId,
+	pointTypeLabel: pointTypes.label,
+	points: retentionRecords.points,
+	reason: retentionRecords.reason,
+	source: retentionRecords.source,
+	recordedBy: retentionRecords.recordedBy,
 	recordedAt: retentionRecords.recordedAt,
 };
 
@@ -115,8 +134,9 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				throw new Error("Not authorized to read these retention records.");
 			}
 			return db
-				.select()
+				.select(typedRecordColumns)
 				.from(retentionRecords)
+				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
 				.where(and(eq(retentionRecords.memberId, input.memberId), eq(retentionRecords.termId, input.termId)))
 				.orderBy(desc(retentionRecords.recordedAt))
 				.limit(Math.min(input.limit ?? 50, 100))
@@ -133,7 +153,14 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 					recordCount: sql<number>`count(*)`,
 				})
 				.from(retentionRecords)
-				.where(and(eq(retentionRecords.memberId, input.memberId), eq(retentionRecords.termId, input.termId)));
+				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
+				.where(
+					and(
+						eq(retentionRecords.memberId, input.memberId),
+						eq(retentionRecords.termId, input.termId),
+						eq(pointTypes.countsTowardRetention, true),
+					),
+				);
 			const [term] = await db
 				.select({ retainedAt: terms.retainedAt, probationBelow: terms.probationBelow })
 				.from(terms)
@@ -165,7 +192,8 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				})
 				.from(retentionRecords)
 				.innerJoin(members, eq(members.id, retentionRecords.memberId))
-				.where(eq(retentionRecords.termId, input.termId))
+				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
+				.where(and(eq(retentionRecords.termId, input.termId), eq(pointTypes.countsTowardRetention, true)))
 				.groupBy(retentionRecords.memberId, members.fullName, members.name)
 				.orderBy(desc(sql`coalesce(sum(${retentionRecords.points}), 0)`))
 				.limit(Math.min(input.limit ?? 50, 100))
@@ -184,7 +212,8 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				})
 				.from(retentionRecords)
 				.innerJoin(members, eq(members.id, retentionRecords.memberId))
-				.where(eq(retentionRecords.termId, input.termId))
+				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
+				.where(and(eq(retentionRecords.termId, input.termId), eq(pointTypes.countsTowardRetention, true)))
 				.groupBy(retentionRecords.memberId, members.fullName, members.name)
 				.orderBy(desc(sql`coalesce(sum(${retentionRecords.points}), 0)`))
 				.limit(Math.min(input.limit ?? 25, 100))
@@ -250,6 +279,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				.select(reportBaseColumns)
 				.from(retentionRecords)
 				.innerJoin(members, eq(members.id, retentionRecords.memberId))
+				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
 				.leftJoin(crsEvents, eq(crsEvents.id, retentionRecords.eventId))
 				.where(eq(retentionRecords.termId, termId))
 				.orderBy(asc(retentionRecords.recordedAt)) as Promise<TermMasterRow[]>;
@@ -263,6 +293,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				.select(reportBaseColumns)
 				.from(retentionRecords)
 				.innerJoin(members, eq(members.id, retentionRecords.memberId))
+				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
 				.leftJoin(crsEvents, eq(crsEvents.id, retentionRecords.eventId))
 				.where(and(eq(retentionRecords.memberId, memberId), eq(retentionRecords.termId, termId)))
 				.orderBy(asc(retentionRecords.recordedAt)) as Promise<MemberHistoryRow[]>;
@@ -320,13 +351,20 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				.limit(1);
 			if (!term) return { summary: null, records: [] };
 
-			const rows: RetentionRecord[] = await db
-				.select()
+			const rows: Array<TypedRetentionRecord & { countsTowardRetention: boolean }> = await db
+				.select({
+					...typedRecordColumns,
+					countsTowardRetention: pointTypes.countsTowardRetention,
+				})
 				.from(retentionRecords)
+				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
 				.where(and(eq(retentionRecords.memberId, actor.memberId), eq(retentionRecords.termId, termId)))
 				.orderBy(desc(retentionRecords.recordedAt));
 
-			const totalPoints = rows.reduce((sum: number, row: RetentionRecord) => sum + (row.points ?? 0), 0);
+			const totalPoints = rows.reduce(
+				(sum: number, row) => sum + (row.countsTowardRetention ? (row.points ?? 0) : 0),
+				0,
+			);
 			const summary: MyHistorySummary = {
 				termId: term.id,
 				termName: term.name,
@@ -336,7 +374,20 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				status: statusFor(totalPoints, term.retainedAt, term.probationBelow),
 				recordCount: rows.length,
 			};
-			return { summary, records: rows };
+			const records: TypedRetentionRecord[] = rows.map((row) => ({
+				id: row.id,
+				memberId: row.memberId,
+				termId: row.termId,
+				eventId: row.eventId,
+				pointTypeId: row.pointTypeId,
+				pointTypeLabel: row.pointTypeLabel,
+				points: row.points,
+				reason: row.reason,
+				source: row.source,
+				recordedBy: row.recordedBy,
+				recordedAt: row.recordedAt,
+			}));
+			return { summary, records };
 		},
 
 		async listTerms(actor, now = new Date()) {

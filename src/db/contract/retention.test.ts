@@ -22,6 +22,8 @@ describe("retentionContract reporting operations", () => {
 					memberName: null,
 					eventId: null,
 					eventTitle: null,
+					pointTypeId: "pt_retention",
+					pointTypeLabel: "Retention",
 					points: null,
 					reason: "Submitted waiver",
 					source: "manual",
@@ -30,5 +32,30 @@ describe("retentionContract reporting operations", () => {
 			],
 		});
 		expect(output.rows[0].recordedAt).toBeInstanceOf(Date);
+	});
+
+	it("parses typed member history rows", () => {
+		const output = retentionContract.myHistory.output.parse({
+			summary: null,
+			records: [
+				{
+					id: "ret_1",
+					memberId: "mem_1",
+					termId: "term_1",
+					eventId: null,
+					pointTypeId: "pt_frontliner",
+					pointTypeLabel: "Frontliner",
+					points: 3,
+					reason: "Led a project",
+					source: "manual",
+					recordedBy: "mem_admin",
+					recordedAt: "2026-06-18T00:00:00.000Z",
+				},
+			],
+		});
+		expect(output.records[0]).toMatchObject({
+			pointTypeId: "pt_frontliner",
+			pointTypeLabel: "Frontliner",
+		});
 	});
 });
