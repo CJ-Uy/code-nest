@@ -11,6 +11,7 @@ import {
 	seedLinkDailyStats,
 	seedMemberRoles,
 	seedMembers,
+	seedPointTypes,
 	seedReservedSlugs,
 	seedRetentionRecords,
 	seedRoles,
@@ -43,6 +44,7 @@ function entry<T extends SQLiteTable>(table: T, name: string, rows: InferInsertM
 const TABLES_IN_ORDER: SeedTableEntry<SQLiteTable>[] = [
 	entry(schema.roles, "roles", seedRoles),
 	entry(schema.members, "members", seedMembers),
+	entry(schema.pointTypes, "point_types", seedPointTypes),
 	entry(schema.memberRoles, "member_roles", seedMemberRoles),
 	entry(schema.terms, "terms", seedTerms),
 	entry(schema.termMemberRoster, "term_member_roster", seedTermMemberRoster),

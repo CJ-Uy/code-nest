@@ -10,6 +10,7 @@ import {
 	members,
 	memberRoles,
 	navPins,
+	pointTypes,
 	quickLinks,
 	reservedSlugs,
 	retentionRecords,
@@ -35,6 +36,12 @@ export const seedRoles: InferInsertModel<typeof roles>[] = [
 	{ id: "role_retention", key: "retention", label: "Retention", description: "Logs retention records.", kind: "admin" },
 	{ id: "role_member_admin", key: "member_admin", label: "Member admin", description: "Manages member profiles, roles, roster, and nav pins.", kind: "admin" },
 	{ id: "role_publishing", key: "publishing", label: "Publishing", description: "Manages announcements and the content library.", kind: "admin" },
+];
+
+export const seedPointTypes: InferInsertModel<typeof pointTypes>[] = [
+	{ id: "pt_retention", key: "retention", label: "Retention", countsTowardRetention: true, active: true, position: 0 },
+	{ id: "pt_frontliner", key: "frontliner", label: "Frontliner", countsTowardRetention: false, active: true, position: 1 },
+	{ id: "pt_project_lead", key: "project_lead", label: "Project Lead", countsTowardRetention: false, active: true, position: 2 },
 ];
 
 export const seedLibraryItems: InferInsertModel<typeof libraryItems>[] = [

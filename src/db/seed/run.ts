@@ -16,6 +16,7 @@ import {
 	seedMemberRoles,
 	seedMembers,
 	seedNavPins,
+	seedPointTypes,
 	seedQuickLinks,
 	seedReservedSlugs,
 	seedRetentionRecords,
@@ -60,6 +61,7 @@ async function seedLocal() {
 
 	await insertChunks(db, schema.roles, seedRoles);
 	await insertChunks(db, schema.members, seedMembers);
+	await insertChunks(db, schema.pointTypes, seedPointTypes);
 	await insertChunks(db, schema.memberRoles, seedMemberRoles);
 	await insertChunks(db, schema.terms, seedTerms);
 	await insertChunks(db, schema.termMemberRoster, seedTermMemberRoster);

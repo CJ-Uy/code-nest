@@ -370,6 +370,30 @@ export const termMemberRoster = sqliteTable(
 	],
 );
 
+export const pointTypes = sqliteTable(
+	"point_types",
+	{
+		id: text("id").primaryKey(),
+		key: text("key").notNull().unique(),
+		label: text("label").notNull(),
+		countsTowardRetention: integer("counts_toward_retention", { mode: "boolean" }).notNull().default(false),
+		active: integer("active", { mode: "boolean" }).notNull().default(true),
+		position: integer("position").notNull().default(0),
+		updatedBy: text("updated_by").references(() => members.id, { onDelete: "set null" }),
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+	},
+);
+
+export const eventPointAwards = sqliteTable(
+	"event_point_awards",
+	{
+		eventId: text("event_id").notNull().references(() => crsEvents.id, { onDelete: "cascade" }),
+		pointTypeId: text("point_type_id").notNull().references(() => pointTypes.id),
+		points: integer("points").notNull(),
+	},
+	(table) => [primaryKey({ columns: [table.eventId, table.pointTypeId] })],
+);
+
 export const retentionRecords = sqliteTable(
 	"retention_records",
 	{
@@ -381,6 +405,7 @@ export const retentionRecords = sqliteTable(
 			.notNull()
 			.references(() => terms.id, { onDelete: "cascade" }),
 		eventId: text("event_id").references(() => crsEvents.id, { onDelete: "set null" }),
+		pointTypeId: text("point_type_id").notNull().default("pt_retention"),
 		points: integer("points"),
 		reason: text("reason").notNull(),
 		source: text("source").$type<RetentionRecordSource>().notNull().default("manual"),
@@ -393,6 +418,9 @@ export const retentionRecords = sqliteTable(
 		index("retention_records_member_term_idx").on(table.memberId, table.termId),
 		index("retention_records_term_id_idx").on(table.termId),
 		index("retention_records_event_id_idx").on(table.eventId),
+		uniqueIndex("retention_records_event_member_type_idx")
+			.on(table.eventId, table.memberId, table.pointTypeId)
+			.where(sql`source = 'event_attendance'`),
 	],
 );
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { RESERVED_SLUG_DEFAULTS } from "@/lib/links";
-import { seedLinkDailyStats, seedReservedSlugs, seedShortLinks } from "./data";
+import { seedLinkDailyStats, seedPointTypes, seedReservedSlugs, seedShortLinks } from "./data";
 
 describe("link seed data", () => {
 	it("seeds all route-shadow reserved slugs from the links helper", () => {
@@ -16,5 +16,15 @@ describe("link seed data", () => {
 		});
 		expect(seedLinkDailyStats).toHaveLength(3);
 		expect(new Set(seedLinkDailyStats.map((row) => row.date))).toEqual(new Set(["2026-06-17", "2026-06-18"]));
+	});
+});
+
+describe("point-type seeds", () => {
+	it("provides the three baseline point types with Retention flagged", () => {
+		expect(seedPointTypes).toEqual([
+			expect.objectContaining({ id: "pt_retention", key: "retention", label: "Retention", countsTowardRetention: true, active: true, position: 0 }),
+			expect.objectContaining({ id: "pt_frontliner", key: "frontliner", label: "Frontliner", countsTowardRetention: false, active: true, position: 1 }),
+			expect.objectContaining({ id: "pt_project_lead", key: "project_lead", label: "Project Lead", countsTowardRetention: false, active: true, position: 2 }),
+		]);
 	});
 });
