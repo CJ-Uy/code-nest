@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "code-nest",
+	"name": "code-nest-prod",
 	"account_id": "8527ec1369d46f55304a6f59ab5356e4",
 	"main": ".open-next/worker.js",
 	"workers_dev": true,
