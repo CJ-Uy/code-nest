@@ -62,11 +62,17 @@ describe("events repository on D1", () => {
 		)
 			.bind("term_1", "Term 1", 20, 10, TERM_START.getTime(), TERM_END.getTime())
 			.run();
-		await env.DB.prepare("INSERT INTO event_type_rules (type, required_permission) VALUES ('casual', NULL)").run();
-		await env.DB.prepare("INSERT INTO event_type_rules (type, required_permission) VALUES ('birthday', NULL)").run();
-		await env.DB.prepare(
-			"INSERT INTO event_type_rules (type, required_permission) VALUES ('official', 'event:create_restricted')",
-		).run();
+		for (const [type, permission, label, colour, position] of [
+			["official", "event:create_restricted", "Official", "primary", 0],
+			["casual", null, "Casual", "emerald", 1],
+			["birthday", null, "Birthday", "accent", 2],
+		] as const) {
+			await env.DB.prepare(
+				"INSERT INTO event_type_rules (type, required_permission, label, colour, active, position) VALUES (?, ?, ?, ?, 1, ?)",
+			)
+				.bind(type, permission, label, colour, position)
+				.run();
+		}
 	});
 
 	afterEach(() => {
@@ -325,6 +331,42 @@ describe("events repository on D1", () => {
 		await expect(repo.update(owner, officialEvent.id, { title: "Formal Assembly (Updated)", type: "official" })).resolves.toMatchObject({
 			type: "official",
 			title: "Formal Assembly (Updated)",
+		});
+	});
+
+	it("rejects an event type that has no row at all", async () => {
+		const { repo } = makeRepos();
+		await expect(
+			repo.create(eventsAdmin, {
+				title: "Ghost", type: "does_not_exist", place: "SOM 111",
+				description: "Ghost", startsAt: START, endsAt: END, capacity: null,
+			}),
+		).rejects.toThrow("Not authorized");
+	});
+
+	it("rejects an inactive type for new events but still allows editing an existing one", async () => {
+		const { repo } = makeRepos();
+		const event = await repo.create(owner, {
+			title: "Retro", type: "casual", place: "SOM 111",
+			description: "Retro", startsAt: START, endsAt: END, capacity: null,
+		});
+
+		await env.DB.prepare("UPDATE event_type_rules SET active = 0 WHERE type = ?").bind("casual").run();
+
+		// No new casual events...
+		await expect(
+			repo.create(owner, {
+				title: "Another", type: "casual", place: "SOM 111",
+				description: "Another", startsAt: START, endsAt: END, capacity: null,
+			}),
+		).rejects.toThrow("Not authorized");
+
+		// ...but the existing one is still editable, because the type is unchanged.
+		await expect(repo.update(owner, event.id, { title: "Retro renamed" })).resolves.toMatchObject({
+			title: "Retro renamed",
+		});
+		await expect(repo.update(owner, event.id, { type: "casual", title: "Again" })).resolves.toMatchObject({
+			title: "Again",
 		});
 	});
 });
