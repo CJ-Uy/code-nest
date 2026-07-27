@@ -1,9 +1,9 @@
 # Event Taxonomy & Multi-Type Points — Design Spec
 
 **Date:** 2026-07-27
-**Status:** Revised after three Codex adversarial review rounds — 21 findings, all accepted. See §10
-and the three review logs (`…-review-log.md`, `…-r2.md`, `…-r3.md`). Round 3 returned
-`IMPLEMENTATION READY: NO`; its four findings are now applied and awaiting round 4 verification.
+**Status:** **Ready to plan.** Four Codex adversarial review rounds — 21 findings, all accepted and
+applied. Round 4 verified every round-3 fix CLOSED and returned `IMPLEMENTATION READY: YES`. See §10
+and the four review logs (`…-review-log.md`, `…-r2.md`, `…-r3.md`, `…-r4.md`).
 **Branch:** beta
 **Related:** `2026-07-25-events-attendance-finalization-design.md` (deferred this work as "spec 3"),
 `2026-07-04-events-attendance-system-design.md` (the member-owned model)
@@ -715,3 +715,12 @@ Round 3 also **verified as correct**: the §3 upsert recipe works in §5's actua
 synchronous local `.run()` pattern (probed against the installed packages); and §2's second
 deactivation guard is correct for the non-retention-bearing case and serialises correctly under
 concurrent deactivation.
+
+Round 4 — verification pass. All four round-3 findings verified **CLOSED** with spec line references,
+no new findings, verdict **`IMPLEMENTATION READY: YES`**. Full text:
+`2026-07-27-event-taxonomy-and-points-review-log-r4.md`.
+
+**Totals across four rounds: 21 findings raised, 21 accepted, 21 applied.** Two would have caused data
+loss (rebuilding `crs_events` cascade-deleting six child tables; a `setPoints` shim erasing
+non-Retention awards), one would have widened privileges from a transient read error, and one would
+have failed at runtime on the first reconciliation.
