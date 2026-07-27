@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { DateTimePicker } from "@/components/date-time-picker";
 import { deriveEnd, fromLocalInput, toLocalInput } from "@/lib/date-slots";
-import type { EventType } from "@/db/schema";
+import type { EventTypeRow } from "@/db/repositories/eventTypeRules";
 import { createEventAction } from "./actions";
 
 const FIELD = "w-full rounded-lg border border-border bg-background p-2 text-sm";
@@ -28,7 +28,13 @@ function defaultStart(): string {
 	return toLocalInput(d);
 }
 
-export function CreateEventSheet({ allowedTypes }: { allowedTypes: EventType[] }) {
+export function CreateEventSheet({
+	allowedTypes,
+	typesUnavailable,
+}: {
+	allowedTypes: EventTypeRow[];
+	typesUnavailable: boolean;
+}) {
 	const router = useRouter();
 	// The mobile "+" quick action links to /portal/calendar?create=1 to open this directly.
 	const openFromUrl = useSearchParams().get("create") === "1";
@@ -37,7 +43,7 @@ export function CreateEventSheet({ allowedTypes }: { allowedTypes: EventType[] }
 	const [error, setError] = useState<string | null>(null);
 
 	const [title, setTitle] = useState("");
-	const [type, setType] = useState<EventType>(allowedTypes[0] ?? "casual");
+	const [type, setType] = useState(allowedTypes[0]?.type ?? "casual");
 	const [place, setPlace] = useState("");
 	const [description, setDescription] = useState("");
 	const [startsAt, setStartsAt] = useState(defaultStart);
@@ -46,7 +52,7 @@ export function CreateEventSheet({ allowedTypes }: { allowedTypes: EventType[] }
 
 	function reset() {
 		setTitle("");
-		setType(allowedTypes[0] ?? "casual");
+		setType(allowedTypes[0]?.type ?? "casual");
 		setPlace("");
 		setDescription("");
 		setStartsAt(defaultStart());
@@ -80,7 +86,7 @@ export function CreateEventSheet({ allowedTypes }: { allowedTypes: EventType[] }
 	const noAllowedTypes = allowedTypes.length === 0;
 	const endBeforeStart = Boolean(startsAt && endsAt && new Date(endsAt) <= new Date(startsAt));
 	const canSubmit =
-		title.trim() && place.trim() && description.trim() && startsAt && endsAt && !endBeforeStart && !noAllowedTypes;
+		title.trim() && place.trim() && description.trim() && startsAt && endsAt && !endBeforeStart && !noAllowedTypes && !typesUnavailable;
 
 	return (
 		<Sheet
@@ -113,15 +119,17 @@ export function CreateEventSheet({ allowedTypes }: { allowedTypes: EventType[] }
 
 					<label className="grid gap-1.5 text-sm">
 						<span className="font-medium">Type</span>
-						{noAllowedTypes ? (
+						{typesUnavailable ? (
+							<p className="text-sm text-destructive">Event types are unavailable right now. Try again shortly.</p>
+						) : noAllowedTypes ? (
 							<p className="text-sm text-destructive">
-								You aren’t allowed to create any event type right now. Ask an admin to update the rules.
+								You do not have permission to create any event type.
 							</p>
 						) : (
-							<select className={FIELD} value={type} onChange={(e) => setType(e.target.value as EventType)}>
+							<select className={FIELD} value={type} onChange={(e) => setType(e.target.value)}>
 								{allowedTypes.map((option) => (
-									<option key={option} value={option}>
-										{option.charAt(0).toUpperCase() + option.slice(1)}
+									<option key={option.type} value={option.type}>
+										{option.label}
 									</option>
 								))}
 							</select>

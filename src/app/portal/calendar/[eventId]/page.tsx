@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { MemberCodeCard } from "@/components/member-code-card";
 import { getRepositories } from "@/db";
 import { allowedEventTypes } from "@/db/repositories/eventTypeRules";
+import { loadEventTypes } from "@/lib/event-type-load";
 import { requireActor } from "@/server/auth/actor";
 import { EventManagePanel } from "./event-manage-panel";
 
@@ -21,16 +22,16 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 	// Management view keys off the viewer-scoped capability flags on the event record.
 	const managed = await repositories.events.getById(actor, eventId).catch(() => null);
 	const isStaff = managed ? managed.myRole !== null || managed.canModerate : false;
-	// Shared-dev has no internal proxy for this repo; degrade rather than crash.
-	const rules = await repositories.eventTypeRules.list().catch(() => []);
-	const allowedTypesForActor = allowedEventTypes(actor, rules);
+	const typeLoad = await loadEventTypes(() => repositories.eventTypeRules.list());
+	const rows = typeLoad.ok ? typeLoad.rows : [];
+	const allowedTypesForActor = typeLoad.ok ? allowedEventTypes(actor, rows) : [];
 	// The event's current type must always render as an option, even when the actor's
 	// permissions would no longer let them create it — leaving it unchanged is always legal,
 	// and dropping it from the list would make an unrelated save silently change the type.
 	const allowedTypesForEdit = managed
-		? allowedTypesForActor.includes(managed.type)
+		? allowedTypesForActor.some((row) => row.type === managed.type)
 			? allowedTypesForActor
-			: [...allowedTypesForActor, managed.type]
+			: [...allowedTypesForActor, ...rows.filter((row) => row.type === managed.type)]
 		: [];
 	const [staff, attendance, invites, terms] =
 		managed && isStaff
@@ -116,6 +117,8 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 					invites={invites}
 					termId={currentTerm?.id ?? null}
 					allowedEventTypes={allowedTypesForEdit}
+					typeRows={rows}
+					typesUnavailable={!typeLoad.ok}
 				/>
 			) : null}
 		</div>

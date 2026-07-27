@@ -4,6 +4,7 @@ import { getRepositories } from "@/db";
 import { allowedEventTypes } from "@/db/repositories/eventTypeRules";
 import { Button } from "@/components/ui/button";
 import { CalendarMonth } from "@/components/calendar-month";
+import { loadEventTypes } from "@/lib/event-type-load";
 import { requireActor } from "@/server/auth/actor";
 import { CreateEventSheet } from "./create-event-sheet";
 import { EventsList, type EventListItem } from "./events-list";
@@ -28,9 +29,8 @@ export default async function CalendarPage({
 	const month = Number(params.month) || now.getUTCMonth() + 1;
 
 	const repositories = await getRepositories();
-	// Shared-dev has no internal proxy for this repo; degrade rather than crash.
-	const rules = await repositories.eventTypeRules.list().catch(() => []);
-	const allowedTypes = allowedEventTypes(actor, rules);
+	const typeLoad = await loadEventTypes(() => repositories.eventTypeRules.list());
+	const allowedTypes = typeLoad.ok ? allowedEventTypes(actor, typeLoad.rows) : [];
 
 	const prev = month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
 	const next = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
@@ -47,7 +47,7 @@ export default async function CalendarPage({
 					<p className="text-xs font-semibold uppercase text-primary">Member workspace</p>
 					<h1 className="font-heading text-3xl">Calendar</h1>
 				</div>
-				<CreateEventSheet allowedTypes={allowedTypes} />
+				<CreateEventSheet allowedTypes={allowedTypes} typesUnavailable={!typeLoad.ok} />
 			</div>
 
 			<div className="flex flex-wrap items-center justify-between gap-3">

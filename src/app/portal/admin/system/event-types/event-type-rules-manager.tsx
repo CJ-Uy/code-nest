@@ -2,18 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { EventTypeRule } from "@/db/repositories/eventTypeRules";
-import { eventTypes } from "@/db/schema";
+import type { EventTypeRow } from "@/db/repositories/eventTypeRules";
 import { permissionActions } from "@/server/auth/permissions";
 import { setEventTypeRuleAction } from "./actions";
 
-const TYPE_LABELS: Record<string, string> = {
-	casual: "Casual",
-	official: "Official",
-	birthday: "Birthday",
-};
-
-export function EventTypeRulesManager({ rules }: { rules: EventTypeRule[] }) {
+export function EventTypeRulesManager({ rows }: { rows: EventTypeRow[] }) {
 	return (
 		<Card>
 			<CardHeader>
@@ -23,8 +16,8 @@ export function EventTypeRulesManager({ rules }: { rules: EventTypeRule[] }) {
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="flex flex-col gap-4">
-				{eventTypes.map((type) => {
-					const current = rules.find((rule) => rule.type === type)?.requiredPermission ?? "";
+				{rows.map((row) => {
+					const current = row.requiredPermission ?? "";
 					// A rule can hold a permission string written out-of-band (not through setRequiredPermission),
 					// which fails closed rather than falling open — see eventTypeRules.ts. Surface it rather than
 					// silently defaulting the <select> to "Any member", which would misrepresent a locked-down type.
@@ -40,10 +33,10 @@ export function EventTypeRulesManager({ rules }: { rules: EventTypeRule[] }) {
 					// "Unknown permission." — a loud, safe failure instead of a silent open.
 					const isUnrecognized = current !== "" && !(permissionActions as readonly string[]).includes(current);
 					return (
-						<form key={type} action={setEventTypeRuleAction} className="flex flex-wrap items-end gap-3">
-							<input type="hidden" name="type" value={type} />
+						<form key={row.type} action={setEventTypeRuleAction} className="flex flex-wrap items-end gap-3">
+							<input type="hidden" name="type" value={row.type} />
 							<label className="grid gap-1.5 text-sm">
-								<span className="font-medium">{TYPE_LABELS[type] ?? type}</span>
+								<span className="font-medium">{row.label}</span>
 								<select
 									name="requiredPermission"
 									defaultValue={current}

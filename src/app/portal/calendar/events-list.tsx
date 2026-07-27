@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/portal/empty-state";
 export type EventListItem = {
 	id: string;
 	title: string;
-	type: "official" | "casual" | "birthday";
+	type: string;
 	place: string;
 	startsAt: Date;
 	endsAt: Date | null;
