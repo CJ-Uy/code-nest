@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getRepositories } from "@/db";
+import { eventTypeKeySchema } from "@/lib/event-type-key";
 import { requireActor } from "@/server/auth/actor";
 
 // Server actions get Next's built-in same-origin/POST protection (same as every
@@ -11,7 +12,7 @@ import { requireActor } from "@/server/auth/actor";
 const createSchema = z
 	.object({
 		title: z.string().trim().min(1, "Add a title.").max(160),
-		type: z.enum(["official", "casual", "birthday"]),
+		type: eventTypeKeySchema,
 		place: z.string().trim().min(1, "Add a place.").max(160),
 		description: z.string().trim().min(1, "Add a description.").max(4000),
 		startsAt: z.coerce.date(),

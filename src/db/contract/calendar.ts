@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { eventTypeKeySchema } from "@/lib/event-type-key";
 import { operation } from "./common";
 
 export const calendarItemSchema = z.object({
@@ -20,7 +21,7 @@ export const getMonthInputSchema = z.object({
 export const eventDetailSchema = z.object({
 	id: z.string(),
 	title: z.string(),
-	type: z.enum(["official", "casual", "birthday"]),
+	type: eventTypeKeySchema,
 	status: z.enum(["pending", "approved", "rejected"]),
 	points: z.number().nullable(),
 	place: z.string(),

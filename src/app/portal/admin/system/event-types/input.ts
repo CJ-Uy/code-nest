@@ -1,13 +1,11 @@
-import { z } from "zod";
-import type { EventType } from "@/db/schema";
-import { eventTypes } from "@/db/schema";
+import { eventTypeKeySchema } from "@/lib/event-type-key";
 
 export type EventTypeRuleInput = {
-	type: EventType;
+	type: string;
 	requiredPermission: string | null;
 };
 
-const typeSchema = z.enum(eventTypes);
+const typeSchema = eventTypeKeySchema;
 
 /**
  * Parses the event-type-rule form submission out of the server action so it can be unit

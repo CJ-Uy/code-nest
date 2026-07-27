@@ -1,10 +1,11 @@
 import { z } from "zod";
+import { eventTypeKeySchema } from "@/lib/event-type-key";
 import { operation } from "./common";
 
 export const eventOutputSchema = z.object({
 	id: z.string(),
 	title: z.string(),
-	type: z.enum(["official", "casual", "birthday"]),
+	type: eventTypeKeySchema,
 	status: z.enum(["pending", "approved", "rejected"]),
 	points: z.number().int().nullable(),
 	place: z.string(),
@@ -64,7 +65,7 @@ export const mediaOutputSchema = z.object({
 
 export const createEventInputSchema = z.object({
 	title: z.string().trim().min(1).max(160),
-	type: z.enum(["official", "casual", "birthday"]),
+	type: eventTypeKeySchema,
 	place: z.string().trim().min(1).max(160),
 	description: z.string().trim().min(1).max(4000),
 	startsAt: z.coerce.date(),
