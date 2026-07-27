@@ -101,7 +101,7 @@ export default async function CalendarPage({
 					month={month}
 				/>
 			) : (
-				<EventsList events={await loadEventList(repositories, actor)} />
+				<EventsList events={await loadEventList(repositories, actor)} types={typeLoad.ok ? typeLoad.rows : []} />
 			)}
 		</div>
 	);

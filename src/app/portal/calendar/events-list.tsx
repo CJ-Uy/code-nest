@@ -3,6 +3,9 @@ import { ArrowRight, CalendarX2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/portal/empty-state";
+import { type EventTypeRow, labelFor } from "@/db/repositories/eventTypeRules";
+import { colourClasses } from "@/lib/event-type-colours";
+import { cn } from "@/lib/utils";
 
 export type EventListItem = {
 	id: string;
@@ -28,8 +31,9 @@ function timeRange(start: Date, end: Date | null): string {
 	return end ? `${t(start)} – ${t(end)}` : t(start);
 }
 
-function Row({ event }: { event: EventListItem }) {
+function Row({ event, types }: { event: EventListItem; types: EventTypeRow[] }) {
 	const manage = event.myRole === "owner" || event.myRole === "admin" || event.canModerate;
+	const chip = colourClasses(types.find((t) => t.type === event.type)?.colour ?? "slate").chip;
 	return (
 		<Link
 			href={`/portal/calendar/${event.id}`}
@@ -42,6 +46,7 @@ function Row({ event }: { event: EventListItem }) {
 			<div className="min-w-0 flex-1">
 				<div className="flex items-center gap-2">
 					<span className="truncate font-medium">{event.title}</span>
+					<Badge className={cn("shrink-0", chip)}>{labelFor(types, event.type)}</Badge>
 					{event.myRole ? (
 						<Badge variant="secondary" className="shrink-0 text-[10px]">
 							{ROLE_LABEL[event.myRole]}
@@ -60,7 +65,7 @@ function Row({ event }: { event: EventListItem }) {
 	);
 }
 
-function Section({ title, events }: { title: string; events: EventListItem[] }) {
+function Section({ title, events, types }: { title: string; events: EventListItem[]; types: EventTypeRow[] }) {
 	if (events.length === 0) return null;
 	return (
 		<div className="grid gap-2">
@@ -68,7 +73,7 @@ function Section({ title, events }: { title: string; events: EventListItem[] }) 
 			<Card>
 				<CardContent className="divide-y divide-border p-0">
 					{events.map((event) => (
-						<Row key={event.id} event={event} />
+						<Row key={event.id} event={event} types={types} />
 					))}
 				</CardContent>
 			</Card>
@@ -76,7 +81,7 @@ function Section({ title, events }: { title: string; events: EventListItem[] }) 
 	);
 }
 
-export function EventsList({ events }: { events: EventListItem[] }) {
+export function EventsList({ events, types }: { events: EventListItem[]; types: EventTypeRow[] }) {
 	if (events.length === 0) {
 		return (
 			<EmptyState
@@ -93,8 +98,8 @@ export function EventsList({ events }: { events: EventListItem[] }) {
 
 	return (
 		<div className="grid gap-5">
-			<Section title="Your events" events={yours} />
-			<Section title={yours.length ? "Everything else" : "Upcoming"} events={rest} />
+			<Section title="Your events" events={yours} types={types} />
+			<Section title={yours.length ? "Everything else" : "Upcoming"} events={rest} types={types} />
 		</div>
 	);
 }

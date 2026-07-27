@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
-import { crsEvents, memberRoles, members, roles, sessions, terms } from "@/db/schema";
+import { crsEvents, memberRoles, members, roles, seedEventTypes, sessions, terms } from "@/db/schema";
 
 const SEEDED = {
 	"admin@example.com": { id: "mem_demo_admin", name: "Demo Admin", role: "super" },
@@ -81,7 +81,7 @@ async function ensureE2eData(db: ReturnType<typeof getDb>): Promise<void> {
 		.values({
 			id: "evt_demo",
 			title: "Consulting Practice Night",
-			type: "official",
+			type: seedEventTypes[0],
 			status: "approved",
 			points: 5,
 			place: "SOM 111",

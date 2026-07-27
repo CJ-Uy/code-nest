@@ -14,6 +14,7 @@ import {
 	reservedSlugs,
 	retentionRecords,
 	roles,
+	seedEventTypes,
 	sharedDevTokens,
 	shortLinks,
 	surveyAssignments,
@@ -146,7 +147,7 @@ export const seedEvents: InferInsertModel<typeof crsEvents>[] = [
 	{
 		id: "evt_demo",
 		title: "Consulting Practice Night",
-		type: "official",
+		type: seedEventTypes[0],
 		status: "approved",
 		points: 5,
 		place: "SOM 111",
