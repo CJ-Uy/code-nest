@@ -202,7 +202,7 @@ describe("events repository on D1", () => {
 		expect(await db.select().from(schema.notifications)).toHaveLength(1);
 
 		await expect(repo.setPoints(eventsAdmin, event.id, null)).resolves.toEqual({ updated: 2 });
-		expect((await db.select().from(schema.retentionRecords)).map((row) => row.points)).toEqual([null, null]);
+		expect(await db.select().from(schema.retentionRecords)).toHaveLength(0);
 		expect(await db.select().from(schema.notifications)).toHaveLength(1);
 	});
 
@@ -273,6 +273,63 @@ describe("events repository on D1", () => {
 		expect(rowsAfterRemove.map((row) => [row.pointTypeId, row.points])).toEqual([
 			["pt_retention", 4],
 		]);
+	});
+
+	it("derives scan rows from every active event award", async () => {
+		const event = await makeApprovedEvent();
+		const { db, repo } = makeRepos();
+		await repo.setAwards(eventsAdmin, event.id, [
+			{ pointTypeId: "pt_retention", points: 2 },
+			{ pointTypeId: "pt_frontliner", points: 3 },
+		]);
+
+		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
+
+		const rows = await db
+			.select()
+			.from(schema.retentionRecords)
+			.orderBy(schema.retentionRecords.pointTypeId);
+		expect(rows.map((row) => [row.pointTypeId, row.points, row.eventId])).toEqual([
+			["pt_frontliner", 3, event.id],
+			["pt_retention", 2, event.id],
+		]);
+	});
+
+	it("keeps setPoints scoped to Retention and returns distinct attendees", async () => {
+		const event = await makeApprovedEvent();
+		const { db, repo } = makeRepos();
+		await repo.setAwards(eventsAdmin, event.id, [
+			{ pointTypeId: "pt_retention", points: 2 },
+			{ pointTypeId: "pt_frontliner", points: 3 },
+		]);
+		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
+		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_b", termId: "term_1" });
+
+		await expect(repo.setPoints(eventsAdmin, event.id, 7)).resolves.toEqual({ updated: 2 });
+
+		const awards = await db.select().from(schema.eventPointAwards).orderBy(schema.eventPointAwards.pointTypeId);
+		expect(awards.map((row) => [row.pointTypeId, row.points])).toEqual([
+			["pt_frontliner", 3],
+			["pt_retention", 7],
+		]);
+		expect((await db.select().from(schema.crsEvents).where(eq(schema.crsEvents.id, event.id)))[0].points).toBe(7);
+		expect(
+			(await db.select().from(schema.retentionRecords))
+				.filter((row) => row.pointTypeId === "pt_frontliner")
+				.every((row) => row.points === 3),
+		).toBe(true);
+
+		await expect(repo.setPoints(eventsAdmin, event.id, null)).resolves.toEqual({ updated: 2 });
+		expect(
+			(await db.select().from(schema.eventPointAwards)).map((row) => [row.pointTypeId, row.points]),
+		).toEqual([["pt_frontliner", 3]]);
+		expect(
+			(await db.select().from(schema.retentionRecords)).map((row) => [row.pointTypeId, row.points]),
+		).toEqual([
+			["pt_frontliner", 3],
+			["pt_frontliner", 3],
+		]);
+		expect((await db.select().from(schema.crsEvents).where(eq(schema.crsEvents.id, event.id)))[0].points).toBeNull();
 	});
 
 	it("rolls back award reconciliation when its audit insert fails", async () => {

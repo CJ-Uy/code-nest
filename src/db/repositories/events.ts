@@ -21,7 +21,7 @@ import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
 import { auditInsertValues } from "./audit";
 import type { AuditRepository } from "./audit";
-import { buildExistingAttendanceAwardUpsert } from "./event-awards";
+import { buildExistingAttendanceAwardUpsert, buildScanAwardUpsert } from "./event-awards";
 import { canCreateType, createEventTypeRulesRepository } from "./eventTypeRules";
 import { notify } from "./notifications";
 
@@ -334,31 +334,84 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 
 		async setPoints(actor, eventId, points) {
 			if (!can(actor, "event:points")) throw new Error("Not authorized to set event points.");
+			if (points !== null && (!Number.isInteger(points) || points < -100 || points > 100)) {
+				throw new Error("Event points must be an integer from -100 to 100.");
+			}
 			const event = await loadEvent(db, eventId);
 			if (!event) throw new Error("Event not found.");
+			const [retentionType] = await db
+				.select({ id: pointTypes.id })
+				.from(pointTypes)
+				.where(and(eq(pointTypes.key, "retention"), eq(pointTypes.active, true)))
+				.limit(1);
+			if (!retentionType) throw new Error("Active Retention point type not found.");
 			const attendees = await db
-				.select({ memberId: crsAttendance.memberId })
+				.selectDistinct({ memberId: crsAttendance.memberId })
 				.from(crsAttendance)
 				.where(eq(crsAttendance.eventId, eventId));
-			await runAtomic(db, [
-				db.update(crsEvents).set({ points }).where(eq(crsEvents.id, eventId)),
-				db
-					.update(retentionRecords)
-					.set({ points })
-					.where(and(eq(retentionRecords.eventId, eventId), eq(retentionRecords.source, "event_attendance"))),
-			]);
+			const auditInsert = db.insert(auditLogs).values(
+				auditInsertValues(actor, {
+					action: "event:set_points",
+					targetType: "event",
+					targetId: eventId,
+					category: "event",
+				}),
+			);
+			if (points === null) {
+				await runAtomic(db, [
+					db
+						.delete(eventPointAwards)
+						.where(
+							and(
+								eq(eventPointAwards.eventId, eventId),
+								eq(eventPointAwards.pointTypeId, retentionType.id),
+							),
+						),
+					db
+						.delete(retentionRecords)
+						.where(
+							and(
+								eq(retentionRecords.eventId, eventId),
+								eq(retentionRecords.pointTypeId, retentionType.id),
+								eq(retentionRecords.source, "event_attendance"),
+							),
+						),
+					db.update(crsEvents).set({ points: null }).where(eq(crsEvents.id, eventId)),
+					auditInsert,
+				]);
+			} else {
+				await runAtomic(db, [
+					db
+						.insert(eventPointAwards)
+						.values({ eventId, pointTypeId: retentionType.id, points })
+						.onConflictDoUpdate({
+							target: [eventPointAwards.eventId, eventPointAwards.pointTypeId],
+							set: { points },
+						}),
+					buildExistingAttendanceAwardUpsert(db, eventId, retentionType.id),
+					db.update(crsEvents).set({ points }).where(eq(crsEvents.id, eventId)),
+					auditInsert,
+				]);
+			}
 			if (points !== null) {
 				for (const attendee of attendees) {
-					await notify(db, {
-						memberId: attendee.memberId,
-						kind: "points_awarded",
-						title: "Points updated",
-						body: `${event.title} is now worth ${points} points.`,
-						href: `/portal/calendar/${eventId}`,
-					});
+					try {
+						await notify(db, {
+							memberId: attendee.memberId,
+							kind: "points_awarded",
+							title: "Points updated",
+							body: `${event.title} is now worth ${points} points.`,
+							href: `/portal/calendar/${eventId}`,
+						});
+					} catch (error) {
+						console.error("Failed to notify attendee about event point awards.", {
+							eventId,
+							memberId: attendee.memberId,
+							error,
+						});
+					}
 				}
 			}
-			await audit.record(actor, { action: "event:set_points", targetType: "event", targetId: eventId, category: "event" });
 			return { updated: attendees.length };
 		},
 
@@ -594,16 +647,12 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 					db
 						.insert(crsAttendance)
 						.values({ eventId: input.eventId, memberId: input.memberId, scannedAt, scannedBy: actor.memberId }),
-					db.insert(retentionRecords).values({
-						id: createId("ret"),
+					buildScanAwardUpsert(db, {
+						eventId: input.eventId,
 						memberId: input.memberId,
 						termId: input.termId,
-						eventId: input.eventId,
-						points: event.points,
-						reason: `Attended ${event.title}`,
-						source: "event_attendance",
-						recordedBy: actor.memberId,
-						recordedAt: scannedAt,
+						scannedBy: actor.memberId,
+						scannedAt,
 					}),
 				]);
 			} catch (error) {
