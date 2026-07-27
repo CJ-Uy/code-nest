@@ -37,3 +37,7 @@ export function getRosterDeniedRedirect(email: string): string {
 	});
 	return `/signin?${params}`;
 }
+
+export function getGoogleAuthorizationParams(error?: string): Record<string, string> | undefined {
+	return error === "NotMember" ? { prompt: "select_account" } : undefined;
+}

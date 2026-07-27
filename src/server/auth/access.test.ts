@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getRosterDeniedRedirect, isGoogleSignInAllowed } from "./access";
+import { getGoogleAuthorizationParams, getRosterDeniedRedirect, isGoogleSignInAllowed } from "./access";
 
 const policy = {
 	allowedDomains: ["ateneo.edu"],
@@ -10,6 +10,11 @@ describe("Google sign-in policy", () => {
 		expect(getRosterDeniedRedirect(" Person+Guest@Example.com ")).toBe(
 			"/signin?error=NotMember&email=person%2Bguest%40example.com",
 		);
+	});
+
+	it("forces Google account selection only after a non-member sign-in", () => {
+		expect(getGoogleAuthorizationParams("NotMember")).toEqual({ prompt: "select_account" });
+		expect(getGoogleAuthorizationParams()).toBeUndefined();
 	});
 
 	it("allows a verified email from an allowed domain", () => {
