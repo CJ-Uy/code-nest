@@ -1,13 +1,37 @@
-import { and, desc, eq, gte, like, lte, or } from "drizzle-orm";
+import { and, eq, like, or } from "drizzle-orm";
+import type { InferInsertModel } from "drizzle-orm";
 import { createId } from "@/lib/ids";
-import { members, termMemberRoster, terms } from "@/db/schema";
+import { members } from "@/db/schema";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
 import type { CreateMemberInput, Member, UpdateMemberProfileInput } from "../types";
 import type { AuditRepository } from "./audit";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type MemberDb = any;
+type MemberInsert = InferInsertModel<typeof members>;
+
+export type MemberDb = {
+	select(): {
+		from(table: typeof members): {
+			orderBy(column: typeof members.createdAt): { limit(limit: number): Promise<Member[]> | Member[] };
+			where(condition: unknown): { limit(limit: number): Promise<Member[]> | Member[] };
+		};
+	};
+	insert(table: typeof members): {
+		values(value: MemberInsert): {
+			returning(): Promise<Member[]> | Member[];
+		};
+	};
+	update(table: typeof members): {
+		set(value: Partial<MemberInsert>): {
+			where(condition: unknown): {
+				returning(): Promise<Member[]> | Member[];
+			};
+		};
+	};
+	delete(table: typeof members): {
+		where(condition: unknown): Promise<unknown> | unknown;
+	};
+};
 
 export type MembersRepository = {
 	list(actor: Actor, input?: { limit?: number }): Promise<Member[]>;
@@ -19,21 +43,6 @@ export type MembersRepository = {
 };
 
 export function createMembersRepository(db: MemberDb, audit: AuditRepository): MembersRepository {
-	async function addToCurrentRoster(actor: Actor, member: Member) {
-		const now = new Date();
-		const [term] = await db
-			.select({ id: terms.id })
-			.from(terms)
-			.where(and(lte(terms.startsAt, now), gte(terms.endsAt, now)))
-			.orderBy(desc(terms.startsAt))
-			.limit(1);
-		if (!term) return;
-		await db
-			.insert(termMemberRoster)
-			.values({ termId: term.id, email: member.email, memberId: member.id, addedBy: actor.memberId })
-			.onConflictDoNothing();
-	}
-
 	return {
 		async list(actor, input) {
 			if (!can(actor, "member:manage")) {
@@ -79,12 +88,8 @@ export function createMembersRepository(db: MemberDb, audit: AuditRepository): M
 			}
 			const email = input.email.trim().toLowerCase();
 			const [existing] = await db.select().from(members).where(eq(members.email, email)).limit(1);
-			if (existing) {
-				await addToCurrentRoster(actor, existing);
-				return existing;
-			}
-			const [member] = await db.insert(members).values({ id: createId("mem"), email, name: input.name ?? null, status: "pending" }).returning();
-			await addToCurrentRoster(actor, member);
+			if (existing) return existing;
+			const [member] = await db.insert(members).values({ id: createId("mem"), email, name: input.name ?? null, status: "inactive" }).returning();
 			await audit.record(actor, {
 				action: "member:create",
 				targetType: "member",

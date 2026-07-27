@@ -2,13 +2,11 @@ import { env } from "cloudflare:test";
 import { drizzle } from "drizzle-orm/d1";
 import { beforeEach, describe, expect, it } from "vitest";
 import * as schema from "@/db/schema";
-import { auditLogs, termMemberRoster } from "@/db/schema";
+import { auditLogs } from "@/db/schema";
 import { isRosterSignInAllowed } from "@/server/auth/roster";
 import type { Actor } from "@/server/auth/permissions";
 import { createAuditRepository } from "./audit";
 import { createMembersRepository } from "./members";
-
-const NOW = new Date("2026-06-18T00:00:00.000Z");
 
 const adminActor: Actor = {
 	memberId: "mem_test_admin",
@@ -23,17 +21,12 @@ const memberActor: Actor = {
 describe("members repository on D1", () => {
 	beforeEach(async () => {
 		await env.DB.prepare("DELETE FROM audit_logs").run();
-		await env.DB.prepare("DELETE FROM term_member_roster").run();
-		await env.DB.prepare("DELETE FROM terms").run();
 		await env.DB.prepare("DELETE FROM members").run();
 	});
 
 	it("creates and lists members for an authorized actor", async () => {
 		await env.DB.prepare("INSERT INTO members (id, email, name) VALUES (?, ?, ?)")
 			.bind(adminActor.memberId, "admin@example.com", "Admin")
-			.run();
-		await env.DB.prepare("INSERT INTO terms (id, name, retained_at, probation_below, starts_at, ends_at) VALUES (?, ?, ?, ?, ?, ?)")
-			.bind("term_current", "Term Current", 20, 10, new Date("2026-01-01").getTime(), new Date("2100-01-01").getTime())
 			.run();
 		const db = drizzle(env.DB, { schema });
 		const repository = createMembersRepository(db, createAuditRepository(db));
@@ -46,12 +39,9 @@ describe("members repository on D1", () => {
 		const [audit] = await db.select().from(auditLogs);
 
 		expect(created.email).toBe("new-member@example.com");
-		expect(created.status).toBe("pending");
+		expect(created.status).toBe("inactive");
 		expect(listed.map((member) => member.id)).toContain(created.id);
-		await expect(isRosterSignInAllowed(db, "new-member@example.com", NOW)).resolves.toBe(true);
-		await expect(db.select().from(termMemberRoster)).resolves.toEqual([
-			expect.objectContaining({ termId: "term_current", email: "new-member@example.com", memberId: created.id }),
-		]);
+		await expect(isRosterSignInAllowed(db, "new-member@example.com")).resolves.toBe(true);
 		expect(audit).toMatchObject({
 			actorMemberId: adminActor.memberId,
 			action: "member:create",
