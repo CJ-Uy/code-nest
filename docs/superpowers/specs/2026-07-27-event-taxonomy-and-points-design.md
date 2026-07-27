@@ -1,9 +1,9 @@
 # Event Taxonomy & Multi-Type Points — Design Spec
 
 **Date:** 2026-07-27
-**Status:** Revised after Codex adversarial review rounds 1 and 2 — 17 findings, all accepted. See §10
-and the two review logs (`…-review-log.md`, `…-review-log-r2.md`). Round 3 pending on the material
-round 2 changed.
+**Status:** Revised after three Codex adversarial review rounds — 21 findings, all accepted. See §10
+and the three review logs (`…-review-log.md`, `…-r2.md`, `…-r3.md`). Round 3 returned
+`IMPLEMENTATION READY: NO`; its four findings are now applied and awaiting round 4 verification.
 **Branch:** beta
 **Related:** `2026-07-25-events-attendance-finalization-design.md` (deferred this work as "spec 3"),
 `2026-07-04-events-attendance-system-design.md` (the member-owned model)
@@ -51,7 +51,9 @@ Therefore **this spec performs no table rebuilds.** Consequences, each deliberat
 
 - `crs_events.type` gets **no foreign key** to `event_types`.
 - `retention_records.point_type_id` gets **no foreign key** either.
-- `crs_events.points` is **not dropped**; it is deprecated and left unwritten.
+- `crs_events.points` is **retained and deprecated**. Plan B2 still writes it, but only as a
+  compatibility mirror of the Retention award (§5); Plan B3 removes that write once no shipped UI
+  reads it. Dropping the column remains deferred indefinitely.
 - The migration-runner change contemplated in an earlier draft is **not needed and not performed**.
 
 Referential integrity for both columns is enforced in the repository layer instead, which is where
@@ -222,6 +224,19 @@ Plan A must therefore distinguish three states, not two:
 Do not feed `[]` from a `.catch()` into a fail-closed membership helper. Repository validation remains
 the enforcement point in all three states.
 
+**Three callers need this, not two — and the third is the dangerous one.** The admin policy screen
+itself catches a failed `eventTypeRules.list()` to `[]`
+(`src/app/portal/admin/system/event-types/page.tsx:12-15`). Its manager then maps every type and
+renders a missing rule as `""` (`event-type-rules-manager.tsx:26-28,47-53`), which the form displays
+as **"Any member"**, and the action writes whatever was submitted straight back through the
+repository (`event-types/actions.ts:18-23`).
+
+So on a transient read failure — or in shared-dev, where `eventTypeRules` is a throwing Proxy
+(`src/db/repositories/index.ts:98-100,117-120`) — an admin is shown every event type as unrestricted
+and **can save that false default over real policy**. That is worse than the create-form outage: it is
+silent privilege widening driven by a read error. The admin screen must render an explicit
+unavailable state and refuse to submit, never an empty list presented as truth.
+
 ### Palette
 
 Fixed tokens, mapped to Tailwind class pairs in one place in code:
@@ -307,6 +322,20 @@ stays, exactly as a retired event type keeps rendering on old events.
 Deactivation therefore never fails because an event still awards the type. This matches the
 soft-disable semantics chosen for event types in §1: retire means "stop using from now on", not
 "erase the past".
+
+Two consequences that must be implemented, not assumed:
+
+- **Reconciliation never touches rows under an inactive type** — see §5 step 3. Otherwise saving an
+  award set from an active-only editor would delete the history this rule promises to keep.
+- **An awarded-but-inactive type stays visible.** An `event_point_awards` row whose type was
+  deactivated afterwards still exists and grants nothing on future scans. The event-detail editor
+  renders it read-only as *"Frontliner — retired, no longer grants points"*, with an explicit remove
+  action. Without that, an admin sees an award that silently does nothing and has no way to
+  understand why.
+
+Active state is re-checked **inside** the set-based write (the `SELECT` joins
+`point_types WHERE active = 1`), so a type deactivated between validation and write simply grants
+nothing rather than producing a torn result.
 
 ## 3. `retention_records.point_type_id`
 
@@ -431,8 +460,26 @@ the atomic unit:
 1. Replace `event_point_awards` rows for the event.
 2. `INSERT … SELECT` from `crs_attendance` joined to the final `event_point_awards`, upserting on the
    partial index (with `targetWhere`, §3).
-3. Delete attendance-source rows whose `point_type_id` is no longer awarded.
+3. Delete attendance-source rows whose `point_type_id` is no longer awarded — **restricted to active
+   point types** (see below).
 4. Insert the audit entry **in the same atomic unit**.
+
+**Step 3 must never delete rows belonging to an inactive type.** §2 promises that deactivating a type
+preserves history, while a naive "delete everything no longer awarded" does the opposite: B3's editor
+renders a row per *active* point type, so a saved award for a since-deactivated type is absent from
+the submitted set, and step 3 would delete the very history §2 guarantees. The two rules contradict
+unless step 3 is scoped:
+
+```
+DELETE FROM retention_records
+ WHERE source = 'event_attendance' AND event_id = ?
+   AND point_type_id NOT IN (<submitted award type ids>)
+   AND point_type_id IN (SELECT id FROM point_types WHERE active = 1)   -- ← the restriction
+```
+
+Rows under inactive types are therefore invisible to reconciliation entirely: never created, never
+deleted. Removing them requires an explicit, deliberate admin action, not a side effect of saving an
+unrelated award.
 
 ### Provenance
 
@@ -474,13 +521,29 @@ and calls `setPointsAction(event.id, points)`
 (`[eventId]/actions.ts:93-97`); the page feeds it `managed.points` (`[eventId]/page.tsx:99-113`); and
 the shared contract still exposes `setPoints` (`contract/events.ts:122-128`).
 
-So Plan B2 **keeps a compatibility shim**:
+So Plan B2 **keeps a compatibility shim**. It is a **distinct operation, not an alias for
+`setAwards`** — this distinction is load-bearing:
 
-- `setPointsAction` and a repository-level `setPoints(actor, eventId, points)` survive, implemented as
-  a thin wrapper that maps the single value onto the **Retention** award and returns the old
-  `{ updated }` shape.
-- `setAwards` continues to mirror the Retention award into `crs_events.points` so the old panel keeps
-  showing a truthful number.
+`setAwards` has **whole-set replacement** semantics. A shim implemented as
+`setAwards([{ pt_retention, points }])` would therefore **erase every non-Retention award on the
+event**, which is exactly the case B2 creates: `setAwards` exists while the old single-number panel is
+still live. An admin awards 2 Retention + 3 Frontliner, someone touches the old panel, and the
+Frontliner award silently vanishes.
+
+`setPoints(actor, eventId, points)` must instead be a **scoped, Retention-only** operation:
+
+- Update, insert, or remove **only** the Retention award row.
+- Leave every other `event_point_awards` row untouched.
+- Reconcile only the Retention attendance rows affected by that change.
+- Mirror the Retention value into `crs_events.points`.
+- Return **the distinct attendee count**, not an affected-row count.
+
+That return value matters: today `setPoints` returns `attendees.length` (`events.ts:323-326,345-346`)
+and the panel renders it as `Updated {result} attendee record(s).`
+(`event-manage-panel.tsx:668-670`). A multi-type affected-row count would make that sentence a lie.
+
+`setAwards` mirrors its Retention award into `crs_events.points` for the same reason, so the old panel
+keeps showing a truthful number while it still exists.
 
 Plan B3 replaces the panel with the per-type editor, and only **then** are the shim and the mirror
 removed. Column removal itself stays deferred (§B).
@@ -539,9 +602,14 @@ Required coverage:
   for it, while rows already granted under that type survive reconciliation untouched.
 - **Rules load failure.** A failed `eventTypeRules.list()` renders the distinct unavailable state,
   not an empty "you may create nothing" selector.
-- **`setPoints` shim.** The wrapper maps a single value onto the Retention award, returns
-  `{ updated }`, and keeps `crs_events.points` in step, so the unmodified event-detail panel still
-  works after B2 alone.
+- **`setPoints` shim scope.** Calling the shim on an event awarding 2 Retention + 3 Frontliner
+  changes only Retention and **leaves the Frontliner award intact**, and returns the distinct
+  attendee count so the old panel's "Updated N attendee record(s)" stays true.
+- **Inactive-type history survives reconciliation.** Saving an active-only award set on an event that
+  also holds an award for a deactivated type leaves that type's existing retention rows untouched.
+- **Admin policy screen fails visibly.** A failed `eventTypeRules.list()` renders the unavailable
+  state and refuses submission, rather than showing every type as "Any member" — which would let an
+  admin overwrite real policy from a read error.
 - **Unknown event type fails closed.** A `crs_events.type` value with no matching row is rejected on
   create and on type change.
 - **Soft-disable.** An inactive type cannot be chosen for a new event or switched to, but an event
@@ -571,7 +639,9 @@ One spec, four plans. Each is independently deployable and rollback-compatible.
 
 **Plan A — event types as data.** Columns on `event_type_rules` (in place, name unchanged), palette,
 pre-migration distinct-type audit, fail-closed type resolution, the ten hardcoded `z.enum` / union
-sites, active-flag handling, admin screen, type badges. No points involvement, no rebuilds.
+sites, active-flag handling, admin screen, type badges, and the **three-state load handling across all
+three callers** — both calendar pages *and* the event-types admin screen (§1). No points involvement,
+no rebuilds.
 
 **Plan B1 — additive points schema.** `point_types`, `event_point_awards`,
 `retention_records.point_type_id` with its default, the duplicate pre-check and partial unique index,
@@ -628,3 +698,20 @@ Round 2 also **verified as correct**: expand-contract holds for the deployed Wor
 B1 gaps; `ADD COLUMN … NOT NULL DEFAULT 'pt_retention'` is legal on SQLite and accepted by
 better-sqlite3 inside the runner's transaction; deleting `recordEventAttendance` is safe (no
 production caller, including shared-dev); and Plans A, B1 and B3 each stop safely on their own.
+
+Round 3 — Codex adversarial review scoped to the round-2 changes, 4 findings (3 Major, 1 Minor),
+**all accepted**. Verdict was `IMPLEMENTATION READY: NO`. Full text:
+`2026-07-27-event-taxonomy-and-points-review-log-r3.md`.
+
+| # | Finding | Resolution |
+| --- | --- | --- |
+| 1 | A `setPoints` shim implemented as a `setAwards` alias would **erase every non-Retention award**, since `setAwards` replaces the whole set; `{ updated }` was also underspecified against the panel's "attendee record(s)" copy | §5 redefines the shim as a scoped Retention-only operation that preserves other awards and returns the distinct attendee count |
+| 2 | §2's "preserve history" and §5's "delete no-longer-awarded" **directly contradict** once B3's active-only editor omits a deactivated type's award | §5 step 3 restricted to active types; §2 adds the read-only "retired, no longer grants" affordance and the in-write active re-check |
+| 3 | The three-state load missed a **third caller — the admin policy screen itself**, where a read failure renders every type as "Any member" and an admin can save that over real policy | §1 covers all three callers; the admin screen renders an unavailable state and refuses submission |
+| 4 | §B still said `crs_events.points` is "left unwritten", contradicting B2's compatibility mirror | §B rewritten: retained, mirrored in B2, mirror removed in B3, column drop deferred |
+
+Round 3 also **verified as correct**: the §3 upsert recipe works in §5's actual
+`insert().select().onConflictDoUpdate()` shape against the partial index, inside `runAtomic`'s
+synchronous local `.run()` pattern (probed against the installed packages); and §2's second
+deactivation guard is correct for the non-retention-bearing case and serialises correctly under
+concurrent deactivation.
