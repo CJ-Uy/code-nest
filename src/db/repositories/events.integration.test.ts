@@ -286,16 +286,28 @@ describe("events repository on D1", () => {
 			{ pointTypeId: "pt_retention", points: 2 },
 			{ pointTypeId: "pt_frontliner", points: 3 },
 		]);
+		await db.update(schema.crsEvents).set({ points: 99 }).where(eq(schema.crsEvents.id, event.id));
 
 		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
 
+		const awards = await db
+			.select({ pointTypeId: schema.eventPointAwards.pointTypeId, points: schema.eventPointAwards.points })
+			.from(schema.eventPointAwards)
+			.orderBy(schema.eventPointAwards.pointTypeId);
 		const rows = await db
 			.select()
 			.from(schema.retentionRecords)
 			.orderBy(schema.retentionRecords.pointTypeId);
-		expect(rows.map((row) => [row.pointTypeId, row.points, row.eventId])).toEqual([
-			["pt_frontliner", 3, event.id],
-			["pt_retention", 2, event.id],
+		expect(awards.map((row) => [row.pointTypeId, row.points])).toEqual([
+			["pt_frontliner", 3],
+			["pt_retention", 2],
+		]);
+		expect(rows.map((row) => [row.pointTypeId, row.points])).toEqual(
+			awards.map((row) => [row.pointTypeId, row.points]),
+		);
+		expect(rows.map((row) => row.eventId)).toEqual([
+			event.id,
+			event.id,
 		]);
 	});
 
