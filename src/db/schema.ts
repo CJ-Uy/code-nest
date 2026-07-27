@@ -2,8 +2,10 @@ import { sql } from "drizzle-orm";
 import { check, index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export type MemberStatus = "active" | "pending" | "inactive";
-export const eventTypes = ["official", "casual", "birthday"] as const;
-export type EventType = (typeof eventTypes)[number];
+/** The three types seeded by migration 0010; kept for seeding and tests only. Event types are data now - see event_type_rules. */
+export const seedEventTypes = ["official", "casual", "birthday"] as const;
+/** An event type is now an admin-managed key, validated at runtime against event_type_rules. */
+export type EventType = string;
 export type EventStatus = "pending" | "approved" | "rejected";
 export type RsvpState = "going" | "none";
 export type SurveyStatus = "draft" | "running" | "closed";
@@ -289,6 +291,10 @@ export const eventTypeRules = sqliteTable("event_type_rules", {
 	type: text("type").$type<EventType>().primaryKey(),
 	// NULL means any member may create this event type.
 	requiredPermission: text("required_permission"),
+	label: text("label").notNull().default(""),
+	colour: text("colour").notNull().default("slate"),
+	active: integer("active").notNull().default(1),
+	position: integer("position").notNull().default(0),
 	updatedBy: text("updated_by").references(() => members.id, { onDelete: "set null" }),
 	updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 });
