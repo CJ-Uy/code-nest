@@ -1,7 +1,8 @@
 # Event Taxonomy & Multi-Type Points — Design Spec
 
 **Date:** 2026-07-27
-**Status:** Approved by product owner. Ready for planning (two plans — see §9).
+**Status:** Revised after Codex adversarial review round 1 (12 findings, all accepted — see §12 and
+`2026-07-27-event-taxonomy-and-points-review-log.md`). Awaiting round 2.
 **Branch:** beta
 **Related:** `2026-07-25-events-attendance-finalization-design.md` (deferred this work as "spec 3"),
 `2026-07-04-events-attendance-system-design.md` (the member-owned model)
@@ -18,9 +19,46 @@ Two limitations remain from the finalization spec, both deferred there by explic
    and more later — with one event able to award several at once ("2 Retention and 3 Frontliner"),
    so they can drive qualification rules later.
 
+## Two constraints that shape everything below
+
+### A. Migration and deploy are separate steps
+
+`db:migrate:dev` (`package.json:31`) and `deploy:dev` (`package.json:15`) are distinct commands. The
+migration lands **first**; the new Worker goes live afterwards. Between them, the **currently
+deployed Worker runs against the new schema**.
+
+Therefore **every migration in this spec must be backward-compatible with the Worker already
+running.** No renames of tables the live code queries, no dropped columns the live code writes, no
+new `NOT NULL` column without a default that makes old inserts valid. Anything that must eventually
+be removed is deprecated now and deleted in a much later release, once no deployed code touches it.
+
+### B. No table rebuilds — they can delete data
+
+SQLite cannot add a constraint or a foreign key to an existing column; the standard workaround is a
+table rebuild (`CREATE new; INSERT SELECT; DROP old; RENAME`). Drizzle wraps those in
+`PRAGMA foreign_keys=OFF; … =ON;`.
+
+`src/db/migrate-local-sqlite.ts:11-13` records that the local runner executes each migration inside a
+transaction, where `PRAGMA foreign_keys` is a **no-op**. And SQLite's `DROP TABLE` performs an
+implicit `DELETE FROM` that **fires `ON DELETE CASCADE`** when foreign keys are enabled.
+
+`crs_events` is the parent of six cascading children — event staff, invites, RSVPs, attendance,
+media, and forum posts (`src/db/schema.ts:206,226,244,259,285,302`). Rebuilding it with the PRAGMA
+neutered would **erase every event's attendance, staff, and forum history**.
+
+Therefore **this spec performs no table rebuilds.** Consequences, each deliberate:
+
+- `crs_events.type` gets **no foreign key** to `event_types`.
+- `retention_records.point_type_id` gets **no foreign key** either.
+- `crs_events.points` is **not dropped**; it is deprecated and left unwritten.
+- The migration-runner change contemplated in an earlier draft is **not needed and not performed**.
+
+Referential integrity for both columns is enforced in the repository layer instead, which is where
+this codebase already enforces every other invariant.
+
 ## The load-bearing risk
 
-**Six** places aggregate `retention_records.points` with no notion of type:
+Five places compute a member's points **total or status**, all untyped today:
 
 | Site | What it feeds |
 | --- | --- |
@@ -29,169 +67,218 @@ Two limitations remain from the finalization spec, both deferred there by explic
 | `src/db/repositories/retention.ts:219` | public leaderboard |
 | `src/db/repositories/retention.ts:356` | `myHistory` — an **in-memory `reduce`**, not SQL |
 | `src/db/repositories/overview.ts:51` | dashboard total |
-| `src/db/repositories/retention.ts:114` | `reportBaseColumns` → CSV/XLSX exports |
 
-The moment a second point type writes a row, every one of these starts adding Frontliner points into
-what is meant to be the Retention total — inflating leaderboards and **flipping members between
-retained and probation**. Note the fourth: it is a JavaScript `reduce`, so a SQL-only fix silently
-misses it.
+Plus two **row projections** that are not aggregations but do need type metadata:
 
-Getting all six right is the single most important correctness requirement in this spec.
+| Site | What it feeds |
+| --- | --- |
+| `src/db/repositories/retention.ts:114` | `reportBaseColumns` → the XLSX export |
+| `src/db/repositories/retention.ts:339-366` | `myHistory` rows → the member's history list |
+
+The moment a second point type writes a row, each of the five totals starts adding Frontliner points
+into what is meant to be the Retention total — inflating leaderboards and **flipping members between
+retained and probation**. The fourth is a JavaScript `reduce`, so a SQL-only fix silently misses it.
+
+An exhaustive search found **no sixth total and no other retained/probation computation**; `statusFor`
+is fed only by the two member-summary totals (`retention.ts:91-95,180-188,356-364`). The list is
+complete.
 
 ## What already exists (reuse, don't rebuild)
 
-- `event_type_rules` (from migration `0010`) is already a type→permission map keyed by type. It
-  **becomes** the new `event_types` table by gaining columns — it is not replaced by a parallel one.
-- `crs_events.type` already stores exactly the strings `casual` / `official` / `birthday`, so it can
-  gain a foreign key to `event_types.key` with **no row migration**.
+- `event_type_rules` (migration `0010`) is already a type→permission map keyed by type. It gains
+  columns **in place, keeping its physical name** (see §1).
+- `crs_events.type` already stores the strings `casual` / `official` / `birthday` as plain
+  `TEXT NOT NULL` with **no CHECK and no foreign key**
+  (`drizzle/migrations/0000_young_bullseye.sql:178-200`).
 - `canCreateType` / `allowedEventTypes` / `createEventTypeRulesRepository`
-  (`src/db/repositories/eventTypeRules.ts`) already implement permission gating, including the
-  fail-closed behaviour for unrecognized permissions. Extend; do not rewrite.
-- The admin screen at `/portal/admin/system/event-types` already exists with its server action,
-  pure `parseEventTypeRuleInput` parser, and `role:assign` guard.
-- `events.create` **and** `events.update` already enforce type gating at the repository layer.
-- `undoScan` already deletes retention rows scoped by `(event_id, member_id, source)`, which
-  correctly removes *all* per-type rows with no change.
-- `src/db/migrate-local-sqlite.ts` documents a known ceiling that §7 cashes in.
+  (`src/db/repositories/eventTypeRules.ts`) implement permission gating including fail-closed
+  handling of unrecognized permissions. Extend; do not rewrite.
+- The admin screen at `/portal/admin/system/event-types` exists with its server action, pure
+  `parseEventTypeRuleInput` parser, and `role:assign` guard.
+- `events.create` **and** `events.update` already enforce type gating at the repository layer,
+  including the same-type-resubmit rule.
+- `undoScan` already deletes retention rows scoped by `(event_id, member_id, source)`, which removes
+  every per-type row with no change.
 
-## Corrections to assumptions made while designing
+## Corrections to earlier assumptions
 
 Recorded so the plan does not repeat them:
 
-- **`calendar-month.tsx` is NOT affected.** Its `SOURCE_CHIP` / `SOURCE_DOT` maps are keyed by
-  `CalendarItem["source"]` (`event` / `birthday` / `term_deadline`), which is calendar provenance,
-  not event type. Its `birthday` entry means *member birthdays* and must not be conflated with the
-  `birthday` event type.
+- **`calendar-month.tsx` is NOT affected.** Its `SOURCE_CHIP` / `SOURCE_DOT` maps key off
+  `CalendarItem["source"]` (`event` / `birthday` / `term_deadline`) — calendar provenance, not event
+  type. Its `birthday` entry means *member birthdays* and must not be conflated with the `birthday`
+  event type.
 - **Event types have no colour today.** `events-list.tsx:10` carries the type union but applies no
-  styling to it. The colour column is net-new UI, not a migration of existing maps.
+  styling. The colour column is net-new UI.
+- **There is no CSV exporter.** File export is XLSX only (`src/server/reporting/xlsx.ts:22-54`,
+  `src/app/api/reporting/export/route.ts:40-58`).
+- **`reportBaseColumns` is a row projection, not an aggregation.** It needs type metadata, not a
+  retention filter — filtering it would hide non-Retention records from reports.
 
 ## Decisions (locked with product owner)
 
 1. **Event types become admin-managed rows** with label, colour, required permission, active flag,
    and ordering. The `casual | official | birthday` enum is retired.
 2. **Point types are admin-managed**, and a boolean `counts_toward_retention` marks which drive the
-   term's retained/probation thresholds. Multiple types may carry it; they sum.
-3. **Soft-disable, never delete.** Neither event types nor point types may be deleted. An `active`
-   flag hides them from creation forms while existing rows keep resolving their label and colour.
-4. **Colour comes from a fixed named palette**, not a free hex picker — the codebase styles with
-   Tailwind classes, which cannot be generated at runtime, and a palette guarantees light/dark
-   legibility.
-5. **Points stay per-event.** Event types do **not** carry default point awards. Only `event:points`
-   holders set an event's awards, preserving today's guardrail that a member creating an event
-   cannot award themselves points.
+   term's retained/probation thresholds. Multiple may carry it; they sum.
+3. **Soft-disable, never delete.** An `active` flag hides a type from creation forms while existing
+   rows keep resolving their label and colour.
+4. **Colour comes from a fixed named palette**, not free hex — the codebase styles with Tailwind
+   classes, which cannot be generated at runtime.
+5. **Points stay per-event.** Event types carry **no** default awards. Only `event:points` holders set
+   an event's awards, preserving the guardrail that a member creating an event cannot award
+   themselves points.
 6. **Members see the full breakdown** — profile widget, event detail, and a type-filterable
-   leaderboard defaulting to Retention — alongside the admin views and exports.
+   leaderboard defaulting to Retention — alongside admin views and exports.
 
 ## Non-goals
 
-- No qualification *rules* engine. This spec makes the data available; deciding what qualifies
-  someone as a Frontliner is a later product decision.
+- No qualification *rules* engine. This spec makes the data available.
 - No per-type retained/probation thresholds. `terms.retained_at` / `probation_below` keep driving a
-  single total, computed from the types flagged `counts_toward_retention`.
+  single total computed from the flagged types.
 - No `ends_at NOT NULL` backfill — still deferred.
 - No changes to RSVP, event forum, or event media.
 - No new npm dependency.
 - No bulk historical re-typing tool. Soft-disable means one is never required.
+- **No removal of `crs_events.points` in this spec.** Deprecated only; see §B.
+- **No notification outbox.** Fan-out is explicitly best-effort; see §5.
 
 ---
 
-## 1. `event_types`
+## 1. Event types
 
-`event_type_rules` gains columns and is renamed:
+`event_type_rules` gains columns **in place**. Its physical table name is **unchanged** — renaming it
+would break the live Worker during the deploy window (§A). Drizzle's exported symbol may be aliased
+`eventTypes` in code for readability, but the SQL name stays `event_type_rules` until a much later
+cleanup release.
 
 ```sql
-event_types
-  key                  TEXT PRIMARY KEY  -- 'casual', 'workshop', 'gen_assembly'
-  label                TEXT NOT NULL     -- 'General Assembly'
-  colour               TEXT NOT NULL     -- palette token, see below
-  required_permission  TEXT              -- NULL = any member (carried over unchanged)
-  active               INTEGER NOT NULL DEFAULT 1
-  position             INTEGER NOT NULL DEFAULT 0
-  updated_by           TEXT REFERENCES members(id) ON DELETE SET NULL
-  updated_at           INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+ALTER TABLE event_type_rules ADD COLUMN label    TEXT NOT NULL DEFAULT '';
+ALTER TABLE event_type_rules ADD COLUMN colour   TEXT NOT NULL DEFAULT 'slate';
+ALTER TABLE event_type_rules ADD COLUMN active   INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE event_type_rules ADD COLUMN position INTEGER NOT NULL DEFAULT 0;
+-- then backfill labels/colours/positions for the three seeded rows
 ```
 
-Seeded from the three existing rows, preserving their current permissions
-(`casual`→NULL, `birthday`→NULL, `official`→`event:create_restricted`), with labels
-`Casual` / `Birthday` / `Official` and distinct palette tokens.
+All four are `NOT NULL` with a non-null default, which `ADD COLUMN` permits and which keeps the old
+Worker's reads valid. A row whose `label` is still `''` renders as its `key`.
 
-`crs_events.type` keeps its existing values and is **deliberately left without a foreign key**.
-SQLite has no `ALTER TABLE … ADD CONSTRAINT`, so adding one would require a full table rebuild of
-`crs_events` — which would drag §7's runner-ceiling change into Plan A and destroy its low-risk
-profile for very little gain. Instead:
+`required_permission`, `updated_by`, `updated_at` already exist and are unchanged.
 
-- `events.create` and `events.update` already validate the type at the repository layer; that
-  validation extends to "must be an existing, active type".
-- Soft-disable (never delete) means a key can never disappear from under an existing event.
-- A type key with no matching row renders as its raw key with the `slate` fallback colour, rather
-  than crashing.
+### Pre-migration audit (required, blocking)
 
-The only way to orphan a type is a manual write straight to the database, which is the same class of
-risk already accepted for `required_permission`, and is handled the same way — degrade visibly
-rather than fail.
+`crs_events.type` has no CHECK and no FK, so "production holds exactly the three seeded values" is an
+**assumption, not a fact**. Before Plan A runs against any environment:
 
-Because the column already holds exactly the seeded keys, **no event rows are migrated**.
+```sql
+SELECT type, COUNT(*) FROM crs_events GROUP BY type;
+```
+
+Run it against **dev D1**, not just the local database. Any value outside the seeded three must
+either abort the migration or get a reviewed, explicitly inactive placeholder row. Local currently
+holds only `official`, which proves nothing about dev.
+
+### Fail closed on an unknown type — a deliberate reversal
+
+`canCreateType` today treats a **missing rule row as unrestricted**
+(`src/db/repositories/eventTypeRules.ts:17-35`). That was correct when a missing row meant "no
+permission rule configured for this valid type". Once the table **is** the type list, a missing row
+means **the type does not exist**, and falling open would let any string through the repository once
+the Zod enums are gone.
+
+So this spec **reverses that behaviour for type existence**:
+
+| Case | Behaviour |
+| --- | --- |
+| No row for the key | **Reject** — the type does not exist |
+| Row exists, `active = 0` | Reject for new events and for type *changes*; permitted as an unchanged resubmit on an existing event |
+| Row exists, `required_permission` NULL | Any member |
+| Row exists, known permission | `can(actor, permission)` |
+| Row exists, unrecognized permission string | Fail closed — `super` only (unchanged from spec 2) |
+
+Zod boundaries validate key *shape* (lowercase, `[a-z0-9_]`, length ≤ 32) since they can no longer
+validate membership; `events.create` / `events.update` re-validate existence, active state, and
+permission at the repository layer. Keys are immutable once created — the admin UI edits label,
+colour, permission, active, and position, never the key.
 
 ### Palette
 
-A fixed set of tokens, each mapping to a Tailwind class pair in one place in code:
+Fixed tokens, mapped to Tailwind class pairs in one place in code:
 
 ```
 primary · accent · emerald · amber · rose · slate
 ```
 
-Stored as the token string. A row whose token is unrecognized falls back to `slate` rather than
-rendering unstyled — the same fail-safe posture as the permission handling, but falling back to a
+An unrecognized token falls back to `slate` rather than rendering unstyled. Falling back to a
 *visual* default is safe where falling open on a *permission* would not be.
-
-### Retiring a type
-
-Setting `active = 0` removes it from creation and edit forms. Existing events keep their type and
-keep rendering its label and colour. `canCreateType` gains an active check: an inactive type cannot
-be chosen for a new event or switched to on an existing one, but an event already on that type may
-be edited without changing its type — mirroring the same-type-resubmit rule already implemented in
-`events.update`.
 
 ## 2. `point_types` and `event_point_awards`
 
 ```sql
-point_types
-  id                       TEXT PRIMARY KEY      -- 'pt_retention'
-  key                      TEXT NOT NULL UNIQUE  -- 'retention'
-  label                    TEXT NOT NULL         -- 'Retention'
-  counts_toward_retention  INTEGER NOT NULL DEFAULT 0
-  active                   INTEGER NOT NULL DEFAULT 1
-  position                 INTEGER NOT NULL DEFAULT 0
-  updated_by               TEXT REFERENCES members(id) ON DELETE SET NULL
+CREATE TABLE point_types (
+  id                       TEXT PRIMARY KEY,        -- 'pt_retention'
+  key                      TEXT NOT NULL UNIQUE,    -- 'retention'
+  label                    TEXT NOT NULL,
+  counts_toward_retention  INTEGER NOT NULL DEFAULT 0,
+  active                   INTEGER NOT NULL DEFAULT 1,
+  position                 INTEGER NOT NULL DEFAULT 0,
+  updated_by               TEXT REFERENCES members(id) ON DELETE SET NULL,
   updated_at               INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+);
 
-event_point_awards
-  event_id       TEXT NOT NULL REFERENCES crs_events(id) ON DELETE CASCADE
-  point_type_id  TEXT NOT NULL REFERENCES point_types(id)
-  points         INTEGER NOT NULL
+CREATE TABLE event_point_awards (
+  event_id       TEXT NOT NULL REFERENCES crs_events(id) ON DELETE CASCADE,
+  point_type_id  TEXT NOT NULL REFERENCES point_types(id),
+  points         INTEGER NOT NULL,
   PRIMARY KEY (event_id, point_type_id)
+);
 ```
+
+Both are **new** tables, so foreign keys are declared at creation — no rebuild, and §B does not apply.
 
 Seeded: `pt_retention` (Retention, `counts_toward_retention = 1`), `pt_frontliner` (Frontliner, 0),
 `pt_project_lead` (Project Lead, 0).
 
-Multiple types may carry `counts_toward_retention`; their points sum. There is deliberately **no
-exclusivity constraint** — enforcing "exactly one" adds a rule with no benefit, since summing is
-already the correct behaviour for two.
+### Authorization and the last-flag guard
 
-**Guard:** the admin screen must refuse to clear the last `counts_toward_retention` flag. With zero
-flagged types every member's retention total silently becomes zero and everyone drops to probation.
+Point-type policy is gated by a new `retention:configure` permission granted to the `retention` role
+(CRS admins), **not** by `retention:record`. `retention:record` authorizes logging records and reading
+reports (`src/server/auth/permissions.ts:52-57`, `retention.ts:230-275`); it should not also authorize
+rewriting which historical points determine every member's retained status. The two actions are
+separable from day one even though the same role currently holds both.
+
+**The last-flag guard lives in the repository, not the screen.** With zero types flagged
+`counts_toward_retention`, every member's retention total silently becomes zero and the whole org
+drops to probation. A screen-level check is bypassable by any other caller and races when two admins
+clear different types concurrently. Enforce it as a single conditional statement whose affected-row
+count reports refusal:
+
+```sql
+UPDATE point_types SET counts_toward_retention = 0
+ WHERE id = ?
+   AND EXISTS (SELECT 1 FROM point_types
+                WHERE counts_toward_retention = 1 AND active = 1 AND id <> ?);
+-- 0 rows affected => refuse: "At least one active point type must count toward retention."
+```
+
+The same guard covers **deactivating** the last retention-bearing type, not just clearing its flag.
 
 ## 3. `retention_records.point_type_id`
 
 ```sql
-retention_records
-  + point_type_id  TEXT NOT NULL REFERENCES point_types(id)
+ALTER TABLE retention_records
+  ADD COLUMN point_type_id TEXT NOT NULL DEFAULT 'pt_retention';
 ```
 
-Every existing row backfills to `pt_retention`.
+`NOT NULL` with a non-null default is permitted by `ADD COLUMN`; the restriction is only on a
+`REFERENCES` clause alongside a non-null default. So this gets a non-null column with **no rebuild**
+and **no foreign key** (§B). Existing rows take the default, which is the correct backfill.
 
-A **partial unique index** makes event-attendance rows addressable for upsert:
+The default is also the **expand-contract mechanism** (§A): during the deploy window the old Worker
+keeps inserting rows with no `point_type_id`, and SQLite fills in Retention — exactly what that code
+meant.
+
+### Partial unique index
 
 ```sql
 CREATE UNIQUE INDEX retention_records_event_member_type_idx
@@ -199,12 +286,31 @@ CREATE UNIQUE INDEX retention_records_event_member_type_idx
   WHERE source = 'event_attendance';
 ```
 
-This is what lets §5 reconcile awards without deleting and recreating rows, preserving each row's
-original `recorded_at` and `recorded_by`.
+Two hazards, both must be handled:
 
-## 4. The six aggregations
+1. **Existing duplicates block creation.** `retention_records` has no uniqueness constraint today
+   (`src/db/schema.ts:350-373`) and `recordEventAttendance` inserts unconditionally
+   (`retention.ts:122-138`). Run a duplicate query against dev D1 **before** the migration and abort
+   on any hit rather than discovering it mid-apply:
 
-Each gains a filter restricting to types flagged `counts_toward_retention`:
+   ```sql
+   SELECT event_id, member_id, point_type_id, COUNT(*) c
+     FROM retention_records WHERE source = 'event_attendance'
+    GROUP BY 1,2,3 HAVING c > 1;
+   ```
+
+2. **The conflict target must repeat the predicate.** SQLite will not match a bare
+   `ON CONFLICT (event_id, member_id, point_type_id)` against a *partial* index — the target must
+   carry the same `WHERE source = 'event_attendance'`. In Drizzle that is
+   `onConflictDoUpdate({ target: [...], targetWhere: eq(retentionRecords.source, "event_attendance") })`.
+   Without it, `setAwards` fails at runtime rather than upserting. **Verify the generated SQL on both
+   D1 and better-sqlite3** before relying on it.
+
+Event-attendance rows must also carry a non-null `event_id`; assert it in the repository.
+
+## 4. The five totals and two projections
+
+Each of the five **totals** gains a restriction to flagged types:
 
 ```sql
 SUM(retention_records.points)
@@ -214,14 +320,26 @@ SUM(retention_records.points)
 
 Applied to `retention.ts:168`, `:200`, `:219`, and `overview.ts:51`.
 
-`retention.ts:356` is **not** SQL — it is `rows.reduce((sum, row) => sum + (row.points ?? 0), 0)`.
-Its `rows` query must gain the same restriction, or the summary must reduce only over matching rows.
-Do not fix the five SQL sites and forget this one.
+`retention.ts:356` is **not SQL** — it is `rows.reduce((sum, row) => sum + (row.points ?? 0), 0)`.
 
-`reportBaseColumns` (`retention.ts:114`) gains a `pointTypeLabel` column, and `xlsx.ts:27`'s `Points`
-column is joined by a `Point Type` column, so exports stay unambiguous.
+**`myHistory` needs different treatment from the other four**, because §6 promises members a full
+breakdown. Filtering its rows query to retention-bearing types would delete Frontliner history from
+the member's own screen. Instead:
 
-New per-type reads (`GROUP BY point_type_id`) back the breakdown views in §6.
+- return **all** the member's rows, joined to point-type metadata,
+- reduce **only** rows whose joined type counts toward retention.
+
+`recordCount` is defined as **the count of all typed rows returned**, not retention-bearing rows
+only, and the test asserts that exact meaning.
+
+The two **projections** get type metadata rather than a filter — filtering would hide records from
+reports:
+
+- `reportBaseColumns` (`retention.ts:114`) gains `pointTypeLabel`; `xlsx.ts:27`'s `Points` column is
+  joined by a `Point Type` column.
+- `retentionRecordOutputSchema` and `myHistory`'s row DTO (`src/db/contract/retention.ts:5-15,107-115`)
+  gain the point-type label, and `src/components/retention-history.tsx:69-85` renders it — today it
+  shows an unlabelled number, which becomes actively misleading once types exist.
 
 ## 5. `setPoints` → `setAwards`
 
@@ -229,123 +347,178 @@ New per-type reads (`GROUP BY point_type_id`) back the breakdown views in §6.
 setAwards(actor, eventId, awards: Array<{ pointTypeId: string; points: number }>): Promise<{ updated: number }>
 ```
 
-Still gated on `event:points`. Semantics:
+### Validation inside the repository
 
-1. Replace the event's `event_point_awards` rows with `awards` (atomically).
-2. Reconcile every attendee's retention rows against the new awards — upsert on the partial unique
-   index for types still awarded, delete rows for types no longer awarded.
-3. Notify attendees once, as today.
-4. Write one audit entry.
+`setPoints` today checks authorization but **not value validity** (`events.ts:319-333`), and the
+server action passes its argument straight through (`calendar/[eventId]/actions.ts:93-98`) — the
+contract's `-100..100` bound (`contract/events.ts:122-128`) is not the repository's guard, and the
+form's `min`/`max` is client-side only. `setAwards` must therefore validate for itself:
 
-Retroactive re-valuation is preserved: changing an event's awards updates points already granted,
-which is the behaviour the 2026-07-04 spec established and members rely on.
+- array length bounded,
+- `pointTypeId` unique within the array,
+- `points` an integer within `-100..100` (unchanged from the existing contract bound),
+- every `pointTypeId` exists and is `active`.
 
-`recordScan` writes **one retention row per active award** instead of one row using
-`crs_events.points`. An event with no awards records attendance and no points, which is the correct
-behaviour for a casual event nobody has valued.
+Zod validation stays at the server and shared-contract boundaries too, but is not relied upon.
 
-`undoScan` is unchanged — its `(event_id, member_id, source)` scoping already removes every per-type
-row.
+### Set-based reconciliation, not read-then-write
 
-`crs_events.points` is dropped. Leaving it as a second, denormalized answer to "what is this event
-worth" is precisely the kind of drift that produces two disagreeing numbers on screen. Existing
-non-null values migrate into `event_point_awards` under `pt_retention`.
+A JavaScript read of awards or attendees followed by per-row writes is race-prone: a scan can read
+the old award set, a concurrent `setAwards` can commit, and the scan then writes stale rows — or an
+attendee scanned mid-reconciliation is missed entirely. `runAtomic` batches **pre-built** queries
+(`events.ts:139-159`), so the reconciliation must be expressed as set-based SQL evaluated *inside*
+the atomic unit:
+
+1. Replace `event_point_awards` rows for the event.
+2. `INSERT … SELECT` from `crs_attendance` joined to the final `event_point_awards`, upserting on the
+   partial index (with `targetWhere`, §3).
+3. Delete attendance-source rows whose `point_type_id` is no longer awarded.
+4. Insert the audit entry **in the same atomic unit**.
+
+### Provenance
+
+When a newly added award creates a row for an attendance that already happened, the new row copies
+`crs_attendance.scanned_by` and `crs_attendance.scanned_at` (`src/db/schema.ts:254-268`) rather than
+attributing the attendance to whoever changed the awards. IDs are generated in the same statement.
+
+`recordScan` likewise derives its rows from `event_point_awards` **inside the same batch** as the
+attendance insert, not from a JavaScript snapshot read beforehand.
+
+### Notifications are best-effort, and said so plainly
+
+Today `setPoints` commits, then writes notifications one at a time, then writes audit
+(`events.ts:327-346`); a single notification failure leaves awards changed, some attendees notified,
+and **no audit entry**. Moving audit into the atomic unit (step 4) fixes the audit half. Notification
+fan-out remains **explicitly best-effort**: every recipient is attempted, individual failures are
+caught and logged, and no atomicity is claimed. An outbox is out of scope — this is a points update,
+not a payment.
+
+### Other retention writers
+
+`recordScan` is **not** the only path that inserts `retention_records`. Two more exist and both break
+once `point_type_id` is enforced:
+
+- **`createManual`** (`retention.ts:230-255`) — the live admin manual-entry screen. Its input type
+  (`src/db/types.ts:35-47`), server action (`admin/data/retention/actions.ts:16-29`), shared contract,
+  and repository insert all gain `pointTypeId`. The admin form gains a **required** point-type
+  selector defaulting to Retention — visible and changeable, never a silent default.
+- **`recordEventAttendance`** (`retention.ts:122-138`) — has no production caller (only tests and the
+  `retention-unavailable` stub). **Delete it and its tests** rather than carrying a second, untyped
+  attendance writer that would drift from `recordScan`.
+
+`crs_events.points` stops being written. It is left in place, deprecated, per §B.
 
 ## 6. UI
 
 **Admin — `/portal/admin/system/event-types`** (extend the existing screen): label, colour token,
 required permission, active toggle, ordering, plus creating new types. Keeps its `role:assign` guard
-and its pure-parser + server-action structure.
+and its pure-parser + server-action structure. Key is set at creation and immutable thereafter.
 
 **Admin — point types** (new sibling screen, same pattern): label, `counts_toward_retention`, active,
-ordering. Guarded by `retention:record`, since this is CRS data policy rather than access policy.
-Must refuse to clear the last retention flag (§2).
+ordering. Guarded by `retention:configure` (§2), enforced again in every repository mutator.
+
+**Admin — manual retention entry:** gains a required point-type selector defaulting to Retention.
 
 **Event detail:** shows "Worth: 2 Retention · 3 Frontliner". `event:points` holders get an editor with
 a row per active point type.
 
 **Create/edit event forms:** the type `<select>` renders active types the actor may create, plus the
-event's current type even if inactive or otherwise disallowed — the rule already implemented for
-permissions in `events.update` extends to the active flag.
+event's current type even if inactive or otherwise disallowed.
 
 **Events list:** type badge coloured from the type's palette token — net-new styling.
 
-**Profile:** a row per active type. Retention keeps its retained/probation styling; others render as
+**Profile:** a row per active type. Retention keeps retained/probation styling; others render as
 plain counts.
+
+**Member history (`retention-history.tsx`):** each row gains its point-type label.
 
 **Leaderboard:** a type selector defaulting to Retention, so current behaviour is unchanged when
 untouched.
 
-## 7. Migration risk — the runner ceiling
+## 7. Testing
 
-Two changes need **SQLite table rebuilds**: adding `retention_records.point_type_id` as `NOT NULL`
-with a foreign key (SQLite forbids `ADD COLUMN` carrying both a `REFERENCES` clause and a non-null
-default), and dropping `crs_events.points`.
-
-Drizzle generates rebuilds wrapped in `PRAGMA foreign_keys=OFF; … PRAGMA foreign_keys=ON;`.
-`src/db/migrate-local-sqlite.ts` executes each migration inside a transaction, where
-`PRAGMA foreign_keys` is a **no-op** — a limitation deliberately recorded there as:
-
-> `Ceiling: statements run inside a transaction, so a migration relying on PRAGMA foreign_keys=OFF
-> would not take effect. None do today; if one lands, run that file's statements outside the
-> transaction.`
-
-This spec is the first to land one. **The runner must be updated before either rebuild migration
-is written**: detect a migration whose statements include a `PRAGMA`, and run that file's statements
-outside the transaction (accepting that such a file is not atomic, which is inherent to the pattern).
-The pure `planMigrations` function is unaffected; only the I/O shell changes.
-
-Verification must cover both database states, as it did for the last runner change: a fresh clone,
-and an existing already-migrated local database.
-
-## 8. Testing
-
-Constraints from `vitest.config.mts` are unchanged and binding: Workers pool, `.ts` only, no jsdom,
-no React Testing Library, no component render tests, and `better-sqlite3` importable by no test.
+Constraints from `vitest.config.mts` are binding and unchanged: Workers pool, `.ts` only, no jsdom,
+no React Testing Library, no component render tests, `better-sqlite3` importable by no test.
 
 Required coverage:
 
-- **The six aggregations.** With one member holding both Retention and Frontliner rows in a term,
-  assert `getMemberTermSummary`, both leaderboards, `myHistory`, and the overview total each report
+- **The five totals.** With one member holding both Retention and Frontliner rows in a term, assert
+  `getMemberTermSummary`, both leaderboards, `myHistory`'s total, and the overview total each report
   **only** the retention-flagged points. This is the test that would have caught the whole risk.
-- **Threshold integrity.** A member at exactly `retained_at` in Retention who also holds Frontliner
+- **`myHistory` returns all rows** including non-retention ones, with labels, while its total counts
+  only flagged types — and `recordCount` means all typed rows.
+- **Threshold integrity.** A member exactly at `retained_at` in Retention who also holds Frontliner
   points must not change status.
-- **`setAwards` reconciliation.** Adding, changing, and removing a type's award updates attendees'
-  rows correctly, and `recorded_at` survives an unchanged award.
-- **Soft-disable.** An inactive type cannot be chosen for a new event, but an event already on it can
-  have another field edited.
-- **Last retention flag.** Clearing it is refused.
-- **Migration runner.** PRAGMA-bearing migrations apply on both a fresh and an existing database.
+- **`setAwards` validation.** Duplicate `pointTypeId`, non-integer points, out-of-range points, and
+  unknown or inactive type IDs are each rejected by the repository, not just the form.
+- **`setAwards` reconciliation.** Adding, changing, and removing an award updates attendees' rows
+  correctly; an unchanged award preserves `recorded_at`; a newly added award copies
+  `scanned_by`/`scanned_at` from the attendance row.
+- **Upsert targeting.** The generated `ON CONFLICT … WHERE source = 'event_attendance'` actually
+  matches the partial index on both D1 and better-sqlite3.
+- **Unknown event type fails closed.** A `crs_events.type` value with no matching row is rejected on
+  create and on type change.
+- **Soft-disable.** An inactive type cannot be chosen for a new event or switched to, but an event
+  already on it can have another field edited.
+- **Last retention flag.** Both clearing the flag and deactivating the last flagged type are refused
+  at the repository, with the refusal driven by affected-row count.
+- **Manual entry** requires a point type and records it.
+- **XLSX export** carries the point-type column.
 
-## 9. Two plans
+## 8. Deployment discipline
 
-One spec, two implementation plans — they share this design, the admin surface, and the migration
-sequence, but have a hard ordering dependency and very different risk profiles.
-
-**Plan A — event types as data.** `event_types` table (rename + `ADD COLUMN … NOT NULL DEFAULT`
-then backfill, so no rebuild), palette, the ten hardcoded `z.enum` / union sites, active-flag
-handling, admin screen, type badges. No points involvement, **no table rebuilds** (see §1 on why
-`crs_events.type` gets no foreign key), low risk.
-
-**Plan B — multi-type points.** The migration-runner change, both table rebuilds, `point_types`,
-`event_point_awards`, `retention_records.point_type_id`, the six aggregations, `setAwards`,
-`recordScan`, exports, and the member/admin views. Carries all the migration risk.
-
-Plan A first: it is lower-risk, ships the thing currently blocking the org, and establishes the
-admin-screen pattern Plan B's point-types screen follows.
-
-## 10. Deployment
-
-Both plans change schema, so per `CLAUDE.md` the dev Worker path must be updated after each:
+Every stage below is **migrate → verify → deploy**, and each migration must be safe for the Worker
+already running (§A). Per `CLAUDE.md`, both commands need product-owner approval and wrangler cannot
+authenticate non-interactively, so the product owner runs them:
 
 ```
 pnpm db:migrate:dev
 pnpm deploy:dev
 ```
 
-Both require product-owner approval, and wrangler cannot authenticate non-interactively — the
-product owner runs them.
+**Outstanding from the previous spec:** migration `0010` has not yet been applied to dev D1. It must
+land before anything here, since `event_type_rules` is the table these migrations alter.
 
-**Outstanding from the previous spec:** migration `0010` has not yet been applied to dev D1. That
-must land before either plan's migrations, since `event_types` is built by altering the table `0010`
-created.
+## 9. Plans
+
+One spec, four plans. Each is independently deployable and rollback-compatible.
+
+**Plan A — event types as data.** Columns on `event_type_rules` (in place, name unchanged), palette,
+pre-migration distinct-type audit, fail-closed type resolution, the ten hardcoded `z.enum` / union
+sites, active-flag handling, admin screen, type badges. No points involvement, no rebuilds.
+
+**Plan B1 — additive points schema.** `point_types`, `event_point_awards`,
+`retention_records.point_type_id` with its default, the duplicate pre-check and partial unique index,
+plus migration verification on a fresh and an existing database. No behaviour change yet.
+
+**Plan B2 — repository and contracts.** `setAwards` with validation and set-based reconciliation,
+`recordScan` deriving rows from awards, `createManual` gaining `pointTypeId`, deleting
+`recordEventAttendance`, the five totals, the two projections, and the full aggregation test matrix.
+
+**Plan B3 — UI and cleanup.** Point-types admin screen, event-detail award editor, profile breakdown,
+member history labels, leaderboard type selector, XLSX column. Legacy `crs_events.points` removal is
+**not** included and is deferred to a later release once nothing reads it.
+
+Plan A first for product value; the technical dependency between A and B is weak (the retention
+repository does not call the event-type repository — `retention.ts:1-9`), so B1 could proceed in
+parallel if desired.
+
+## 10. Review history
+
+Round 1 — Codex adversarial review, 12 findings (2 Critical, 8 Important, 2 Minor), **all accepted**.
+Full text: `2026-07-27-event-taxonomy-and-points-review-log.md`. Summary of what changed:
+
+| # | Finding | Resolution |
+| --- | --- | --- |
+| 1 | Migrations incompatible with the deployed Worker | §A expand-contract; table name kept, column defaulted, nothing dropped |
+| 2 | PRAGMA fix unsound; `crs_events` rebuild can cascade-delete children | §B no rebuilds at all; runner change removed; `points` deprecated not dropped |
+| 3 | `createManual` and `recordEventAttendance` missed | §5 both handled; the unused one is deleted |
+| 4 | `setAwards` read-then-write race, provenance undefined | §5 set-based reconciliation inside the atomic unit; provenance copied from attendance |
+| 5 | Partial index needs `targetWhere`; existing duplicates block creation | §3 duplicate pre-check and explicit `targetWhere` |
+| 6 | `retention:record` too broad; last-flag guard bypassable and racy | §2 new `retention:configure`; guard moved into a conditional SQL update |
+| 7 | Missing type row falls open; "no rows migrated" unverified | §1 deliberate reversal to fail closed; blocking pre-migration audit |
+| 8 | `setAwards` has no value validation | §5 explicit repository-level validation |
+| 9 | `myHistory` filter contradicts the member breakdown promise | §4 return all rows with labels, reduce only flagged types |
+| 10 | Notification/audit partial failure | §5 audit into the atomic unit; fan-out declared best-effort |
+| 11 | "Six aggregations" inaccurate; no CSV exporter | §4 renamed to five totals + two projections; XLSX only |
+| 12 | Plan B too broad; A→B dependency weaker than claimed | §9 split into B1/B2/B3; dependency restated as weak |
