@@ -29,3 +29,11 @@ export function splitAuthList(value?: string): string[] {
 		.map((item) => item.trim().toLowerCase())
 		.filter(Boolean) ?? [];
 }
+
+export function getRosterDeniedRedirect(email: string): string {
+	const params = new URLSearchParams({
+		error: "NotMember",
+		email: email.trim().toLowerCase(),
+	});
+	return `/signin?${params}`;
+}

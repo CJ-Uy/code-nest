@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { isGoogleSignInAllowed } from "./access";
+import { getRosterDeniedRedirect, isGoogleSignInAllowed } from "./access";
 
 const policy = {
 	allowedDomains: ["ateneo.edu"],
 };
 
 describe("Google sign-in policy", () => {
+	it("builds a member access page URL with the attempted email", () => {
+		expect(getRosterDeniedRedirect(" Person+Guest@Example.com ")).toBe(
+			"/signin?error=NotMember&email=person%2Bguest%40example.com",
+		);
+	});
+
 	it("allows a verified email from an allowed domain", () => {
 		expect(
 			isGoogleSignInAllowed(
