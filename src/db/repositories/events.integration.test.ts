@@ -273,6 +273,10 @@ describe("events repository on D1", () => {
 		expect(rowsAfterRemove.map((row) => [row.pointTypeId, row.points])).toEqual([
 			["pt_retention", 4],
 		]);
+		expect((await db.select().from(schema.crsEvents).where(eq(schema.crsEvents.id, event.id)))[0].points).toBe(4);
+
+		await repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_frontliner", points: 3 }]);
+		expect((await db.select().from(schema.crsEvents).where(eq(schema.crsEvents.id, event.id)))[0].points).toBeNull();
 	});
 
 	it("derives scan rows from every active event award", async () => {
@@ -293,6 +297,30 @@ describe("events repository on D1", () => {
 			["pt_frontliner", 3, event.id],
 			["pt_retention", 2, event.id],
 		]);
+	});
+
+	it("skips inactive scan awards while preserving inactive history", async () => {
+		const event = await makeApprovedEvent();
+		const { db, repo } = makeRepos();
+		await repo.setAwards(eventsAdmin, event.id, [
+			{ pointTypeId: "pt_retention", points: 2 },
+			{ pointTypeId: "pt_frontliner", points: 3 },
+		]);
+		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
+		await db.update(schema.pointTypes).set({ active: false }).where(eq(schema.pointTypes.id, "pt_frontliner"));
+		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_b", termId: "term_1" });
+		await repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_retention", points: 4 }]);
+
+		const rows = await db
+			.select()
+			.from(schema.retentionRecords)
+			.orderBy(schema.retentionRecords.memberId, schema.retentionRecords.pointTypeId);
+		expect(
+			rows.filter((row) => row.memberId === "mem_b").map((row) => row.pointTypeId),
+		).toEqual(["pt_retention"]);
+		expect(
+			rows.some((row) => row.memberId === "mem_a" && row.pointTypeId === "pt_frontliner"),
+		).toBe(true);
 	});
 
 	it("keeps setPoints scoped to Retention and returns distinct attendees", async () => {
