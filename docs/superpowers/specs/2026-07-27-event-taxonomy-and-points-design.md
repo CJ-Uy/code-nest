@@ -1,8 +1,9 @@
 # Event Taxonomy & Multi-Type Points — Design Spec
 
 **Date:** 2026-07-27
-**Status:** Revised after Codex adversarial review round 1 (12 findings, all accepted — see §12 and
-`2026-07-27-event-taxonomy-and-points-review-log.md`). Awaiting round 2.
+**Status:** Revised after Codex adversarial review rounds 1 and 2 — 17 findings, all accepted. See §10
+and the two review logs (`…-review-log.md`, `…-review-log-r2.md`). Round 3 pending on the material
+round 2 changed.
 **Branch:** beta
 **Related:** `2026-07-25-events-attendance-finalization-design.md` (deferred this work as "spec 3"),
 `2026-07-04-events-attendance-system-design.md` (the member-owned model)
@@ -201,6 +202,26 @@ validate membership; `events.create` / `events.update` re-validate existence, ac
 permission at the repository layer. Keys are immutable once created — the admin UI edits label,
 colour, permission, active, and position, never the key.
 
+### Load failure is not "no types" — a required distinction
+
+Both calendar pages currently degrade a failed rules read to an empty array
+(`src/app/portal/calendar/page.tsx:30-34`, `[eventId]/page.tsx:24-33`), and `CreateEventSheet` treats
+an empty allowed list as "you may create nothing" and disables submit
+(`create-event-sheet.tsx:80-83,116-127`). That combination was harmless while the helper fell open.
+**Once membership fails closed, a transient read failure or a shared-dev unavailable repository turns
+into "no event type can be selected"** — a hard outage from a soft failure.
+
+Plan A must therefore distinguish three states, not two:
+
+| State | Form behaviour |
+| --- | --- |
+| Rules loaded, actor may create some types | Normal |
+| Rules loaded, actor may create none | "You cannot create any event type" (today's empty-list message) |
+| Rules **failed to load** | Distinct message; do not present an empty selector as truth |
+
+Do not feed `[]` from a `.catch()` into a fail-closed membership helper. Repository validation remains
+the enforcement point in all three states.
+
 ### Palette
 
 Fixed tokens, mapped to Tailwind class pairs in one place in code:
@@ -261,7 +282,31 @@ UPDATE point_types SET counts_toward_retention = 0
 -- 0 rows affected => refuse: "At least one active point type must count toward retention."
 ```
 
-The same guard covers **deactivating** the last retention-bearing type, not just clearing its flag.
+The same guard covers **deactivating** the last retention-bearing type, which needs its own
+conditional statement rather than being assumed:
+
+```sql
+UPDATE point_types SET active = 0
+ WHERE id = ?
+   AND (counts_toward_retention = 0
+        OR EXISTS (SELECT 1 FROM point_types
+                    WHERE counts_toward_retention = 1 AND active = 1 AND id <> ?));
+-- 0 rows affected => refuse, same message
+```
+
+### Deactivating a type that events still award
+
+An award can be saved while its point type is active, and the type deactivated afterwards. The rule,
+enforced in the repository:
+
+**Inactive types stop granting points going forward; existing rows are preserved.** `recordScan` and
+`setAwards` join `point_types` and consider **only `active = 1`** rows when creating retention rows.
+Reconciliation does **not** delete rows already granted under a since-deactivated type — that history
+stays, exactly as a retired event type keeps rendering on old events.
+
+Deactivation therefore never fails because an event still awards the type. This matches the
+soft-disable semantics chosen for event types in §1: retire means "stop using from now on", not
+"erase the past".
 
 ## 3. `retention_records.point_type_id`
 
@@ -299,12 +344,26 @@ Two hazards, both must be handled:
     GROUP BY 1,2,3 HAVING c > 1;
    ```
 
-2. **The conflict target must repeat the predicate.** SQLite will not match a bare
-   `ON CONFLICT (event_id, member_id, point_type_id)` against a *partial* index — the target must
-   carry the same `WHERE source = 'event_attendance'`. In Drizzle that is
-   `onConflictDoUpdate({ target: [...], targetWhere: eq(retentionRecords.source, "event_attendance") })`.
-   Without it, `setAwards` fails at runtime rather than upserting. **Verify the generated SQL on both
-   D1 and better-sqlite3** before relying on it.
+2. **The conflict target must repeat the predicate — and the predicate must be unqualified and
+   literal.** SQLite will not match a bare `ON CONFLICT (event_id, member_id, point_type_id)` against
+   a *partial* index; the target must carry the same `WHERE source = 'event_attendance'`.
+
+   The obvious Drizzle spelling **does not work**. This was verified empirically against the
+   installed `drizzle-orm@0.45.2` and `better-sqlite3@12.10.0` (`package.json:52,55`):
+
+   ```ts
+   // WRONG — emits a qualified, parameterised predicate:
+   //   ON CONFLICT (...) WHERE "retention_records"."source" = ?
+   // better-sqlite3: "ON CONFLICT clause does not match any PRIMARY KEY or UNIQUE constraint"
+   targetWhere: eq(retentionRecords.source, "event_attendance")
+
+   // CORRECT — unqualified column, literal value, matching the index definition exactly:
+   targetWhere: sql`source = 'event_attendance'`
+   ```
+
+   SQLite matches a partial index by comparing the conflict-target predicate to the index's `WHERE`
+   clause, so a table-qualified column or a bound parameter defeats the match. The generated SQL is a
+   **test assertion**, not a manual check — see §7.
 
 Event-attendance rows must also carry a non-null `event_id`; assert it in the repository.
 
@@ -406,7 +465,25 @@ once `point_type_id` is enforced:
   `retention-unavailable` stub). **Delete it and its tests** rather than carrying a second, untyped
   attendance writer that would drift from `recordScan`.
 
-`crs_events.points` stops being written. It is left in place, deprecated, per §B.
+### `crs_events.points` and the `setPoints` shim
+
+`crs_events.points` is left in place per §B, but **it cannot stop being written until no shipped UI
+reads it.** The event-detail panel imports `setPointsAction`, reads `event.points` into local state,
+and calls `setPointsAction(event.id, points)`
+(`event-manage-panel.tsx:28-35,620-623,627-633`); the action calls `repositories.events.setPoints`
+(`[eventId]/actions.ts:93-97`); the page feeds it `managed.points` (`[eventId]/page.tsx:99-113`); and
+the shared contract still exposes `setPoints` (`contract/events.ts:122-128`).
+
+So Plan B2 **keeps a compatibility shim**:
+
+- `setPointsAction` and a repository-level `setPoints(actor, eventId, points)` survive, implemented as
+  a thin wrapper that maps the single value onto the **Retention** award and returns the old
+  `{ updated }` shape.
+- `setAwards` continues to mirror the Retention award into `crs_events.points` so the old panel keeps
+  showing a truthful number.
+
+Plan B3 replaces the panel with the per-type editor, and only **then** are the shim and the mirror
+removed. Column removal itself stays deferred (§B).
 
 ## 6. UI
 
@@ -454,8 +531,17 @@ Required coverage:
 - **`setAwards` reconciliation.** Adding, changing, and removing an award updates attendees' rows
   correctly; an unchanged award preserves `recorded_at`; a newly added award copies
   `scanned_by`/`scanned_at` from the attendance row.
-- **Upsert targeting.** The generated `ON CONFLICT … WHERE source = 'event_attendance'` actually
-  matches the partial index on both D1 and better-sqlite3.
+- **Upsert targeting.** Assert the **generated SQL string** contains an unqualified, literal
+  `WHERE source = 'event_attendance'` (not `"retention_records"."source" = ?`), and that the
+  statement actually upserts against the partial index on both D1 and better-sqlite3. A qualified or
+  parameterised predicate silently fails to match the index and throws at runtime — see §3.
+- **Inactive point types.** A scan against an event awarding a since-deactivated type creates no row
+  for it, while rows already granted under that type survive reconciliation untouched.
+- **Rules load failure.** A failed `eventTypeRules.list()` renders the distinct unavailable state,
+  not an empty "you may create nothing" selector.
+- **`setPoints` shim.** The wrapper maps a single value onto the Retention award, returns
+  `{ updated }`, and keeps `crs_events.points` in step, so the unmodified event-detail panel still
+  works after B2 alone.
 - **Unknown event type fails closed.** A `crs_events.type` value with no matching row is rejected on
   create and on type change.
 - **Soft-disable.** An inactive type cannot be chosen for a new event or switched to, but an event
@@ -492,12 +578,16 @@ sites, active-flag handling, admin screen, type badges. No points involvement, n
 plus migration verification on a fresh and an existing database. No behaviour change yet.
 
 **Plan B2 — repository and contracts.** `setAwards` with validation and set-based reconciliation,
-`recordScan` deriving rows from awards, `createManual` gaining `pointTypeId`, deleting
-`recordEventAttendance`, the five totals, the two projections, and the full aggregation test matrix.
+`recordScan` deriving rows from active awards, `createManual` gaining `pointTypeId`, deleting
+`recordEventAttendance`, the five totals, the two projections **including the XLSX point-type
+column**, and the full aggregation test matrix. Ships the `setPoints` compatibility shim and the
+`crs_events.points` mirror described in §5 — without them B2 is not independently deployable, because
+the event-detail panel still calls `setPointsAction` and reads `event.points`.
 
-**Plan B3 — UI and cleanup.** Point-types admin screen, event-detail award editor, profile breakdown,
-member history labels, leaderboard type selector, XLSX column. Legacy `crs_events.points` removal is
-**not** included and is deferred to a later release once nothing reads it.
+**Plan B3 — UI and cleanup.** Point-types admin screen, event-detail per-type award editor, profile
+breakdown, member history labels, leaderboard type selector. Removes the B2 shim and the
+`crs_events.points` mirror once the panel no longer reads them. Dropping the column itself stays
+deferred (§B).
 
 Plan A first for product value; the technical dependency between A and B is weak (the retention
 repository does not call the event-type repository — `retention.ts:1-9`), so B1 could proceed in
@@ -522,3 +612,19 @@ Full text: `2026-07-27-event-taxonomy-and-points-review-log.md`. Summary of what
 | 10 | Notification/audit partial failure | §5 audit into the atomic unit; fan-out declared best-effort |
 | 11 | "Six aggregations" inaccurate; no CSV exporter | §4 renamed to five totals + two projections; XLSX only |
 | 12 | Plan B too broad; A→B dependency weaker than claimed | §9 split into B1/B2/B3; dependency restated as weak |
+
+Round 2 — Codex adversarial review of the revised spec, 5 findings (3 Important, 2 Minor), **all
+accepted**. Full text: `2026-07-27-event-taxonomy-and-points-review-log-r2.md`.
+
+| # | Finding | Resolution |
+| --- | --- | --- |
+| 1 | `targetWhere: eq(...)` emits a qualified, parameterised predicate that SQLite will not match to a partial index — verified empirically against the installed drizzle/better-sqlite3 | §3 requires unqualified literal ``sql`source = 'event_attendance'` ``; the generated SQL is now a test assertion |
+| 2 | B2 not independently deployable — the event-detail panel still calls `setPointsAction` and reads `event.points` | §5 adds a `setPoints` shim mapping to the Retention award plus a `crs_events.points` mirror; §9 states both explicitly, removed in B3 |
+| 3 | A point type deactivated after an award was saved left the rule undefined; deactivate guard lacked its `active = 0` statement | §2 states the rule (inactive types stop granting, history preserved) and adds the second conditional statement |
+| 4 | `.catch(() => [])` feeding a fail-closed helper turns a transient read failure into "no type selectable" | §1 requires three distinct states, separating load failure from an empty allowed list |
+| 5 | B2/B3 boundary muddy — projections typed in B2 but the export column deferred to B3 | §9 moves the XLSX point-type column into B2 alongside the projection work |
+
+Round 2 also **verified as correct**: expand-contract holds for the deployed Worker at the Plan A and
+B1 gaps; `ADD COLUMN … NOT NULL DEFAULT 'pt_retention'` is legal on SQLite and accepted by
+better-sqlite3 inside the runner's transaction; deleting `recordEventAttendance` is safe (no
+production caller, including shared-dev); and Plans A, B1 and B3 each stop safely on their own.
