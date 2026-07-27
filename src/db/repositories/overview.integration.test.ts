@@ -19,6 +19,7 @@ describe("overview repository on D1", () => {
 			"crs_events",
 			"term_member_roster",
 			"terms",
+			"point_types",
 			"members",
 		]) {
 			await env.DB.prepare(`DELETE FROM ${table}`).run();
@@ -29,6 +30,13 @@ describe("overview repository on D1", () => {
 		await env.DB.prepare("INSERT INTO members (id, email, name, status) VALUES (?, ?, ?, ?)")
 			.bind("mem_admin", "admin@example.com", "Admin", "active")
 			.run();
+		await env.DB.prepare(`
+			INSERT INTO point_types
+				(id, key, label, counts_toward_retention, active, position, updated_by)
+			VALUES
+				('pt_retention', 'retention', 'Retention', 1, 1, 0, 'mem_admin'),
+				('pt_frontliner', 'frontliner', 'Frontliner', 0, 1, 1, 'mem_admin')
+		`).run();
 		await env.DB.prepare(
 			"INSERT INTO terms (id, name, retained_at, probation_below, starts_at, ends_at) VALUES (?, ?, ?, ?, ?, ?)",
 		)
@@ -37,15 +45,19 @@ describe("overview repository on D1", () => {
 	});
 
 	it("sums this term's retention points, counts pending surveys, upcoming events, and owned-link clicks", async () => {
-		await env.DB.prepare(
-			"INSERT INTO retention_records (id, member_id, term_id, points, reason, source, recorded_by, recorded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-		)
-			.bind("ret_1", "mem_ov", "term_now", 5, "Attended", "event_attendance", "mem_admin", NOW.getTime())
+		await env.DB.prepare(`
+			INSERT INTO retention_records
+				(id, member_id, term_id, point_type_id, points, reason, source, recorded_by, recorded_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		`)
+			.bind("ret_keep", "mem_ov", "term_now", "pt_retention", 8, "Retention", "manual", "mem_admin", NOW.getTime())
 			.run();
-		await env.DB.prepare(
-			"INSERT INTO retention_records (id, member_id, term_id, points, reason, source, recorded_by, recorded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-		)
-			.bind("ret_2", "mem_ov", "term_now", 3, "Waiver", "manual", "mem_admin", NOW.getTime())
+		await env.DB.prepare(`
+			INSERT INTO retention_records
+				(id, member_id, term_id, point_type_id, points, reason, source, recorded_by, recorded_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		`)
+			.bind("ret_ignore", "mem_ov", "term_now", "pt_frontliner", 50, "Frontliner", "manual", "mem_admin", NOW.getTime())
 			.run();
 		await env.DB.prepare("INSERT INTO surveys (id, title, status, created_by) VALUES (?, ?, ?, ?)")
 			.bind("srv_1", "Feedback", "running", "mem_admin")

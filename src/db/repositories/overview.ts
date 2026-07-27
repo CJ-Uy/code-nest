@@ -2,6 +2,7 @@ import { and, desc, eq, gt, gte, isNull, lte, sql } from "drizzle-orm";
 import {
 	crsEvents,
 	linkDailyStats,
+	pointTypes,
 	retentionRecords,
 	shortLinks,
 	surveyAssignments,
@@ -50,7 +51,14 @@ export function createOverviewRepository(db: Db): OverviewRepository {
 				const [row] = await db
 					.select({ total: sql<number>`coalesce(sum(${retentionRecords.points}), 0)` })
 					.from(retentionRecords)
-					.where(and(eq(retentionRecords.memberId, actor.memberId), eq(retentionRecords.termId, term.id)));
+					.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
+					.where(
+						and(
+							eq(retentionRecords.memberId, actor.memberId),
+							eq(retentionRecords.termId, term.id),
+							eq(pointTypes.countsTowardRetention, true),
+						),
+					);
 				points = Number(row?.total ?? 0);
 			}
 
