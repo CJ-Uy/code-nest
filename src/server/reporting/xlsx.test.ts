@@ -62,6 +62,7 @@ describe("reporting xlsx serializers", () => {
 		expect(json[0]).toMatchObject({
 			Email: "a@example.com",
 			Event: "Practice Night",
+			"Point Type": "Retention",
 			Points: 5,
 			Source: "event_attendance",
 		});
@@ -72,7 +73,10 @@ describe("reporting xlsx serializers", () => {
 		const bytes = buildMemberHistoryWorkbook(rows, "Alpha Member", "Term 1 2026");
 		const json = firstSheet(bytes);
 		expect(json).toHaveLength(1);
-		expect(json[0]).toMatchObject({ Reason: "Attended Practice Night" });
+		expect(json[0]).toMatchObject({
+			"Point Type": "Retention",
+			Reason: "Attended Practice Night",
+		});
 	});
 
 	it("builds an event roster workbook flagging attendance with Yes/No", () => {

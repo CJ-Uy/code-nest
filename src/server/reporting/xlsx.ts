@@ -24,6 +24,7 @@ export function buildTermMasterWorkbook(rows: TermMasterRow[], termName: string)
 		Email: row.memberEmail,
 		Member: row.memberName ?? "",
 		Event: row.eventTitle ?? "",
+		"Point Type": row.pointTypeLabel,
 		Points: row.points ?? "",
 		Reason: row.reason,
 		Source: row.source,
@@ -35,6 +36,7 @@ export function buildTermMasterWorkbook(rows: TermMasterRow[], termName: string)
 export function buildMemberHistoryWorkbook(rows: MemberHistoryRow[], memberLabel: string, termName: string): Uint8Array {
 	const data = rows.map((row) => ({
 		Event: row.eventTitle ?? "",
+		"Point Type": row.pointTypeLabel,
 		Points: row.points ?? "",
 		Reason: row.reason,
 		Source: row.source,
