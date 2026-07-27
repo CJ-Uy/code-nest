@@ -16,6 +16,8 @@ const termRows: TermMasterRow[] = [
 		memberName: "Alpha Member",
 		eventId: "evt_1",
 		eventTitle: "Practice Night",
+		pointTypeId: "pt_retention",
+		pointTypeLabel: "Retention",
 		points: 5,
 		reason: "Attended Practice Night",
 		source: "event_attendance",
