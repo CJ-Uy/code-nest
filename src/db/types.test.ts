@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createManualRetentionRecordInputSchema } from "./types";
+import { createManualRetentionRecordInputSchema, eventAwardsInputSchema } from "./types";
 
 describe("createManualRetentionRecordInputSchema", () => {
 	it("accepts a minimal valid manual entry and defaults optional fields", () => {
@@ -57,5 +57,29 @@ describe("createManualRetentionRecordInputSchema", () => {
 				reason: "x",
 			}),
 		).toThrow();
+	});
+});
+
+describe("eventAwardsInputSchema", () => {
+	it("accepts a bounded typed award set", () => {
+		expect(
+			eventAwardsInputSchema.parse([
+				{ pointTypeId: "pt_retention", points: 2 },
+				{ pointTypeId: "pt_frontliner", points: -3 },
+			]),
+		).toHaveLength(2);
+	});
+
+	it("rejects non-integer and out-of-range points", () => {
+		expect(() => eventAwardsInputSchema.parse([{ pointTypeId: "pt_retention", points: 2.5 }])).toThrow();
+		expect(() => eventAwardsInputSchema.parse([{ pointTypeId: "pt_retention", points: 101 }])).toThrow();
+	});
+
+	it("rejects more than 100 awards", () => {
+		const awards = Array.from({ length: 101 }, (_, index) => ({
+			pointTypeId: `pt_${index}`,
+			points: 1,
+		}));
+		expect(() => eventAwardsInputSchema.parse(awards)).toThrow("at most 100");
 	});
 });

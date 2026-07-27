@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { eventAwardsInputSchema } from "@/db/types";
 import { eventTypeKeySchema } from "@/lib/event-type-key";
 import { operation } from "./common";
 
@@ -122,6 +123,16 @@ export const eventsContract = {
 	}),
 	setPoints: operation({
 		input: z.object({ eventId: z.string().min(1), points: z.number().int().min(-100).max(100).nullable() }),
+		output: z.object({ updated: z.number().int().min(0) }),
+		auth: "admin",
+		permission: "event:points",
+		sharedDev: "deny",
+	}),
+	setAwards: operation({
+		input: z.object({
+			eventId: z.string().min(1),
+			awards: eventAwardsInputSchema,
+		}),
 		output: z.object({ updated: z.number().int().min(0) }),
 		auth: "admin",
 		permission: "event:points",

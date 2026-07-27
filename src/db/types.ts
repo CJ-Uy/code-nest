@@ -46,6 +46,17 @@ export const createManualRetentionRecordInputSchema = z.object({
 
 export type CreateManualRetentionRecordInput = z.infer<typeof createManualRetentionRecordInputSchema>;
 
+export const eventAwardInputSchema = z.object({
+	pointTypeId: z.string().trim().min(1),
+	points: z.number().int().min(-100).max(100),
+});
+
+export const eventAwardsInputSchema = z
+	.array(eventAwardInputSchema)
+	.max(100, "Set at most 100 point awards per event.");
+
+export type EventAwardInput = z.infer<typeof eventAwardInputSchema>;
+
 export interface DatabaseAdapter {
 	readonly adapterType: "d1-binding" | "local-sqlite" | "shared-api";
 	listMembers(): Promise<Member[]>;
