@@ -242,7 +242,7 @@ function CheckinsSection({
 	const [overlayOpen, setOverlayOpen] = useState(false);
 	const [, startTransition] = useTransition();
 
-	// ponytail: snapshot "now" at mount — this banner is advisory; recordScan enforces the
+	// ponytail: snapshot "now" at mount. This banner is advisory; recordScan enforces the
 	// window server-side. A member who lingers past the boundary just refreshes.
 	const [now] = useState(() => Date.now());
 	const opensAt = event.startsAt.getTime() - CHECKIN_LEAD_MS;
@@ -458,7 +458,7 @@ function PeopleSection({
 						))}
 					</ul>
 				) : (
-					<p className="text-sm text-muted-foreground">No invites sent. Inviting just notifies members — the event stays public.</p>
+					<p className="text-sm text-muted-foreground">No invites sent. Inviting just notifies members. The event stays public.</p>
 				)}
 				<MemberPicker
 					eventId={event.id}
@@ -523,9 +523,19 @@ function DetailsSection({
 
 	const endBeforeStart = Boolean(startsAt && endsAt && new Date(endsAt) <= new Date(startsAt));
 	// The event's own current type must always be selectable, even if it fell outside the
-	// actor's allowed types after the rules changed — leaving it unchanged is always legal,
+	// actor's allowed types after the rules changed - leaving it unchanged is always legal,
 	// and dropping it from the options would make an unrelated save silently change the type.
-	const typeOptions = allowedEventTypes.length > 0 ? allowedEventTypes : typeRows.filter((row) => row.type === event.type);
+	const currentType = typeRows.find((row) => row.type === event.type) ?? {
+		type: event.type,
+		label: event.type,
+		colour: "slate",
+		requiredPermission: null,
+		active: false,
+		position: 0,
+	};
+	const typeOptions = allowedEventTypes.some((row) => row.type === event.type)
+		? allowedEventTypes
+		: [...allowedEventTypes, currentType];
 
 	function save() {
 		setError(null);
@@ -663,7 +673,7 @@ function PointsSection({ event }: { event: ManageEvent }) {
 	return (
 		<div className="grid gap-3">
 			<div className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm text-muted-foreground">
-				Setting a value re-values <span className="font-medium text-foreground">everyone</span> who has checked in — before,
+				Setting a value re-values <span className="font-medium text-foreground">everyone</span> who has checked in, before,
 				during, or after. Leave it empty to keep attendance without points.
 			</div>
 			<div className="flex items-end gap-3">
