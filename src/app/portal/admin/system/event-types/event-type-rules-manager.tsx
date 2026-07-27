@@ -1,64 +1,77 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import type { EventTypeRow } from "@/db/repositories/eventTypeRules";
+import { eventTypeColours } from "@/lib/event-type-colours";
 import { permissionActions } from "@/server/auth/permissions";
-import { setEventTypeRuleAction } from "./actions";
+import { upsertEventTypeAction } from "./actions";
+
+type EventTypeFormProps = {
+	row?: EventTypeRow;
+};
+
+function EventTypeForm({ row }: EventTypeFormProps) {
+	const current = row?.requiredPermission ?? "";
+	const isUnrecognized = current !== "" && !(permissionActions as readonly string[]).includes(current);
+
+	return (
+		<form action={upsertEventTypeAction} className="grid gap-3 border-t border-border pt-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem_minmax(0,1fr)_auto_auto] lg:items-end">
+			<label className="grid gap-1.5 text-sm">
+				<span className="font-medium">Type</span>
+				{row ? (
+					<>
+						<input type="hidden" name="type" value={row.type} />
+						<Badge variant="secondary" className="w-fit">{row.type}</Badge>
+					</>
+				) : (
+					<Input name="type" required maxLength={32} pattern="[a-z0-9_]+" />
+				)}
+			</label>
+			<label className="grid gap-1.5 text-sm">
+				<span className="font-medium">Label</span>
+				<Input name="label" required maxLength={60} defaultValue={row?.label} />
+			</label>
+			<label className="grid gap-1.5 text-sm">
+				<span className="font-medium">Colour</span>
+				<Select name="colour" defaultValue={row?.colour ?? eventTypeColours[0]}>
+					{eventTypeColours.map((colour) => <option key={colour} value={colour}>{colour}</option>)}
+				</Select>
+			</label>
+			<label className="grid gap-1.5 text-sm">
+				<span className="font-medium">Required permission</span>
+				<Select name="requiredPermission" defaultValue={current}>
+					<option value="">Any member</option>
+					{isUnrecognized ? <option value={current}>{current} (unrecognized - locked to Super)</option> : null}
+					{permissionActions.map((action) => <option key={action} value={action}>{action}</option>)}
+				</Select>
+			</label>
+			<label className="flex h-10 items-center gap-2 text-sm font-medium">
+				<input type="checkbox" name="active" defaultChecked={row?.active ?? true} />
+				Active
+			</label>
+			<label className="grid gap-1.5 text-sm">
+				<span className="font-medium">Position</span>
+				<Input type="number" name="position" min={0} max={999} defaultValue={row?.position ?? 0} />
+			</label>
+			<Button type="submit" size="sm" variant="secondary">Save</Button>
+		</form>
+	);
+}
 
 export function EventTypeRulesManager({ rows }: { rows: EventTypeRow[] }) {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Event Type Rules</CardTitle>
-				<CardDescription>
-					Choose which permission a member needs to create each event type. “Any member” lets everyone create it.
-				</CardDescription>
+				<CardTitle>Event Types</CardTitle>
+				<CardDescription>Manage event type labels, colours, permissions, availability, and display order.</CardDescription>
 			</CardHeader>
 			<CardContent className="flex flex-col gap-4">
-				{rows.map((row) => {
-					const current = row.requiredPermission ?? "";
-					// A rule can hold a permission string written out-of-band (not through setRequiredPermission),
-					// which fails closed rather than falling open. See eventTypeRules.ts. Surface it rather than
-					// silently defaulting the <select> to "Any member", which would misrepresent a locked-down type.
-					//
-					// This option is deliberately NOT `disabled`: per the HTML form-data-set construction
-					// algorithm, a selected-but-disabled <option>'s value is dropped from the submitted
-					// FormData entirely. That would make a no-op Save (the admin opens the row, sees it's
-					// locked, and clicks Save without changing anything) submit no requiredPermission field
-					// at all. actions.ts's parseEventTypeRuleInput throws rather than defaulting an
-					// absent field to "any member", but the row must still submit *something* for that to be
-					// reachable via the actual form flow. Leaving it enabled makes Save resubmit the same
-					// unrecognized string, which setRequiredPermission (repository-side) rejects with
-					// "Unknown permission." This is a loud, safe failure instead of a silent open.
-					const isUnrecognized = current !== "" && !(permissionActions as readonly string[]).includes(current);
-					return (
-						<form key={row.type} action={setEventTypeRuleAction} className="flex flex-wrap items-end gap-3">
-							<input type="hidden" name="type" value={row.type} />
-							<label className="grid gap-1.5 text-sm">
-								<span className="font-medium">{row.label}</span>
-								<select
-									name="requiredPermission"
-									defaultValue={current}
-									className="w-64 rounded-lg border border-border bg-background p-2 text-sm"
-								>
-									<option value="">Any member</option>
-									{isUnrecognized ? (
-										<option value={current}>{current} (unrecognized - locked to Super)</option>
-									) : null}
-									{permissionActions.map((action) => (
-										<option key={action} value={action}>
-											{action}
-										</option>
-									))}
-								</select>
-							</label>
-							<Button type="submit" size="sm" variant="secondary">
-								Save
-							</Button>
-						</form>
-					);
-				})}
+				{rows.map((row) => <EventTypeForm key={row.type} row={row} />)}
+				<EventTypeForm />
 			</CardContent>
 		</Card>
 	);

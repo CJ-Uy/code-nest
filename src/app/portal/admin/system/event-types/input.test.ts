@@ -1,43 +1,40 @@
 import { describe, expect, it } from "vitest";
-import { parseEventTypeRuleInput } from "./input";
+import { parseEventTypeUpsertInput } from "./input";
 
-function formDataFor(fields: Record<string, string>): FormData {
-	const formData = new FormData();
-	for (const [key, value] of Object.entries(fields)) {
-		formData.set(key, value);
-	}
-	return formData;
+function formDataFor(fields: Record<string, string | undefined>): FormData {
+	const data = new FormData();
+	for (const [key, value] of Object.entries(fields)) if (value !== undefined) data.set(key, value);
+	return data;
 }
 
-describe("parseEventTypeRuleInput", () => {
-	it("throws when requiredPermission is absent from the FormData, rather than defaulting to open", () => {
-		const formData = new FormData();
-		formData.set("type", "casual");
-		// requiredPermission intentionally not set — this is the shape a browser submits when a
-		// selected-but-disabled <option> is dropped from the form-data-set entirely.
-		expect(() => parseEventTypeRuleInput(formData)).toThrow();
-	});
+describe("parseEventTypeUpsertInput", () => {
+	const base = { type: "workshop", label: "Workshop", colour: "amber", position: "3", active: "on" };
 
-	it('maps "" to { requiredPermission: null } — the only way to open a type to any member', () => {
-		const formData = formDataFor({ type: "casual", requiredPermission: "" });
-		expect(parseEventTypeRuleInput(formData)).toEqual({ type: "casual", requiredPermission: null });
-	});
-
-	it("passes a recognized permission through unchanged", () => {
-		const formData = formDataFor({ type: "official", requiredPermission: "event:create_restricted" });
-		expect(parseEventTypeRuleInput(formData)).toEqual({
-			type: "official",
-			requiredPermission: "event:create_restricted",
+	it("parses a full row", () => {
+		expect(parseEventTypeUpsertInput(formDataFor({ ...base, requiredPermission: "" }))).toEqual({
+			type: "workshop", label: "Workshop", colour: "amber",
+			requiredPermission: null, active: true, position: 3,
 		});
 	});
 
-	it("passes an unrecognized permission through unchanged instead of mapping it to null", () => {
-		const formData = formDataFor({ type: "birthday", requiredPermission: "weird:unknown" });
-		expect(parseEventTypeRuleInput(formData)).toEqual({ type: "birthday", requiredPermission: "weird:unknown" });
+	it("treats an absent active checkbox as inactive", () => {
+		const parsed = parseEventTypeUpsertInput(formDataFor({ ...base, active: undefined, requiredPermission: "" }));
+		expect(parsed.active).toBe(false);
 	});
 
-	it("throws for an invalid event type", () => {
-		const formData = formDataFor({ type: "not-a-real-type", requiredPermission: "" });
-		expect(() => parseEventTypeRuleInput(formData)).toThrow();
+	it("throws when requiredPermission is absent entirely", () => {
+		// A selected-but-disabled <option> is dropped from FormData, so presence cannot be assumed.
+		// Coercing an absent field to null would silently open the type to every member.
+		expect(() => parseEventTypeUpsertInput(formDataFor(base))).toThrow("Missing requiredPermission");
+	});
+
+	it("passes an unrecognized permission through for the repository to reject", () => {
+		const parsed = parseEventTypeUpsertInput(formDataFor({ ...base, requiredPermission: "weird:unknown" }));
+		expect(parsed.requiredPermission).toBe("weird:unknown");
+	});
+
+	it("rejects a malformed key and a blank label", () => {
+		expect(() => parseEventTypeUpsertInput(formDataFor({ ...base, type: "Not A Key!", requiredPermission: "" }))).toThrow();
+		expect(() => parseEventTypeUpsertInput(formDataFor({ ...base, label: "  ", requiredPermission: "" }))).toThrow();
 	});
 });
