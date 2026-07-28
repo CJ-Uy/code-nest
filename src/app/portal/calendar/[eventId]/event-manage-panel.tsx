@@ -31,10 +31,11 @@ import {
 	markPresentAction,
 	removeStaffAction,
 	searchMembersAction,
-	setPointsAction,
 	transferOwnershipAction,
 	updateEventAction,
 } from "./actions";
+import type { AwardEditorRow } from "./award-editor-input";
+import { EventAwardsEditor } from "./event-awards-editor";
 
 const FIELD = "w-full rounded-lg border border-border bg-background p-2 text-sm";
 const CHECKIN_LEAD_MS = 30 * 60 * 1000;
@@ -60,7 +61,6 @@ export type ManageEvent = {
 	startsAt: Date;
 	endsAt: Date | null;
 	capacity: number | null;
-	points: number | null;
 	myRole: "owner" | "admin" | "scanner" | null;
 	canModerate: boolean;
 	canSetPoints: boolean;
@@ -81,6 +81,8 @@ export function EventManagePanel({
 	allowedEventTypes,
 	typeRows,
 	typesUnavailable,
+	awardRows,
+	awardsUnavailable,
 }: {
 	event: ManageEvent;
 	staff: StaffMember[];
@@ -90,6 +92,8 @@ export function EventManagePanel({
 	allowedEventTypes: EventTypeRow[];
 	typeRows: EventTypeRow[];
 	typesUnavailable: boolean;
+	awardRows: AwardEditorRow[];
+	awardsUnavailable: boolean;
 }) {
 	const isOwner = event.myRole === "owner";
 	const canManage = isOwner || event.myRole === "admin" || event.canModerate;
@@ -152,7 +156,9 @@ export function EventManagePanel({
 						typesUnavailable={typesUnavailable}
 					/>
 				) : null}
-				{section === "points" ? <PointsSection event={event} /> : null}
+				{section === "points" ? (
+					<EventAwardsEditor eventId={event.id} rows={awardRows} unavailable={awardsUnavailable} />
+				) : null}
 			</CardContent>
 		</Card>
 	);
@@ -643,63 +649,6 @@ function DetailsSection({
 					Delete
 				</Button>
 			</div>
-		</div>
-	);
-}
-
-/* ---------- Points (CRS admin only) ---------- */
-
-function PointsSection({ event }: { event: ManageEvent }) {
-	const router = useRouter();
-	const [value, setValue] = useState(event.points?.toString() ?? "");
-	const [pending, startTransition] = useTransition();
-	const [error, setError] = useState<string | null>(null);
-	const [result, setResult] = useState<number | null>(null);
-
-	function apply(points: number | null) {
-		setError(null);
-		setResult(null);
-		startTransition(async () => {
-			try {
-				const res = await setPointsAction(event.id, points);
-				setResult(res.updated);
-				router.refresh();
-			} catch (e) {
-				setError(e instanceof Error ? e.message : "Could not set points.");
-			}
-		});
-	}
-
-	return (
-		<div className="grid gap-3">
-			<div className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm text-muted-foreground">
-				Setting a value re-values <span className="font-medium text-foreground">everyone</span> who has checked in, before,
-				during, or after. Leave it empty to keep attendance without points.
-			</div>
-			<div className="flex items-end gap-3">
-				<label className="grid gap-1.5 text-sm">
-					<span className="font-medium">Points per attendee</span>
-					<input
-						type="number"
-						min={-100}
-						max={100}
-						className={cn(FIELD, "w-40")}
-						value={value}
-						placeholder="Unset"
-						onChange={(e) => setValue(e.target.value)}
-					/>
-				</label>
-				<Button type="button" onClick={() => apply(value === "" ? null : Number(value))} disabled={pending}>
-					{pending ? "Applying…" : "Apply to all"}
-				</Button>
-				{event.points !== null ? (
-					<Button type="button" variant="outline" onClick={() => apply(null)} disabled={pending}>
-						Clear
-					</Button>
-				) : null}
-			</div>
-			{result !== null ? <p className="text-sm text-accent">Updated {result} attendee record(s).</p> : null}
-			{error ? <p className="text-sm text-destructive">{error}</p> : null}
 		</div>
 	);
 }

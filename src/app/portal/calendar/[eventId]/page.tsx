@@ -8,6 +8,7 @@ import { getRepositories } from "@/db";
 import { allowedEventTypes } from "@/db/repositories/eventTypeRules";
 import { loadEventTypes } from "@/lib/event-type-load";
 import { requireActor } from "@/server/auth/actor";
+import { buildAwardEditorRows, formatAwardSummary } from "./award-editor-input";
 import { EventManagePanel } from "./event-manage-panel";
 
 export const dynamic = "force-dynamic";
@@ -22,11 +23,28 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 	// Management view keys off the viewer-scoped capability flags on the event record.
 	const managed = await repositories.events.getById(actor, eventId).catch(() => null);
 	const isStaff = managed ? managed.myRole !== null || managed.canModerate : false;
+	const [awardLoad, pointTypeLoad] = await Promise.all([
+		repositories.events
+			.listAwards(actor, eventId)
+			.then((rows) => ({ ok: true as const, rows }))
+			.catch(() => ({ ok: false as const })),
+		managed?.canSetPoints
+			? repositories.pointTypes
+					.list()
+					.then((rows) => ({ ok: true as const, rows }))
+					.catch(() => ({ ok: false as const }))
+			: Promise.resolve({ ok: true as const, rows: [] }),
+	]);
+	const awardsUnavailable = !awardLoad.ok || !pointTypeLoad.ok;
+	const awardRows =
+		managed?.canSetPoints && awardLoad.ok && pointTypeLoad.ok
+			? buildAwardEditorRows(pointTypeLoad.rows, awardLoad.rows)
+			: [];
 	const typeLoad = await loadEventTypes(() => repositories.eventTypeRules.list());
 	const rows = typeLoad.ok ? typeLoad.rows : [];
 	const allowedTypesForActor = typeLoad.ok ? allowedEventTypes(actor, rows) : [];
 	// The event's current type must always render as an option, even when the actor's
-	// permissions would no longer let them create it — leaving it unchanged is always legal,
+	// permissions would no longer let them create it. Leaving it unchanged is always legal,
 	// and dropping it from the list would make an unrelated save silently change the type.
 	const allowedTypesForEdit = managed
 		? allowedTypesForActor.some((row) => row.type === managed.type)
@@ -70,6 +88,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 					</CardHeader>
 					<CardContent className="flex flex-col gap-3 text-sm">
 						<p>{event.description}</p>
+						<p className="font-medium">
+							{awardLoad.ok ? formatAwardSummary(awardLoad.rows) : "Worth: Unavailable"}
+						</p>
 						<p className="text-muted-foreground">{event.attendingCount} attending</p>
 					</CardContent>
 				</Card>
@@ -107,7 +128,6 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 						startsAt: managed.startsAt,
 						endsAt: managed.endsAt,
 						capacity: managed.capacity,
-						points: managed.points,
 						myRole: managed.myRole,
 						canModerate: managed.canModerate,
 						canSetPoints: managed.canSetPoints,
@@ -119,6 +139,8 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 					allowedEventTypes={allowedTypesForEdit}
 					typeRows={rows}
 					typesUnavailable={!typeLoad.ok}
+					awardRows={awardRows}
+					awardsUnavailable={awardsUnavailable}
 				/>
 			) : null}
 		</div>

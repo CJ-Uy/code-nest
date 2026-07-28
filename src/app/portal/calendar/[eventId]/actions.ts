@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getRepositories } from "@/db";
+import { eventsContract } from "@/db/contract/events";
 import { eventTypeKeySchema } from "@/lib/event-type-key";
 import { requireActor } from "@/server/auth/actor";
 
@@ -95,6 +96,23 @@ export async function setPointsAction(eventId: string, points: number | null) {
 	const actor = await requireActor();
 	const repositories = await getRepositories();
 	const result = await repositories.events.setPoints(actor, eventId, points);
+	revalidate(eventId);
+	return result;
+}
+
+export async function setAwardsAction(eventId: string, awards: unknown) {
+	const actor = await requireActor();
+	const input = eventsContract.setAwards.input.parse({ eventId, awards });
+	const repositories = await getRepositories();
+	const result = await repositories.events.setAwards(actor, input.eventId, input.awards);
+	revalidate(input.eventId);
+	return result;
+}
+
+export async function removeRetiredAwardAction(eventId: string, pointTypeId: string) {
+	const actor = await requireActor();
+	const repositories = await getRepositories();
+	const result = await repositories.events.removeRetiredAward(actor, eventId, pointTypeId);
 	revalidate(eventId);
 	return result;
 }
