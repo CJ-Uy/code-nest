@@ -72,7 +72,7 @@ export function RetentionHistory({
 						records.map((record) => (
 							<div
 								key={record.id}
-								className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2"
+								className="flex min-w-0 items-center justify-between gap-3 rounded-md border border-border px-3 py-2"
 							>
 								<div className="flex flex-col">
 									<span className="text-sm font-medium">{record.reason}</span>
@@ -81,7 +81,7 @@ export function RetentionHistory({
 										{record.source === "event_attendance" ? "Event" : "Manual"}
 									</span>
 								</div>
-								<span className="text-sm tabular-nums">
+								<span className="min-w-0 break-all text-sm tabular-nums">
 									{record.points ?? "n/a"} {record.pointTypeLabel}
 								</span>
 							</div>

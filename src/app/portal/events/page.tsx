@@ -87,9 +87,9 @@ export default async function RetentionHistoryPage({
 					<form method="get" className="flex flex-wrap items-end gap-3">
 						<input type="hidden" name="view" value="leaderboard" />
 						<input type="hidden" name="termId" value={selectedTermId} />
-						<label className="grid gap-1.5 text-sm">
+						<label className="grid min-w-0 gap-1.5 text-sm">
 							<span className="font-medium">Point type</span>
-							<Select name="pointTypeId" defaultValue={selectedPointTypeId ?? ""}>
+							<Select name="pointTypeId" defaultValue={selectedPointTypeId ?? ""} className="min-w-0">
 								{pointTypeLoad.rows.map((type) => (
 									<option key={type.id} value={type.id}>
 										{type.label}{type.active ? "" : " (retired)"}
