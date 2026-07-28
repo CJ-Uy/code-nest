@@ -18,7 +18,7 @@ function PointTypeForm({ row }: { row?: PointTypeRow }) {
 				{row ? (
 					<>
 						<input type="hidden" name="key" value={row.key} />
-						<Badge variant="secondary" className="w-fit">{row.key}</Badge>
+						<Badge variant="secondary" className="w-fit max-w-full break-words">{row.key}</Badge>
 					</>
 				) : (
 					<Input name="key" required maxLength={40} pattern="[a-z0-9_]+" />
