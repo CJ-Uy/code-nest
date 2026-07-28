@@ -73,8 +73,8 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 				Back to calendar
 			</Link>
 
-			<div className="grid gap-5 lg:grid-cols-[1fr_320px]">
-				<Card>
+			<div className="grid min-w-0 gap-5 lg:grid-cols-[1fr_320px]">
+				<Card className="min-w-0">
 					<CardHeader>
 						<div className="flex items-center justify-between gap-3">
 							<CardTitle className="text-2xl">{event.title}</CardTitle>
@@ -88,7 +88,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 					</CardHeader>
 					<CardContent className="flex flex-col gap-3 text-sm">
 						<p>{event.description}</p>
-						<p className="font-medium">
+						<p className="break-all font-medium">
 							{awardLoad.ok ? formatAwardSummary(awardLoad.rows) : "Worth: Unavailable"}
 						</p>
 						<p className="text-muted-foreground">{event.attendingCount} attending</p>
