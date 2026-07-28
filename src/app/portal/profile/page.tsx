@@ -89,8 +89,8 @@ export default async function ProfilePage() {
 					{pointRows ? (
 						pointRows.map((row) => (
 							<div key={row.pointTypeId} className="flex items-center justify-between gap-3 border-t border-border py-3 first:border-t-0">
-								<div>
-									<p className="text-sm font-medium">{row.label}</p>
+								<div className="min-w-0">
+									<p className="break-all text-sm font-medium">{row.label}</p>
 									{row.retention && history.summary ? (
 										<p className="text-xs text-muted-foreground">
 											Retained at {history.summary.retainedAt}
