@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { Award, CalendarDays, Link2, Save } from "lucide-react";
+import { CalendarDays, Link2, Save } from "lucide-react";
 import { getRepositories } from "@/db";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,6 +11,7 @@ import { MemberCodeCard } from "@/components/member-code-card";
 import { getActor } from "@/server/auth/actor";
 import type { OverviewSummary } from "@/db/repositories/overview";
 import { updateProfileAction } from "./actions";
+import { buildPointBreakdown } from "./point-breakdown";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +21,12 @@ const EMPTY_SUMMARY: OverviewSummary = {
 	upcomingEvents: 0,
 	linkClicks: 0,
 };
+
+const STATUS_LABEL = {
+	retained: "Retained",
+	on_track: "On track",
+	probation: "Probation",
+} as const;
 
 function initialsFrom(name: string): string {
 	const parts = name.trim().split(/\s+/).slice(0, 2);
@@ -32,13 +40,18 @@ export default async function ProfilePage() {
 	const repositories = await getRepositories();
 	const member = await repositories.members.getById(actor, actor.memberId);
 	if (!member) redirect("/signin");
-	const summary = await repositories.overview.getSummary(actor).catch(() => EMPTY_SUMMARY);
+	const [summary, loadedHistory, pointTypes] = await Promise.all([
+		repositories.overview.getSummary(actor).catch(() => EMPTY_SUMMARY),
+		repositories.retention.myHistory(actor, {}).catch(() => null),
+		repositories.pointTypes.list().catch(() => null),
+	]);
+	const history = loadedHistory ?? { summary: null, records: [] };
+	const pointRows = loadedHistory && pointTypes ? buildPointBreakdown(pointTypes, loadedHistory.records) : null;
 
 	const displayName = member.nickname ?? member.fullName ?? member.name ?? member.email;
 	const subtitle = [member.pronouns, member.batch].filter(Boolean).join(" · ");
 
 	const stats = [
-		{ label: "Retention", value: summary.retention.termName ? summary.retention.points : 0, icon: Award },
 		{ label: "Upcoming events", value: summary.upcomingEvents, icon: CalendarDays },
 		{ label: "Link clicks", value: summary.linkClicks, icon: Link2 },
 	];
@@ -53,7 +66,7 @@ export default async function ProfilePage() {
 						<h1 className="font-heading text-2xl text-foreground">{member.fullName ?? member.name ?? displayName}</h1>
 						<p className="text-sm text-muted-foreground">{subtitle || member.email}</p>
 					</div>
-					<dl className="mt-6 grid grid-cols-3 gap-3">
+					<dl className="mt-6 grid grid-cols-2 gap-3">
 						{stats.map((stat) => {
 							const Icon = stat.icon;
 							return (
@@ -65,6 +78,38 @@ export default async function ProfilePage() {
 							);
 						})}
 					</dl>
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>Points this term</CardTitle>
+				</CardHeader>
+				<CardContent>
+					{pointRows ? (
+						pointRows.map((row) => (
+							<div key={row.pointTypeId} className="flex items-center justify-between gap-3 border-t border-border py-3 first:border-t-0">
+								<div>
+									<p className="text-sm font-medium">{row.label}</p>
+									{row.retention && history.summary ? (
+										<p className="text-xs text-muted-foreground">
+											Retained at {history.summary.retainedAt}
+										</p>
+									) : null}
+								</div>
+								<div className="flex items-center gap-3">
+									<span className="font-heading text-xl tabular-nums">{row.totalPoints}</span>
+									{row.retention && history.summary ? (
+										<Badge variant={history.summary.status === "probation" ? "warn" : "secondary"}>
+											{STATUS_LABEL[history.summary.status]}
+										</Badge>
+									) : null}
+								</div>
+							</div>
+						))
+					) : (
+						<p className="text-sm text-muted-foreground">Points are unavailable right now.</p>
+					)}
 				</CardContent>
 			</Card>
 
