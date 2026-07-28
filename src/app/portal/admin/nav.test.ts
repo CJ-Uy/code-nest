@@ -4,6 +4,7 @@ import { adminGroups, visibleGroups, crumbFor, adminHeading } from "./nav";
 
 const superActor: Actor = { memberId: "m1", roles: ["super"] };
 const linkOnly: Actor = { memberId: "m2", roles: ["link"] };
+const retentionActor: Actor = { memberId: "m3", roles: ["retention"] };
 
 describe("admin nav registry", () => {
 	it("has 4 groups with the spec's routes", () => {
@@ -18,6 +19,14 @@ describe("admin nav registry", () => {
 		expect(visible).toContain("/portal/admin/content/links");
 		expect(visible).toContain("/portal/admin/system/audit"); // permission null → always visible
 		expect(visible).not.toContain("/portal/admin/members/roles");
+	});
+
+	it("shows Point Types only to retention configuration holders", () => {
+		const retentionPages = visibleGroups(retentionActor).flatMap((group) => group.pages.map((page) => page.href));
+		const linkPages = visibleGroups(linkOnly).flatMap((group) => group.pages.map((page) => page.href));
+		expect(retentionPages).toContain("/portal/admin/system/point-types");
+		expect(linkPages).not.toContain("/portal/admin/system/point-types");
+		expect(crumbFor("/portal/admin/system/point-types").at(-1)).toEqual({ label: "Point Types" });
 	});
 
 	it("builds a breadcrumb trail with clickable ancestors", () => {

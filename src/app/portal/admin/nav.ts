@@ -51,6 +51,12 @@ export const adminGroups: AdminGroup[] = [
 			description: "Which permission each event type requires to create.",
 			permission: "role:assign",
 		},
+		{
+			segment: "point-types",
+			label: "Point Types",
+			description: "Manage point labels, retention counting, availability, and display order.",
+			permission: "retention:configure",
+		},
 		{ segment: "nav-pins", label: "Pinned Nav Links", description: "Links shown in every member's top nav.", permission: "nav:configure" },
 		{
 			segment: "quick-links",
