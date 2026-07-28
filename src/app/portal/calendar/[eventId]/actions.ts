@@ -92,14 +92,6 @@ export async function inviteAction(eventId: string, memberIds: string[]) {
 	return result;
 }
 
-export async function setPointsAction(eventId: string, points: number | null) {
-	const actor = await requireActor();
-	const repositories = await getRepositories();
-	const result = await repositories.events.setPoints(actor, eventId, points);
-	revalidate(eventId);
-	return result;
-}
-
 export async function setAwardsAction(eventId: string, awards: unknown) {
 	const actor = await requireActor();
 	const input = eventsContract.setAwards.input.parse({ eventId, awards });

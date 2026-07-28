@@ -251,7 +251,7 @@ describe("events repository on D1", () => {
 		expect(event.myRole).toBe("owner");
 		expect((await repo.listPublished(outsider, {})).map((row) => row.id)).toEqual([event.id]);
 
-		await repo.setPoints(eventsAdmin, event.id, 5);
+		await repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_retention", points: 5 }]);
 		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
 		await repo.softDelete(owner, event.id);
 
@@ -318,30 +318,6 @@ describe("events repository on D1", () => {
 		).resolves.toMatchObject({ alreadyPresent: false });
 	});
 
-	it("re-values event-attendance points and late scans inherit the current value", async () => {
-		const event = await makeApprovedEvent(owner);
-		const { repo, db } = makeRepos();
-
-		await repo.setPoints(eventsAdmin, event.id, 5);
-		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
-		expect(await db.select().from(schema.notifications)).toHaveLength(0);
-		await expect(repo.setPoints(retentionAdmin, event.id, 9)).rejects.toThrow("Not authorized");
-
-		await expect(repo.setPoints(eventsAdmin, event.id, 9)).resolves.toEqual({ updated: 1 });
-		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_b", termId: "term_1" });
-
-		const rows = await db.select().from(schema.retentionRecords).orderBy(schema.retentionRecords.memberId);
-		expect(rows.map((row) => [row.memberId, row.points])).toEqual([
-			["mem_a", 9],
-			["mem_b", 9],
-		]);
-		expect(await db.select().from(schema.notifications)).toHaveLength(1);
-
-		await expect(repo.setPoints(eventsAdmin, event.id, null)).resolves.toEqual({ updated: 2 });
-		expect(await db.select().from(schema.retentionRecords)).toHaveLength(0);
-		expect(await db.select().from(schema.notifications)).toHaveLength(1);
-	});
-
 	it("validates every setAwards value inside the repository", async () => {
 		const event = await makeApprovedEvent();
 		const { repo } = makeRepos();
@@ -367,6 +343,19 @@ describe("events repository on D1", () => {
 		await expect(
 			repo.setAwards(retentionAdmin, event.id, [{ pointTypeId: "pt_retention", points: 2 }]),
 		).rejects.toThrow("Not authorized");
+	});
+
+	it("does not mirror Retention awards into the deprecated event points column", async () => {
+		const { repo } = makeRepos();
+		const event = await makeApprovedEvent();
+		await env.DB.prepare("UPDATE crs_events SET points = ? WHERE id = ?").bind(91, event.id).run();
+
+		await repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_retention", points: 4 }]);
+
+		const row = await env.DB.prepare("SELECT points FROM crs_events WHERE id = ?")
+			.bind(event.id)
+			.first<{ points: number | null }>();
+		expect(row?.points).toBe(91);
 	});
 
 	it("reconciles attendance awards while preserving their scan provenance", async () => {
@@ -409,10 +398,6 @@ describe("events repository on D1", () => {
 		expect(rowsAfterRemove.map((row) => [row.pointTypeId, row.points])).toEqual([
 			["pt_retention", 4],
 		]);
-		expect((await db.select().from(schema.crsEvents).where(eq(schema.crsEvents.id, event.id)))[0].points).toBe(4);
-
-		await repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_frontliner", points: 3 }]);
-		expect((await db.select().from(schema.crsEvents).where(eq(schema.crsEvents.id, event.id)))[0].points).toBeNull();
 	});
 
 	it("derives scan rows from every active event award", async () => {
@@ -469,43 +454,6 @@ describe("events repository on D1", () => {
 		expect(
 			rows.some((row) => row.memberId === "mem_a" && row.pointTypeId === "pt_frontliner"),
 		).toBe(true);
-	});
-
-	it("keeps setPoints scoped to Retention and returns distinct attendees", async () => {
-		const event = await makeApprovedEvent();
-		const { db, repo } = makeRepos();
-		await repo.setAwards(eventsAdmin, event.id, [
-			{ pointTypeId: "pt_retention", points: 2 },
-			{ pointTypeId: "pt_frontliner", points: 3 },
-		]);
-		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
-		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_b", termId: "term_1" });
-
-		await expect(repo.setPoints(eventsAdmin, event.id, 7)).resolves.toEqual({ updated: 2 });
-
-		const awards = await db.select().from(schema.eventPointAwards).orderBy(schema.eventPointAwards.pointTypeId);
-		expect(awards.map((row) => [row.pointTypeId, row.points])).toEqual([
-			["pt_frontliner", 3],
-			["pt_retention", 7],
-		]);
-		expect((await db.select().from(schema.crsEvents).where(eq(schema.crsEvents.id, event.id)))[0].points).toBe(7);
-		expect(
-			(await db.select().from(schema.retentionRecords))
-				.filter((row) => row.pointTypeId === "pt_frontliner")
-				.every((row) => row.points === 3),
-		).toBe(true);
-
-		await expect(repo.setPoints(eventsAdmin, event.id, null)).resolves.toEqual({ updated: 2 });
-		expect(
-			(await db.select().from(schema.eventPointAwards)).map((row) => [row.pointTypeId, row.points]),
-		).toEqual([["pt_frontliner", 3]]);
-		expect(
-			(await db.select().from(schema.retentionRecords)).map((row) => [row.pointTypeId, row.points]),
-		).toEqual([
-			["pt_frontliner", 3],
-			["pt_frontliner", 3],
-		]);
-		expect((await db.select().from(schema.crsEvents).where(eq(schema.crsEvents.id, event.id)))[0].points).toBeNull();
 	});
 
 	it("rolls back award reconciliation when its audit insert fails", async () => {
@@ -619,7 +567,7 @@ describe("events repository on D1", () => {
 	it("lets owners undo a scan and removes the points with it, but blocks scanners", async () => {
 		const event = await makeApprovedEvent();
 		const { repo, db } = makeRepos();
-		await repo.setPoints(eventsAdmin, event.id, 5);
+		await repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_retention", points: 5 }]);
 		await repo.addStaff(owner, event.id, scanner.memberId, "scanner");
 		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
 

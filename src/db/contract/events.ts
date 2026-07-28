@@ -121,13 +121,6 @@ export const eventsContract = {
 		auth: "member",
 		sharedDev: "deny",
 	}),
-	setPoints: operation({
-		input: z.object({ eventId: z.string().min(1), points: z.number().int().min(-100).max(100).nullable() }),
-		output: z.object({ updated: z.number().int().min(0) }),
-		auth: "admin",
-		permission: "event:points",
-		sharedDev: "deny",
-	}),
 	setAwards: operation({
 		input: z.object({
 			eventId: z.string().min(1),

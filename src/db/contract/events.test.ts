@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { eventsContract } from "./events";
 
 describe("eventsContract point awards", () => {
-	it("parses typed awards and keeps both write operations shared-dev denied", () => {
+	it("parses typed awards and keeps the write operation shared-dev denied", () => {
 		const input = eventsContract.setAwards.input.parse({
 			eventId: "evt_1",
 			awards: [
@@ -13,6 +13,5 @@ describe("eventsContract point awards", () => {
 
 		expect(input.awards).toHaveLength(2);
 		expect(eventsContract.setAwards.sharedDev).toBe("deny");
-		expect(eventsContract.setPoints.sharedDev).toBe("deny");
 	});
 });
