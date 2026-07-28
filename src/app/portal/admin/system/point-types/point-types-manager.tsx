@@ -13,12 +13,12 @@ function PointTypeForm({ row }: { row?: PointTypeRow }) {
 	return (
 		<form action={upsertPointTypeAction} className="grid gap-3 border-t border-border pt-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto_7rem_auto] lg:items-end">
 			<input type="hidden" name="id" value={row?.id ?? ""} />
-			<label className="grid gap-1.5 text-sm">
+			<label className="grid min-w-0 gap-1.5 text-sm">
 				<span className="font-medium">Key</span>
 				{row ? (
 					<>
 						<input type="hidden" name="key" value={row.key} />
-						<Badge variant="secondary" className="w-fit max-w-full break-words">{row.key}</Badge>
+						<Badge variant="secondary" className="w-fit max-w-full break-all">{row.key}</Badge>
 					</>
 				) : (
 					<Input name="key" required maxLength={40} pattern="[a-z0-9_]+" />
