@@ -48,6 +48,7 @@ export type RetentionSummary = {
 	status: RetentionStatus;
 };
 export type LeaderboardInput = { termId: string; limit?: number; offset?: number };
+export type PublicLeaderboardInput = LeaderboardInput & { pointTypeId: string };
 export type LeaderboardRow = { memberId: string; fullName: string | null; name: string | null; totalPoints: number };
 
 export type MyHistorySummary = {
@@ -66,7 +67,7 @@ export type RetentionRepository = {
 	listForMember(actor: Actor, input: ListForMemberInput): Promise<TypedRetentionRecord[]>;
 	getMemberTermSummary(actor: Actor, input: MemberTermSummaryInput): Promise<RetentionSummary>;
 	leaderboard(actor: Actor, input: LeaderboardInput): Promise<LeaderboardRow[]>;
-	publicLeaderboard(actor: Actor, input: LeaderboardInput): Promise<LeaderboardRow[]>;
+	publicLeaderboard(actor: Actor, input: PublicLeaderboardInput): Promise<LeaderboardRow[]>;
 	createManual(actor: Actor, input: CreateManualRetentionRecordInput): Promise<{ recordIds: string[] }>;
 	listForTerm(actor: Actor, termId: string): Promise<TermMasterRow[]>;
 	listMemberTermHistory(actor: Actor, memberId: string, termId: string): Promise<MemberHistoryRow[]>;
@@ -202,7 +203,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 
 		async publicLeaderboard(_actor, input) {
 			// Read-only points ranking visible to any signed-in member (names + points
-			// only). Same aggregation as the admin leaderboard without the manage gate.
+			// only). Selected-type aggregation without the admin manage gate.
 			return db
 				.select({
 					memberId: retentionRecords.memberId,
@@ -213,7 +214,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				.from(retentionRecords)
 				.innerJoin(members, eq(members.id, retentionRecords.memberId))
 				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
-				.where(and(eq(retentionRecords.termId, input.termId), eq(pointTypes.countsTowardRetention, true)))
+				.where(and(eq(retentionRecords.termId, input.termId), eq(retentionRecords.pointTypeId, input.pointTypeId)))
 				.groupBy(retentionRecords.memberId, members.fullName, members.name)
 				.orderBy(desc(sql`coalesce(sum(${retentionRecords.points}), 0)`))
 				.limit(Math.min(input.limit ?? 25, 100))

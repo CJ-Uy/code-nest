@@ -107,7 +107,10 @@ describe("retention repository on D1", () => {
 			termId: "term_1",
 		});
 		const adminBoard = await repo.leaderboard(retentionAdmin, { termId: "term_1" });
-		const publicBoard = await repo.publicLeaderboard(plainMember, { termId: "term_1" });
+		const publicBoard = await repo.publicLeaderboard(plainMember, {
+			termId: "term_1",
+			pointTypeId: "pt_retention",
+		});
 		const history = await repo.myHistory(plainMember, { termId: "term_1" });
 
 		expect(summary.totalPoints).toBe(20);
@@ -118,6 +121,32 @@ describe("retention repository on D1", () => {
 		expect(history.summary?.status).toBe("retained");
 		expect(history.summary?.recordCount).toBe(2);
 		expect(history.records).toHaveLength(2);
+	});
+
+	it("ranks public leaderboard rows by the selected point type", async () => {
+		const { repo } = makeRepo();
+		await insertRecord({ id: "ret_a", memberId: "mem_a", pointTypeId: "pt_retention", points: 10 });
+		await insertRecord({ id: "front_a", memberId: "mem_a", pointTypeId: "pt_frontliner", points: 1 });
+		await insertRecord({ id: "ret_b", memberId: "mem_b", pointTypeId: "pt_retention", points: 5 });
+		await insertRecord({ id: "front_b", memberId: "mem_b", pointTypeId: "pt_frontliner", points: 20 });
+
+		const retentionBoard = await repo.publicLeaderboard(plainMember, {
+			termId: "term_1",
+			pointTypeId: "pt_retention",
+		});
+		const frontlinerBoard = await repo.publicLeaderboard(plainMember, {
+			termId: "term_1",
+			pointTypeId: "pt_frontliner",
+		});
+
+		expect(retentionBoard.map((row) => [row.memberId, row.totalPoints])).toEqual([
+			["mem_a", 10],
+			["mem_b", 5],
+		]);
+		expect(frontlinerBoard.map((row) => [row.memberId, row.totalPoints])).toEqual([
+			["mem_b", 20],
+			["mem_a", 1],
+		]);
 	});
 
 	it("ranks members by total points for the term leaderboard", async () => {

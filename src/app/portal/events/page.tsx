@@ -1,11 +1,14 @@
 import Link from "next/link";
-import { Trophy } from "lucide-react";
+import { Filter, Trophy } from "lucide-react";
 import { getRepositories } from "@/db";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
 import { EmptyState } from "@/components/portal/empty-state";
 import { MemberAvatar } from "@/components/portal/member-avatar";
 import { RetentionHistory } from "@/components/retention-history";
 import { requireActor } from "@/server/auth/actor";
+import { selectLeaderboardPointTypeId } from "./point-type-selection";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +20,7 @@ function initialsFrom(name: string): string {
 export default async function RetentionHistoryPage({
 	searchParams,
 }: {
-	searchParams: Promise<{ termId?: string; view?: string }>;
+	searchParams: Promise<{ termId?: string; view?: string; pointTypeId?: string }>;
 }) {
 	const actor = await requireActor();
 	const params = await searchParams;
@@ -30,9 +33,18 @@ export default async function RetentionHistoryPage({
 		.catch(() => ({ summary: null, records: [] }));
 	const selectedTermId = summary?.termId ?? params.termId ?? terms.find((term) => term.isCurrent)?.id ?? "";
 
+	const pointTypeLoad = await repositories.pointTypes
+		.list()
+		.then((rows) => ({ ok: true as const, rows }))
+		.catch(() => ({ ok: false as const, rows: [] }));
+	const selectedPointTypeId = selectLeaderboardPointTypeId(params.pointTypeId, pointTypeLoad.rows);
 	const leaderboard =
-		view === "leaderboard" && selectedTermId
-			? await repositories.retention.publicLeaderboard(actor, { termId: selectedTermId, limit: 25 }).catch(() => [])
+		view === "leaderboard" && pointTypeLoad.ok && selectedTermId && selectedPointTypeId
+			? await repositories.retention.publicLeaderboard(actor, {
+					termId: selectedTermId,
+					pointTypeId: selectedPointTypeId,
+					limit: 25,
+				}).catch(() => [])
 			: [];
 
 	const tabs = [
@@ -68,31 +80,62 @@ export default async function RetentionHistoryPage({
 
 			{view === "history" ? (
 				<RetentionHistory summary={summary} records={records} terms={terms} selectedTermId={selectedTermId} />
-			) : leaderboard.length === 0 ? (
-				<EmptyState icon={Trophy} title="No points yet this term" description="Attend events to climb the leaderboard." />
+			) : !pointTypeLoad.ok ? (
+				<p className="text-sm text-muted-foreground">Point types are unavailable right now.</p>
 			) : (
-				<Card>
-					<CardContent className="divide-y divide-border p-0">
-						{leaderboard.map((row, rank) => {
-							const name = row.fullName ?? row.name ?? "Member";
-							const isMe = row.memberId === actor.memberId;
-							return (
-								<div
-									key={row.memberId}
-									className={`flex items-center gap-3 px-4 py-3 ${isMe ? "bg-secondary/40" : ""}`}
-								>
-									<span className="w-6 text-center font-heading text-lg text-muted-foreground">{rank + 1}</span>
-									<MemberAvatar initials={initialsFrom(name)} className="size-8 text-xs" />
-									<span className="flex-1 truncate text-sm font-medium">
-										{name}
-										{isMe ? <span className="ml-2 text-xs text-accent">You</span> : null}
-									</span>
-									<span className="tabular-nums font-heading text-lg">{row.totalPoints}</span>
-								</div>
-							);
-						})}
-					</CardContent>
-				</Card>
+				<div className="grid gap-4">
+					<form method="get" className="flex flex-wrap items-end gap-3">
+						<input type="hidden" name="view" value="leaderboard" />
+						<input type="hidden" name="termId" value={selectedTermId} />
+						<label className="grid gap-1.5 text-sm">
+							<span className="font-medium">Point type</span>
+							<Select name="pointTypeId" defaultValue={selectedPointTypeId ?? ""}>
+								{pointTypeLoad.rows.map((type) => (
+									<option key={type.id} value={type.id}>
+										{type.label}{type.active ? "" : " (retired)"}
+									</option>
+								))}
+							</Select>
+						</label>
+						<Button type="submit" variant="secondary">
+							<Filter />
+							View
+						</Button>
+					</form>
+
+					{leaderboard.length === 0 ? (
+						<EmptyState
+							icon={Trophy}
+							title="No points yet this term"
+							description="Attend events to climb the leaderboard."
+						/>
+					) : (
+						<Card>
+							<CardContent className="divide-y divide-border p-0">
+								{leaderboard.map((row, rank) => {
+									const name = row.fullName ?? row.name ?? "Member";
+									const isMe = row.memberId === actor.memberId;
+									return (
+										<div
+											key={row.memberId}
+											className={`flex items-center gap-3 px-4 py-3 ${isMe ? "bg-secondary/40" : ""}`}
+										>
+											<span className="w-6 text-center font-heading text-lg text-muted-foreground">
+												{rank + 1}
+											</span>
+											<MemberAvatar initials={initialsFrom(name)} className="size-8 text-xs" />
+											<span className="flex-1 truncate text-sm font-medium">
+												{name}
+												{isMe ? <span className="ml-2 text-xs text-accent">You</span> : null}
+											</span>
+											<span className="tabular-nums font-heading text-lg">{row.totalPoints}</span>
+										</div>
+									);
+								})}
+							</CardContent>
+						</Card>
+					)}
+				</div>
 			)}
 		</div>
 	);

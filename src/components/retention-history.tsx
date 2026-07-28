@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { MyHistorySummary, RetentionRecord, TermOption } from "@/db/repositories/retention";
+import type { MyHistorySummary, TermOption, TypedRetentionRecord } from "@/db/repositories/retention";
 
 const STATUS_LABEL: Record<MyHistorySummary["status"], string> = {
 	retained: "Retained",
@@ -15,7 +15,7 @@ export function RetentionHistory({
 	selectedTermId,
 }: {
 	summary: MyHistorySummary | null;
-	records: RetentionRecord[];
+	records: TypedRetentionRecord[];
 	terms: TermOption[];
 	selectedTermId: string;
 }) {
@@ -81,7 +81,9 @@ export function RetentionHistory({
 										{record.source === "event_attendance" ? "Event" : "Manual"}
 									</span>
 								</div>
-								<span className="text-sm tabular-nums">{record.points ?? "n/a"}</span>
+								<span className="text-sm tabular-nums">
+									{record.points ?? "n/a"} {record.pointTypeLabel}
+								</span>
 							</div>
 						))
 					)}
