@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/select";
 import { EmptyState } from "@/components/portal/empty-state";
 import { MemberAvatar } from "@/components/portal/member-avatar";
 import { RetentionHistory } from "@/components/retention-history";
+import type { PublicLeaderboardSelection } from "@/db/repositories/retention";
 import { requireActor } from "@/server/auth/actor";
 import { selectLeaderboardPointTypeId } from "./point-type-selection";
 
@@ -38,11 +39,20 @@ export default async function RetentionHistoryPage({
 		.then((rows) => ({ ok: true as const, rows }))
 		.catch(() => ({ ok: false as const, rows: [] }));
 	const selectedPointTypeId = selectLeaderboardPointTypeId(params.pointTypeId, pointTypeLoad.rows);
+	const selectedPointType = pointTypeLoad.rows.find((type) => type.id === selectedPointTypeId) ?? null;
+	// The "Retention" point type stands in for the aggregate: picking it ranks members by the
+	// sum of every countsTowardRetention type (matching the admin leaderboard and myHistory).
+	// Any other selected type ranks by that single type alone, counting or not.
+	const leaderboardSelection: PublicLeaderboardSelection | null = !selectedPointTypeId
+		? null
+		: selectedPointType?.key === "retention"
+			? { kind: "retention" }
+			: { kind: "pointType", pointTypeId: selectedPointTypeId };
 	const leaderboard =
-		view === "leaderboard" && pointTypeLoad.ok && selectedTermId && selectedPointTypeId
+		view === "leaderboard" && pointTypeLoad.ok && selectedTermId && leaderboardSelection
 			? await repositories.retention.publicLeaderboard(actor, {
 					termId: selectedTermId,
-					pointTypeId: selectedPointTypeId,
+					selection: leaderboardSelection,
 					limit: 25,
 				}).catch(() => [])
 			: [];

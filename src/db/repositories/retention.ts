@@ -48,7 +48,12 @@ export type RetentionSummary = {
 	status: RetentionStatus;
 };
 export type LeaderboardInput = { termId: string; limit?: number; offset?: number };
-export type PublicLeaderboardInput = LeaderboardInput & { pointTypeId: string };
+// "retention" aggregates every point type with countsTowardRetention = true, matching the
+// admin leaderboard() and myHistory(). "pointType" filters to exactly the given type, whether
+// or not it counts toward retention. Kept as a discriminated union so callers can't smuggle
+// the aggregate through a field that reads like a single point type id.
+export type PublicLeaderboardSelection = { kind: "retention" } | { kind: "pointType"; pointTypeId: string };
+export type PublicLeaderboardInput = LeaderboardInput & { selection: PublicLeaderboardSelection };
 export type LeaderboardRow = { memberId: string; fullName: string | null; name: string | null; totalPoints: number };
 
 export type MyHistorySummary = {
@@ -203,7 +208,17 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 
 		async publicLeaderboard(_actor, input) {
 			// Read-only points ranking visible to any signed-in member (names + points
-			// only). Selected-type aggregation without the admin manage gate.
+			// only), without the admin manage gate. "retention" sums every counting point
+			// type (same population as the admin leaderboard() and myHistory()); the
+			// pointTypes join is what makes that countsTowardRetention filter possible, so
+			// it stays even though the "pointType" branch below does not need it.
+			const where =
+				input.selection.kind === "retention"
+					? and(eq(retentionRecords.termId, input.termId), eq(pointTypes.countsTowardRetention, true))
+					: and(
+							eq(retentionRecords.termId, input.termId),
+							eq(retentionRecords.pointTypeId, input.selection.pointTypeId),
+						);
 			return db
 				.select({
 					memberId: retentionRecords.memberId,
@@ -214,7 +229,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				.from(retentionRecords)
 				.innerJoin(members, eq(members.id, retentionRecords.memberId))
 				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
-				.where(and(eq(retentionRecords.termId, input.termId), eq(retentionRecords.pointTypeId, input.pointTypeId)))
+				.where(where)
 				.groupBy(retentionRecords.memberId, members.fullName, members.name)
 				.orderBy(desc(sql`coalesce(sum(${retentionRecords.points}), 0)`))
 				.limit(Math.min(input.limit ?? 25, 100))

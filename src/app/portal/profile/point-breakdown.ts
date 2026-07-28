@@ -21,6 +21,6 @@ export function buildPointBreakdown(types: PointTypeRow[], records: TypedPoints[
 			pointTypeId: type.id,
 			label: type.label,
 			totalPoints: totals.get(type.id) ?? 0,
-			retention: type.key === "retention",
+			retention: type.countsTowardRetention,
 		}));
 }

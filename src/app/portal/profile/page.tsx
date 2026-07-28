@@ -83,7 +83,19 @@ export default async function ProfilePage() {
 
 			<Card>
 				<CardHeader>
-					<CardTitle>Points this term</CardTitle>
+					<div className="flex items-center justify-between gap-3">
+						<CardTitle>Points this term</CardTitle>
+						{history.summary ? (
+							<Badge variant={history.summary.status === "probation" ? "warn" : "secondary"}>
+								{STATUS_LABEL[history.summary.status]}
+							</Badge>
+						) : null}
+					</div>
+					{history.summary ? (
+						<CardDescription>
+							{history.summary.totalPoints} retention points · retained at {history.summary.retainedAt}
+						</CardDescription>
+					) : null}
 				</CardHeader>
 				<CardContent>
 					{pointRows ? (
@@ -91,20 +103,11 @@ export default async function ProfilePage() {
 							<div key={row.pointTypeId} className="flex items-center justify-between gap-3 border-t border-border py-3 first:border-t-0">
 								<div className="min-w-0">
 									<p className="break-all text-sm font-medium">{row.label}</p>
-									{row.retention && history.summary ? (
-										<p className="text-xs text-muted-foreground">
-											Retained at {history.summary.retainedAt}
-										</p>
+									{row.retention ? (
+										<p className="text-xs text-muted-foreground">Counts toward retention</p>
 									) : null}
 								</div>
-								<div className="flex items-center gap-3">
-									<span className="font-heading text-xl tabular-nums">{row.totalPoints}</span>
-									{row.retention && history.summary ? (
-										<Badge variant={history.summary.status === "probation" ? "warn" : "secondary"}>
-											{STATUS_LABEL[history.summary.status]}
-										</Badge>
-									) : null}
-								</div>
+								<span className="font-heading text-xl tabular-nums">{row.totalPoints}</span>
 							</div>
 						))
 					) : (

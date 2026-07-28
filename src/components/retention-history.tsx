@@ -74,8 +74,8 @@ export function RetentionHistory({
 								key={record.id}
 								className="flex min-w-0 items-center justify-between gap-3 rounded-md border border-border px-3 py-2"
 							>
-								<div className="flex flex-col">
-									<span className="text-sm font-medium">{record.reason}</span>
+								<div className="flex min-w-0 flex-col">
+									<span className="break-all text-sm font-medium">{record.reason}</span>
 									<span className="text-xs text-muted-foreground">
 										{record.recordedAt.toISOString().slice(0, 10)} ·{" "}
 										{record.source === "event_attendance" ? "Event" : "Manual"}
