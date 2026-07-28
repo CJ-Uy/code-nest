@@ -1,12 +1,12 @@
 {
   ".remember/tmp/last-ndc.ts": {
-    "mtime": 1785253859.786403,
-    "ast_hash": "5a5d72a970547c6e692f4115ef6459e3",
+    "mtime": 1785259886.3338661,
+    "ast_hash": "60a41e5bd9bf302134bd02ea767b10e9",
     "semantic_hash": ""
   },
   ".remember/tmp/last-save.json": {
-    "mtime": 1785253857.616876,
-    "ast_hash": "108d1b301b9196234f615d67f79dc7e3",
+    "mtime": 1785262659.8726008,
+    "ast_hash": "7737868cefedb31bea7b87559efba22b",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -355,8 +355,8 @@
     "semantic_hash": "081ecf22d42e38f43d7cafad98164f39"
   },
   "src/app/portal/profile/page.tsx": {
-    "mtime": 1785252432.0285873,
-    "ast_hash": "24517c5477f0f9356d39c8fb6d8add9d",
+    "mtime": 1785260950.343562,
+    "ast_hash": "2399cc26d0ff49e6b1115ce77e12ac10",
     "semantic_hash": ""
   },
   "src/app/signin/page.tsx": {
@@ -505,8 +505,8 @@
     "semantic_hash": ""
   },
   "src/db/repositories/retention.ts": {
-    "mtime": 1785252262.1110048,
-    "ast_hash": "9254f453ae0509dbea0f620fd623ba9b",
+    "mtime": 1785260999.305906,
+    "ast_hash": "4b4177676c2db1feb6ed6530a919390a",
     "semantic_hash": ""
   },
   "src/db/repositories/sessions.ts": {
@@ -720,18 +720,18 @@
     "semantic_hash": "31c1e65b6e7722dc5d5faefffdd11b84"
   },
   ".remember/archive.md": {
-    "mtime": 1785172902.0110228,
-    "ast_hash": "78e560f7a0722cba48f2621bd4acce79",
+    "mtime": 1785262003.6782544,
+    "ast_hash": "36744c969dae0a37a148c28b90e73929",
     "semantic_hash": ""
   },
   ".remember/now.md": {
-    "mtime": 1785253908.0339627,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "mtime": 1785262659.6234753,
+    "ast_hash": "3dee5d9e696dfc7835eeaf5f07f321ff",
     "semantic_hash": ""
   },
   ".remember/recent.md": {
-    "mtime": 1785172901.9933586,
-    "ast_hash": "efa02697766655727a2a2b293ce98f28",
+    "mtime": 1785262003.660289,
+    "ast_hash": "54dbe427fe6556f27d13d9d6efeeefd2",
     "semantic_hash": ""
   },
   ".remember/today-2026-06-17.done.md": {
@@ -1630,8 +1630,8 @@
     "semantic_hash": ""
   },
   "src/db/repositories/retention.integration.test.ts": {
-    "mtime": 1785252303.2022142,
-    "ast_hash": "ce2b90b89bbe29bfd24bf01a15fd283b",
+    "mtime": 1785261045.1221864,
+    "ast_hash": "bb291388a0f176bb2e3c19574a6eab6d",
     "semantic_hash": ""
   },
   "src/lib/member-code.test.ts": {
@@ -1760,8 +1760,8 @@
     "semantic_hash": ""
   },
   "src/app/portal/events/page.tsx": {
-    "mtime": 1785253819.6838188,
-    "ast_hash": "f36976ce90425ea8f42ec7fa91e03c34",
+    "mtime": 1785261023.25124,
+    "ast_hash": "8f10d65fa5042ed8bd22b399b057a3cd",
     "semantic_hash": ""
   },
   "src/components/calendar-month.tsx": {
@@ -1770,8 +1770,8 @@
     "semantic_hash": ""
   },
   "src/components/retention-history.tsx": {
-    "mtime": 1785253823.1582868,
-    "ast_hash": "4f13ab8aed116c4b226666bee28b970a",
+    "mtime": 1785260956.6435566,
+    "ast_hash": "344ce2f3936cc19b4ad19a9a70dda6a0",
     "semantic_hash": ""
   },
   "src/db/contract/calendar.ts": {
@@ -2709,11 +2709,6 @@
     "ast_hash": "848b1418eb8d1df60bd1ad1d6b1af6c9",
     "semantic_hash": ""
   },
-  ".remember/today-2026-07-28.md": {
-    "mtime": 1785253908.0124385,
-    "ast_hash": "fef60115f3c0c8b599246478c3d419e8",
-    "semantic_hash": ""
-  },
   "docs/superpowers/specs/2026-07-27-event-taxonomy-and-points-design.md": {
     "mtime": 1785177706.914992,
     "ast_hash": "a17af58f64a347fdb8ded1b245fe42d8",
@@ -3105,13 +3100,13 @@
     "semantic_hash": ""
   },
   "src/app/portal/profile/point-breakdown.test.ts": {
-    "mtime": 1785251253.7369907,
-    "ast_hash": "b1e139ef122b74ba234cd994a41ca5aa",
+    "mtime": 1785261057.3763626,
+    "ast_hash": "ecda7bad9398c6f3f190a198ca5f03b4",
     "semantic_hash": ""
   },
   "src/app/portal/profile/point-breakdown.ts": {
-    "mtime": 1785251238.8671584,
-    "ast_hash": "dcbaac298b1045fd77a7421dc4db6d6a",
+    "mtime": 1785260938.264458,
+    "ast_hash": "22fcb3adaff0c821f377a0024b4e46f2",
     "semantic_hash": ""
   },
   "src/db/repositories/pointTypes.integration.test.ts": {
@@ -3130,8 +3125,8 @@
     "semantic_hash": ""
   },
   ".superpowers/sdd/2026-07-28-plan-b3-points-ui-and-cleanup/progress.md": {
-    "mtime": 1785257693.20351,
-    "ast_hash": "5dd0494f6077bfe1210a5e3cac5e4487",
+    "mtime": 1785262482.4575894,
+    "ast_hash": "b169c52bae0fbec0527221be1cccf90d",
     "semantic_hash": ""
   },
   ".superpowers/sdd/2026-07-28-plan-b3-points-ui-and-cleanup/task-1-brief.md": {
@@ -3210,8 +3205,33 @@
     "semantic_hash": ""
   },
   ".superpowers/sdd/2026-07-28-plan-b3-points-ui-and-cleanup/task-8-report.md": {
-    "mtime": 1785258485.2656784,
-    "ast_hash": "316623df71da76ad415d24a87da1ec36",
+    "mtime": 1785259704.5315697,
+    "ast_hash": "fdf7449793296141fc08d2340a12fe92",
+    "semantic_hash": ""
+  },
+  ".remember/today-2026-07-29.md": {
+    "mtime": 1785259910.435066,
+    "ast_hash": "f1382eb4742d9540cccd9a745c3e0477",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/2026-07-28-plan-b3-points-ui-and-cleanup/final-review-fix-report.md": {
+    "mtime": 1785261240.6220956,
+    "ast_hash": "0a6f835a57f2388a4668a7d9bb4cf4f8",
+    "semantic_hash": ""
+  },
+  ".remember/today-2026-07-28.done.md": {
+    "mtime": 1785253908.0124385,
+    "ast_hash": "fef60115f3c0c8b599246478c3d419e8",
+    "semantic_hash": ""
+  },
+  "docs/operations/2026-07-29-b3-dev-database-rollout.md": {
+    "mtime": 1785263448.4274316,
+    "ast_hash": "bbbdb2dc4684192059d518b1990c4e39",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260728_182445_audit_b3_dev_d1_migration_state__typed_points_seed.md": {
+    "mtime": 1785263085.9213653,
+    "ast_hash": "139cb4cb56e539fd6a9e7583cc647ef2",
     "semantic_hash": ""
   }
 }
