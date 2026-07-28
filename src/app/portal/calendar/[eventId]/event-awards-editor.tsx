@@ -64,7 +64,7 @@ export function EventAwardsEditor({
 			<p className="text-sm text-muted-foreground">
 				Saving re-values every checked-in attendee. Leave a type empty when it should grant no points.
 			</p>
-			<div className="grid gap-3">
+			<div className="grid min-w-0 gap-3">
 				{rows.map((row) =>
 					row.retired ? (
 						<div
@@ -72,7 +72,7 @@ export function EventAwardsEditor({
 							className="flex min-w-0 flex-col gap-2 rounded-lg border border-border px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
 						>
 							<div className="min-w-0 text-sm">
-								<p className="break-words text-muted-foreground">
+								<p className="break-all text-muted-foreground">
 									<span className="font-medium text-foreground">{row.label}</span>
 									{" - retired, no longer grants points"}
 								</p>
@@ -95,7 +95,7 @@ export function EventAwardsEditor({
 							key={row.pointTypeId}
 							className="grid min-w-0 gap-1.5 text-sm sm:grid-cols-[minmax(0,1fr)_8rem] sm:items-center"
 						>
-							<span className="font-medium">{row.label}</span>
+							<span className="min-w-0 break-all font-medium">{row.label}</span>
 							<Input
 								type="number"
 								min={-100}
