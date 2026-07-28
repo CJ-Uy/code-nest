@@ -108,6 +108,142 @@ describe("events repository on D1", () => {
 		});
 	}
 
+	describe("retired event awards", () => {
+		const { repo } = makeRepos();
+
+		async function seedPointType(input: {
+			id: string;
+			key: string;
+			label: string;
+			active: boolean;
+			position?: number;
+		}) {
+			await env.DB.prepare(
+				`INSERT INTO point_types (id, key, label, counts_toward_retention, active, position)
+				 VALUES (?, ?, ?, ?, ?, ?)
+				 ON CONFLICT(id) DO UPDATE SET label = excluded.label, active = excluded.active, position = excluded.position`,
+			).bind(
+				input.id,
+				input.key,
+				input.label,
+				input.key === "retention" ? 1 : 0,
+				input.active ? 1 : 0,
+				input.position ?? 1,
+			).run();
+		}
+
+		async function seedActiveAward(eventId: string, pointTypeId: string, points: number) {
+			await env.DB.prepare(
+				"INSERT INTO event_point_awards (event_id, point_type_id, points) VALUES (?, ?, ?)",
+			).bind(eventId, pointTypeId, points).run();
+		}
+
+		async function seedAttendanceHistory(eventId: string, memberId: string, pointTypeId: string, points: number) {
+			await env.DB.prepare(
+				`INSERT INTO retention_records
+				 (id, member_id, term_id, event_id, point_type_id, points, reason, source, recorded_by, recorded_at)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, 'event_attendance', ?, ?)`,
+			).bind(
+				`ret_${eventId}_${memberId}_${pointTypeId}`,
+				memberId,
+				"term_1",
+				eventId,
+				pointTypeId,
+				points,
+				"Attendance",
+				"mem_events",
+				Date.now(),
+			).run();
+		}
+
+		async function seedRetiredAwardWithHistory(
+			eventId: string,
+			pointTypeId: string,
+			memberId: string,
+			points: number,
+		) {
+			await seedPointType({
+				id: pointTypeId,
+				key: "frontliner",
+				label: "Frontliner",
+				active: false,
+				position: 2,
+			});
+			await seedActiveAward(eventId, pointTypeId, points);
+			await seedAttendanceHistory(eventId, memberId, pointTypeId, points);
+		}
+
+		it("preserves an inactive award and its history when active awards are saved", async () => {
+			await seedPointType({ id: "pt_retention", key: "retention", label: "Retention", active: true, position: 1 });
+			await seedPointType({ id: "pt_frontliner", key: "frontliner", label: "Frontliner", active: true, position: 2 });
+			const event = await makeApprovedEvent();
+			await repo.setAwards(eventsAdmin, event.id, [
+				{ pointTypeId: "pt_retention", points: 2 },
+				{ pointTypeId: "pt_frontliner", points: 3 },
+			]);
+			await seedAttendanceHistory(event.id, "mem_a", "pt_frontliner", 3);
+			await env.DB.prepare("UPDATE point_types SET active = 0 WHERE id = ?").bind("pt_frontliner").run();
+
+			await repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_retention", points: 4 }]);
+
+			const award = await env.DB.prepare(
+				"SELECT points FROM event_point_awards WHERE event_id = ? AND point_type_id = ?",
+			).bind(event.id, "pt_frontliner").first<{ points: number }>();
+			const history = await env.DB.prepare(
+				"SELECT points FROM retention_records WHERE event_id = ? AND member_id = ? AND point_type_id = ?",
+			).bind(event.id, "mem_a", "pt_frontliner").first<{ points: number }>();
+			expect(award?.points).toBe(3);
+			expect(history?.points).toBe(3);
+		});
+
+		it("removes only the retired award through the explicit operation", async () => {
+			const event = await makeApprovedEvent();
+			await seedRetiredAwardWithHistory(event.id, "pt_frontliner", "mem_a", 3);
+
+			await expect(repo.removeRetiredAward(eventsAdmin, event.id, "pt_frontliner")).resolves.toEqual({ removed: true });
+
+			const award = await env.DB.prepare(
+				"SELECT 1 FROM event_point_awards WHERE event_id = ? AND point_type_id = ?",
+			).bind(event.id, "pt_frontliner").first();
+			const history = await env.DB.prepare(
+				"SELECT points FROM retention_records WHERE event_id = ? AND member_id = ? AND point_type_id = ?",
+			).bind(event.id, "mem_a", "pt_frontliner").first<{ points: number }>();
+			expect(award).toBeNull();
+			expect(history?.points).toBe(3);
+		});
+
+		it("refuses explicit retired removal for an active type", async () => {
+			const event = await makeApprovedEvent();
+			await seedPointType({ id: "pt_retention", key: "retention", label: "Retention", active: true, position: 1 });
+			await seedActiveAward(event.id, "pt_retention", 2);
+			await expect(repo.removeRetiredAward(eventsAdmin, event.id, "pt_retention")).rejects.toThrow(
+				"Active awards must be removed by saving the award editor.",
+			);
+		});
+
+		it("lists active and retired awards with point-type metadata", async () => {
+			const event = await makeApprovedEvent();
+			await seedPointType({ id: "pt_retention", key: "retention", label: "Retention", active: true, position: 1 });
+			await seedActiveAward(event.id, "pt_retention", 2);
+			await seedRetiredAwardWithHistory(event.id, "pt_frontliner", "mem_a", 3);
+			expect(await repo.listAwards(outsider, event.id)).toEqual([
+				{
+					pointTypeId: "pt_retention",
+					points: 2,
+					pointTypeLabel: "Retention",
+					pointTypeActive: true,
+					pointTypePosition: 1,
+				},
+				{
+					pointTypeId: "pt_frontliner",
+					points: 3,
+					pointTypeLabel: "Frontliner",
+					pointTypeActive: false,
+					pointTypePosition: 2,
+				},
+			]);
+		});
+	});
 	it("publishes member-created events immediately and soft-delete hides without orphaning retention", async () => {
 		const event = await makeApprovedEvent();
 		const { repo, db } = makeRepos();

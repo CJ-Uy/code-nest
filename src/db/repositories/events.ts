@@ -84,6 +84,11 @@ export type AttendanceRow = {
 	scannedBy: string;
 };
 export type EventInviteRow = { memberId: string; fullName: string | null; invitedAt: Date };
+export type EventPointAwardRow = EventAwardInput & {
+	pointTypeLabel: string;
+	pointTypeActive: boolean;
+	pointTypePosition: number;
+};
 
 export type EventsRepository = {
 	resolveCapability(actor: Actor, event: { createdBy: string; id: string }): Promise<EventRole | null>;
@@ -95,6 +100,8 @@ export type EventsRepository = {
 	softDelete(actor: Actor, eventId: string): Promise<void>;
 	setPoints(actor: Actor, eventId: string, points: number | null): Promise<{ updated: number }>;
 	setAwards(actor: Actor, eventId: string, awards: EventAwardInput[]): Promise<{ updated: number }>;
+	listAwards(actor: Actor, eventId: string): Promise<EventPointAwardRow[]>;
+	removeRetiredAward(actor: Actor, eventId: string, pointTypeId: string): Promise<{ removed: boolean }>;
 	addStaff(actor: Actor, eventId: string, memberId: string, role: "admin" | "scanner"): Promise<void>;
 	removeStaff(actor: Actor, eventId: string, memberId: string): Promise<void>;
 	transferOwnership(actor: Actor, eventId: string, toMemberId: string): Promise<void>;
@@ -458,7 +465,15 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 				.where(eq(eventPointAwards.eventId, eventId))
 				.limit(1);
 			const queries = [
-				db.delete(eventPointAwards).where(eq(eventPointAwards.eventId, eventId)),
+				db.delete(eventPointAwards).where(
+					and(
+						eq(eventPointAwards.eventId, eventId),
+						inArray(
+							eventPointAwards.pointTypeId,
+							db.select({ id: pointTypes.id }).from(pointTypes).where(eq(pointTypes.active, true)),
+						),
+					),
+				),
 			];
 			if (awards.length > 0) {
 				queries.push(
@@ -522,6 +537,46 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 			return { updated: attendees.length };
 		},
 
+		async listAwards(_actor, eventId) {
+			const event = await loadEvent(db, eventId);
+			if (!event) throw new Error("Event not found.");
+			return db
+				.select({
+					pointTypeId: eventPointAwards.pointTypeId,
+					points: eventPointAwards.points,
+					pointTypeLabel: pointTypes.label,
+					pointTypeActive: pointTypes.active,
+					pointTypePosition: pointTypes.position,
+				})
+				.from(eventPointAwards)
+				.innerJoin(pointTypes, eq(pointTypes.id, eventPointAwards.pointTypeId))
+				.where(eq(eventPointAwards.eventId, eventId))
+				.orderBy(asc(pointTypes.position), asc(pointTypes.label));
+		},
+
+		async removeRetiredAward(actor, eventId, pointTypeId) {
+			if (!can(actor, "event:points")) throw new Error("Not authorized to set event points.");
+			const event = await loadEvent(db, eventId);
+			if (!event) throw new Error("Event not found.");
+			const [type] = await db
+				.select({ active: pointTypes.active })
+				.from(pointTypes)
+				.where(eq(pointTypes.id, pointTypeId))
+				.limit(1);
+			if (!type) throw new Error("Point type not found.");
+			if (type.active) throw new Error("Active awards must be removed by saving the award editor.");
+			const removed = await db
+				.delete(eventPointAwards)
+				.where(and(eq(eventPointAwards.eventId, eventId), eq(eventPointAwards.pointTypeId, pointTypeId)))
+				.returning({ pointTypeId: eventPointAwards.pointTypeId });
+			await audit.record(actor, {
+				action: "event:remove_retired_award",
+				targetType: "event",
+				targetId: eventId,
+				category: "event",
+			});
+			return { removed: removed.length > 0 };
+		},
 		async addStaff(actor, eventId, memberId, role) {
 			const { event, role: actorRole } = await requireEvent(actor, eventId);
 			if (actorRole !== "owner" && actorRole !== "admin") throw new Error("Not authorized to manage event staff.");
