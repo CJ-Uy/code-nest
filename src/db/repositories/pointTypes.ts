@@ -1,0 +1,120 @@
+import { and, asc, eq, exists, ne } from "drizzle-orm";
+import { pointTypes } from "@/db/schema";
+import type { Actor } from "@/server/auth/permissions";
+import { can } from "@/server/auth/permissions";
+import type { AuditRepository } from "./audit";
+
+const LAST_RETENTION_TYPE_ERROR = "At least one active point type must count toward retention.";
+const POINT_TYPE_KEY_PATTERN = /^[a-z0-9_]{1,40}$/;
+
+// Match the existing eventTypeRules repository until the repository Db union is centralized.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Db = any;
+
+export type PointTypeRow = {
+	id: string;
+	key: string;
+	label: string;
+	countsTowardRetention: boolean;
+	active: boolean;
+	position: number;
+};
+
+export type PointTypeUpsertInput = {
+	id: string | null;
+	key: string;
+	label: string;
+	countsTowardRetention: boolean;
+	active: boolean;
+	position: number;
+};
+
+export type PointTypesRepository = {
+	list(): Promise<PointTypeRow[]>;
+	upsertType(actor: Actor, input: PointTypeUpsertInput): Promise<PointTypeRow>;
+};
+
+export function createPointTypesRepository(db: Db, audit: AuditRepository): PointTypesRepository {
+	return {
+		async list() {
+			return db
+				.select({
+					id: pointTypes.id,
+					key: pointTypes.key,
+					label: pointTypes.label,
+					countsTowardRetention: pointTypes.countsTowardRetention,
+					active: pointTypes.active,
+					position: pointTypes.position,
+				})
+				.from(pointTypes)
+				.orderBy(asc(pointTypes.position), asc(pointTypes.label));
+		},
+
+		async upsertType(actor, input) {
+			if (!can(actor, "retention:configure")) {
+				throw new Error("Not authorized to configure point types.");
+			}
+			if (!POINT_TYPE_KEY_PATTERN.test(input.key)) throw new Error("Invalid point type key.");
+			const label = input.label.trim();
+			if (!label || label.length > 60) throw new Error("Point type label is required.");
+			if (!Number.isInteger(input.position) || input.position < 0 || input.position > 999) {
+				throw new Error("Point type position must be a whole number from 0 to 999.");
+			}
+			if (input.id === null) {
+				const id = `pt_${input.key}`;
+				const [created] = await db.insert(pointTypes).values({
+					id,
+					key: input.key,
+					label,
+					countsTowardRetention: input.countsTowardRetention,
+					active: input.active,
+					position: input.position,
+					updatedBy: actor.memberId,
+					updatedAt: new Date(),
+				}).returning();
+				await audit.record(actor, {
+					action: "point_type:create",
+					targetType: "point_type",
+					targetId: id,
+					category: "retention",
+				});
+				return created;
+			}
+
+			const [existing] = await db.select().from(pointTypes).where(eq(pointTypes.id, input.id)).limit(1);
+			if (!existing) throw new Error("Point type not found.");
+			if (existing.key !== input.key) throw new Error("Point type keys cannot be changed.");
+
+			const guard = input.active && input.countsTowardRetention
+				? eq(pointTypes.id, input.id)
+				: and(
+						eq(pointTypes.id, input.id),
+						exists(
+							db.select({ id: pointTypes.id }).from(pointTypes).where(
+								and(
+									ne(pointTypes.id, input.id),
+									eq(pointTypes.active, true),
+									eq(pointTypes.countsTowardRetention, true),
+								),
+							),
+						),
+					);
+			const updated = await db.update(pointTypes).set({
+				label,
+				countsTowardRetention: input.countsTowardRetention,
+				active: input.active,
+				position: input.position,
+				updatedBy: actor.memberId,
+				updatedAt: new Date(),
+			}).where(guard).returning();
+			if (updated.length === 0) throw new Error(LAST_RETENTION_TYPE_ERROR);
+			await audit.record(actor, {
+				action: "point_type:update",
+				targetType: "point_type",
+				targetId: input.id,
+				category: "retention",
+			});
+			return updated[0];
+		},
+	};
+}
