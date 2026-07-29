@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowUp, GripVertical, Plus, Save } from "lucide-react";
+import { ArrowDown, ArrowUp, GripVertical, Lock, Plus, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { PointTypeRow } from "@/db/repositories/pointTypes";
+import { RETENTION_POINT_TYPE_ID } from "@/lib/point-types";
 import { cn } from "@/lib/utils";
 import { savePointTypesAction, upsertPointTypeAction } from "./actions";
 
@@ -38,22 +39,13 @@ function AddPointType({ position }: { position: number }) {
 							<Input name="label" required maxLength={60} placeholder="Project Lead" />
 						</label>
 					</div>
-					<div className="grid gap-3 sm:grid-cols-2">
-						<label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
-							<input type="checkbox" name="countsTowardRetention" className="mt-0.5 size-4 accent-primary" />
-							<span>
-								<span className="block font-medium">Counts toward retention</span>
-								<span className="text-muted-foreground">Include these points in retention progress.</span>
-							</span>
-						</label>
-						<label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
-							<input type="checkbox" name="active" defaultChecked className="mt-0.5 size-4 accent-primary" />
-							<span>
-								<span className="block font-medium">Available for awards</span>
-								<span className="text-muted-foreground">Show this type when admins assign event points.</span>
-							</span>
-						</label>
-					</div>
+					<label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
+						<input type="checkbox" name="active" defaultChecked className="mt-0.5 size-4 accent-primary" />
+						<span>
+							<span className="block font-medium">Available for awards</span>
+							<span className="text-muted-foreground">Show this type when admins assign event points.</span>
+						</span>
+					</label>
 					<input type="hidden" name="position" value={position} />
 					<div>
 						<Button type="submit">
@@ -131,7 +123,6 @@ function PointTypeEditor({
 						<Badge variant="secondary" className="max-w-full break-all">
 							{row.key}
 						</Badge>
-						{row.countsTowardRetention ? <Badge variant="info">Retention</Badge> : null}
 						<Badge variant={row.active ? "success" : "outline"}>{row.active ? "Available" : "Inactive"}</Badge>
 					</div>
 				</div>
@@ -166,22 +157,19 @@ function PointTypeEditor({
 				<Input name="labels" form={formId} required maxLength={60} defaultValue={row.label} />
 			</label>
 
-			<div className="grid gap-3 sm:grid-cols-2">
-				<label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
-					<input
-						type="checkbox"
-						name="retentionIds"
-						value={row.id}
-						form={formId}
-						defaultChecked={row.countsTowardRetention}
-						className="mt-0.5 size-4 accent-primary"
-					/>
-					<span>
-						<span className="block font-medium">Counts toward retention</span>
-						<span className="text-muted-foreground">Include these points in retention progress.</span>
-					</span>
-				</label>
-				<label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
+			<label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
+				{row.id === RETENTION_POINT_TYPE_ID ? (
+					<>
+						<input type="hidden" name="activeIds" value={row.id} form={formId} />
+						<span
+							className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"
+							title="Retention always exists and cannot be retired."
+						>
+							<Lock className="size-3.5" aria-hidden />
+							Always active
+						</span>
+					</>
+				) : (
 					<input
 						type="checkbox"
 						name="activeIds"
@@ -190,12 +178,12 @@ function PointTypeEditor({
 						defaultChecked={row.active}
 						className="mt-0.5 size-4 accent-primary"
 					/>
-					<span>
-						<span className="block font-medium">Available for awards</span>
-						<span className="text-muted-foreground">Show this type when admins assign event points.</span>
-					</span>
-				</label>
-			</div>
+				)}
+				<span>
+					<span className="block font-medium">Available for awards</span>
+					<span className="text-muted-foreground">Show this type when admins assign event points.</span>
+				</span>
+			</label>
 		</li>
 	);
 }

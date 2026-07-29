@@ -377,7 +377,6 @@ export const pointTypes = sqliteTable(
 		id: text("id").primaryKey(),
 		key: text("key").notNull().unique(),
 		label: text("label").notNull(),
-		countsTowardRetention: integer("counts_toward_retention", { mode: "boolean" }).notNull().default(false),
 		active: integer("active", { mode: "boolean" }).notNull().default(true),
 		position: integer("position").notNull().default(0),
 		updatedBy: text("updated_by").references(() => members.id, { onDelete: "set null" }),

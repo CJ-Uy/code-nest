@@ -13,15 +13,20 @@ export function RetentionHistory({
 	records,
 	terms,
 	selectedTermId,
+	selectedPointTypeId,
 }: {
 	summary: MyHistorySummary | null;
 	records: TypedRetentionRecord[];
 	terms: TermOption[];
 	selectedTermId: string;
+	selectedPointTypeId: string | null;
 }) {
+	const visibleRecords = selectedPointTypeId ? records.filter((record) => record.pointTypeId === selectedPointTypeId) : records;
+
 	return (
 		<div className="flex flex-col gap-4">
 			<form method="get" className="flex items-center gap-2">
+				{selectedPointTypeId ? <input type="hidden" name="pointTypeId" value={selectedPointTypeId} /> : null}
 				<label className="text-sm text-muted-foreground" htmlFor="termId">
 					Term
 				</label>
@@ -66,10 +71,10 @@ export function RetentionHistory({
 					<CardTitle>Records</CardTitle>
 				</CardHeader>
 				<CardContent className="flex flex-col gap-2">
-					{records.length === 0 ? (
+					{visibleRecords.length === 0 ? (
 						<p className="text-sm text-muted-foreground">No records in this term.</p>
 					) : (
-						records.map((record) => (
+						visibleRecords.map((record) => (
 							<div
 								key={record.id}
 								className="flex min-w-0 items-center justify-between gap-3 rounded-md border border-border px-3 py-2"

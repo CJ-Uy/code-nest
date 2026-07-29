@@ -32,10 +32,10 @@ describe("overview repository on D1", () => {
 			.run();
 		await env.DB.prepare(`
 			INSERT INTO point_types
-				(id, key, label, counts_toward_retention, active, position, updated_by)
+				(id, key, label, active, position, updated_by)
 			VALUES
-				('pt_retention', 'retention', 'Retention', 1, 1, 0, 'mem_admin'),
-				('pt_frontliner', 'frontliner', 'Frontliner', 0, 1, 1, 'mem_admin')
+				('pt_retention', 'retention', 'Retention', 1, 0, 'mem_admin'),
+				('pt_frontliner', 'frontliner', 'Frontliner', 1, 1, 'mem_admin')
 		`).run();
 		await env.DB.prepare(
 			"INSERT INTO terms (id, name, retained_at, probation_below, starts_at, ends_at) VALUES (?, ?, ?, ?, ?, ?)",

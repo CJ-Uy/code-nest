@@ -20,11 +20,11 @@ describe("link seed data", () => {
 });
 
 describe("point-type seeds", () => {
-	it("provides the three baseline point types with Retention flagged", () => {
+	it("provides the three baseline point types", () => {
 		expect(seedPointTypes).toEqual([
-			expect.objectContaining({ id: "pt_retention", key: "retention", label: "Retention", countsTowardRetention: true, active: true, position: 0 }),
-			expect.objectContaining({ id: "pt_frontliner", key: "frontliner", label: "Frontliner", countsTowardRetention: false, active: true, position: 1 }),
-			expect.objectContaining({ id: "pt_project_lead", key: "project_lead", label: "Project Lead", countsTowardRetention: false, active: true, position: 2 }),
+			expect.objectContaining({ id: "pt_retention", key: "retention", label: "Retention", active: true, position: 0 }),
+			expect.objectContaining({ id: "pt_frontliner", key: "frontliner", label: "Frontliner", active: true, position: 1 }),
+			expect.objectContaining({ id: "pt_project_lead", key: "project_lead", label: "Project Lead", active: true, position: 2 }),
 		]);
 	});
 });

@@ -16,7 +16,6 @@ describe("parsePointTypeUpsertInput", () => {
 		label: "Frontliner",
 		position: "2",
 		active: "on",
-		countsTowardRetention: "on",
 	};
 
 	it("parses an existing point type", () => {
@@ -26,16 +25,11 @@ describe("parsePointTypeUpsertInput", () => {
 			label: "Frontliner",
 			position: 2,
 			active: true,
-			countsTowardRetention: true,
 		});
 	});
 
-	it("treats absent checkboxes as false", () => {
-		expect(
-			parsePointTypeUpsertInput(
-				formDataFor({ ...base, active: undefined, countsTowardRetention: undefined }),
-			),
-		).toMatchObject({ active: false, countsTowardRetention: false });
+	it("treats an absent active checkbox as false", () => {
+		expect(parsePointTypeUpsertInput(formDataFor({ ...base, active: undefined }))).toMatchObject({ active: false });
 	});
 
 	it("accepts a new immutable key and rejects malformed keys", () => {
@@ -54,14 +48,12 @@ describe("parsePointTypeUpsertInput", () => {
 		for (const value of ["retention", "frontliner"]) data.append("keys", value);
 		for (const value of ["Retention", "Frontliner"]) data.append("labels", value);
 		for (const value of ["pt_retention", "pt_frontliner"]) data.append("activeIds", value);
-		data.append("retentionIds", "pt_retention");
 
 		expect(parsePointTypeRows(data)).toEqual([
 			{
 				id: "pt_retention",
 				key: "retention",
 				label: "Retention",
-				countsTowardRetention: true,
 				active: true,
 				position: 0,
 			},
@@ -69,19 +61,9 @@ describe("parsePointTypeUpsertInput", () => {
 				id: "pt_frontliner",
 				key: "frontliner",
 				label: "Frontliner",
-				countsTowardRetention: false,
 				active: true,
 				position: 1,
 			},
 		]);
-	});
-
-	it("rejects a list without an active retention type", () => {
-		const data = new FormData();
-		data.append("ids", "pt_retention");
-		data.append("keys", "retention");
-		data.append("labels", "Retention");
-		data.append("activeIds", "pt_retention");
-		expect(() => parsePointTypeRows(data)).toThrow("At least one active point type");
 	});
 });

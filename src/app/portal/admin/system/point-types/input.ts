@@ -12,7 +12,6 @@ export function parsePointTypeUpsertInput(formData: FormData): PointTypeUpsertIn
 		id: id === "" ? null : id,
 		key: keySchema.parse(formData.get("key")),
 		label: labelSchema.parse(formData.get("label")),
-		countsTowardRetention: formData.get("countsTowardRetention") === "on",
 		active: formData.get("active") === "on",
 		position: positionSchema.parse(formData.get("position") ?? 0),
 	};
@@ -23,7 +22,6 @@ export function parsePointTypeRows(formData: FormData): PointTypeUpsertInput[] {
 	const keys = z.array(keySchema).parse(formData.getAll("keys"));
 	const labels = z.array(z.string()).parse(formData.getAll("labels"));
 	const activeIds = new Set(z.array(z.string()).parse(formData.getAll("activeIds")));
-	const retentionIds = new Set(z.array(z.string()).parse(formData.getAll("retentionIds")));
 	const knownIds = new Set(ids);
 
 	if (
@@ -31,24 +29,18 @@ export function parsePointTypeRows(formData: FormData): PointTypeUpsertInput[] {
 		new Set(keys).size !== keys.length ||
 		ids.length !== keys.length ||
 		ids.length !== labels.length ||
-		[...activeIds, ...retentionIds].some((id) => !knownIds.has(id))
+		[...activeIds].some((id) => !knownIds.has(id))
 	) {
 		throw new Error("Point type form is incomplete.");
 	}
 
-	const rows = ids.map((id, position) => {
+	return ids.map((id, position) => {
 		const row = new FormData();
 		row.set("id", id);
 		row.set("key", keys[position]);
 		row.set("label", labels[position]);
 		row.set("position", String(position));
 		if (activeIds.has(id)) row.set("active", "on");
-		if (retentionIds.has(id)) row.set("countsTowardRetention", "on");
 		return parsePointTypeUpsertInput(row);
 	});
-
-	if (!rows.some((row) => row.active && row.countsTowardRetention)) {
-		throw new Error("At least one active point type must count toward retention.");
-	}
-	return rows;
 }

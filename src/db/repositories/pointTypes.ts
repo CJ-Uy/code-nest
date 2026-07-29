@@ -1,10 +1,11 @@
-import { and, asc, eq, exists, ne } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { pointTypes } from "@/db/schema";
+import { RETENTION_POINT_TYPE_ID } from "@/lib/point-types";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
 import type { AuditRepository } from "./audit";
 
-const LAST_RETENTION_TYPE_ERROR = "At least one active point type must count toward retention.";
+const RETENTION_RETIRE_ERROR = "The Retention point type cannot be retired.";
 const POINT_TYPE_KEY_PATTERN = /^[a-z0-9_]{1,40}$/;
 
 // Match the existing eventTypeRules repository until the repository Db union is centralized.
@@ -15,7 +16,6 @@ export type PointTypeRow = {
 	id: string;
 	key: string;
 	label: string;
-	countsTowardRetention: boolean;
 	active: boolean;
 	position: number;
 };
@@ -24,7 +24,6 @@ export type PointTypeUpsertInput = {
 	id: string | null;
 	key: string;
 	label: string;
-	countsTowardRetention: boolean;
 	active: boolean;
 	position: number;
 };
@@ -42,7 +41,6 @@ export function createPointTypesRepository(db: Db, audit: AuditRepository): Poin
 					id: pointTypes.id,
 					key: pointTypes.key,
 					label: pointTypes.label,
-					countsTowardRetention: pointTypes.countsTowardRetention,
 					active: pointTypes.active,
 					position: pointTypes.position,
 				})
@@ -66,7 +64,6 @@ export function createPointTypesRepository(db: Db, audit: AuditRepository): Poin
 					id,
 					key: input.key,
 					label,
-					countsTowardRetention: input.countsTowardRetention,
 					active: input.active,
 					position: input.position,
 					updatedBy: actor.memberId,
@@ -85,29 +82,17 @@ export function createPointTypesRepository(db: Db, audit: AuditRepository): Poin
 			if (!existing) throw new Error("Point type not found.");
 			if (existing.key !== input.key) throw new Error("Point type keys cannot be changed.");
 
-			const guard = input.active && input.countsTowardRetention
-				? eq(pointTypes.id, input.id)
-				: and(
-						eq(pointTypes.id, input.id),
-						exists(
-							db.select({ id: pointTypes.id }).from(pointTypes).where(
-								and(
-									ne(pointTypes.id, input.id),
-									eq(pointTypes.active, true),
-									eq(pointTypes.countsTowardRetention, true),
-								),
-							),
-						),
-					);
+			if (input.id === RETENTION_POINT_TYPE_ID && !input.active) {
+				throw new Error(RETENTION_RETIRE_ERROR);
+			}
 			const updated = await db.update(pointTypes).set({
 				label,
-				countsTowardRetention: input.countsTowardRetention,
 				active: input.active,
 				position: input.position,
 				updatedBy: actor.memberId,
 				updatedAt: new Date(),
-			}).where(guard).returning();
-			if (updated.length === 0) throw new Error(LAST_RETENTION_TYPE_ERROR);
+			}).where(eq(pointTypes.id, input.id)).returning();
+			if (updated.length === 0) throw new Error("Point type not found.");
 			await audit.record(actor, {
 				action: "point_type:update",
 				targetType: "point_type",

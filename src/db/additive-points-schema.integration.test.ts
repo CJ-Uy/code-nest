@@ -23,11 +23,11 @@ describe("additive points schema on D1", () => {
 		await env.DB.prepare("INSERT INTO crs_events (id, title, type, status, place, starts_at, description, created_by, checkin_secret) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
 			.bind("evt_points", "Points event", "official", "approved", "Room", 0, "Schema test", "mem_points", "secret")
 			.run();
-		await env.DB.prepare("INSERT INTO point_types (id, key, label, counts_toward_retention, active, position) VALUES (?, ?, ?, ?, ?, ?)")
-			.bind("pt_retention", "retention", "Retention", 1, 1, 0)
+		await env.DB.prepare("INSERT INTO point_types (id, key, label, active, position) VALUES (?, ?, ?, ?, ?)")
+			.bind("pt_retention", "retention", "Retention", 1, 0)
 			.run();
-		await env.DB.prepare("INSERT INTO point_types (id, key, label, counts_toward_retention, active, position) VALUES (?, ?, ?, ?, ?, ?)")
-			.bind("pt_frontliner", "frontliner", "Frontliner", 0, 1, 1)
+		await env.DB.prepare("INSERT INTO point_types (id, key, label, active, position) VALUES (?, ?, ?, ?, ?)")
+			.bind("pt_frontliner", "frontliner", "Frontliner", 1, 1)
 			.run();
 
 		await env.DB.prepare("INSERT INTO retention_records (id, member_id, term_id, event_id, points, reason, source, recorded_by, recorded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")

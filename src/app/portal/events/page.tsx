@@ -7,7 +7,6 @@ import { Select } from "@/components/ui/select";
 import { EmptyState } from "@/components/portal/empty-state";
 import { MemberAvatar } from "@/components/portal/member-avatar";
 import { RetentionHistory } from "@/components/retention-history";
-import type { PublicLeaderboardSelection } from "@/db/repositories/retention";
 import { requireActor } from "@/server/auth/actor";
 import { selectLeaderboardPointTypeId } from "./point-type-selection";
 
@@ -39,26 +38,15 @@ export default async function RetentionHistoryPage({
 		.then((rows) => ({ ok: true as const, rows }))
 		.catch(() => ({ ok: false as const, rows: [] }));
 	const selectedPointTypeId = selectLeaderboardPointTypeId(params.pointTypeId, pointTypeLoad.rows);
-	const selectedPointType = pointTypeLoad.rows.find((type) => type.id === selectedPointTypeId) ?? null;
-	// The "Retention" point type stands in for the aggregate: picking it ranks members by the
-	// sum of every countsTowardRetention type (matching the admin leaderboard and myHistory).
-	// Any other selected type ranks by that single type alone, counting or not.
-	const leaderboardSelection: PublicLeaderboardSelection | null = !selectedPointTypeId
-		? null
-		: selectedPointType?.key === "retention"
-			? { kind: "retention" }
-			: { kind: "pointType", pointTypeId: selectedPointTypeId };
 	const leaderboard =
-		view === "leaderboard" && pointTypeLoad.ok && selectedTermId && leaderboardSelection
-			? await repositories.retention.publicLeaderboard(actor, {
-					termId: selectedTermId,
-					selection: leaderboardSelection,
-					limit: 25,
-				}).catch(() => [])
+		view === "leaderboard" && pointTypeLoad.ok && selectedTermId && selectedPointTypeId
+			? await repositories.retention
+					.publicLeaderboard(actor, { termId: selectedTermId, pointTypeId: selectedPointTypeId, limit: 25 })
+					.catch(() => [])
 			: [];
 
 	const tabs = [
-		{ id: "history", label: "My history", href: "/portal/events" },
+		{ id: "history", label: "My points", href: "/portal/events" },
 		{ id: "leaderboard", label: "Leaderboard", href: "/portal/events?view=leaderboard" },
 	];
 
@@ -66,7 +54,7 @@ export default async function RetentionHistoryPage({
 		<div className="grid gap-5">
 			<div>
 				<p className="text-xs font-semibold uppercase text-primary">Member workspace</p>
-				<h1 className="font-heading text-3xl">Retention</h1>
+				<h1 className="font-heading text-3xl">Points</h1>
 				<p className="mt-1 max-w-2xl text-sm text-muted-foreground">
 					Your points and where you stand this term.
 				</p>
@@ -88,64 +76,68 @@ export default async function RetentionHistoryPage({
 				))}
 			</div>
 
+			{pointTypeLoad.ok ? (
+				<form method="get" className="flex flex-wrap items-end gap-3">
+					<input type="hidden" name="view" value={view} />
+					<input type="hidden" name="termId" value={selectedTermId} />
+					<label className="grid min-w-0 gap-1.5 text-sm">
+						<span className="font-medium">Point type</span>
+						<Select name="pointTypeId" defaultValue={selectedPointTypeId ?? ""} className="min-w-0">
+							{pointTypeLoad.rows.map((type) => (
+								<option key={type.id} value={type.id}>
+									{type.label}{type.active ? "" : " (retired)"}
+								</option>
+							))}
+						</Select>
+					</label>
+					<Button type="submit" variant="secondary">
+						<Filter />
+						View
+					</Button>
+				</form>
+			) : null}
+
 			{view === "history" ? (
-				<RetentionHistory summary={summary} records={records} terms={terms} selectedTermId={selectedTermId} />
+				<RetentionHistory
+					summary={summary}
+					records={records}
+					terms={terms}
+					selectedTermId={selectedTermId}
+					selectedPointTypeId={selectedPointTypeId}
+				/>
 			) : !pointTypeLoad.ok ? (
 				<p className="text-sm text-muted-foreground">Point types are unavailable right now.</p>
+			) : leaderboard.length === 0 ? (
+				<EmptyState
+					icon={Trophy}
+					title="No points yet this term"
+					description="Attend events to climb the leaderboard."
+				/>
 			) : (
-				<div className="grid gap-4">
-					<form method="get" className="flex flex-wrap items-end gap-3">
-						<input type="hidden" name="view" value="leaderboard" />
-						<input type="hidden" name="termId" value={selectedTermId} />
-						<label className="grid min-w-0 gap-1.5 text-sm">
-							<span className="font-medium">Point type</span>
-							<Select name="pointTypeId" defaultValue={selectedPointTypeId ?? ""} className="min-w-0">
-								{pointTypeLoad.rows.map((type) => (
-									<option key={type.id} value={type.id}>
-										{type.label}{type.active ? "" : " (retired)"}
-									</option>
-								))}
-							</Select>
-						</label>
-						<Button type="submit" variant="secondary">
-							<Filter />
-							View
-						</Button>
-					</form>
-
-					{leaderboard.length === 0 ? (
-						<EmptyState
-							icon={Trophy}
-							title="No points yet this term"
-							description="Attend events to climb the leaderboard."
-						/>
-					) : (
-						<Card>
-							<CardContent className="divide-y divide-border p-0">
-								{leaderboard.map((row, rank) => {
-									const name = row.fullName ?? row.name ?? "Member";
-									const isMe = row.memberId === actor.memberId;
-									return (
-										<div
-											key={row.memberId}
-											className={`flex items-center gap-3 px-4 py-3 ${isMe ? "bg-secondary/40" : ""}`}
-										>
-											<span className="w-6 text-center font-heading text-lg text-muted-foreground">
-												{rank + 1}
-											</span>
-											<MemberAvatar initials={initialsFrom(name)} className="size-8 text-xs" />
-											<span className="flex-1 truncate text-sm font-medium">
-												{name}
-												{isMe ? <span className="ml-2 text-xs text-accent">You</span> : null}
-											</span>
-											<span className="tabular-nums font-heading text-lg">{row.totalPoints}</span>
-										</div>
-									);
-								})}
-							</CardContent>
-						</Card>
-					)}
-				</div>
+				<Card>
+					<CardContent className="divide-y divide-border p-0">
+						{leaderboard.map((row, rank) => {
+							const name = row.fullName ?? row.name ?? "Member";
+							const isMe = row.memberId === actor.memberId;
+							return (
+								<div
+									key={row.memberId}
+									className={`flex items-center gap-3 px-4 py-3 ${isMe ? "bg-secondary/40" : ""}`}
+								>
+									<span className="w-6 text-center font-heading text-lg text-muted-foreground">
+										{rank + 1}
+									</span>
+									<MemberAvatar initials={initialsFrom(name)} className="size-8 text-xs" />
+									<span className="flex-1 truncate text-sm font-medium">
+										{name}
+										{isMe ? <span className="ml-2 text-xs text-accent">You</span> : null}
+									</span>
+									<span className="tabular-nums font-heading text-lg">{row.totalPoints}</span>
+								</div>
+							);
+						})}
+					</CardContent>
+				</Card>
 			)}
 		</div>
 	);

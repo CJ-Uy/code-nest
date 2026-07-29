@@ -19,8 +19,8 @@ try {
 		INSERT INTO members (id, email, name)
 		VALUES ('mem_local', 'local@example.com', 'Local Member');
 		INSERT INTO point_types
-			(id, key, label, counts_toward_retention, active, position, updated_by)
-		VALUES ('pt_retention', 'retention', 'Retention', 1, 1, 0, 'mem_local');
+			(id, key, label, active, position, updated_by)
+		VALUES ('pt_retention', 'retention', 'Retention', 1, 0, 'mem_local');
 		INSERT INTO terms (id, name, retained_at, probation_below, starts_at, ends_at)
 		VALUES ('term_local', 'Local Term', 20, 10, 0, 2000);
 		INSERT INTO crs_events

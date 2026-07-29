@@ -3,6 +3,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import { createId } from "@/lib/ids";
 import { crsAttendance, crsEvents, eventRsvps, members, pointTypes, retentionRecords, terms } from "@/db/schema";
 import type { RetentionRecordSource } from "@/db/schema";
+import { RETENTION_POINT_TYPE_ID } from "@/lib/point-types";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
 import type { CreateManualRetentionRecordInput } from "../types";
@@ -48,12 +49,7 @@ export type RetentionSummary = {
 	status: RetentionStatus;
 };
 export type LeaderboardInput = { termId: string; limit?: number; offset?: number };
-// "retention" aggregates every point type with countsTowardRetention = true, matching the
-// admin leaderboard() and myHistory(). "pointType" filters to exactly the given type, whether
-// or not it counts toward retention. Kept as a discriminated union so callers can't smuggle
-// the aggregate through a field that reads like a single point type id.
-export type PublicLeaderboardSelection = { kind: "retention" } | { kind: "pointType"; pointTypeId: string };
-export type PublicLeaderboardInput = LeaderboardInput & { selection: PublicLeaderboardSelection };
+export type PublicLeaderboardInput = LeaderboardInput & { pointTypeId: string };
 export type LeaderboardRow = { memberId: string; fullName: string | null; name: string | null; totalPoints: number };
 
 export type MyHistorySummary = {
@@ -164,7 +160,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 					and(
 						eq(retentionRecords.memberId, input.memberId),
 						eq(retentionRecords.termId, input.termId),
-						eq(pointTypes.countsTowardRetention, true),
+						eq(retentionRecords.pointTypeId, RETENTION_POINT_TYPE_ID),
 					),
 				);
 			const [term] = await db
@@ -199,7 +195,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				.from(retentionRecords)
 				.innerJoin(members, eq(members.id, retentionRecords.memberId))
 				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
-				.where(and(eq(retentionRecords.termId, input.termId), eq(pointTypes.countsTowardRetention, true)))
+				.where(and(eq(retentionRecords.termId, input.termId), eq(retentionRecords.pointTypeId, RETENTION_POINT_TYPE_ID)))
 				.groupBy(retentionRecords.memberId, members.fullName, members.name)
 				.orderBy(desc(sql`coalesce(sum(${retentionRecords.points}), 0)`))
 				.limit(Math.min(input.limit ?? 50, 100))
@@ -207,18 +203,6 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 		},
 
 		async publicLeaderboard(_actor, input) {
-			// Read-only points ranking visible to any signed-in member (names + points
-			// only), without the admin manage gate. "retention" sums every counting point
-			// type (same population as the admin leaderboard() and myHistory()); the
-			// pointTypes join is what makes that countsTowardRetention filter possible, so
-			// it stays even though the "pointType" branch below does not need it.
-			const where =
-				input.selection.kind === "retention"
-					? and(eq(retentionRecords.termId, input.termId), eq(pointTypes.countsTowardRetention, true))
-					: and(
-							eq(retentionRecords.termId, input.termId),
-							eq(retentionRecords.pointTypeId, input.selection.pointTypeId),
-						);
 			return db
 				.select({
 					memberId: retentionRecords.memberId,
@@ -228,8 +212,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				})
 				.from(retentionRecords)
 				.innerJoin(members, eq(members.id, retentionRecords.memberId))
-				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
-				.where(where)
+				.where(and(eq(retentionRecords.termId, input.termId), eq(retentionRecords.pointTypeId, input.pointTypeId)))
 				.groupBy(retentionRecords.memberId, members.fullName, members.name)
 				.orderBy(desc(sql`coalesce(sum(${retentionRecords.points}), 0)`))
 				.limit(Math.min(input.limit ?? 25, 100))
@@ -367,18 +350,15 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				.limit(1);
 			if (!term) return { summary: null, records: [] };
 
-			const rows: Array<TypedRetentionRecord & { countsTowardRetention: boolean }> = await db
-				.select({
-					...typedRecordColumns,
-					countsTowardRetention: pointTypes.countsTowardRetention,
-				})
+			const rows: TypedRetentionRecord[] = await db
+				.select(typedRecordColumns)
 				.from(retentionRecords)
 				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
 				.where(and(eq(retentionRecords.memberId, actor.memberId), eq(retentionRecords.termId, termId)))
 				.orderBy(desc(retentionRecords.recordedAt));
 
 			const totalPoints = rows.reduce(
-				(sum: number, row) => sum + (row.countsTowardRetention ? (row.points ?? 0) : 0),
+				(sum: number, row) => sum + (row.pointTypeId === RETENTION_POINT_TYPE_ID ? (row.points ?? 0) : 0),
 				0,
 			);
 			const summary: MyHistorySummary = {

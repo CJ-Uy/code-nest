@@ -2,6 +2,7 @@ import { env } from "cloudflare:test";
 import { drizzle } from "drizzle-orm/d1";
 import { beforeEach, describe, expect, it } from "vitest";
 import * as schema from "@/db/schema";
+import { RETENTION_POINT_TYPE_ID } from "@/lib/point-types";
 import type { Actor } from "@/server/auth/permissions";
 import { createAuditRepository } from "./audit";
 import { createRetentionRepository } from "./retention";
@@ -35,7 +36,7 @@ async function insertRecord(input: {
 			input.id,
 			input.memberId ?? "mem_a",
 			input.termId ?? "term_1",
-			input.pointTypeId ?? "pt_retention",
+			input.pointTypeId ?? RETENTION_POINT_TYPE_ID,
 			input.points,
 			input.reason ?? input.id,
 			input.recordedAt ?? TERM_START.getTime() + 1000,
@@ -69,11 +70,11 @@ describe("retention repository on D1", () => {
 			.run();
 		await env.DB.prepare(`
 			INSERT INTO point_types
-				(id, key, label, counts_toward_retention, active, position, updated_by)
+				(id, key, label, active, position, updated_by)
 			VALUES
-				('pt_retention', 'retention', 'Retention', 1, 1, 0, 'mem_admin'),
-				('pt_frontliner', 'frontliner', 'Frontliner', 0, 1, 1, 'mem_admin'),
-				('pt_retired', 'retired', 'Retired', 0, 0, 2, 'mem_admin')
+				('pt_retention', 'retention', 'Retention', 1, 0, 'mem_admin'),
+				('pt_frontliner', 'frontliner', 'Frontliner', 1, 1, 'mem_admin'),
+				('pt_retired', 'retired', 'Retired', 0, 2, 'mem_admin')
 		`).run();
 	});
 
@@ -109,7 +110,7 @@ describe("retention repository on D1", () => {
 		const adminBoard = await repo.leaderboard(retentionAdmin, { termId: "term_1" });
 		const publicBoard = await repo.publicLeaderboard(plainMember, {
 			termId: "term_1",
-			selection: { kind: "retention" },
+			pointTypeId: RETENTION_POINT_TYPE_ID,
 		});
 		const history = await repo.myHistory(plainMember, { termId: "term_1" });
 
@@ -123,6 +124,17 @@ describe("retention repository on D1", () => {
 		expect(history.records).toHaveLength(2);
 	});
 
+	it("counts only the retention point type toward the retention total", async () => {
+		const { repo } = makeRepo();
+		await insertRecord({ id: "rec_ret", pointTypeId: RETENTION_POINT_TYPE_ID, points: 5 });
+		await insertRecord({ id: "rec_other", pointTypeId: "pt_frontliner", points: 100 });
+
+		const summary = await repo.getMemberTermSummary(retentionAdmin, {
+			memberId: plainMember.memberId,
+			termId: "term_1",
+		});
+		expect(summary.totalPoints).toBe(5);
+	});
 	it("ranks public leaderboard rows by the selected point type", async () => {
 		const { repo } = makeRepo();
 		await insertRecord({ id: "ret_a", memberId: "mem_a", pointTypeId: "pt_retention", points: 10 });
@@ -132,11 +144,11 @@ describe("retention repository on D1", () => {
 
 		const retentionTypeBoard = await repo.publicLeaderboard(plainMember, {
 			termId: "term_1",
-			selection: { kind: "pointType", pointTypeId: "pt_retention" },
+			pointTypeId: RETENTION_POINT_TYPE_ID,
 		});
 		const frontlinerBoard = await repo.publicLeaderboard(plainMember, {
 			termId: "term_1",
-			selection: { kind: "pointType", pointTypeId: "pt_frontliner" },
+			pointTypeId: "pt_frontliner",
 		});
 
 		expect(retentionTypeBoard.map((row) => [row.memberId, row.totalPoints])).toEqual([
@@ -149,42 +161,6 @@ describe("retention repository on D1", () => {
 		]);
 	});
 
-	it("aggregates the public Retention leaderboard across every counting point type", async () => {
-		const { repo } = makeRepo();
-		// A second counting type alongside pt_retention: the "retention" selection must sum
-		// both, while a single-type selection (counting or not) still ranks by that type alone.
-		await env.DB.prepare(`
-			INSERT INTO point_types (id, key, label, counts_toward_retention, active, position, updated_by)
-			VALUES ('pt_service', 'service', 'Service', 1, 1, 3, 'mem_admin')
-		`).run();
-
-		await insertRecord({ id: "agg_ret_a", memberId: "mem_a", pointTypeId: "pt_retention", points: 6 });
-		await insertRecord({ id: "agg_svc_a", memberId: "mem_a", pointTypeId: "pt_service", points: 8 });
-		await insertRecord({ id: "agg_front_a", memberId: "mem_a", pointTypeId: "pt_frontliner", points: 100 });
-		await insertRecord({ id: "agg_ret_b", memberId: "mem_b", pointTypeId: "pt_retention", points: 20 });
-
-		const retentionBoard = await repo.publicLeaderboard(plainMember, {
-			termId: "term_1",
-			selection: { kind: "retention" },
-		});
-		const serviceBoard = await repo.publicLeaderboard(plainMember, {
-			termId: "term_1",
-			selection: { kind: "pointType", pointTypeId: "pt_service" },
-		});
-
-		// mem_a: 6 (retention) + 8 (service) = 14 counting points; frontliner's 100 does not count.
-		// mem_b: 20 counting points, matching the admin board and myHistory for the same population.
-		const adminBoard = await repo.leaderboard(retentionAdmin, { termId: "term_1" });
-		expect(retentionBoard.map((row) => [row.memberId, row.totalPoints])).toEqual([
-			["mem_b", 20],
-			["mem_a", 14],
-		]);
-		expect(adminBoard.map((row) => [row.memberId, row.totalPoints])).toEqual([
-			["mem_b", 20],
-			["mem_a", 14],
-		]);
-		expect(serviceBoard.map((row) => [row.memberId, row.totalPoints])).toEqual([["mem_a", 8]]);
-	});
 
 	it("ranks members by total points for the term leaderboard", async () => {
 		const { repo } = makeRepo();

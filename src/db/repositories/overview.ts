@@ -2,7 +2,6 @@ import { and, desc, eq, gt, gte, isNull, lte, sql } from "drizzle-orm";
 import {
 	crsEvents,
 	linkDailyStats,
-	pointTypes,
 	retentionRecords,
 	shortLinks,
 	surveyAssignments,
@@ -10,6 +9,7 @@ import {
 	terms,
 } from "@/db/schema";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
+import { RETENTION_POINT_TYPE_ID } from "@/lib/point-types";
 import type { Actor } from "@/server/auth/permissions";
 import type * as schema from "@/db/schema";
 
@@ -51,12 +51,11 @@ export function createOverviewRepository(db: Db): OverviewRepository {
 				const [row] = await db
 					.select({ total: sql<number>`coalesce(sum(${retentionRecords.points}), 0)` })
 					.from(retentionRecords)
-					.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
 					.where(
 						and(
 							eq(retentionRecords.memberId, actor.memberId),
 							eq(retentionRecords.termId, term.id),
-							eq(pointTypes.countsTowardRetention, true),
+							eq(retentionRecords.pointTypeId, RETENTION_POINT_TYPE_ID),
 						),
 					);
 				points = Number(row?.total ?? 0);

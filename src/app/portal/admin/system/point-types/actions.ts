@@ -16,9 +16,7 @@ export async function savePointTypesAction(formData: FormData) {
 	const actor = await requireActor();
 	const inputs = parsePointTypeRows(formData);
 	const repositories = await getRepositories();
-	const retentionTypes = inputs.filter((input) => input.active && input.countsTowardRetention);
-	const otherTypes = inputs.filter((input) => !retentionTypes.includes(input));
-	for (const input of [...retentionTypes, ...otherTypes]) {
+	for (const input of inputs) {
 		await repositories.pointTypes.upsertType(actor, input);
 	}
 	revalidatePath("/portal", "layout");

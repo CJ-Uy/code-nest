@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { env } from "cloudflare:test";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "@/db/schema";
+import { RETENTION_POINT_TYPE_ID } from "@/lib/point-types";
 import type { Actor } from "@/server/auth/permissions";
 import { createPointTypesRepository } from "./pointTypes";
 
@@ -22,11 +23,11 @@ describe("point types repository", () => {
 		await env.DB.prepare("INSERT INTO members (id, email, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")
 			.bind("mem_plain", "plain@example.com", "Plain", Date.now(), Date.now()).run();
 		await env.DB.prepare(
-			"INSERT INTO point_types (id, key, label, counts_toward_retention, active, position) VALUES (?, ?, ?, ?, ?, ?)",
-		).bind("pt_retention", "retention", "Retention", 1, 1, 1).run();
+			"INSERT INTO point_types (id, key, label, active, position) VALUES (?, ?, ?, ?, ?)",
+		).bind("pt_retention", "retention", "Retention", 1, 1).run();
 		await env.DB.prepare(
-			"INSERT INTO point_types (id, key, label, counts_toward_retention, active, position) VALUES (?, ?, ?, ?, ?, ?)",
-		).bind("pt_frontliner", "frontliner", "Frontliner", 0, 0, 2).run();
+			"INSERT INTO point_types (id, key, label, active, position) VALUES (?, ?, ?, ?, ?)",
+		).bind("pt_frontliner", "frontliner", "Frontliner", 0, 2).run();
 	});
 
 	it("lists active and inactive rows in display order", async () => {
@@ -41,7 +42,6 @@ describe("point types repository", () => {
 			id: null,
 			key: "project_lead",
 			label: "Project Lead",
-			countsTowardRetention: false,
 			active: true,
 			position: 3,
 		})).resolves.toMatchObject({ id: "pt_project_lead", key: "project_lead" });
@@ -52,7 +52,6 @@ describe("point types repository", () => {
 			id: "pt_frontliner",
 			key: "frontliner",
 			label: "Frontliner",
-			countsTowardRetention: false,
 			active: true,
 			position: 2,
 		})).rejects.toThrow("Not authorized");
@@ -60,7 +59,6 @@ describe("point types repository", () => {
 			id: "pt_frontliner",
 			key: "renamed",
 			label: "Frontliner",
-			countsTowardRetention: false,
 			active: true,
 			position: 2,
 		})).rejects.toThrow("Point type keys cannot be changed.");
@@ -71,28 +69,32 @@ describe("point types repository", () => {
 			id: null,
 			key: "Bad Key",
 			label: " ",
-			countsTowardRetention: false,
 			active: true,
 			position: 1.5,
 		})).rejects.toThrow();
 	});
 
-	it("refuses clearing or deactivating the final active retention-bearing type", async () => {
-		const base = {
-			id: "pt_retention",
+	it("refuses to retire the retention point type", async () => {
+		await expect(
+			repo.upsertType(retentionAdmin, {
+				id: RETENTION_POINT_TYPE_ID,
+				key: "retention",
+				label: "Retention",
+				active: false,
+				position: 0,
+			}),
+		).rejects.toThrow("The Retention point type cannot be retired.");
+	});
+
+	it("allows relabelling and reordering the retention point type", async () => {
+		const row = await repo.upsertType(retentionAdmin, {
+			id: RETENTION_POINT_TYPE_ID,
 			key: "retention",
-			label: "Retention",
-			position: 1,
-		};
-		await expect(repo.upsertType(retentionAdmin, {
-			...base,
-			countsTowardRetention: false,
+			label: "CRS Retention",
 			active: true,
-		})).rejects.toThrow("At least one active point type must count toward retention.");
-		await expect(repo.upsertType(retentionAdmin, {
-			...base,
-			countsTowardRetention: true,
-			active: false,
-		})).rejects.toThrow("At least one active point type must count toward retention.");
+			position: 3,
+		});
+		expect(row.label).toBe("CRS Retention");
+		expect(row.position).toBe(3);
 	});
 });

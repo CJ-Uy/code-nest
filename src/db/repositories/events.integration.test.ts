@@ -61,17 +61,17 @@ describe("events repository on D1", () => {
 				.bind(id, email, name, name)
 				.run();
 		}
-		for (const [id, key, label, countsTowardRetention, active, position] of [
-			["pt_retention", "retention", "Retention", 1, 1, 0],
-			["pt_frontliner", "frontliner", "Frontliner", 0, 1, 1],
-			["pt_retired", "retired", "Retired", 0, 0, 2],
+		for (const [id, key, label, active, position] of [
+			["pt_retention", "retention", "Retention", 1, 0],
+			["pt_frontliner", "frontliner", "Frontliner", 1, 1],
+			["pt_retired", "retired", "Retired", 0, 2],
 		] as const) {
 			await env.DB.prepare(
 				`INSERT INTO point_types
-					(id, key, label, counts_toward_retention, active, position, updated_by)
-				 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+					(id, key, label, active, position, updated_by)
+				 VALUES (?, ?, ?, ?, ?, ?)`,
 			)
-				.bind(id, key, label, countsTowardRetention, active, position, "mem_retention")
+				.bind(id, key, label, active, position, "mem_retention")
 				.run();
 		}
 		await env.DB.prepare(
@@ -120,14 +120,13 @@ describe("events repository on D1", () => {
 			position?: number;
 		}) {
 			await env.DB.prepare(
-				`INSERT INTO point_types (id, key, label, counts_toward_retention, active, position)
-				 VALUES (?, ?, ?, ?, ?, ?)
+				`INSERT INTO point_types (id, key, label, active, position)
+				 VALUES (?, ?, ?, ?, ?)
 				 ON CONFLICT(id) DO UPDATE SET label = excluded.label, active = excluded.active, position = excluded.position`,
 			).bind(
 				input.id,
 				input.key,
 				input.label,
-				input.key === "retention" ? 1 : 0,
 				input.active ? 1 : 0,
 				input.position ?? 1,
 			).run();

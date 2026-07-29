@@ -6,9 +6,9 @@ import {
 } from "./award-editor-input";
 
 const types = [
-	{ id: "pt_retention", key: "retention", label: "Retention", countsTowardRetention: true, active: true, position: 1 },
-	{ id: "pt_frontliner", key: "frontliner", label: "Frontliner", countsTowardRetention: false, active: false, position: 2 },
-	{ id: "pt_project_lead", key: "project_lead", label: "Project Lead", countsTowardRetention: false, active: true, position: 3 },
+	{ id: "pt_retention", key: "retention", label: "Retention", active: true, position: 1 },
+	{ id: "pt_frontliner", key: "frontliner", label: "Frontliner", active: false, position: 2 },
+	{ id: "pt_project_lead", key: "project_lead", label: "Project Lead", active: true, position: 3 },
 ];
 
 const awards = [

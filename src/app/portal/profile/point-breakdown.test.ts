@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { buildPointBreakdown } from "./point-breakdown";
 
 const types = [
-	{ id: "pt_retention", key: "retention", label: "Retention", countsTowardRetention: true, active: true, position: 1 },
-	{ id: "pt_frontliner", key: "frontliner", label: "Frontliner", countsTowardRetention: false, active: true, position: 2 },
-	{ id: "pt_project_lead", key: "project_lead", label: "Project Lead", countsTowardRetention: false, active: true, position: 3 },
-	{ id: "pt_retired", key: "retired", label: "Retired", countsTowardRetention: false, active: false, position: 4 },
+	{ id: "pt_retention", key: "retention", label: "Retention", active: true, position: 1 },
+	{ id: "pt_frontliner", key: "frontliner", label: "Frontliner", active: true, position: 2 },
+	{ id: "pt_project_lead", key: "project_lead", label: "Project Lead", active: true, position: 3 },
+	{ id: "pt_retired", key: "retired", label: "Retired", active: false, position: 4 },
 ];
 
 const records = [
@@ -27,38 +27,13 @@ describe("buildPointBreakdown", () => {
 	it("ignores null points", () => {
 		expect(buildPointBreakdown(types, [{ pointTypeId: "pt_retention", points: null }])[0]?.totalPoints).toBe(0);
 	});
-});
 
-describe("buildPointBreakdown with two counting-toward-retention types", () => {
-	// The seed ships exactly one countsTowardRetention type today, so this case only becomes
-	// member-visible once an admin ticks a second type. Neither type here uses the "retention"
-	// key, proving the row's flag tracks countsTowardRetention and not the magic key.
-	const multiCountingTypes = [
-		{ id: "pt_dues", key: "dues", label: "Dues", countsTowardRetention: true, active: true, position: 1 },
-		{ id: "pt_service", key: "service", label: "Service", countsTowardRetention: true, active: true, position: 2 },
-		{ id: "pt_social", key: "social", label: "Social", countsTowardRetention: false, active: true, position: 3 },
-	];
-	const multiCountingRecords = [
-		{ pointTypeId: "pt_dues", points: 6 },
-		{ pointTypeId: "pt_service", points: 8 },
-		{ pointTypeId: "pt_social", points: 4 },
-	];
-
-	it("marks every countsTowardRetention type as retention-bearing, each keeping its own total", () => {
-		expect(buildPointBreakdown(multiCountingTypes, multiCountingRecords)).toEqual([
-			{ pointTypeId: "pt_dues", label: "Dues", totalPoints: 6, retention: true },
-			{ pointTypeId: "pt_service", label: "Service", totalPoints: 8, retention: true },
-			{ pointTypeId: "pt_social", label: "Social", totalPoints: 4, retention: false },
-		]);
-	});
-
-	it("does not use the key to decide retention status", () => {
-		const relabeled = [
-			{ id: "pt_x", key: "not_retention", label: "Anything", countsTowardRetention: true, active: true, position: 1 },
-			{ id: "pt_y", key: "retention", label: "Legacy label", countsTowardRetention: false, active: true, position: 2 },
-		];
-		const rows = buildPointBreakdown(relabeled, []);
-		expect(rows.find((row) => row.pointTypeId === "pt_x")?.retention).toBe(true);
-		expect(rows.find((row) => row.pointTypeId === "pt_y")?.retention).toBe(false);
+	it("uses the permanent retention id to mark retention progress", () => {
+		const rows = buildPointBreakdown([
+			{ id: "pt_x", key: "retention", label: "Legacy label", active: true, position: 1 },
+			{ id: "pt_retention", key: "anything", label: "Retention", active: true, position: 2 },
+		], []);
+		expect(rows.find((row) => row.pointTypeId === "pt_x")?.retention).toBe(false);
+		expect(rows.find((row) => row.pointTypeId === "pt_retention")?.retention).toBe(true);
 	});
 });
