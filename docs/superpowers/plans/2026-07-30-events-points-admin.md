@@ -394,6 +394,12 @@ git commit -m "fix(events): write scan audit entries inside the atomic batch"
 
 # Phase 3 — Retention de-specialization
 
+> **Tasks 6, 7, and 8 form ONE commit boundary.** Do not commit until Task 8 Step 4.
+> `portal/events/page.tsx` imports `PublicLeaderboardSelection` (`page.tsx:10`, used at `:46`) and
+> carries a `countsTowardRetention` comment at `:44`. So Task 6 removing the union and Task 7's
+> zero-hit gate both depend on Task 8's page rewrite. Splitting them produces two red commits.
+> Work through all three, then commit once.
+
 ### Task 6: Retention and overview repositories
 
 **Files:** Modify `src/db/repositories/retention.ts`, `overview.ts`, `retention-unavailable.ts`; extend `src/db/repositories/retention.integration.test.ts`.
@@ -446,18 +452,11 @@ Where that predicate was the only reason for `innerJoin(pointTypes, ...)`, drop 
 
 Remove `PublicLeaderboardSelection` and the `selection` field from `PublicLeaderboardInput`. `publicLeaderboard` takes `{ termId, pointTypeId, limit?, offset? }` and filters `eq(retentionRecords.pointTypeId, input.pointTypeId)`. Update `retention-unavailable.ts:11` so its throwing stub still matches the signature.
 
-- [ ] **Step 5: Accept one known red file**
-
-`src/app/portal/events/page.tsx` will not typecheck until Task 8 — it still builds the removed union. This is the only permitted red-at-commit in the plan, and only because the alternative is bundling an unrelated page rewrite into a repository task.
+- [ ] **Step 5: Run the repository tests, then continue — do not commit**
 
 Run: `pnpm vitest run src/db/repositories/retention.integration.test.ts src/db/repositories/overview.integration.test.ts` — Expected: PASS.
 
-- [ ] **Step 6: Commit**
-
-```bash
-git add src/db/repositories/retention.ts src/db/repositories/overview.ts src/db/repositories/retention-unavailable.ts src/db/repositories/retention.integration.test.ts
-git commit -m "refactor(retention): treat retention as an ordinary point type"
-```
+`pnpm typecheck` is expected to be RED here (`portal/events/page.tsx` still builds the removed union). That is why this task does not commit. Continue straight to Task 7.
 
 ---
 
@@ -571,14 +570,9 @@ rg -n "countsTowardRetention|counts_toward_retention" src scripts
 
 Expected: **zero hits.** The search is scoped to `src` and `scripts` because an unscoped run always matches this plan and the spec. `drizzle/migrations/0013_additive_points_schema.sql` legitimately keeps the term as historical SQL and is outside those paths.
 
-- [ ] **Step 8: Full green, then commit**
+- [ ] **Step 8: Continue to Task 8 — do not commit**
 
-Run: `pnpm vitest run && pnpm typecheck && pnpm lint` — Expected: all PASS. This is where Task 6's known-red `portal/events/page.tsx` is still red; if so, do Task 8 before committing and combine the two commits.
-
-```bash
-git add -A src scripts
-git commit -m "refactor: remove counts_toward_retention and make retention permanent"
-```
+The zero-hit gate in Step 7 will still match `portal/events/page.tsx:44`, and typecheck will still be red from Task 6. Both are fixed by Task 8. Go there now; Task 8 Step 4 commits all three tasks together.
 
 ---
 
@@ -607,13 +601,27 @@ const leaderboard =
 
 Move the filter `<form>` above the `view === "history"` conditional, binding its hidden `view` input to the current `view`. Pass `selectedPointTypeId` into `RetentionHistory` and filter the history list by it.
 
-- [ ] **Step 4: Verify and commit**
+- [ ] **Step 4: Full green, then commit Tasks 6, 7, and 8 together**
 
-Run: `pnpm typecheck && pnpm lint && pnpm vitest run` — Expected: all PASS.
+Re-run the zero-hit gate from Task 7 Step 7 — the `:44` comment is gone now, so it must return zero:
 
 ```bash
-git add src/app/portal/events/page.tsx src/components/retention-history.tsx
-git commit -m "feat(portal): rename the retention page to points and filter history by type"
+rg -n "countsTowardRetention|counts_toward_retention" src scripts
+```
+
+Run: `pnpm vitest run && pnpm typecheck && pnpm lint` — Expected: all PASS. This is the first green point since Task 5.
+
+```bash
+git add -A src scripts
+git commit -m "refactor: make retention an ordinary permanent point type
+
+Drops counts_toward_retention from the schema, repositories, admin UI, seed
+data, and every test fixture. Retention progress is now the sum of records
+carrying pt_retention. The point type is guarded against retirement; key
+changes and deletion were already impossible.
+
+Renames the member-facing page from Retention to Points and applies the
+point-type filter to both of its tabs."
 ```
 
 ---
@@ -758,9 +766,9 @@ git commit -m "feat(reports): add bounded event attendance read models"
 
 **Files:** Modify `src/db/repositories/attendance-reports.ts` and its test.
 
-**Interfaces:** Produces `termMemberSummaries(actor, termId, { q?, limit, offset })`, `memberAttendance(actor, memberId, termId)`, `scanLog(actor, termId, { eventId?, scannerId?, memberId?, from?, to?, limit, offset })`, `termLedger(actor, termId, { q?, limit, offset })`, `memberLedger(actor, memberId, termId, { limit, offset })`.
+**Interfaces:** Produces `termMemberSummaries(actor, termId, { q?, limit, offset })`, `memberAttendance(actor, memberId, termId)`, `scanLog(actor, termId, { eventId?, scannerId?, memberId?, from?, to?, limit, offset })`. Also **extends** `retention.listForTerm` and `retention.listMemberTermHistory` with optional `{ q?, limit?, offset? }`.
 
-The two ledger models exist because `retention.listForTerm` and `listMemberTermHistory` load every matching row and accept no search, limit, or offset. Phase 5's ledger route and Task 17's member profile both promise server-side pagination, which those methods cannot provide.
+**The ledger stays in `retention.ts`.** `listForTerm` (`retention.ts:290`) and `listMemberTermHistory` (`:304`) already return the exact row model the ledger routes need and already share `reportBaseColumns` (`:107`). They lack only search and bounds. Adding `termLedger`/`memberLedger` to `attendance-reports.ts` would duplicate two working queries to bolt on two arguments. Extend the existing methods instead; leave their current call sites working by making every new argument optional.
 
 `scanLog` reads `auditLogs` directly, **not** `audit.list`. `audit.list` gates on `hasAnyAdminScope`, broader than `retention:record`; routing through it would widen who can read attendance history.
 
@@ -788,14 +796,24 @@ it("keeps an undone scan visible in the scan log", async () => {
 	expect(rows.some((row) => row.action === "event:undo_scan" && row.memberId === "mem_late")).toBe(true);
 });
 
-it("paginates the term ledger", async () => {
-	const reports = createAttendanceReports(drizzle(env.DB, { schema }));
-	const page1 = await reports.termLedger(admin, "term_1", { limit: 1, offset: 0 });
-	const page2 = await reports.termLedger(admin, "term_1", { limit: 1, offset: 1 });
+This one goes in `retention.integration.test.ts`, not the reports test, since it covers an extended existing method. Seed **two records sharing one `recordedAt`** — `createManual` deliberately stamps every row in a batch with the same timestamp (`retention.ts:257`, `:268`), so ties are the normal case, not an edge case:
+
+```ts
+it("paginates the term ledger deterministically across tied timestamps", async () => {
+	const { repo } = makeRepo();
+	const at = Date.now();
+	await insertRecord({ id: "rec_1", points: 1, recordedAt: at });
+	await insertRecord({ id: "rec_2", points: 2, recordedAt: at });
+
+	const page1 = await repo.listForTerm(retentionAdmin, "term_1", { limit: 1, offset: 0 });
+	const page2 = await repo.listForTerm(retentionAdmin, "term_1", { limit: 1, offset: 1 });
 	expect(page1).toHaveLength(1);
 	expect(page2).toHaveLength(1);
 	expect(page1[0].recordId).not.toBe(page2[0].recordId);
 });
+```
+
+Match `listForTerm`'s real signature. Without a tiebreaker this test fails intermittently, which is the point.
 ```
 
 Both new helpers must be written out in full:
@@ -817,9 +835,16 @@ Run: `pnpm vitest run src/db/repositories/attendance-reports.integration.test.ts
 
 `memberAttendance` returns one row per term event the member attended or RSVP'd `going` to, carrying `startsAt`, `graceMinutes`, `scannedAt | null`, `rsvpState`, `pointsEarned`.
 
-`scanLog` selects from `auditLogs` where `category = 'event'` and `action in ('event:scan_attendance','event:undo_scan')`; joins `members` on `targetMemberId`, `members` again via alias on `actorMemberId`, and `crsEvents` on `targetId`; scopes to the term window by `crsEvents.startsAt`; applies `from`/`to` against `auditLogs.createdAt`; orders `createdAt desc`; applies `clampLimit`.
+`scanLog` selects from `auditLogs` where `category = 'event'` and `action in ('event:scan_attendance','event:undo_scan')`; joins `members` on `targetMemberId`, `members` again via alias on `actorMemberId`, and `crsEvents` on `targetId`; scopes to the term window by `crsEvents.startsAt`; applies `from`/`to` against `auditLogs.createdAt` (`to` exclusive); applies `clampLimit`.
 
-`termLedger` and `memberLedger` select `retention_records` joined to `members` and `point_types`, ordered `recordedAt desc`, returning `recordId, memberId, memberName, memberEmail, eventId, eventTitle, pointTypeLabel, points, reason, source, recordedAt`. `termLedger` accepts `q` across member name, email, event title, and reason. Both apply `clampLimit`.
+**Order by `createdAt desc, id desc`.** Offset pagination over a non-unique sort key is unstable — tied rows can repeat on one page and vanish from the next. Audit rows written in the same batch share a timestamp, so this is routine here.
+
+Then extend the two existing retention methods in `retention.ts`:
+
+- `listForTerm(actor, termId, opts?)` and `listMemberTermHistory(actor, ...)` gain optional `{ q?, limit?, offset? }`. Defaults preserve today's behaviour so existing callers are untouched.
+- `q` matches member name, email, event title, and reason.
+- Both order by **`recordedAt desc, id desc`** for the same stability reason. `createManual` stamps a whole batch with one `recordedAt` (`retention.ts:257`, `:268`), so ties are guaranteed, not hypothetical.
+- Both clamp `limit` to 200.
 
 - [ ] **Step 4: Run and commit**
 
@@ -896,7 +921,44 @@ Add the same field to the update schema in `calendar/[eventId]/actions.ts`.
 
 - [ ] **Step 2: Extend the repository types and writes**
 
-Add `graceMinutes: number | null` to `CreateEventInput` and to the `Partial<{...}>` in `UpdateEventInput` (`events.ts:37-56`). Add `graceMinutes` to the `db.insert(crsEvents).values({...})` map in `create` and to the update map in `update`. Without this the parsed value is silently dropped.
+Add to `CreateEventInput` as **optional**, and to the `Partial<{...}>` in `UpdateEventInput`:
+
+```ts
+	graceMinutes?: number | null;   // CreateEventInput
+	graceMinutes: number | null;    // inside UpdateEventInput's Partial<{}>
+```
+
+Optional is load-bearing. `create` has callers that will never pass it — `events.integration.test.ts:100` and `:640`, and `api/events/route.ts:36`, which forwards output from a contract schema (`contract/events.ts:67`) that has no such field. Making it required breaks all three and Task 12 cannot typecheck.
+
+Map it in `create`'s insert with an explicit default, and in `update`'s write map (`events.ts:317`):
+
+```ts
+	graceMinutes: input.graceMinutes ?? null,
+```
+
+Without the map entries the parsed value is silently dropped.
+
+- [ ] **Step 2b: Prove persistence with a repository test**
+
+Add to `events.integration.test.ts`:
+
+```ts
+it("persists grace minutes through create and update", async () => {
+	const { db, repo } = makeRepos();
+	const event = await repo.create(owner, {
+		title: "Graced", type: "casual", place: "SOM 111", description: "d",
+		startsAt: START, endsAt: END, capacity: null, graceMinutes: 20,
+	});
+	const [created] = await db.select().from(crsEvents).where(eq(crsEvents.id, event.id));
+	expect(created.graceMinutes).toBe(20);
+
+	await repo.update(owner, event.id, { graceMinutes: null });
+	const [updated] = await db.select().from(crsEvents).where(eq(crsEvents.id, event.id));
+	expect(updated.graceMinutes).toBeNull();
+});
+```
+
+Match `repo.update`'s real signature rather than assuming the one shown. A green typecheck does not prove persistence — a dropped optional field typechecks fine.
 
 - [ ] **Step 3: Add the inputs**
 
@@ -1007,7 +1069,7 @@ git commit -m "feat(admin): add the events list and event roster routes"
 
 **Files:** Create `src/app/portal/admin/data/{members,scans,ledger}/page.tsx`.
 
-**Interfaces:** Consumes `termMemberSummaries`, `scanLog`, `termLedger` from Task 10.
+**Interfaces:** Consumes `termMemberSummaries` and `scanLog` from Task 10, and the extended `retention.listForTerm(actor, termId, { q?, limit?, offset? })`.
 
 - [ ] **Step 1: Members list**
 
@@ -1021,15 +1083,33 @@ Rows with `action === "event:undo_scan"` render struck-through with the reversin
 
 - [ ] **Step 3: Ledger**
 
-Subhead: `Where every point came from.` Consumes `termLedger` — server-side search and pagination, replacing the old client-side `.filter()`.
+Subhead: `Where every point came from.` Consumes the extended `retention.listForTerm` with `q`, `limit`, and `offset` — server-side search and pagination, replacing the old client-side `.filter()`.
 
 - [ ] **Step 4: Validate every search param**
 
+The scans route needs every filter Step 2 promises, or they cannot be passed at all:
+
 ```ts
-const querySchema = z.object({
+const scansQuerySchema = z
+	.object({
+		page: z.coerce.number().int().min(1).max(10_000).catch(1),
+		eventId: z.string().max(60).optional(),
+		scannerId: z.string().max(60).optional(),
+		memberId: z.string().max(60).optional(),
+		from: z.coerce.date().optional(),
+		to: z.coerce.date().optional(),
+	})
+	.refine((v) => !v.from || !v.to || v.from <= v.to, { path: ["to"], message: "End date must not precede the start." });
+```
+
+A bare `<input type="date">` yields midnight, so an inclusive-looking `to` would silently exclude that whole day. Treat `to` as **exclusive** and add one day before passing it to `scanLog`.
+
+Members and ledger routes use the simpler shape:
+
+```ts
+const listQuerySchema = z.object({
 	q: z.string().trim().max(100).optional(),
 	page: z.coerce.number().int().min(1).max(10_000).catch(1),
-	eventId: z.string().max(60).optional(),
 });
 ```
 
@@ -1108,11 +1188,11 @@ git commit -m "feat(admin): register the events and points routes, drop the old 
 
 **Files:** Create `src/app/portal/admin/members/[id]/page.tsx`.
 
-**Interfaces:** Consumes `memberAttendance` and `memberLedger` from Task 10, `RetentionProgress` from `@/components/portal/overview-metrics`.
+**Interfaces:** Consumes `memberAttendance` from Task 10, the extended `retention.listMemberTermHistory(actor, ..., { limit?, offset? })`, and `RetentionProgress` from `@/components/portal/overview-metrics`.
 
 - [ ] **Step 1: Build the page**
 
-Five sections: header (full name, email, status, roles); retention progress for the term against `terms.retainedAt` and `terms.probationBelow`, reusing `RetentionProgress`; points by type for every type with a nonzero total; events attended from `memberAttendance` with `<AttendanceStatusCell>` per row, including RSVP'd-but-absent rows; and `memberLedger`, paginated.
+Five sections: header (full name, email, status, roles); retention progress for the term against `terms.retainedAt` and `terms.probationBelow`, reusing `RetentionProgress`; points by type for every type with a nonzero total; events attended from `memberAttendance` with `<AttendanceStatusCell>` per row, including RSVP'd-but-absent rows; and the extended `retention.listMemberTermHistory`, paginated.
 
 Include the section's standard term selector.
 
@@ -1399,7 +1479,19 @@ Codex bounded review of plan revision 1: 14 findings, 2 critical, all four scope
 | 4 (high) | `ADD COLUMN ... REFERENCES` is valid, but the backfill could write a dangling member id into a foreign-key column and abort `0014` | `EXISTS` guard added; unmatched historical rows stay `NULL` |
 | 5-7 (high) | Every prescribed test helper name was wrong: `makeRepos()` returns `{ db, repo }` not `{ events }`; retention uses `makeRepo`/`insertRecord`/`retentionAdmin`/`getMemberTermSummary`; pointTypes has a shared `repo`, no factory | Real fixtures documented in their own section and used throughout Tasks 5, 6, 7, 19 |
 | 8 (high) | `roles: ["super_admin"]` is not a valid role key; `can()` would throw a TypeError rather than fail an assertion | Corrected to real role keys; added to Global Constraints |
-| 9 (high) | No task produced bounded ledger queries, yet two routes promised pagination | Task 10 gains `termLedger`, `memberLedger`, and scan-log `from`/`to` filters |
+| 9 (high) | No task produced bounded ledger queries, yet two routes promised pagination | Task 10 gains scan-log `from`/`to` filters and extends `retention.listForTerm` / `listMemberTermHistory` with `q`/`limit`/`offset` (revised — see round 2 finding 4) |
+
+### Verification round
+
+A second Codex round verified all 14 fixes: 12 landed correctly, 2 did not, plus 3 new defects introduced by the revision. All 5 verified against source and fixed here.
+
+| # | Finding | Change made |
+|---|---|---|
+| 1 (critical) | Finding 1's fix did not land. `portal/events/page.tsx` imports `PublicLeaderboardSelection` at `:10` and carries a flag comment at `:44`, so Task 6 still committed red and Task 7's zero-hit gate still matched | Tasks 6, 7, 8 declared one commit boundary; only Task 8 Step 4 commits, after re-running the gate |
+| 2 (critical) | Finding 2's fix was partial. Making `CreateEventInput.graceMinutes` **required** breaks `events.integration.test.ts:100`, `:640`, and `api/events/route.ts:36`, which forwards a contract schema lacking the field | Made optional with `input.graceMinutes ?? null` at the insert; added a persistence test, since a dropped optional field typechecks fine |
+| 3 (medium) | Task 15's scans route promised four filters its Zod schema could not express | Schema carries `scannerId`, `memberId`, `from`, `to`, with `from <= to` and `to` treated as an exclusive next-day boundary |
+| 4 (medium) | `termLedger`/`memberLedger` duplicated `listForTerm`/`listMemberTermHistory`, which already share `reportBaseColumns` and differ only by lacking search and bounds | Both dropped; the existing methods gain optional `q`/`limit`/`offset` |
+| 5 (medium) | Offset pagination ordered only by timestamp, but `createManual` stamps a whole batch identically, so pages could duplicate or drop rows | Ledgers order by `recordedAt desc, id desc`, scan log by `createdAt desc, id desc`; the pagination test seeds tied timestamps |
 | 10 (high) | Task 18 passed props that did not exist and required a count no data source provided | Props defined first; `scannedCount` sourced explicitly; `canUndo={false}` until Task 19 |
 | 11 (high) | Remote migrations hidden behind a script alias, and `0015` applied before being committed | Exact `wrangler` commands shown for every apply; `0015` committed before application |
 | 12 (medium) | Cap and search tests passed vacuously on zero rows | Assert exactly 200 rows and exactly one known member id; both new seed helpers specified |
