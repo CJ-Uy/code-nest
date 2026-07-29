@@ -6,7 +6,12 @@ import { getDb } from "@/db/client";
 import { accounts, memberRoles, members, roles, sessions, termMemberRoster, verificationToken } from "@/db/schema";
 import { createAuditRepository } from "@/db/repositories/audit";
 import { getAppConfig } from "@/server/env";
-import { getRosterDeniedRedirect, isGoogleSignInAllowed, splitAuthList } from "@/server/auth/access";
+import {
+	getGoogleProviderOptions,
+	getRosterDeniedRedirect,
+	isGoogleSignInAllowed,
+	splitAuthList,
+} from "@/server/auth/access";
 import { grantBootstrapSuperRole } from "@/server/auth/bootstrap";
 import { normalizeRoleKeys } from "@/server/auth/permissions";
 import { isRosterSignInAllowed, syncSignedInMemberProfile } from "@/server/auth/roster";
@@ -38,11 +43,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 	return {
 		adapter,
 		providers: [
-			Google({
-				clientId: config.AUTH_GOOGLE_ID,
-				clientSecret: config.AUTH_GOOGLE_SECRET,
-				authorization: allowedDomains[0] ? { params: { hd: allowedDomains[0] } } : undefined,
-			}),
+			Google(getGoogleProviderOptions(config.AUTH_GOOGLE_ID, config.AUTH_GOOGLE_SECRET, allowedDomains)),
 		],
 		session: { strategy: "database" },
 		secret: config.AUTH_SECRET,

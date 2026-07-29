@@ -1,5 +1,8 @@
 "use client";
 
+import { Check, LoaderCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +11,31 @@ import { parseEmailColumn } from "@/lib/roster-emails";
 import { bulkAddMembersAction, inviteMemberAction, type BulkAddResult } from "./actions";
 
 export function AddMembers() {
+	const router = useRouter();
 	const [bulk, setBulk] = useState(false);
+	const [email, setEmail] = useState("");
 	const [raw, setRaw] = useState("");
 	const [result, setResult] = useState<BulkAddResult | null>(null);
+	const [oneAdded, setOneAdded] = useState(false);
 	const [pending, startTransition] = useTransition();
 	const preview = parseEmailColumn(raw);
 	const overCap = preview.valid.length > 500;
+
+	function submitOne(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		const formData = new FormData(event.currentTarget);
+		setOneAdded(false);
+		startTransition(async () => {
+			try {
+				await inviteMemberAction(formData);
+				setEmail("");
+				setOneAdded(true);
+				router.refresh();
+			} catch (error) {
+				window.alert(error instanceof Error ? error.message : "Could not add member.");
+			}
+		});
+	}
 
 	function submitBulk() {
 		setResult(null);
@@ -69,10 +91,29 @@ export function AddMembers() {
 					{result ? <p className="text-sm text-foreground">Processed {result.processed} email(s).</p> : null}
 				</div>
 			) : (
-				<form action={inviteMemberAction} className="flex flex-wrap items-end gap-2">
-					<Input name="email" type="email" placeholder="member@example.com" required className="max-w-xs" />
-					<Input name="name" placeholder="Name optional" className="max-w-xs" />
-					<Button type="submit">Add one</Button>
+				<form onSubmit={submitOne} className="flex flex-wrap items-center gap-2">
+					<Input
+						name="email"
+						type="email"
+						value={email}
+						onChange={(event) => {
+							setEmail(event.target.value);
+							setOneAdded(false);
+						}}
+						placeholder="member@example.com"
+						required
+						disabled={pending}
+						className="max-w-xs"
+					/>
+					<Button type="submit" disabled={pending} aria-label={pending ? "Adding member" : undefined}>
+						{pending ? <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" /> : null}
+						{pending ? "Adding…" : "Add one"}
+					</Button>
+					{oneAdded ? (
+						<span role="status" className="inline-flex items-center gap-1 text-sm text-accent">
+							<Check className="size-4" aria-hidden="true" /> Member added.
+						</span>
+					) : null}
 				</form>
 			)}
 		</div>

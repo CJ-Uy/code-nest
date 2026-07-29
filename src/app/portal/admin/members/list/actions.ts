@@ -8,14 +8,13 @@ import { requireActor } from "@/server/auth/actor";
 
 const inviteSchema = z.object({
 	email: z.string().trim().toLowerCase().email(),
-	name: z.string().trim().optional(),
 });
 
 export async function inviteMemberAction(formData: FormData) {
 	const actor = await requireActor();
-	const input = inviteSchema.parse({ email: formData.get("email"), name: formData.get("name") });
+	const input = inviteSchema.parse({ email: formData.get("email") });
 	const repositories = await getRepositories();
-	await repositories.members.create(actor, { email: input.email, name: input.name || null });
+	await repositories.members.create(actor, { email: input.email, name: null });
 	revalidatePath("/portal/admin/members/list");
 	revalidatePath("/portal/admin/members/roles");
 }

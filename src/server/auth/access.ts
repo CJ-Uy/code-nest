@@ -41,3 +41,17 @@ export function getRosterDeniedRedirect(email: string): string {
 export function getGoogleAuthorizationParams(error?: string): Record<string, string> | undefined {
 	return error === "NotMember" ? { prompt: "select_account" } : undefined;
 }
+
+export function getGoogleProviderOptions(
+	clientId: string | undefined,
+	clientSecret: string | undefined,
+	allowedDomains: string[],
+) {
+	return {
+		clientId,
+		clientSecret,
+		authorization: allowedDomains[0] ? { params: { hd: allowedDomains[0] } } : undefined,
+		// Safe because the sign-in callback accepts only Google profiles with a verified email.
+		allowDangerousEmailAccountLinking: true,
+	};
+}

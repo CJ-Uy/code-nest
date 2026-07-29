@@ -365,8 +365,8 @@
     "semantic_hash": ""
   },
   "src/auth.ts": {
-    "mtime": 1785173280.7121563,
-    "ast_hash": "80273db64f8dbac07f9abdd2d53fb3c3",
+    "mtime": 1785339007.6314502,
+    "ast_hash": "183af08656b752fb74ce0ec994515eb2",
     "semantic_hash": ""
   },
   "src/components/ui/badge.tsx": {
@@ -560,13 +560,13 @@
     "semantic_hash": "bb36ea825a37986c69eae74eefe688d3"
   },
   "src/server/auth/access.test.ts": {
-    "mtime": 1785175622.9332368,
-    "ast_hash": "0b3d3c316de55a053151a611bb23154d",
+    "mtime": 1785338963.4607604,
+    "ast_hash": "2bda76056c4604c1dc764d77551709b0",
     "semantic_hash": ""
   },
   "src/server/auth/access.ts": {
-    "mtime": 1785175609.9251442,
-    "ast_hash": "755668d3cdf97de5ab318b3705f1877f",
+    "mtime": 1785339142.6890032,
+    "ast_hash": "56caccaf8b578d1603eee134dcc5cef6",
     "semantic_hash": ""
   },
   "src/server/auth/actor.ts": {
@@ -2415,8 +2415,8 @@
     "semantic_hash": ""
   },
   "src/app/portal/admin/members/list/actions.ts": {
-    "mtime": 1783442279.1184382,
-    "ast_hash": "15908c5009a0555f12065fe39f4ce8fe",
+    "mtime": 1785339479.6246102,
+    "ast_hash": "1921a5796699af3a6c45c785f01aa4ff",
     "semantic_hash": ""
   },
   "src/app/portal/admin/members/list/page.tsx": {
@@ -2585,8 +2585,8 @@
     "semantic_hash": ""
   },
   "src/app/portal/admin/members/list/add-members.tsx": {
-    "mtime": 1783441293.4470448,
-    "ast_hash": "8a7af3b2f593491bc4657ec0db661831",
+    "mtime": 1785339479.6236105,
+    "ast_hash": "f28b665dc1ac8eb0842b82ed1b40204f",
     "semantic_hash": ""
   },
   "src/components/camera-scanner.test.ts": {
@@ -3242,6 +3242,11 @@
   "graphify-out/memory/query_20260729_150908_why_does_production_auth_work_while_beta_auth_fail.md": {
     "mtime": 1785337748.236869,
     "ast_hash": "4ff4d1c68459d608b31d88c84d4ac88b",
+    "semantic_hash": ""
+  },
+  "e2e/member-add.spec.ts": {
+    "mtime": 1785339649.3849597,
+    "ast_hash": "1a020482572a2adaab8ece0f52187ca3",
     "semantic_hash": ""
   }
 }

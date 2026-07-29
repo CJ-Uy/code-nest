@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { getGoogleAuthorizationParams, getRosterDeniedRedirect, isGoogleSignInAllowed } from "./access";
+import {
+	getGoogleAuthorizationParams,
+	getGoogleProviderOptions,
+	getRosterDeniedRedirect,
+	isGoogleSignInAllowed,
+} from "./access";
 
 const policy = {
 	allowedDomains: ["ateneo.edu"],
@@ -15,6 +20,15 @@ describe("Google sign-in policy", () => {
 	it("forces Google account selection only after a non-member sign-in", () => {
 		expect(getGoogleAuthorizationParams("NotMember")).toEqual({ prompt: "select_account" });
 		expect(getGoogleAuthorizationParams()).toBeUndefined();
+	});
+
+	it("allows verified Google accounts to link to pre-created members", () => {
+		expect(getGoogleProviderOptions("client-id", "client-secret", ["ateneo.edu"])).toEqual({
+			clientId: "client-id",
+			clientSecret: "client-secret",
+			authorization: { params: { hd: "ateneo.edu" } },
+			allowDangerousEmailAccountLinking: true,
+		});
 	});
 
 	it("allows a verified email from an allowed domain", () => {
