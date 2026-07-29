@@ -23,6 +23,7 @@ export type AuditRecordInput = {
 	targetId: string;
 	category: AuditCategory;
 	detail?: string | null;
+	targetMemberId?: string | null;
 };
 
 export type AuditEntry = InferSelectModel<typeof auditLogs>;
@@ -54,6 +55,7 @@ export function auditInsertValues(actor: Actor, input: AuditRecordInput): AuditI
 		targetType: input.targetType,
 		targetId: input.targetId,
 		detail: input.detail ?? null,
+		targetMemberId: input.targetMemberId ?? null,
 		category: input.category,
 	};
 }
