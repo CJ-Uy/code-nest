@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { recordRetentionAction, type RecordRetentionResult } from "./actions";
+import { EventPicker, type EventOption } from "./event-picker";
 import { MemberChecklist, type MemberOption } from "./member-checklist";
 
 type Option = { id: string; label: string };
@@ -19,7 +20,7 @@ export function RetentionForm({
 }: {
 	members: MemberOption[];
 	termOptions: Option[];
-	eventOptions: Option[];
+	eventOptions: EventOption[];
 	pointTypeOptions: PointTypeOption[];
 }) {
 	const [state, formAction, pending] = useActionState<RecordRetentionResult | null, FormData>(
@@ -60,17 +61,10 @@ export function RetentionForm({
 				</Select>
 			</label>
 
-			<label className="grid gap-2 text-sm font-medium">
-				Event (optional)
-				<Select name="eventId" defaultValue="">
-					<option value="">No event</option>
-					{eventOptions.map((event) => (
-						<option key={event.id} value={event.id}>
-							{event.label}
-						</option>
-					))}
-				</Select>
-			</label>
+			<fieldset className="grid gap-2">
+				<legend className="text-sm font-medium">Event (optional)</legend>
+				<EventPicker events={eventOptions} />
+			</fieldset>
 
 			<label className="grid gap-2 text-sm font-medium">
 				Points (optional, may be negative)
@@ -89,7 +83,7 @@ export function RetentionForm({
 
 			<div>
 				<Button type="submit" disabled={pending}>
-					{pending ? "Recording..." : "Record retention"}
+					{pending ? "Adding..." : "Add manual record"}
 				</Button>
 			</div>
 		</form>

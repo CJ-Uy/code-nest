@@ -61,5 +61,6 @@ drizzle/local.db
 
 /.claude
 test-results/
+/output/
 /.playwright-mcp
 /.pnpm-store

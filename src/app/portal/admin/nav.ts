@@ -42,6 +42,13 @@ export const adminGroups: AdminGroup[] = [
 	]),
 	G("data", "Events & Points", [
 		{
+			segment: "dashboard",
+			label: "Dashboard",
+			description: "Review event attendance and points, or add a manual record.",
+			permission: "retention:record",
+			href: "/portal/admin/data",
+		},
+		{
 			segment: "event-types",
 			label: "Event Type Rules",
 			description: "Which permission each event type requires to create.",
@@ -55,7 +62,6 @@ export const adminGroups: AdminGroup[] = [
 			permission: "retention:configure",
 			href: "/portal/admin/system/point-types",
 		},
-		{ segment: "retention", label: "Log Retention", description: "Record retention/attendance records.", permission: "retention:record" },
 		{ segment: "exports", label: "Data Exports", description: "CSV exports of retention data.", permission: "retention:record" },
 	]),
 	G("system", "System", [
@@ -87,6 +93,7 @@ export function crumbFor(pathname: string): { label: string; href?: string }[] {
 	if (!group) return trail;
 	const onGroupIndex = clean === group.href;
 	trail.push({ label: group.label, href: onGroupIndex ? undefined : group.href });
+	if (onGroupIndex) return trail;
 	const page = group.pages.find((p) => clean === p.href || clean.startsWith(`${p.href}/`));
 	if (page) trail.push({ label: page.label, href: clean === page.href ? undefined : page.href });
 	return trail;

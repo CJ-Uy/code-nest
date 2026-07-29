@@ -14,9 +14,9 @@ describe("admin nav registry", () => {
 		const eventsAndPoints = adminGroups.find((g) => g.segment === "data")!;
 		expect(eventsAndPoints.label).toBe("Events & Points");
 		expect(eventsAndPoints.pages.map((p) => p.label)).toEqual([
+			"Dashboard",
 			"Event Type Rules",
 			"Point Types",
-			"Log Retention",
 			"Data Exports",
 		]);
 	});

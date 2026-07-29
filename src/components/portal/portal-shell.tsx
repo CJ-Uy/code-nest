@@ -95,7 +95,7 @@ function RailItem({ item, pathname }: { item: NavItem; pathname: string }) {
 }
 
 function AdminNavLink({ href, label, pathname }: { href: string; label: string; pathname: string }) {
-	const on = isActive(pathname, href);
+	const on = href.split("/").filter(Boolean).length === 3 ? pathname === href : isActive(pathname, href);
 	return (
 		<Link
 			href={href}

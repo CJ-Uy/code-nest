@@ -28,6 +28,7 @@ export async function recordRetentionAction(
 	try {
 		const repositories = await getRepositories();
 		const result = await repositories.retention.createManual(actor, parsed.data);
+		revalidatePath("/portal/admin/data");
 		revalidatePath("/portal/admin/data/retention");
 		return { ok: true, count: result.recordIds.length };
 	} catch (error) {
