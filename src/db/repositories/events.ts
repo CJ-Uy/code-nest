@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, isNull, like, lte, notInArray, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, getTableColumns, inArray, isNull, like, lte, notInArray, or, sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
 import { createId } from "@/lib/ids";
@@ -32,6 +32,7 @@ export type EventRecord = InferSelectModel<typeof crsEvents> & {
 	myRole: EventRole | null;
 	canModerate: boolean;
 	canSetPoints: boolean;
+	scannedCount: number;
 };
 
 export type CreateEventInput = {
@@ -138,12 +139,13 @@ async function staffRole(db: Db, eventId: string, memberId: string): Promise<"ad
 	return row?.role ?? null;
 }
 
-function withCapabilities(actor: Actor, event: BaseEventRecord, role: EventRole | null): EventRecord {
+function withCapabilities(actor: Actor, event: BaseEventRecord, role: EventRole | null, scannedCount = 0): EventRecord {
 	return {
 		...event,
 		myRole: role,
 		canModerate: can(actor, "event:moderate"),
 		canSetPoints: can(actor, "event:points"),
+		scannedCount,
 	};
 }
 
@@ -186,6 +188,7 @@ const scannerMember = alias(members, "scanner_member");
 
 type ScanRow = {
 	scannedAt: Date;
+	scannedBy: string;
 	memberFullName: string | null;
 	memberName: string | null;
 	memberEmail: string;
@@ -199,6 +202,7 @@ async function loadScanRow(db: Db, eventId: string, memberId: string): Promise<S
 	const [row] = await db
 		.select({
 			scannedAt: crsAttendance.scannedAt,
+			scannedBy: crsAttendance.scannedBy,
 			memberFullName: members.fullName,
 			memberName: members.name,
 			memberEmail: members.email,
@@ -276,14 +280,19 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 
 		async listPublished(actor, input) {
 			if (!actor) throw new Error("Authentication required.");
-			const rows: BaseEventRecord[] = await db
-				.select()
+			const rows: Array<{ event: BaseEventRecord; scannedCount: number }> = await db
+				.select({
+					event: getTableColumns(crsEvents),
+					scannedCount: count(crsAttendance.memberId),
+				})
 				.from(crsEvents)
+				.leftJoin(crsAttendance, eq(crsAttendance.eventId, crsEvents.id))
 				.where(isNull(crsEvents.deletedAt))
+				.groupBy(crsEvents.id)
 				.orderBy(asc(crsEvents.startsAt))
 				.limit(Math.min(input?.limit ?? 50, 100))
 				.offset(input?.offset ?? 0);
-			return Promise.all(rows.map((event) => decorate(actor, event)));
+			return Promise.all(rows.map(async (row) => withCapabilities(actor, row.event, await resolveCapability(actor, row.event), row.scannedCount)));
 		},
 
 		async listPending(actor, input) {
@@ -640,11 +649,13 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 
 		async undoScan(actor, input) {
 			const { role } = await requireEvent(actor, input.eventId);
-			// Owner, event admin, or a CRS moderator. Plain scanners cannot undo.
-			if (!canManage(role, actor)) throw new Error("Not authorized to undo attendance.");
+			if (!canManage(role, actor) && role !== "scanner") throw new Error("Not authorized to undo attendance.");
 
 			const existing = await loadScanRow(db, input.eventId, input.memberId);
 			if (!existing) return { removed: false };
+			if (!canManage(role, actor) && existing.scannedBy !== actor.memberId) {
+				throw new Error("Not authorized to undo attendance.");
+			}
 
 			await runAtomic(db, [
 				db

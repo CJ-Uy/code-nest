@@ -142,13 +142,6 @@ export function createEventsInternalHandlers({ db, deployEnv, allowedOrigins = [
 					return Response.json({ error: "Unknown operation." }, { status: 400, headers: responseHeaders });
 				}
 
-				if (request.method === "DELETE" && op === "undoScan") {
-					return Response.json(
-						{ error: "Operation is disabled in shared development." },
-						{ status: 403, headers: responseHeaders },
-					);
-				}
-
 				return new Response("Method not allowed", { status: 405, headers: responseHeaders });
 			} catch (error) {
 				const message = error instanceof Error ? error.message : "Internal request failed.";

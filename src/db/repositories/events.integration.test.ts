@@ -616,6 +616,34 @@ describe("events repository on D1", () => {
 		await expect(repo.undoScan(owner, { eventId: event.id, memberId: "mem_a" })).resolves.toEqual({ removed: false });
 	});
 
+	it("lets a scanner undo a scan they recorded", async () => {
+		const { repo } = makeRepos();
+		const event = await makeApprovedEvent();
+		await repo.addStaff(owner, event.id, scanner.memberId, "scanner");
+		await repo.recordScan(scanner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
+
+		await expect(repo.undoScan(scanner, { eventId: event.id, memberId: "mem_a" })).resolves.toEqual({ removed: true });
+	});
+
+	it("stops a scanner undoing a scan another member recorded", async () => {
+		const { repo } = makeRepos();
+		const event = await makeApprovedEvent();
+		await repo.addStaff(owner, event.id, scanner.memberId, "scanner");
+		await repo.recordScan(owner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
+
+		await expect(repo.undoScan(scanner, { eventId: event.id, memberId: "mem_a" })).rejects.toThrow("Not authorized");
+	});
+
+	it("lets an event admin undo a scan they did not record", async () => {
+		const { repo } = makeRepos();
+		const event = await makeApprovedEvent();
+		await repo.addStaff(owner, event.id, scanner.memberId, "scanner");
+		await repo.addStaff(owner, event.id, adminStaff.memberId, "admin");
+		await repo.recordScan(scanner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
+
+		await expect(repo.undoScan(adminStaff, { eventId: event.id, memberId: "mem_a" })).resolves.toEqual({ removed: true });
+	});
+
 	it("rejects attendance for an inactive or client-selected school year", async () => {
 		const event = await makeApprovedEvent();
 		const { repo, db } = makeRepos();

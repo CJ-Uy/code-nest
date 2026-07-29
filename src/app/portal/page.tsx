@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard, RetentionProgress } from "@/components/portal/overview-metrics";
 import { getActor } from "@/server/auth/actor";
+import { getAppConfig } from "@/server/env";
 import { CHECKIN_LEAD_MS } from "@/db/repositories/events";
 import type { OverviewSummary } from "@/db/repositories/overview";
 
@@ -35,7 +36,7 @@ export default async function PortalOverviewPage() {
 		repositories.retention.listTerms(actor).catch(() => []),
 	]);
 	const now = new Date();
-	const scanEvent = scanEvents.find(
+	const liveScanEvents = scanEvents.filter(
 		(event) =>
 			event.myRole === "scanner" &&
 			event.endsAt !== null &&
@@ -43,6 +44,7 @@ export default async function PortalOverviewPage() {
 			now.getTime() <= event.endsAt.getTime(),
 	);
 	const currentTerm = terms.find((term) => term.isCurrent);
+	const canUndoScans = getAppConfig().APP_ENV !== "shared";
 
 	const firstName = (member?.nickname ?? member?.fullName ?? member?.name ?? "there").split(/\s+/)[0];
 	const today = new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric" }).format(new Date());
@@ -53,6 +55,20 @@ export default async function PortalOverviewPage() {
 				<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{today}</p>
 				<h1 className="font-heading text-3xl">Kumusta, {firstName}</h1>
 			</div>
+
+			{currentTerm
+				? liveScanEvents.map((event) => (
+					<EventScanPanel
+						key={event.id}
+						eventId={event.id}
+						eventTitle={event.title}
+						termId={currentTerm.id}
+						closesAt={event.endsAt!}
+						scannedCount={event.scannedCount}
+						canUndo={canUndoScans}
+					/>
+				))
+				: null}
 
 			<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 				<MetricCard
@@ -139,14 +155,6 @@ export default async function PortalOverviewPage() {
 					</CardContent>
 				</Card>
 			</div>
-
-			{scanEvent && currentTerm ? (
-				<EventScanPanel
-					eventId={scanEvent.id}
-					eventTitle={scanEvent.title}
-					termId={currentTerm.id}
-				/>
-			) : null}
 		</div>
 	);
 }
