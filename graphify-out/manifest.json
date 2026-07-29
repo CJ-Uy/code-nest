@@ -3225,13 +3225,23 @@
     "semantic_hash": ""
   },
   "docs/operations/2026-07-29-b3-dev-database-rollout.md": {
-    "mtime": 1785263448.4274316,
-    "ast_hash": "bbbdb2dc4684192059d518b1990c4e39",
+    "mtime": 1785263788.661521,
+    "ast_hash": "292fddefcb8a9b1862e9fc22b95c1012",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260728_182445_audit_b3_dev_d1_migration_state__typed_points_seed.md": {
     "mtime": 1785263085.9213653,
     "ast_hash": "139cb4cb56e539fd6a9e7583cc647ef2",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260729_145006_why_does_google_sign_in_fail_on_beta_ateneocode_or.md": {
+    "mtime": 1785336606.780466,
+    "ast_hash": "aa200294f67dd6fc0ab492352407ae3c",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260729_150908_why_does_production_auth_work_while_beta_auth_fail.md": {
+    "mtime": 1785337748.236869,
+    "ast_hash": "4ff4d1c68459d608b31d88c84d4ac88b",
     "semantic_hash": ""
   }
 }

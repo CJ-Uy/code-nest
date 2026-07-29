@@ -43,8 +43,8 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "code-nest-dev-db",
-			"database_id": "f9d2b16f-3358-49c2-a88e-e72c9339a22b",
+			"database_name": "code-nest-beta-db",
+			"database_id": "bee2f9e5-b1dd-4408-bf07-bd132ae063a6",
 			"migrations_dir": "drizzle/migrations"
 		}
 	],
