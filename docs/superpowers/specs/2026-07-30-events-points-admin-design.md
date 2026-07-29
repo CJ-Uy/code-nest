@@ -720,17 +720,18 @@ Both must clear before `0014` is applied anywhere.
    loses its retention contribution.
 
    ```bash
-   pnpm exec wrangler d1 execute code-portal-dev --remote --command "select id, key, label, counts_toward_retention from point_types"
+   pnpm exec wrangler d1 execute code-nest-beta-db --config wrangler.beta.jsonc --remote --command "select id, key, label, counts_toward_retention from point_types"
    ```
 
-   Repeat for production. If another type is flagged, decide per type: merge its records into
-   `pt_retention`, or accept the drop. Record the decision before migrating.
+   Production is a different database and config: `code-nest-prod-db` with `wrangler.jsonc`. If
+   another type is flagged, decide per type: merge its records into `pt_retention`, or accept the
+   drop. Record the decision before migrating.
 
 2. **Confirm dev D1 migration state.** Local migrations run to `0013`; dev D1 was last verified at
    `0010`.
 
    ```bash
-   pnpm exec wrangler d1 migrations list code-portal-dev --remote
+   pnpm exec wrangler d1 migrations list DB --config wrangler.beta.jsonc --remote
    ```
 
 Per `CLAUDE.md`, the exact `pnpm exec wrangler` command is shown and approved before any D1 write.

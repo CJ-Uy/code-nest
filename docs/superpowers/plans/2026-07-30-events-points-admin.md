@@ -1472,15 +1472,21 @@ git commit -m "feat(events): let a scanner reverse their own scan"
 Show and get approval for:
 
 ```bash
-pnpm exec wrangler d1 execute code-portal-dev --remote --command "select id, key, label, counts_toward_retention from point_types"
+pnpm exec wrangler d1 execute code-nest-beta-db --config wrangler.beta.jsonc --remote --command "select id, key, label, counts_toward_retention from point_types"
 ```
 
-Any type other than `pt_retention` with the flag set loses its retention contribution. If one exists, stop and decide per type — merge its records into `pt_retention`, or accept the drop — and record the decision before continuing. Repeat for production.
+Any type other than `pt_retention` with the flag set loses its retention contribution. If one exists, stop and decide per type — merge its records into `pt_retention`, or accept the drop — and record the decision before continuing.
+
+Production is a **different database and config**. Do not reuse the command above against it:
+
+```bash
+pnpm exec wrangler d1 execute code-nest-prod-db --config wrangler.jsonc --remote --command "select id, key, label, counts_toward_retention from point_types"
+```
 
 - [ ] **Step 2: Confirm dev migration state**
 
 ```bash
-pnpm exec wrangler d1 migrations list code-portal-dev --remote
+pnpm exec wrangler d1 migrations list DB --config wrangler.beta.jsonc --remote
 ```
 
 Local migrations run to `0013`; dev D1 was last verified at `0010`. Reconcile the gap before applying `0014`.
