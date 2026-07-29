@@ -2,14 +2,14 @@ import { asc, desc, eq, inArray, isNull } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { getDb } from "@/db/client";
 import * as schema from "@/db/schema";
-import { crsAttendance, crsEvents, members, pointTypes, terms } from "@/db/schema";
+import { crsEvents, members, pointTypes, terms } from "@/db/schema";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
 import type { MemberOption } from "./member-checklist";
 
 export async function loadRetentionPickers(actor: Actor): Promise<{
 	members: MemberOption[];
-	terms: { id: string; label: string; startsAt: Date; endsAt: Date }[];
+	terms: { id: string; label: string; startsAt: Date; endsAt: Date; retainedAt: number; probationBelow: number }[];
 	events: { id: string; label: string; detail: string; startsAt: Date; status: string; type: string; place: string }[];
 	pointTypes: { id: string; key: string; label: string }[];
 }> {
@@ -26,7 +26,7 @@ export async function loadRetentionPickers(actor: Actor): Promise<{
 		.limit(500);
 
 	const termRows = await db
-		.select({ id: terms.id, name: terms.name, startsAt: terms.startsAt, endsAt: terms.endsAt })
+		.select({ id: terms.id, name: terms.name, startsAt: terms.startsAt, endsAt: terms.endsAt, retainedAt: terms.retainedAt, probationBelow: terms.probationBelow })
 		.from(terms)
 		.orderBy(desc(terms.startsAt))
 		.limit(50);
@@ -57,7 +57,7 @@ export async function loadRetentionPickers(actor: Actor): Promise<{
 			label: row.fullName ?? row.name ?? row.email,
 			sublabel: row.email,
 		})),
-		terms: termRows.map((row) => ({ id: row.id, label: row.name, startsAt: row.startsAt, endsAt: row.endsAt })),
+		terms: termRows.map((row) => ({ id: row.id, label: row.name, startsAt: row.startsAt, endsAt: row.endsAt, retainedAt: row.retainedAt, probationBelow: row.probationBelow })),
 		events: eventRows.map((row) => ({
 			id: row.id,
 			label: row.title,
@@ -71,23 +71,5 @@ export async function loadRetentionPickers(actor: Actor): Promise<{
 	};
 }
 
-export async function loadAttendance(
-	actor: Actor,
-	eventIds: string[],
-): Promise<{ eventId: string; memberId: string; memberName: string | null; memberEmail: string; scannedAt: Date }[]> {
-	if (!can(actor, "retention:record")) throw new Error("Not authorized to load attendance.");
-	if (eventIds.length === 0) return [];
-	const db = getDb() as unknown as DrizzleD1Database<typeof schema>;
-	return db
-		.select({
-			eventId: crsAttendance.eventId,
-			memberId: crsAttendance.memberId,
-			memberName: members.fullName,
-			memberEmail: members.email,
-			scannedAt: crsAttendance.scannedAt,
-		})
-		.from(crsAttendance)
-		.innerJoin(members, eq(members.id, crsAttendance.memberId))
-		.where(inArray(crsAttendance.eventId, eventIds))
-		.orderBy(desc(crsAttendance.scannedAt));
-}
+
+

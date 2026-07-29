@@ -13,19 +13,30 @@ describe("admin nav registry", () => {
 		expect(members.pages.map((p) => p.href)).toEqual(["/portal/admin/members/list", "/portal/admin/members/roles"]);
 		const eventsAndPoints = adminGroups.find((g) => g.segment === "data")!;
 		expect(eventsAndPoints.label).toBe("Events & Points");
-		expect(eventsAndPoints.pages.map((p) => p.label)).toEqual([
-			"Dashboard",
-			"Event Type Rules",
-			"Point Types",
-			"Data Exports",
+		expect(eventsAndPoints.pages.map((p) => p.segment)).toEqual([
+			"dashboard",
+			"events",
+			"members",
+			"scans",
+			"ledger",
+			"event-types",
+			"point-types",
+			"exports",
 		]);
+	});
+
+	it("gates the new events and points pages on retention:record", () => {
+		const group = adminGroups.find((g) => g.segment === "data");
+		for (const segment of ["events", "members", "scans", "ledger"]) {
+			expect(group?.pages.find((page) => page.segment === segment)?.permission).toBe("retention:record");
+		}
 	});
 
 	it("super sees every group; link role sees only Short Links + always-visible pages", () => {
 		expect(visibleGroups(superActor).length).toBe(4);
 		const visible = visibleGroups(linkOnly).flatMap((g) => g.pages.map((p) => p.href));
 		expect(visible).toContain("/portal/admin/content/links");
-		expect(visible).toContain("/portal/admin/system/audit"); // permission null → always visible
+		expect(visible).toContain("/portal/admin/system/audit"); // permission null means always visible
 		expect(visible).not.toContain("/portal/admin/members/roles");
 	});
 
@@ -63,3 +74,5 @@ describe("admin nav registry", () => {
 		expect(adminHeading("/portal/library")).toBeNull();
 	});
 });
+
+

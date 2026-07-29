@@ -1,6 +1,7 @@
 import { and, desc, eq, gte, inArray, isNull, like, lte, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
 import { auditLogs, crsAttendance, crsEvents, eventRsvps, members, pointTypes, retentionRecords, terms } from "@/db/schema";
+import type { EventStatus } from "@/db/schema";
 import { DEFAULT_GRACE_MINUTES } from "@/lib/point-types";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
@@ -12,7 +13,10 @@ export type TermEventSummaryRow = {
 	eventId: string;
 	title: string;
 	type: string;
+	status: EventStatus;
+	place: string;
 	startsAt: Date;
+	endsAt: Date | null;
 	graceMinutes: number | null;
 	attendedCount: number;
 	lateCount: number;
@@ -60,6 +64,8 @@ export type ScanLogRow = {
 	memberName: string | null;
 	scannerId: string | null;
 	scannerName: string | null;
+	eventStartsAt: Date;
+	graceMinutes: number | null;
 	createdAt: Date;
 };
 
@@ -87,7 +93,7 @@ const lateExpr = sql`${crsAttendance.scannedAt} > ${crsEvents.startsAt} + coales
 /**
  * D1 caps bound variables per statement at around 100, so a full page of member ids in a
  * single `inArray` fails with "too many SQL variables". Split into chunks and merge.
- * ponytail: fixed chunk size, no batching abstraction — two call sites, both in this file.
+ * ponytail: fixed chunk size, no batching abstraction - two call sites, both in this file.
  */
 const ID_CHUNK = 80;
 const chunkIds = (ids: string[]): string[][] =>
@@ -102,12 +108,15 @@ export function createAttendanceReports(db: Db) {
 			const [term] = await db.select().from(terms).where(eq(terms.id, termId)).limit(1);
 			if (!term) return [];
 
-			const summaries: (TermEventSummaryRow & { type: string })[] = await db
+			const summaries: TermEventSummaryRow[] = await db
 				.select({
 					eventId: crsEvents.id,
 					title: crsEvents.title,
 					type: crsEvents.type,
+					status: crsEvents.status,
+					place: crsEvents.place,
 					startsAt: crsEvents.startsAt,
+					endsAt: crsEvents.endsAt,
 					graceMinutes: crsEvents.graceMinutes,
 					attendedCount: sql<number>`count(${crsAttendance.memberId})`,
 					lateCount: sql<number>`sum(case when ${lateExpr} then 1 else 0 end)`,
@@ -115,7 +124,7 @@ export function createAttendanceReports(db: Db) {
 				.from(crsEvents)
 				.leftJoin(crsAttendance, eq(crsAttendance.eventId, crsEvents.id))
 				.where(and(gte(crsEvents.startsAt, term.startsAt), lte(crsEvents.startsAt, term.endsAt), isNull(crsEvents.deletedAt)))
-				.groupBy(crsEvents.id, crsEvents.title, crsEvents.type, crsEvents.startsAt, crsEvents.graceMinutes)
+				.groupBy(crsEvents.id, crsEvents.title, crsEvents.type, crsEvents.status, crsEvents.place, crsEvents.startsAt, crsEvents.endsAt, crsEvents.graceMinutes)
 				.orderBy(desc(crsEvents.startsAt), desc(crsEvents.id));
 
 			const absents: { eventId: string; count: number }[] = await db
@@ -150,7 +159,10 @@ export function createAttendanceReports(db: Db) {
 				eventId: row.eventId,
 				title: row.title,
 				type: row.type,
+				status: row.status,
+				place: row.place,
 				startsAt: row.startsAt,
+				endsAt: row.endsAt,
 				graceMinutes: row.graceMinutes,
 				attendedCount: Number(row.attendedCount),
 				lateCount: Number(row.lateCount ?? 0),
@@ -358,6 +370,8 @@ export function createAttendanceReports(db: Db) {
 				action: string;
 				eventId: string;
 				eventTitle: string;
+				eventStartsAt: Date;
+				graceMinutes: number | null;
 				memberId: string | null;
 				memberName: string | null;
 				memberFallbackName: string | null;
@@ -373,6 +387,8 @@ export function createAttendanceReports(db: Db) {
 					action: auditLogs.action,
 					eventId: crsEvents.id,
 					eventTitle: crsEvents.title,
+					eventStartsAt: crsEvents.startsAt,
+					graceMinutes: crsEvents.graceMinutes,
 					memberId: auditLogs.targetMemberId,
 					memberName: targetMember.fullName,
 					memberFallbackName: targetMember.name,
@@ -397,6 +413,8 @@ export function createAttendanceReports(db: Db) {
 				action: row.action as ScanLogRow["action"],
 				eventId: row.eventId,
 				eventTitle: row.eventTitle,
+				eventStartsAt: row.eventStartsAt,
+				graceMinutes: row.graceMinutes,
 				memberId: row.memberId,
 				memberName: row.memberName ?? row.memberFallbackName ?? row.memberEmail,
 				scannerId: row.scannerId,
@@ -406,3 +424,5 @@ export function createAttendanceReports(db: Db) {
 		},
 	};
 }
+
+

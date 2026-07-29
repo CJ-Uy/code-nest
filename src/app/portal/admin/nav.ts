@@ -44,9 +44,33 @@ export const adminGroups: AdminGroup[] = [
 		{
 			segment: "dashboard",
 			label: "Dashboard",
-			description: "Review event attendance and points, or add a manual record.",
+			description: "What needs your attention this term.",
 			permission: "retention:record",
 			href: "/portal/admin/data",
+		},
+		{
+			segment: "events",
+			label: "Events",
+			description: "How each event turned out.",
+			permission: "retention:record",
+		},
+		{
+			segment: "members",
+			label: "Members",
+			description: "Attendance and points per member.",
+			permission: "retention:record",
+		},
+		{
+			segment: "scans",
+			label: "Scan Log",
+			description: "Every check-in and reversal, and who did it.",
+			permission: "retention:record",
+		},
+		{
+			segment: "ledger",
+			label: "Ledger",
+			description: "Every point record this school year.",
+			permission: "retention:record",
 		},
 		{
 			segment: "event-types",
@@ -58,11 +82,11 @@ export const adminGroups: AdminGroup[] = [
 		{
 			segment: "point-types",
 			label: "Point Types",
-			description: "Manage point labels, retention counting, availability, and display order.",
+			description: "Manage point labels, availability, and display order.",
 			permission: "retention:configure",
 			href: "/portal/admin/system/point-types",
 		},
-		{ segment: "exports", label: "Data Exports", description: "CSV exports of retention data.", permission: "retention:record" },
+		{ segment: "exports", label: "Data Exports", description: "XLSX exports of points data.", permission: "retention:record" },
 	]),
 	G("system", "System", [
 		{ segment: "nav-pins", label: "Pinned Nav Links", description: "Links shown in every member's top nav.", permission: "nav:configure" },
@@ -111,3 +135,4 @@ export function adminHeading(pathname: string): { section: string; title: string
 	if (trail.length < 2) return { section: "Admin", title: "Console" };
 	return { section: trail[trail.length - 2].label, title: trail[trail.length - 1].label };
 }
+
