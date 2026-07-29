@@ -48,10 +48,10 @@ const time = (value: string) =>
 
 function Metric({ label, value, note }: { label: string; value: number; note: string }) {
 	return (
-		<div className="rounded-xl border border-border bg-card px-4 py-3">
-			<p className="text-xs font-semibold text-muted-foreground">{label}</p>
-			<p className="mt-1 font-heading text-3xl tabular-nums text-primary">{value.toLocaleString()}</p>
-			<p className="text-xs text-muted-foreground">{note}</p>
+		<div className="bg-card px-5 py-4">
+			<p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{label}</p>
+			<p className="mt-1 font-heading text-4xl leading-none tabular-nums text-primary">{value.toLocaleString()}</p>
+			<p className="mt-1 text-xs text-muted-foreground">{note}</p>
 		</div>
 	);
 }
@@ -92,7 +92,10 @@ export function EventsPointsDashboard({
 
 	return (
 		<div className="grid gap-6">
-			<section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Term summary">
+			<section
+				className="grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 xl:grid-cols-4"
+				aria-label="Term summary"
+			>
 				<Metric label="Events" value={totals.eventCount} note="In this school year" />
 				<Metric label="Check-ins" value={totals.attendanceCount} note="Recorded attendance scans" />
 				<Metric label="Points issued" value={totals.pointsIssued} note="Includes deductions" />
@@ -100,7 +103,7 @@ export function EventsPointsDashboard({
 			</section>
 
 			<section className="overflow-hidden rounded-xl border border-border bg-card">
-				<div className="flex flex-wrap items-end justify-between gap-3 border-b border-border px-4 py-4">
+				<div className="flex flex-wrap items-end justify-between gap-3 border-b border-border bg-secondary/30 px-4 py-4">
 					<div>
 						<h2 className="font-heading text-2xl">Events</h2>
 						<p className="text-sm text-muted-foreground">Choose an event to review its attendance and issued points.</p>
@@ -117,7 +120,7 @@ export function EventsPointsDashboard({
 					</div>
 				</div>
 				<Table>
-					<TableHeader>
+					<TableHeader className="bg-secondary/20">
 						<TableRow>
 							<TableHead>Event</TableHead>
 							<TableHead>Date</TableHead>
@@ -178,18 +181,18 @@ export function EventsPointsDashboard({
 
 			{selectedEvent ? (
 				<section className="overflow-hidden rounded-xl border border-border bg-card">
-					<div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-4 py-4">
+					<div className="flex flex-wrap items-start justify-between gap-3 bg-primary px-4 py-4 text-primary-foreground">
 						<div>
-							<p className="text-xs font-semibold text-primary">Attendance detail</p>
+							<p className="text-xs font-semibold text-primary-foreground/65">Attendance detail</p>
 							<h2 className="font-heading text-2xl">{selectedEvent.title}</h2>
 						</div>
-						<Badge variant="secondary">
+						<Badge variant="outline" className="gap-1 border-white/25 text-primary-foreground">
 							<Users className="size-3.5" />
 							{selectedAttendance.length} attended
 						</Badge>
 					</div>
 					<Table>
-						<TableHeader>
+						<TableHeader className="bg-secondary/20">
 							<TableRow>
 								<TableHead>Member</TableHead>
 								<TableHead>Checked in</TableHead>
@@ -212,7 +215,11 @@ export function EventsPointsDashboard({
 											{memberRecords.length > 0 ? (
 												<div className="flex flex-wrap gap-1.5">
 													{memberRecords.map((record) => (
-														<Badge key={record.recordId} variant="outline">
+														<Badge
+															key={record.recordId}
+															variant="outline"
+															className="max-w-64 whitespace-normal break-all text-left"
+														>
 															{record.points ?? "No"} {record.pointTypeLabel}
 														</Badge>
 													))}
@@ -237,7 +244,7 @@ export function EventsPointsDashboard({
 			) : null}
 
 			<section className="overflow-hidden rounded-xl border border-border bg-card">
-				<div className="flex flex-wrap items-end justify-between gap-3 border-b border-border px-4 py-4">
+				<div className="flex flex-wrap items-end justify-between gap-3 border-b border-border bg-secondary/30 px-4 py-4">
 					<div>
 						<h2 className="font-heading text-2xl">Points ledger</h2>
 						<p className="text-sm text-muted-foreground">Every event-awarded and manual record in this school year.</p>
@@ -254,7 +261,7 @@ export function EventsPointsDashboard({
 					</div>
 				</div>
 				<Table>
-					<TableHeader>
+					<TableHeader className="bg-secondary/20">
 						<TableRow>
 							<TableHead>Member</TableHead>
 							<TableHead>Event or reason</TableHead>
@@ -278,7 +285,7 @@ export function EventsPointsDashboard({
 									<Badge variant={record.source === "manual" ? "outline" : "secondary"}>
 										{record.source === "manual" ? "Manual" : "Event"}
 									</Badge>
-									<p className="mt-1 text-xs text-muted-foreground">{record.pointTypeLabel}</p>
+									<p className="mt-1 max-w-48 break-all text-xs text-muted-foreground">{record.pointTypeLabel}</p>
 								</TableCell>
 								<TableCell className="text-right font-semibold tabular-nums">
 									{record.points === null ? "None" : record.points}

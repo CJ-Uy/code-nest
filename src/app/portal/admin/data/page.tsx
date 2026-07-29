@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Download, Settings2 } from "lucide-react";
 import { notFound } from "next/navigation";
-import { AdminIntro } from "@/components/portal/admin-intro";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { getRepositories } from "@/db";
@@ -40,12 +39,14 @@ export default async function DataGroupPage({
 
 	return (
 		<div className="grid gap-5">
-			<div className="flex flex-wrap items-start justify-between gap-3">
-				<AdminIntro
-					title="Events & points"
-					whoFor="Review who attended each event and every point record"
-					effect="Use Add manual record for adjustments and non-scan entries"
-				/>
+			<header className="grid gap-4 border-b border-border pb-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+				<div>
+					<h1 className="font-heading text-3xl tracking-tight text-primary sm:text-4xl">Events & points</h1>
+					<p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+						Review attendance and point records for each school year. Add manual entries for adjustments and
+						non-scan activity.
+					</p>
+				</div>
 				<div className="flex flex-wrap gap-2">
 					<Button asChild variant="outline">
 						<Link href="/portal/admin/system/point-types">
@@ -66,9 +67,9 @@ export default async function DataGroupPage({
 						pointTypes={pickers.pointTypes}
 					/>
 				</div>
-			</div>
+			</header>
 
-			<form className="flex flex-wrap items-end gap-2" method="get">
+			<form className="flex flex-wrap items-end gap-2" method="get" aria-label="Choose dashboard school year">
 				<label className="grid min-w-56 gap-1 text-sm font-medium">
 					School year
 					<Select name="termId" defaultValue={selectedTerm?.id ?? ""}>

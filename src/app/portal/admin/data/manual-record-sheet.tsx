@@ -34,7 +34,7 @@ export function ManualRecordSheet({
 				</Button>
 			</SheetTrigger>
 			<SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
-				<SheetHeader className="border-b border-border px-5 py-4">
+				<SheetHeader className="sticky top-0 z-20 border-b border-border bg-background px-5 py-4">
 					<SheetTitle className="font-heading text-2xl">Add manual record</SheetTitle>
 					<SheetDescription>
 						Add points, deductions, or a non-scan attendance note for one or more members.
