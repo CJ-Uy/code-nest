@@ -3085,8 +3085,8 @@
     "semantic_hash": ""
   },
   "src/app/portal/calendar/[eventId]/event-awards-editor.tsx": {
-    "mtime": 1785257491.5739868,
-    "ast_hash": "d52d4a5e7311c8f8e262d547f75a2d30",
+    "mtime": 1785342951.153175,
+    "ast_hash": "42467d4c6302eca8106c7fef9b371c8f",
     "semantic_hash": ""
   },
   "src/app/portal/events/point-type-selection.test.ts": {
