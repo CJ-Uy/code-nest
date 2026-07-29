@@ -612,6 +612,16 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 						scannedBy: actor.memberId,
 						scannedAt,
 					}),
+					db.insert(auditLogs).values(
+						auditInsertValues(actor, {
+							action: "event:scan_attendance",
+							targetType: "event",
+							targetId: input.eventId,
+							category: "event",
+							detail: `member=${input.memberId}`,
+							targetMemberId: input.memberId,
+						}),
+					),
 				]);
 			} catch (error) {
 				// Two scanners hit the same badge at once: the loser reports the winner's row.
@@ -619,13 +629,6 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 				if (raced) return toScanResult(input.eventId, input.memberId, raced, true);
 				throw error;
 			}
-			await audit.record(actor, {
-				action: "event:scan_attendance",
-				targetType: "event",
-				targetId: input.eventId,
-				category: "event",
-				detail: `member=${input.memberId}`,
-			});
 			const inserted = await loadScanRow(db, input.eventId, input.memberId);
 			if (!inserted) throw new Error("Scan was recorded but could not be read back.");
 			return toScanResult(input.eventId, input.memberId, inserted, false);
@@ -652,14 +655,17 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 							eq(retentionRecords.source, "event_attendance"),
 						),
 					),
+				db.insert(auditLogs).values(
+					auditInsertValues(actor, {
+						action: "event:undo_scan",
+						targetType: "event",
+						targetId: input.eventId,
+						category: "event",
+						detail: `member=${input.memberId}`,
+						targetMemberId: input.memberId,
+					}),
+				),
 			]);
-			await audit.record(actor, {
-				action: "event:undo_scan",
-				targetType: "event",
-				targetId: input.eventId,
-				category: "event",
-				detail: `member=${input.memberId}`,
-			});
 			return { removed: true };
 		},
 

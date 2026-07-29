@@ -1,8 +1,9 @@
 import { env } from "cloudflare:test";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as schema from "@/db/schema";
+import { auditLogs } from "@/db/schema";
 import type { Actor } from "@/server/auth/permissions";
 import { createAuditRepository } from "./audit";
 import { createEventsRepository } from "./events";
@@ -281,6 +282,19 @@ describe("events repository on D1", () => {
 		const moved = await repo.getById(outsider, event.id);
 		expect(moved?.myRole).toBe("owner");
 		expect(await repo.resolveCapability(owner, { id: event.id, createdBy: outsider.memberId })).toBe("admin");
+	});
+
+	it("writes the scan audit row with the scanned member id", async () => {
+		const { db, repo } = makeRepos();
+		const event = await makeApprovedEvent();
+		await repo.addStaff(owner, event.id, scanner.memberId, "scanner");
+		await repo.recordScan(scanner, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
+
+		const rows = await db
+			.select()
+			.from(auditLogs)
+			.where(and(eq(auditLogs.action, "event:scan_attendance"), eq(auditLogs.targetMemberId, "mem_a")));
+		expect(rows).toHaveLength(1);
 	});
 
 	it("lists owner first and staff with roles and names", async () => {
