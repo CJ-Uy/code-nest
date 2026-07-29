@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, like, lte, or, sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import { createId } from "@/lib/ids";
 import { crsAttendance, crsEvents, eventRsvps, members, pointTypes, retentionRecords, terms } from "@/db/schema";
@@ -50,6 +50,7 @@ export type RetentionSummary = {
 };
 export type LeaderboardInput = { termId: string; limit?: number; offset?: number };
 export type PublicLeaderboardInput = LeaderboardInput & { pointTypeId: string };
+export type LedgerListOptions = { q?: string; limit?: number; offset?: number };
 export type LeaderboardRow = { memberId: string; fullName: string | null; name: string | null; totalPoints: number };
 
 export type MyHistorySummary = {
@@ -70,8 +71,8 @@ export type RetentionRepository = {
 	leaderboard(actor: Actor, input: LeaderboardInput): Promise<LeaderboardRow[]>;
 	publicLeaderboard(actor: Actor, input: PublicLeaderboardInput): Promise<LeaderboardRow[]>;
 	createManual(actor: Actor, input: CreateManualRetentionRecordInput): Promise<{ recordIds: string[] }>;
-	listForTerm(actor: Actor, termId: string): Promise<TermMasterRow[]>;
-	listMemberTermHistory(actor: Actor, memberId: string, termId: string): Promise<MemberHistoryRow[]>;
+	listForTerm(actor: Actor, termId: string, opts?: LedgerListOptions): Promise<TermMasterRow[]>;
+	listMemberTermHistory(actor: Actor, memberId: string, termId: string, opts?: LedgerListOptions): Promise<MemberHistoryRow[]>;
 	listForEvent(actor: Actor, eventId: string): Promise<EventRosterRow[]>;
 	myHistory(
 		actor: Actor,
@@ -113,6 +114,21 @@ const reportBaseColumns = {
 	reason: retentionRecords.reason,
 	source: retentionRecords.source,
 	recordedAt: retentionRecords.recordedAt,
+};
+
+const clampReportLimit = (limit: number) => Math.min(Math.max(1, Math.floor(limit)), 200);
+
+const lowerLike = (column: unknown, pattern: string) => like(sql`lower(${column})`, pattern);
+
+const ledgerSearch = (q: string) => {
+	const pattern = `%${q.trim().toLowerCase()}%`;
+	return or(
+		lowerLike(members.fullName, pattern),
+		lowerLike(members.name, pattern),
+		lowerLike(members.email, pattern),
+		lowerLike(crsEvents.title, pattern),
+		lowerLike(retentionRecords.reason, pattern),
+	);
 };
 
 const typedRecordColumns = {
@@ -270,32 +286,48 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 			return { recordIds: rows.map((row) => row.id) };
 		},
 
-		async listForTerm(actor, termId) {
+		async listForTerm(actor, termId, opts) {
 			if (!can(actor, "retention:record")) {
 				throw new Error("Not authorized to read retention reports.");
 			}
-			return db
+			const conditions = [eq(retentionRecords.termId, termId)];
+			if (opts?.q?.trim()) {
+				const search = ledgerSearch(opts.q);
+				if (search) conditions.push(search);
+			}
+			let query = db
 				.select(reportBaseColumns)
 				.from(retentionRecords)
 				.innerJoin(members, eq(members.id, retentionRecords.memberId))
 				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
 				.leftJoin(crsEvents, eq(crsEvents.id, retentionRecords.eventId))
-				.where(eq(retentionRecords.termId, termId))
-				.orderBy(asc(retentionRecords.recordedAt)) as Promise<TermMasterRow[]>;
+				.where(and(...conditions))
+				.orderBy(desc(retentionRecords.recordedAt), desc(retentionRecords.id));
+			if (opts?.limit !== undefined) query = query.limit(clampReportLimit(opts.limit));
+			if (opts?.offset !== undefined) query = query.offset(opts.offset);
+			return query as Promise<TermMasterRow[]>;
 		},
 
-		async listMemberTermHistory(actor, memberId, termId) {
+		async listMemberTermHistory(actor, memberId, termId, opts) {
 			if (!can(actor, "retention:record")) {
 				throw new Error("Not authorized to read retention reports.");
 			}
-			return db
+			const conditions = [eq(retentionRecords.memberId, memberId), eq(retentionRecords.termId, termId)];
+			if (opts?.q?.trim()) {
+				const search = ledgerSearch(opts.q);
+				if (search) conditions.push(search);
+			}
+			let query = db
 				.select(reportBaseColumns)
 				.from(retentionRecords)
 				.innerJoin(members, eq(members.id, retentionRecords.memberId))
 				.innerJoin(pointTypes, eq(pointTypes.id, retentionRecords.pointTypeId))
 				.leftJoin(crsEvents, eq(crsEvents.id, retentionRecords.eventId))
-				.where(and(eq(retentionRecords.memberId, memberId), eq(retentionRecords.termId, termId)))
-				.orderBy(asc(retentionRecords.recordedAt)) as Promise<MemberHistoryRow[]>;
+				.where(and(...conditions))
+				.orderBy(desc(retentionRecords.recordedAt), desc(retentionRecords.id));
+			if (opts?.limit !== undefined) query = query.limit(clampReportLimit(opts.limit));
+			if (opts?.offset !== undefined) query = query.offset(opts.offset);
+			return query as Promise<MemberHistoryRow[]>;
 		},
 
 		async listForEvent(actor, eventId) {

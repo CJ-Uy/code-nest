@@ -161,7 +161,6 @@ describe("retention repository on D1", () => {
 		]);
 	});
 
-
 	it("ranks members by total points for the term leaderboard", async () => {
 		const { repo } = makeRepo();
 		await insertRecord({ id: "ret_board_a", memberId: "mem_a", points: 5, reason: "x" });
@@ -208,10 +207,12 @@ describe("retention repository on D1", () => {
 
 		const termRows = await repo.listForTerm(retentionAdmin, "term_1");
 		expect(termRows).toHaveLength(2);
-		expect(termRows[0]).toMatchObject({ recordId: "ret_report_1", eventTitle: "Practice Night", points: 5 });
+		expect(termRows).toEqual(
+			expect.arrayContaining([expect.objectContaining({ recordId: "ret_report_1", eventTitle: "Practice Night", points: 5 })]),
+		);
 
 		const memberRows = await repo.listMemberTermHistory(retentionAdmin, "mem_a", "term_1");
-		expect(memberRows.map((row) => row.recordId)).toEqual(["ret_report_1", "ret_report_2"]);
+		expect(memberRows.map((row) => row.recordId)).toEqual(["ret_report_2", "ret_report_1"]);
 
 		const eventRows = await repo.listForEvent(retentionAdmin, "evt_report");
 		expect(eventRows).toEqual([
@@ -240,8 +241,8 @@ describe("retention repository on D1", () => {
 		const ownRows = await repo.listForMember(plainMember, { memberId: "mem_a", termId: "term_1" });
 		const history = await repo.myHistory(plainMember, { termId: "term_1" });
 
-		expect(termRows.map((row) => row.pointTypeLabel)).toEqual(["Retention", "Frontliner"]);
-		expect(memberRows.map((row) => row.pointTypeId)).toEqual(["pt_retention", "pt_frontliner"]);
+		expect(termRows.map((row) => row.pointTypeLabel)).toEqual(["Frontliner", "Retention"]);
+		expect(memberRows.map((row) => row.pointTypeId)).toEqual(["pt_frontliner", "pt_retention"]);
 		expect(ownRows).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ pointTypeLabel: "Retention" }),
@@ -249,6 +250,19 @@ describe("retention repository on D1", () => {
 			]),
 		);
 		expect(history.records.map((row) => row.pointTypeLabel).sort()).toEqual(["Frontliner", "Retention"]);
+	});
+
+	it("paginates the term ledger deterministically across tied timestamps", async () => {
+		const { repo } = makeRepo();
+		const at = Date.now();
+		await insertRecord({ id: "rec_1", points: 1, recordedAt: at });
+		await insertRecord({ id: "rec_2", points: 2, recordedAt: at });
+
+		const page1 = await repo.listForTerm(retentionAdmin, "term_1", { limit: 1, offset: 0 });
+		const page2 = await repo.listForTerm(retentionAdmin, "term_1", { limit: 1, offset: 1 });
+		expect(page1).toHaveLength(1);
+		expect(page2).toHaveLength(1);
+		expect(page1[0].recordId).not.toBe(page2[0].recordId);
 	});
 
 	it("rejects reporting reads from actors without retention scope", async () => {
