@@ -1,7 +1,7 @@
 # Events & Points — Admin Monitoring, Late Tracking, Retention De-specialization
 
 Date: 2026-07-30
-Status: Revision 1 (incorporates Codex review R1 + confirmed design brief)
+Status: Revision 2 (incorporates Codex reviews R1 + R2 and the confirmed design brief)
 Branch: `beta`
 Migrations: `0014` (additive, pre-deploy) and `0015` (destructive, post-deploy)
 
@@ -65,7 +65,8 @@ really the points page.
 | Lateness | Per-event `grace_minutes`, nullable, default 15. Status derived at read time, never stored. | Global-only setting; grace on `event_type_rules`. |
 | Member profile location | New route `/portal/admin/members/[id]`. | Tab inside Events & Points; side drawer from member names. |
 | Admin IA | Section with sibling routes (Overview / Events / Members / Scan log / Ledger). | Single page with drawers; pushing rosters onto `/portal/calendar/[eventId]`. |
-| Scan log source | `audit_logs`, extended with `target_member_id` and a filterable `list`. | Reading `crs_attendance` (shows current state, not history); a new `event_scan_events` table; soft-deleting attendance. |
+| Scan log source | `audit_logs`, extended with `target_member_id`, queried directly by `attendance-reports.ts`. | Reading `crs_attendance` (shows current state, not history); a new `event_scan_events` table; soft-deleting attendance; routing through `audit.list`. |
+| Shared-dev support for the admin section | Out of scope. It already throws today. | Building contract + internal handler + adapter entries for five new read models. |
 | Migration shape | Two migrations either side of the code deploy. | One migration containing both the add and the drop. |
 | Status encoding | Exception-first: on-time silent, late shows the delta, absent dims the row. | Traffic-light badges — the brand palette has no red/amber/green. |
 
@@ -99,6 +100,11 @@ WHERE category = 'event'
 ```
 
 Old code ignores unknown columns, so `0014` is safe to apply at any time.
+
+The physical columns are not enough. `src/db/schema.ts` is the only schema source, so the same change
+adds `targetMemberId` and both indexes to the `auditLogs` table definition (`schema.ts:523-542`) and
+`graceMinutes` to `crsEvents` (`schema.ts:190-218`). Without the Drizzle fields, `AuditInsert`,
+`auditInsertValues`, and every filter predicate cannot reference the columns at all.
 
 **Code deploy** — `schema.ts` removes `countsTowardRetention` from the Drizzle table definition and
 every read switches to `pt_retention`. The physical column still exists and is simply never
@@ -170,20 +176,51 @@ This replaces the validator at `src/app/portal/admin/system/point-types/input.ts
 
 ### Callers to update beyond the repositories
 
-- `src/db/seed/data.ts:42-44` — drop the flag from all three seeded types.
-- `src/db/contract/retention.ts` and `src/db/contract/events.ts` — any schema carrying the flag or
-  the leaderboard selection union.
-- `src/db/repositories/retention-unavailable.ts` — the shared-dev fallback adapter must match the
-  new `publicLeaderboard` signature.
-- `src/app/portal/admin/data/exports/page.tsx` — CSV export columns and headers if they name
-  retention-counting types.
-- `src/app/portal/admin/system/point-types/input.ts` + `input.test.ts` — the `retentionIds` field and
-  its tests disappear.
-- `src/db/additive-points-schema.integration.test.ts` and
-  `src/db/repositories/pointTypes.integration.test.ts` — assertions on the flag.
+Direct hits on the flag, all of which must change:
 
-The implementer runs `rg "countsTowardRetention|counts_toward_retention"` and confirms zero hits
-outside `0013`'s historical SQL before declaring §1 complete.
+- `src/db/seed/data.ts:42-44` — drop the flag from all three seeded types.
+- `src/db/seed/data.test.ts:23,:25` — assertions on the seeded flag.
+- `scripts/verify-points-upsert-local.ts:22` — a standalone script, easy to miss, outside `src`.
+- `src/app/portal/admin/system/point-types/actions.ts:19` — the retention-first ordering pass.
+- `src/app/portal/admin/system/point-types/input.ts` + `input.test.ts:12` — the `retentionIds` field,
+  the last-retention-type validator, and their tests.
+- `src/app/portal/events/page.tsx:44` — the comment describing aggregate semantics.
+- `src/app/portal/profile/point-breakdown.ts:24` and `point-breakdown.test.ts:5,:37,:47,:55`.
+- `src/app/portal/calendar/[eventId]/award-editor-input.test.ts:9`.
+- `src/db/repositories/overview.integration.test.ts:35`.
+- `src/db/repositories/events.integration.test.ts:63,:70,:122`.
+- `src/db/additive-points-schema.integration.test.ts:16` and
+  `src/db/repositories/pointTypes.integration.test.ts:12`.
+
+Surfaces that need a **manual check but contain no direct hit** — do not expect the search to find
+these:
+
+- `src/db/contract/retention.ts` and `src/db/contract/events.ts` carry neither the flag nor the
+  leaderboard union. `publicLeaderboard` is not in the contract at all; only `leaderboard` is
+  (`contract/retention.ts:94`). See the shared-mode note below.
+- `src/db/repositories/retention-unavailable.ts:11` maps `publicLeaderboard` to `unavailable`. Its
+  signature must still match the new one so the file typechecks.
+- `src/app/portal/admin/data/exports/page.tsx` exports **xlsx**, not CSV, and names no point type
+  directly. Verify its columns by reading it; the search will not flag it.
+
+**Completion gate.** The naive `rg "countsTowardRetention|counts_toward_retention"` can never return
+zero, because this spec document contains the terms. Scope it:
+
+```bash
+rg -n "countsTowardRetention|counts_toward_retention" src scripts
+```
+
+Expect zero hits. `drizzle/migrations/0013_additive_points_schema.sql` legitimately retains the term
+as historical SQL and is outside those paths.
+
+### Shared mode and the leaderboard
+
+`publicLeaderboard` has no contract operation, so in shared development it resolves to
+`retention-unavailable.ts`'s throwing stub, and `/portal/events` swallows the throw via
+`.catch(() => [])` (`page.tsx:57`) into an empty leaderboard. That is today's behaviour. Replacing
+the `PublicLeaderboardSelection` union with a plain `pointTypeId` neither fixes nor worsens it — the
+stub simply has to keep matching the signature. Adding a real contract operation is out of scope and
+logged under "Known debt".
 
 ### UI
 
@@ -282,6 +319,23 @@ Blank submits `NULL`. Validation: integer, `0 <= n <= 240`.
 new file, `src/db/repositories/attendance-reports.ts`, with one purpose: bounded read models for the
 admin console. It owns no writes.
 
+### Data access convention
+
+It takes a `Db` handle from `getDb()` directly and is **not** registered in
+`createDrizzleRepositories` / `createSharedRepositories`. This matches the code it replaces:
+`src/app/portal/admin/data/retention/data.ts:19,:80` and
+`src/app/portal/admin/data/exports/page.tsx:18` already call `getDb()` directly.
+
+The consequence is deliberate and worth stating plainly. `getDb()` **throws** in shared mode —
+`"Shared mode uses HTTP repositories, not a local Drizzle client."` (`src/db/client.ts:18`) — so the
+admin Events & Points section does not function in shared development **today**, before any of this
+work. Following the existing convention keeps that unchanged; it does not introduce a regression.
+
+Making the section work in shared dev would mean a contract module, an internal handler, a route
+export, adapter requests, repository wiring, and parity tests for five read models. That is a
+pre-existing gap, materially larger than this feature, and repairing it here would be scope
+expansion. It is logged under "Known debt" instead.
+
 | Function | Input | Returns |
 |---|---|---|
 | `termEventSummaries` | `actor, termId` | per event: `id, title, type, status, startsAt, place, graceMinutes, attendedCount, lateCount, absentCount, pointsIssued` |
@@ -357,17 +411,28 @@ present"; `undoScan` deletes from it, so a reversed scan leaves no trace there. 
 therefore reads `audit_logs`, filtered to `category = 'event'` and
 `action IN ('event:scan_attendance', 'event:undo_scan')`.
 
-This requires two changes to the audit layer, both in `0014` plus `audit.ts`:
+This requires one change to the audit layer, plus a query that bypasses it:
 
 1. **`audit_logs.target_member_id`** — the scanned member is currently buried in free-text `detail`
-   as `member=<id>`, which cannot be indexed or filtered. The new nullable column is populated going
-   forward and backfilled for existing rows. `detail` stays as-is for compatibility.
-   `AuditRecordInput` gains an optional `targetMemberId`.
-2. **`audit.list` becomes filterable** — today it accepts only `{ category, limit }`
-   (`src/db/repositories/audit.ts:66-79`), which cannot express any of the scan log's filters. It
-   gains `{ action?: string | string[], targetId?, targetMemberId?, actorMemberId?, since?, until?,
-   limit, offset }`. The existing single-argument call sites keep working; the
-   `/portal/admin/system/audit` Activity Log page gains real filtering for free.
+   as `member=<id>`, which cannot be indexed or filtered. The new nullable column is added to the
+   Drizzle definition in `schema.ts`, populated going forward via a new optional
+   `AuditRecordInput.targetMemberId` mapped in `auditInsertValues` (`audit.ts:46-57`), and backfilled
+   for existing rows by `0014`. `detail` stays as-is for compatibility.
+
+   The backfill's `substr(detail, 8)` is correct for the literal written at
+   `events.ts:627` — `` detail: `member=${input.memberId}` ``. `member=` is 7 characters and SQLite's
+   `substr` is 1-indexed, so position 8 is the first character of the id. The `action IN (...)` and
+   `detail LIKE 'member=%'` guards keep other `category = 'event'` actions with different detail
+   formats out of the update.
+
+2. **`scanLog` queries `auditLogs` directly**, in `attendance-reports.ts`, under its own
+   `retention:record` gate. It does **not** route through `audit.list`.
+
+   `audit.list` gates on `hasAnyAdminScope` (`audit.ts:67`), which is strictly broader than
+   `retention:record`. Reading the scan log through it would silently widen who can see attendance
+   history to every admin scope, including ones with no events remit. Querying directly keeps the
+   gate exactly as narrow as the rest of §3, and avoids changing a shared helper's signature to serve
+   one caller. `audit.list` and the `/portal/admin/system/audit` page are left untouched.
 
 **Atomicity fix.** `recordScan` and `undoScan` currently `await audit.record(...)` *after*
 `runAtomic(...)` (`src/db/repositories/events.ts:622`, `:655`), so a failure between the two loses
@@ -607,16 +672,39 @@ State and history come from different tables on purpose: `crs_attendance` for wh
 
 All tests run in the Vitest Workers pool: `.ts` only, no jsdom, no render tests, no `better-sqlite3`.
 
-| Area | File | Covers |
+**New tests**
+
+| File | Covers |
+|---|---|
+| `src/lib/attendance-status.test.ts` | boundaries, null grace, early scan, `minutesLate` flooring |
+| `src/db/repositories/attendance-reports.integration.test.ts` | permissions, late/absent counts, SQL-vs-TS agreement, search, limit cap, undone scan appears in the log |
+| sibling of `award-editor-input.test.ts` | grace parse + range validation |
+
+**Existing tests that break and must be rewritten.** Every one of these fails or stops typechecking
+under this spec; the implementer treats a green run without touching them as a signal something was
+missed.
+
+| File | Why it breaks | Action |
 |---|---|---|
-| Late rule | `src/lib/attendance-status.test.ts` | boundaries, null grace, early scan, `minutesLate` flooring |
-| Reports | `src/db/repositories/attendance-reports.integration.test.ts` | permissions, late/absent counts, SQL-vs-TS agreement, search, limit cap, undone scan in log |
-| Audit filters | `src/db/repositories/audit.integration.test.ts` | new filter args; `target_member_id` written and queryable |
-| Retention de-special | `src/db/repositories/retention.integration.test.ts` (extend) | totals use `pt_retention` only; leaderboard by arbitrary type |
-| Permanence | `src/db/repositories/pointTypes.integration.test.ts` (extend) | cannot retire, rename-key, or delete `pt_retention` |
-| Undo | `src/db/repositories/events.integration.test.ts` (extend) | scanner undoes own scan; cannot undo another's; audit row inside the atomic batch |
-| Nav | `src/app/portal/admin/nav.test.ts` (extend) | new pages gated on `retention:record` |
-| Grace input | sibling of `award-editor-input.test.ts` | grace parse + range validation |
+| `src/db/additive-points-schema.integration.test.ts:16` | SQL fixture names the dropped column | Rewrite fixture; fails only after `0015` |
+| `src/db/seed/data.test.ts:23,:25` | asserts the seeded flag | Drop the assertions |
+| `src/db/repositories/pointTypes.integration.test.ts:12` | flag in fixtures + the last-retention-type guard | Rewrite; add the permanence cases (cannot retire, rename-key, or delete `pt_retention`) |
+| `src/db/repositories/overview.integration.test.ts:35` | flag in fixture | Rewrite fixture |
+| `src/db/repositories/retention.integration.test.ts:100,:126,:152` | calls shaped `{ kind: ... }` stop typechecking; the multi-type aggregate case becomes semantically invalid | Replace union calls with `pointTypeId`; **delete** the aggregate-counting cases; add "totals use `pt_retention` only" |
+| `src/db/repositories/events.integration.test.ts:63,:70,:122` | flag in seeded point types | Rewrite fixtures |
+| `src/app/portal/profile/point-breakdown.test.ts:5,:37,:47,:55` | flag-derived `retention` boolean | Rewrite against `RETENTION_POINT_TYPE_ID` |
+| `src/app/portal/admin/system/point-types/input.test.ts:12` | `retentionIds` field and the last-retention-type validator | Delete those cases |
+| `src/app/portal/calendar/[eventId]/award-editor-input.test.ts:9` | flag in fixture | Rewrite fixture |
+| `src/app/portal/admin/nav.test.ts` | new pages | Extend for `retention:record` gating on each |
+
+**Deliberately not changed.** `events.integration.test.ts:567` asserts a scanner cannot undo — it
+remains valid and must keep passing, because the scanner there attempts to undo the *owner's* scan,
+not their own. The §6 widening only covers rows where `scanned_by = actor.memberId`. Three new cases
+are added beside it (scanner undoes own; scanner cannot undo another's; admin undoes either).
+
+No existing test asserts on `audit.list`, which is why leaving it untouched (§4) costs nothing.
+
+All proposed tests satisfy the Workers pool constraints in `vitest.config.mts:33`.
 
 ## Pre-flight
 
@@ -646,6 +734,12 @@ Order: `0014` → `pnpm db:migrate:dev` → `pnpm deploy:dev` → verify → `00
 
 - `retention_records` and `retention.ts` keep names describing one point type while holding all of
   them. Wide mechanical rename; deferred until something else forces a touch.
+- The admin Events & Points section does not work in shared development mode, and this spec does not
+  change that. `getDb()` throws there and the existing pages already call it directly. Fixing it
+  means a contract module, internal handler, route export, adapter requests, repository wiring, and
+  parity tests in `src/db/shared-parity.integration.test.ts` for five read models.
+- `publicLeaderboard` has no contract operation, so the member leaderboard renders empty in shared
+  dev. Pre-existing; unchanged by this spec.
 - Undo remains unavailable in shared dev mode. Enabling it needs a `DELETE` export on
   `src/app/internal/events/route.ts` plus a contract entry.
 - `audit_logs.detail` keeps its `member=<id>` free text alongside the new `target_member_id`.
@@ -658,9 +752,10 @@ Order: `0014` → `pnpm db:migrate:dev` → `pnpm deploy:dev` → verify → `00
 
 One spec, because late tracking feeds §3, §4, §5, and §7. Implementation phases:
 
-1. `0014` + `src/lib/point-types.ts` + `attendance-status.ts` + tests
-2. Audit layer: `target_member_id`, filterable `list`, atomicity fix + tests
-3. Retention de-specialization: repos, permanence guard, all callers, point-types UI, member retitle
+1. `0014` + `schema.ts` fields + `src/lib/point-types.ts` + `attendance-status.ts` + tests
+2. Audit layer: `targetMemberId` on `AuditRecordInput` and `auditInsertValues`, atomicity fix + tests
+3. Retention de-specialization: repos, permanence guard, every caller in §1, the ten breaking test
+   files, point-types UI, member retitle. Ends when the scoped `rg` gate returns zero.
 4. `attendance-reports.ts` + tests
 5. `AttendanceStatusCell` + admin routes: Overview, Events, Event roster
 6. Admin routes: Members, Scan log, Ledger + nav registration
@@ -668,7 +763,8 @@ One spec, because late tracking feeds §3, §4, §5, and §7. Implementation pha
 8. Scanner panel: placement, multi-event, undo, shared-dev gating + tests
 9. `0015` after a verified deploy
 
-Phases 1-3 are independently shippable. Phases 5-7 depend on 4. Phase 8 depends only on 2.
+Phases 1-3 are independently shippable. Phases 5-7 depend on 4. Phase 8 depends only on 2. Phase 3
+is the largest by file count and carries all the breakage; it is worth its own review before merge.
 
 ## Review log
 
@@ -685,7 +781,28 @@ independently verified against source before being accepted; one was accepted wi
 | 3 | Undo's claimed control cannot work: the scan log reads live attendance while undo deletes that row; shared Worker denies undo and exposes no `DELETE` handler | Yes, with a correction — the deny-branch *does* exist at `src/server/internal/events.ts:145`, but `src/app/internal/events/route.ts` exports no `DELETE`, making it unreachable dead code | Accepted, expanded. Scan log re-sourced to `audit_logs` (requiring `target_member_id` + filterable `list` + an atomicity fix); shared-dev undo gated in the UI and the dead branch deleted. |
 
 Round 1 did not reach caller coverage, test coverage, exports, or the shared-dev contract surface.
-Round 2 is scoped to exactly that gap.
+Round 2 was scoped to exactly that gap.
+
+### Round 2 — Codex bounded review (complete)
+
+Four scopes, all covered. Five findings, all verified against source before disposition.
+
+| # | Finding | Verified | Disposition |
+|---|---|---|---|
+| 1 | No `attendanceReports` in shared wiring; five new read models unreachable in shared dev | Yes — `src/db/index.ts:30` returns `createSharedRepositories()`, which also installs an unavailable audit repo | **Fact accepted, fix rejected.** `getDb()` already throws in shared mode (`client.ts:18`) and the pages this replaces already call it directly, so the section is broken there *today*. Building the contract surface repairs a pre-existing gap larger than this feature. Convention documented in §3; gap moved to Known debt. |
+| 2 | `0014` adds the physical `target_member_id` but never the Drizzle field, so nothing can reference it | Yes — `schema.ts:523` has no such field | **Accepted.** §1 now requires the `schema.ts` fields and the `auditInsertValues` mapping explicitly. |
+| 3 | Spec claimed the retention contract carries `PublicLeaderboardSelection`; it exposes no `publicLeaderboard` at all | Yes — `contract/retention.ts:94` has `leaderboard` only; `retention-unavailable.ts:11` stubs the rest | **Correction accepted, fix rejected.** The false claim is replaced with the real shared-mode behaviour. Adding a contract operation is the same scope expansion as #1. |
+| 4 | Testing table omitted most of the tests that actually break | Yes — ten files | **Accepted.** The table is split into new tests and a breaking-test inventory with per-file actions, including deleting the now-invalid multi-type aggregate cases and preserving the still-valid undo assertion at `events.integration.test.ts:567`. |
+| 5 | Caller list incomplete (notably `scripts/verify-points-upsert-local.ts`); contracts and exports listed as hits contain none; exports are xlsx not CSV; the `rg` completion gate can never reach zero because the spec itself contains the term | Yes on every point | **Accepted.** §1 now separates direct hits from manual-check surfaces and scopes the gate to `rg ... src scripts`. |
+
+### Changes made in revision 2 beyond the review
+
+Revision 1's filterable `audit.list` is withdrawn. `scanLog` queries `auditLogs` directly under
+`retention:record`. `audit.list` gates on `hasAnyAdminScope`, which is strictly broader, so routing
+the scan log through it would have widened read access to every admin scope. Querying directly is
+both narrower and a smaller diff, and leaves `audit.list` and the Activity Log page untouched. The
+"Activity Log gains filtering for free" benefit claimed in revision 1 was an unrequested extra and is
+dropped under YAGNI.
 
 ### Design brief
 
