@@ -197,6 +197,7 @@ export const crsEvents = sqliteTable(
 		points: integer("points"),
 		place: text("place").notNull(),
 		capacity: integer("capacity"),
+		graceMinutes: integer("grace_minutes"),
 		startsAt: integer("starts_at", { mode: "timestamp_ms" }).notNull(),
 		endsAt: integer("ends_at", { mode: "timestamp_ms" }),
 		description: text("description").notNull(),
@@ -532,12 +533,15 @@ export const auditLogs = sqliteTable(
 		targetType: text("target_type").notNull(),
 		targetId: text("target_id").notNull(),
 		detail: text("detail"),
+		targetMemberId: text("target_member_id").references(() => members.id, { onDelete: "set null" }),
 		category: text("category").$type<AuditCategory>().notNull(),
 		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 	},
 	(table) => [
 		index("audit_logs_category_created_idx").on(table.category, table.createdAt),
 		index("audit_logs_actor_member_id_idx").on(table.actorMemberId),
+		index("audit_logs_target_member_created_idx").on(table.targetMemberId, table.createdAt),
+		index("audit_logs_action_created_idx").on(table.action, table.createdAt),
 	],
 );
 
