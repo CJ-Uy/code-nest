@@ -11,6 +11,14 @@ describe("admin nav registry", () => {
 		expect(adminGroups.map((g) => g.segment)).toEqual(["members", "content", "data", "system"]);
 		const members = adminGroups.find((g) => g.segment === "members")!;
 		expect(members.pages.map((p) => p.href)).toEqual(["/portal/admin/members/list", "/portal/admin/members/roles"]);
+		const eventsAndPoints = adminGroups.find((g) => g.segment === "data")!;
+		expect(eventsAndPoints.label).toBe("Events & Points");
+		expect(eventsAndPoints.pages.map((p) => p.label)).toEqual([
+			"Event Type Rules",
+			"Point Types",
+			"Log Retention",
+			"Data Exports",
+		]);
 	});
 
 	it("super sees every group; link role sees only Short Links + always-visible pages", () => {
@@ -26,7 +34,11 @@ describe("admin nav registry", () => {
 		const linkPages = visibleGroups(linkOnly).flatMap((group) => group.pages.map((page) => page.href));
 		expect(retentionPages).toContain("/portal/admin/system/point-types");
 		expect(linkPages).not.toContain("/portal/admin/system/point-types");
-		expect(crumbFor("/portal/admin/system/point-types").at(-1)).toEqual({ label: "Point Types" });
+		expect(crumbFor("/portal/admin/system/point-types")).toEqual([
+			{ label: "Admin", href: "/portal/admin" },
+			{ label: "Events & Points", href: "/portal/admin/data" },
+			{ label: "Point Types" },
+		]);
 	});
 
 	it("builds a breadcrumb trail with clickable ancestors", () => {

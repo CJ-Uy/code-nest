@@ -11,11 +11,11 @@ export type AdminPage = {
 };
 export type AdminGroup = { segment: string; label: string; href: string; pages: AdminPage[] };
 
-const G = (segment: string, label: string, pages: Omit<AdminPage, "href">[]): AdminGroup => ({
+const G = (segment: string, label: string, pages: (Omit<AdminPage, "href"> & { href?: string })[]): AdminGroup => ({
 	segment,
 	label,
 	href: `/portal/admin/${segment}`,
-	pages: pages.map((p) => ({ ...p, href: `/portal/admin/${segment}/${p.segment}` })),
+	pages: pages.map((p) => ({ ...p, href: p.href ?? `/portal/admin/${segment}/${p.segment}` })),
 });
 
 export const adminGroups: AdminGroup[] = [
@@ -40,23 +40,25 @@ export const adminGroups: AdminGroup[] = [
 		},
 		{ segment: "links", label: "Short Links", description: "Moderate member short links.", permission: "link:moderate" },
 	]),
-	G("data", "Data", [
-		{ segment: "retention", label: "Log Retention", description: "Record retention/attendance records.", permission: "retention:record" },
-		{ segment: "exports", label: "Data Exports", description: "CSV exports of retention data.", permission: "retention:record" },
-	]),
-	G("system", "System", [
+	G("data", "Events & Points", [
 		{
 			segment: "event-types",
 			label: "Event Type Rules",
 			description: "Which permission each event type requires to create.",
 			permission: "role:assign",
+			href: "/portal/admin/system/event-types",
 		},
 		{
 			segment: "point-types",
 			label: "Point Types",
 			description: "Manage point labels, retention counting, availability, and display order.",
 			permission: "retention:configure",
+			href: "/portal/admin/system/point-types",
 		},
+		{ segment: "retention", label: "Log Retention", description: "Record retention/attendance records.", permission: "retention:record" },
+		{ segment: "exports", label: "Data Exports", description: "CSV exports of retention data.", permission: "retention:record" },
+	]),
+	G("system", "System", [
 		{ segment: "nav-pins", label: "Pinned Nav Links", description: "Links shown in every member's top nav.", permission: "nav:configure" },
 		{
 			segment: "quick-links",
@@ -79,7 +81,9 @@ export function visibleGroups(actor: Actor): AdminGroup[] {
 export function crumbFor(pathname: string): { label: string; href?: string }[] {
 	const trail: { label: string; href?: string }[] = [{ label: "Admin", href: "/portal/admin" }];
 	const clean = pathname.split("?")[0] ?? "";
-	const group = adminGroups.find((g) => clean.startsWith(`${g.href}/`) || clean === g.href);
+	const group =
+		adminGroups.find((g) => g.pages.some((p) => clean === p.href || clean.startsWith(`${p.href}/`))) ??
+		adminGroups.find((g) => clean === g.href);
 	if (!group) return trail;
 	const onGroupIndex = clean === group.href;
 	trail.push({ label: group.label, href: onGroupIndex ? undefined : group.href });

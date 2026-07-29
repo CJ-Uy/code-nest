@@ -17751,7 +17751,7 @@
       "label": "pageVisible()",
       "file_type": "code",
       "source_file": "src/app/portal/admin/nav.ts",
-      "source_location": "L71",
+      "source_location": "L73",
       "_origin": "ast",
       "id": "admin_nav_pagevisible",
       "community": 245,
@@ -17761,7 +17761,7 @@
       "label": "visibleGroups()",
       "file_type": "code",
       "source_file": "src/app/portal/admin/nav.ts",
-      "source_location": "L73",
+      "source_location": "L75",
       "_origin": "ast",
       "id": "admin_nav_visiblegroups",
       "community": 8,
@@ -17771,7 +17771,7 @@
       "label": "crumbFor()",
       "file_type": "code",
       "source_file": "src/app/portal/admin/nav.ts",
-      "source_location": "L79",
+      "source_location": "L81",
       "_origin": "ast",
       "id": "admin_nav_crumbfor",
       "community": 4,
@@ -17781,7 +17781,7 @@
       "label": "adminHeading()",
       "file_type": "code",
       "source_file": "src/app/portal/admin/nav.ts",
-      "source_location": "L95",
+      "source_location": "L99",
       "_origin": "ast",
       "id": "admin_nav_adminheading",
       "community": 4,
@@ -66409,9 +66409,9 @@
       "source_file": "e2e/member-add.spec.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "e2e_member_add_spec",
-      "target": "fixtures_auth",
-      "confidence_score": 1.0
+      "target": "fixtures_auth"
     },
     {
       "relation": "imports_from",
@@ -66483,9 +66483,9 @@
       "source_file": "e2e/member-add.spec.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "e2e_member_add_spec",
-      "target": "fixtures_auth_signinas",
-      "confidence_score": 1.0
+      "target": "fixtures_auth_signinas"
     },
     {
       "relation": "imports",
@@ -138897,5 +138897,5 @@
       "source_file": "public/next.svg"
     }
   ],
-  "built_at_commit": "627e5263120a00227cf45e25ac71f4f45376f9df"
+  "built_at_commit": "8f5970daba1639340463beeb80c9c4462ef68dd7"
 }
