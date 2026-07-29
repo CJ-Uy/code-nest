@@ -11,5 +11,5 @@ export default async function PointTypesAdminPage() {
 	if (!can(actor, "retention:configure")) redirect("/portal/admin");
 	const repositories = await getRepositories();
 	const rows = await repositories.pointTypes.list();
-	return <PointTypesManager rows={rows} />;
+	return <PointTypesManager key={JSON.stringify(rows)} rows={rows} />;
 }

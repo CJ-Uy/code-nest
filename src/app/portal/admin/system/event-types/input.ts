@@ -21,3 +21,32 @@ export function parseEventTypeUpsertInput(formData: FormData): EventTypeUpsertIn
 		position: positionSchema.parse(formData.get("position") ?? 0),
 	};
 }
+
+export function parseEventTypeRows(formData: FormData): EventTypeUpsertInput[] {
+	const types = z.array(eventTypeKeySchema).parse(formData.getAll("types"));
+	const labels = z.array(z.string()).parse(formData.getAll("labels"));
+	const colours = z.array(z.string()).parse(formData.getAll("colours"));
+	const requiredPermissions = z.array(z.string()).parse(formData.getAll("requiredPermissions"));
+	const activeTypes = new Set(z.array(eventTypeKeySchema).parse(formData.getAll("activeTypes")));
+
+	if (
+		new Set(types).size !== types.length ||
+		types.length !== labels.length ||
+		types.length !== colours.length ||
+		types.length !== requiredPermissions.length ||
+		[...activeTypes].some((type) => !types.includes(type))
+	) {
+		throw new Error("Event type form is incomplete.");
+	}
+
+	return types.map((type, position) => {
+		const row = new FormData();
+		row.set("type", type);
+		row.set("label", labels[position]);
+		row.set("colour", colours[position]);
+		row.set("requiredPermission", requiredPermissions[position]);
+		row.set("position", String(position));
+		if (activeTypes.has(type)) row.set("active", "on");
+		return parseEventTypeUpsertInput(row);
+	});
+}

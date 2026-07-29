@@ -26,5 +26,5 @@ export default async function EventTypesAdminPage() {
 			</Card>
 		);
 	}
-	return <EventTypeRulesManager rows={typeLoad.rows} />;
+	return <EventTypeRulesManager key={JSON.stringify(typeLoad.rows)} rows={typeLoad.rows} />;
 }
