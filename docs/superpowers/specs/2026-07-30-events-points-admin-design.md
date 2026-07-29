@@ -161,15 +161,21 @@ last-retention-type guard at `:88-97`, which the permanence rule below replaces.
 
 ### Permanence
 
-`pointTypes.update` and the bulk save action reject any mutation that would:
+One guard: `upsertType` rejects setting `active = false` on `pt_retention`. Error:
+`"The Retention point type cannot be retired."`
 
-- set `active = false` on `pt_retention`
-- change `pt_retention`'s `key`
-- delete `pt_retention`
+The other two-thirds of "always there and permanent" are already guaranteed and need no new code:
 
-`label` and `position` stay editable. Error: `"The Retention point type cannot be retired or renamed."`
+- **Key changes** are blocked for every type at `pointTypes.ts:86`
+  (`"Point type keys cannot be changed."`).
+- **Deletion** is impossible — `PointTypesRepository` exposes only `list` and `upsertType`
+  (`pointTypes.ts:32-35`). There is no delete path to guard.
 
-Enforced in the repository, not only the action, so the internal Worker path cannot bypass it.
+`label` and `position` stay editable. Enforced in the repository, not only the action, so no other
+caller can bypass it.
+
+This guard replaces the `exists(...)` sub-select at `pointTypes.ts:88-101`, which enforced the old
+"at least one active type counts toward retention" rule and dies with the flag.
 
 This replaces the validator at `src/app/portal/admin/system/point-types/input.ts:50`
 ("At least one active point type must count toward retention"), meaningless once the flag is gone.
@@ -778,7 +784,7 @@ independently verified against source before being accepted; one was accepted wi
 |---|---|---|---|
 | 1 | Deploy order incompatible in both directions | Yes — `CLAUDE.md` fixes migrate-then-deploy, so a `DROP COLUMN` lands under running old code | Accepted. Split into `0014` (additive, pre-deploy) and `0015` (destructive, post-deploy). |
 | 2 | `RsvpState` is `going`, not `yes` | Yes — `src/db/schema.ts:10` | Accepted. §2 absent definition corrected. |
-| 3 | Undo's claimed control cannot work: the scan log reads live attendance while undo deletes that row; shared Worker denies undo and exposes no `DELETE` handler | Yes, with a correction — the deny-branch *does* exist at `src/server/internal/events.ts:145`, but `src/app/internal/events/route.ts` exports no `DELETE`, making it unreachable dead code | Accepted, expanded. Scan log re-sourced to `audit_logs` (requiring `target_member_id` + filterable `list` + an atomicity fix); shared-dev undo gated in the UI and the dead branch deleted. |
+| 3 | Undo's claimed control cannot work: the scan log reads live attendance while undo deletes that row; shared Worker denies undo and exposes no `DELETE` handler | Yes, with a correction — the deny-branch *does* exist at `src/server/internal/events.ts:145`, but `src/app/internal/events/route.ts` exports no `DELETE`, making it unreachable dead code | Accepted, expanded. Scan log re-sourced to `audit_logs` (requiring `target_member_id` + an atomicity fix); shared-dev undo gated in the UI and the dead branch deleted. *Revision 1 also made `audit.list` filterable; revision 2 withdrew that — see below.* |
 
 Round 1 did not reach caller coverage, test coverage, exports, or the shared-dev contract surface.
 Round 2 was scoped to exactly that gap.
