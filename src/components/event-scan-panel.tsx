@@ -1,169 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { Camera } from "lucide-react";
+import { ScanLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { EventScanOverlay } from "@/components/event-scan-overlay";
-import { classifyScan } from "@/lib/scan-feedback";
-
-type ScanResult = { memberId: string; alreadyPresent: boolean };
-type FoundMember = {
-	memberId: string;
-	fullName: string | null;
-	name: string | null;
-	email: string;
-	alreadyScanned: boolean;
-};
 
 export function EventScanPanel({
 	eventId,
+	eventTitle,
 	termId,
-	canUndo,
 }: {
 	eventId: string;
+	eventTitle: string;
 	termId: string;
-	canUndo: boolean;
 }) {
-	const [scanInput, setScanInput] = useState("");
-	const [log, setLog] = useState<string[]>([]);
-	const [query, setQuery] = useState("");
-	const [results, setResults] = useState<FoundMember[]>([]);
-	const [error, setError] = useState<string | null>(null);
 	const [overlayOpen, setOverlayOpen] = useState(false);
-
-	async function postScan(body: { memberId: string } | { token: string }, displayId: string) {
-		setError(null);
-		const response = await fetch(`/api/events/${eventId}/scan`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ ...body, termId }),
-		});
-		if (!response.ok) {
-			const errorBody = (await response.json().catch(() => null)) as { error?: string } | null;
-			setError(errorBody?.error ?? "Scan failed. Try the manual search.");
-			return;
-		}
-		const result = (await response.json()) as ScanResult;
-		setLog((prev) => [`${result.alreadyPresent ? "Already present" : "Marked present"}: ${displayId}`, ...prev]);
-	}
-
-	async function scanMember(memberId: string) {
-		await postScan({ memberId }, memberId);
-	}
-
-	async function submitScan() {
-		const raw = scanInput.trim();
-		// Same classifier the overlay uses, so the manual form and the camera agree on what's valid.
-		const classified = classifyScan(raw);
-		if (classified.kind === "invalid") {
-			setError("That code is not a CODE member or check-in code.");
-			return;
-		}
-		setScanInput("");
-		if (classified.kind === "token") {
-			await postScan({ token: classified.token }, "check-in code");
-			return;
-		}
-		await scanMember(classified.memberId);
-	}
-
-	async function runSearch() {
-		setError(null);
-		const response = await fetch(`/api/events/${eventId}/members?q=${encodeURIComponent(query)}`);
-		if (!response.ok) {
-			setError("Search failed.");
-			return;
-		}
-		const data = (await response.json()) as { members: FoundMember[] };
-		setResults(data.members);
-	}
 
 	return (
 		<Card>
-			<CardHeader>
-				<CardTitle>Scan attendance</CardTitle>
-				<CardDescription>Scan or paste a member code, or search by name or email if scanning fails.</CardDescription>
-			</CardHeader>
-			<CardContent className="flex flex-col gap-6">
+			<CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div className="flex items-start gap-3">
+					<ScanLine className="mt-0.5 size-5 shrink-0 text-accent" />
+					<div>
+						<p className="font-medium">You’re the scanner for {eventTitle} right now.</p>
+						<p className="text-sm text-muted-foreground">Check-in is open for this event.</p>
+					</div>
+				</div>
 				<Button type="button" onClick={() => setOverlayOpen(true)}>
-					<Camera className="size-4" />
-					Scan attendance
+					<ScanLine className="size-4" />
+					Open scanner
 				</Button>
 				{overlayOpen ? (
-					<EventScanOverlay eventId={eventId} termId={termId} canUndo={canUndo} onClose={() => setOverlayOpen(false)} />
+					<EventScanOverlay eventId={eventId} termId={termId} canUndo={false} onClose={() => setOverlayOpen(false)} />
 				) : null}
-
-				<form
-					className="flex flex-col gap-2 sm:flex-row"
-					onSubmit={(event) => {
-						event.preventDefault();
-						void submitScan();
-					}}
-				>
-					<Input
-						value={scanInput}
-						onChange={(event) => setScanInput(event.target.value)}
-						placeholder="Member code (code:m:...)"
-						aria-label="Member code"
-					/>
-					<Button type="submit" className="sm:shrink-0">
-						Mark present
-					</Button>
-				</form>
-
-				<div className="flex flex-col gap-2">
-					<form
-						className="flex flex-col gap-2 sm:flex-row"
-						onSubmit={(event) => {
-							event.preventDefault();
-							void runSearch();
-						}}
-					>
-						<Input
-							value={query}
-							onChange={(event) => setQuery(event.target.value)}
-							placeholder="Search name or email"
-							aria-label="Search members"
-						/>
-						<Button type="submit" variant="secondary">
-							Search
-						</Button>
-					</form>
-					<ul className="flex flex-col gap-1">
-						{results.map((member) => (
-							<li
-								key={member.memberId}
-								className="flex flex-col items-start justify-between gap-2 rounded-md border px-3 py-2 sm:flex-row sm:items-center"
-							>
-								<span className="min-w-0 break-words text-sm">
-									{member.fullName ?? member.name ?? member.email}
-									{member.alreadyScanned ? <span className="ml-2 text-xs text-muted-foreground">present</span> : null}
-								</span>
-								<Button
-									size="sm"
-									variant="outline"
-									disabled={member.alreadyScanned}
-									onClick={() => void scanMember(member.memberId)}
-								>
-									Mark present
-								</Button>
-							</li>
-						))}
-					</ul>
-				</div>
-
-				{error ? <p className="text-sm text-destructive">{error}</p> : null}
-
-				<div className="flex flex-col gap-1">
-					<p className="text-sm font-medium">Recent scans</p>
-					<ul className="flex flex-col gap-1 text-sm text-muted-foreground">
-						{log.map((line, index) => (
-							<li key={`${line}-${index}`}>{line}</li>
-						))}
-					</ul>
-				</div>
 			</CardContent>
 		</Card>
 	);

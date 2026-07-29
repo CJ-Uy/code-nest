@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard, RetentionProgress } from "@/components/portal/overview-metrics";
 import { getActor } from "@/server/auth/actor";
+import { CHECKIN_LEAD_MS } from "@/db/repositories/events";
 import type { OverviewSummary } from "@/db/repositories/overview";
 
 export const dynamic = "force-dynamic";
@@ -33,8 +34,13 @@ export default async function PortalOverviewPage() {
 		repositories.events.listPublished(actor, { limit: 100 }).catch(() => []),
 		repositories.retention.listTerms(actor).catch(() => []),
 	]);
+	const now = new Date();
 	const scanEvent = scanEvents.find(
-		(event) => event.canModerate || event.myRole === "owner" || event.myRole === "admin" || event.myRole === "scanner",
+		(event) =>
+			event.myRole === "scanner" &&
+			event.endsAt !== null &&
+			now.getTime() >= event.startsAt.getTime() - CHECKIN_LEAD_MS &&
+			now.getTime() <= event.endsAt.getTime(),
 	);
 	const currentTerm = terms.find((term) => term.isCurrent);
 
@@ -137,8 +143,8 @@ export default async function PortalOverviewPage() {
 			{scanEvent && currentTerm ? (
 				<EventScanPanel
 					eventId={scanEvent.id}
+					eventTitle={scanEvent.title}
 					termId={currentTerm.id}
-					canUndo={scanEvent.myRole === "owner" || scanEvent.myRole === "admin" || scanEvent.canModerate}
 				/>
 			) : null}
 		</div>

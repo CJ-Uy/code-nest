@@ -345,8 +345,8 @@
     "semantic_hash": ""
   },
   "src/app/portal/page.tsx": {
-    "mtime": 1785092976.2635744,
-    "ast_hash": "63c8bcfc3d7cc0708ca167e5cf524b62",
+    "mtime": 1785342714.0386305,
+    "ast_hash": "cfd64debdcef55f5fe1c06982b945678",
     "semantic_hash": ""
   },
   "src/app/portal/profile/actions.ts": {
@@ -2700,8 +2700,8 @@
     "semantic_hash": ""
   },
   "src/components/event-scan-panel.tsx": {
-    "mtime": 1785093007.3461254,
-    "ast_hash": "514a8cf63555dd28906b4aab69d90ce6",
+    "mtime": 1785342644.126784,
+    "ast_hash": "6bf4cd4ca4775337ce7de7279838813e",
     "semantic_hash": ""
   },
   ".remember/today-2026-07-26.done.md": {
