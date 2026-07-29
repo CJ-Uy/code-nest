@@ -1,9 +1,9 @@
 # Events & Points — Admin Monitoring, Late Tracking, Retention De-specialization
 
 Date: 2026-07-30
-Status: Draft (awaiting review)
+Status: Revision 1 (incorporates Codex review R1 + confirmed design brief)
 Branch: `beta`
-Migration: `0014`
+Migrations: `0014` (additive, pre-deploy) and `0015` (destructive, post-deploy)
 
 ## Problem
 
@@ -28,6 +28,10 @@ render was "three big tables." Fixing the IA without fixing the loading just mov
 (`src/app/portal/page.tsx:143`), below metrics, announcements, and library. A scanner standing at a
 door has to scroll past everything to find it.
 
+**Scan accountability.** `crs_attendance.scanned_by` is recorded and `event:scan_attendance` /
+`event:undo_scan` are audited, but neither is displayed anywhere. There is no way to answer "who let
+this person in" without SQL.
+
 **Retention.** Retention is modelled as a cross-cutting property (`point_types.counts_toward_retention`)
 rather than a point type. The consequences leak everywhere: a discriminated union in the leaderboard
 repo, a save-time validator that refuses any configuration without an active retention-counting type,
@@ -41,15 +45,17 @@ really the points page.
 3. Admin can pivot attendance three ways: by event, by member, by scan.
 4. Scanners are told they can scan, at the top of their dashboard, and can undo their own mistakes.
 5. Every admin query is bounded — filtered and paginated server-side.
+6. Undoing a scan leaves a visible trace.
 
 ## Non-goals
 
 - Renaming the `retention_records` table or `retention.ts` repository. The table is the generic
   points ledger and the name is wrong, but renaming touches every import for zero functional gain.
-  User-facing copy carries the fix instead. Logged as debt in "Known debt" below.
+  User-facing copy carries the fix instead. Logged under "Known debt".
 - Reworking the member-facing events/calendar UI beyond the retitle in §1.
 - Attendance for non-members / guests.
 - Notifications, push, or email for scanner activation. Dashboard placement only.
+- Enabling undo in shared development mode. See §6.
 
 ## Locked decisions
 
@@ -59,29 +65,60 @@ really the points page.
 | Lateness | Per-event `grace_minutes`, nullable, default 15. Status derived at read time, never stored. | Global-only setting; grace on `event_type_rules`. |
 | Member profile location | New route `/portal/admin/members/[id]`. | Tab inside Events & Points; side drawer from member names. |
 | Admin IA | Section with sibling routes (Overview / Events / Members / Scan log / Ledger). | Single page with drawers; pushing rosters onto `/portal/calendar/[eventId]`. |
+| Scan log source | `audit_logs`, extended with `target_member_id` and a filterable `list`. | Reading `crs_attendance` (shows current state, not history); a new `event_scan_events` table; soft-deleting attendance. |
+| Migration shape | Two migrations either side of the code deploy. | One migration containing both the add and the drop. |
+| Status encoding | Exception-first: on-time silent, late shows the delta, absent dims the row. | Traffic-light badges — the brand palette has no red/amber/green. |
 
 ---
 
 ## §1 — Retention de-specialization
 
-### Schema
+### Migration shape
 
-Migration `0014`:
+The naive single migration is unsafe in both directions. Deploy order is
+`pnpm db:migrate:dev` then `pnpm deploy:dev` (per `CLAUDE.md`), so a migration lands while the
+previous code is still serving. Dropping `counts_toward_retention` in that window breaks the running
+code, which still selects it.
+
+Split either side of the deploy:
+
+**`0014` — additive only, safe before the deploy:**
+
+```sql
+ALTER TABLE crs_events ADD COLUMN grace_minutes INTEGER;
+ALTER TABLE audit_logs ADD COLUMN target_member_id TEXT REFERENCES members(id) ON DELETE SET NULL;
+CREATE INDEX audit_logs_target_member_created_idx ON audit_logs (target_member_id, created_at);
+CREATE INDEX audit_logs_action_created_idx ON audit_logs (action, created_at);
+
+-- Backfill the member id that scan/undo rows currently bury in free-text detail.
+UPDATE audit_logs
+SET target_member_id = substr(detail, 8)
+WHERE category = 'event'
+  AND action IN ('event:scan_attendance', 'event:undo_scan')
+  AND detail LIKE 'member=%';
+```
+
+Old code ignores unknown columns, so `0014` is safe to apply at any time.
+
+**Code deploy** — `schema.ts` removes `countsTowardRetention` from the Drizzle table definition and
+every read switches to `pt_retention`. The physical column still exists and is simply never
+referenced.
+
+**`0015` — destructive, safe only after the deploy:**
 
 ```sql
 ALTER TABLE point_types DROP COLUMN counts_toward_retention;
-ALTER TABLE crs_events ADD COLUMN grace_minutes INTEGER;
 ```
 
-`retention_records.point_type_id` keeps its `'pt_retention'` default — it is now a plain FK default,
-not a special case.
+By the time this runs, no deployed code references the column. Nothing breaks in the window because
+there is no window.
 
-`DROP COLUMN` requires SQLite 3.35+ and fails on a column referenced by an index, view, or partial-index
-`WHERE`. `counts_toward_retention` has no index in `schema.ts`, but D1's SQLite version and the actual
-applied DDL must be confirmed on dev before this runs (see "Pre-flight"). If `DROP COLUMN` is
-unavailable, fall back to the twelve-step table rebuild: create `point_types_new` without the column,
-`INSERT ... SELECT`, drop, rename — inside one transaction, matching the pattern already used in
-`0013_additive_points_schema.sql`.
+`DROP COLUMN` requires SQLite 3.35+ and fails on a column referenced by an index, view, or
+partial-index `WHERE`. `counts_toward_retention` carries no index in `schema.ts`. If D1's SQLite
+rejects it anyway, `0015` falls back to the table rebuild used in
+`0013_additive_points_schema.sql`: create `point_types_new` without the column, `INSERT ... SELECT`,
+drop, rename. `0015` is cosmetic cleanup and can be deferred indefinitely without blocking the
+feature — that is the point of the split.
 
 ### Constants
 
@@ -103,14 +140,18 @@ Every `eq(pointTypes.countsTowardRetention, true)` predicate becomes
 - `src/db/repositories/retention.ts:373` — `myHistory` totals
 - `src/db/repositories/overview.ts:59` — dashboard retention metric
 
-Where the predicate was the *only* reason for the `pointTypes` join, drop the join.
+Where the predicate was the only reason for the `pointTypes` join, drop the join.
 
 Delete the `PublicLeaderboardSelection` discriminated union
 (`src/db/repositories/retention.ts:51-56`). `publicLeaderboard` takes a plain
 `pointTypeId: string`. Retention is one option among many in the dropdown.
 
-`src/app/portal/profile/point-breakdown.ts:24` currently derives a `retention: boolean` per type
-from the flag. It becomes `type.id === RETENTION_POINT_TYPE_ID`.
+`src/app/portal/profile/point-breakdown.ts:24` derives a `retention: boolean` per type from the
+flag; it becomes `type.id === RETENTION_POINT_TYPE_ID`.
+
+`src/db/repositories/pointTypes.ts` drops `countsTowardRetention` from `PointTypeRow`,
+`PointTypeUpsertInput`, the select list (`:45`), both write paths (`:69`, `:104`), and the
+last-retention-type guard at `:88-97`, which the permanence rule below replaces.
 
 ### Permanence
 
@@ -120,29 +161,46 @@ from the flag. It becomes `type.id === RETENTION_POINT_TYPE_ID`.
 - change `pt_retention`'s `key`
 - delete `pt_retention`
 
-`label` and `position` stay editable. Error message: `"The Retention point type cannot be retired or renamed."`
+`label` and `position` stay editable. Error: `"The Retention point type cannot be retired or renamed."`
+
+Enforced in the repository, not only the action, so the internal Worker path cannot bypass it.
 
 This replaces the validator at `src/app/portal/admin/system/point-types/input.ts:50`
-("At least one active point type must count toward retention"), which is meaningless once the flag
-is gone.
+("At least one active point type must count toward retention"), meaningless once the flag is gone.
+
+### Callers to update beyond the repositories
+
+- `src/db/seed/data.ts:42-44` — drop the flag from all three seeded types.
+- `src/db/contract/retention.ts` and `src/db/contract/events.ts` — any schema carrying the flag or
+  the leaderboard selection union.
+- `src/db/repositories/retention-unavailable.ts` — the shared-dev fallback adapter must match the
+  new `publicLeaderboard` signature.
+- `src/app/portal/admin/data/exports/page.tsx` — CSV export columns and headers if they name
+  retention-counting types.
+- `src/app/portal/admin/system/point-types/input.ts` + `input.test.ts` — the `retentionIds` field and
+  its tests disappear.
+- `src/db/additive-points-schema.integration.test.ts` and
+  `src/db/repositories/pointTypes.integration.test.ts` — assertions on the flag.
+
+The implementer runs `rg "countsTowardRetention|counts_toward_retention"` and confirms zero hits
+outside `0013`'s historical SQL before declaring §1 complete.
 
 ### UI
 
 - `point-types-manager.tsx`: remove the `countsTowardRetention` checkbox (lines 43-46, 173-181) and
-  the `Retention` badge (line 134). The `pt_retention` row instead shows a lock icon and a disabled
-  retire toggle, with hover text explaining why.
-- `src/app/portal/events/page.tsx`: page title `Retention` → `Points`. Tabs `My history` /
-  `Leaderboard` → `My points` / `Leaderboard`. The point-type filter, currently leaderboard-only,
-  also applies to the history tab.
-- `src/app/portal/page.tsx`: the `MetricCard label="Retention"` stays. It names the point type, which
-  is now correct rather than special.
+  the `Retention` badge (line 134). The `pt_retention` row shows a lock icon and a disabled retire
+  toggle, with title text explaining why.
+- `src/app/portal/events/page.tsx`: title `Retention` → `Points`. Tabs `My history` / `Leaderboard`
+  → `My points` / `Leaderboard`. The point-type filter, currently leaderboard-only, also applies to
+  the history tab.
+- `src/app/portal/page.tsx`: `MetricCard label="Retention"` stays. It names the point type, which is
+  now accurate rather than special.
 
 ### Migration risk
 
 If any point type other than `pt_retention` currently has `counts_toward_retention = 1`, its points
-silently stop counting toward retention after `0014`. Seed data
-(`src/db/seed/data.ts:42-44`) has only `pt_retention` set, but dev and production D1 must be checked
-before the migration runs. See "Pre-flight" below.
+silently stop counting toward retention. Seed data has only `pt_retention` set, but dev and
+production D1 must be checked. See "Pre-flight".
 
 ---
 
@@ -150,7 +208,7 @@ before the migration runs. See "Pre-flight" below.
 
 ### Schema
 
-`crs_events.grace_minutes INTEGER` nullable (added in `0014` above). `NULL` means use
+`crs_events.grace_minutes INTEGER` nullable (added in `0014`). `NULL` means use
 `DEFAULT_GRACE_MINUTES`.
 
 ### Derivation
@@ -168,21 +226,38 @@ export function attendanceStatus(
   const grace = (graceMinutes ?? DEFAULT_GRACE_MINUTES) * 60_000;
   return scannedAt.getTime() > startsAt.getTime() + grace ? "late" : "on_time";
 }
+
+/** Whole minutes past the grace window; 0 when on time. Drives the "+12 min" chip. */
+export function minutesLate(
+  scannedAt: Date,
+  startsAt: Date,
+  graceMinutes: number | null,
+): number {
+  const grace = (graceMinutes ?? DEFAULT_GRACE_MINUTES) * 60_000;
+  const over = scannedAt.getTime() - startsAt.getTime() - grace;
+  return over > 0 ? Math.floor(over / 60_000) : 0;
+}
 ```
 
-Status is computed at read time, never persisted. If an organizer corrects a wrong `startsAt` or
+Status is computed at read time, never persisted. If an organizer corrects a wrong `starts_at` or
 adjusts the grace window, every historical flag self-corrects. Persisting would freeze bad data and
 require a backfill on every correction.
 
 `CHECKIN_LEAD_MS` (30 min, `src/db/repositories/events.ts:28`) already permits scanning before
-`startsAt`, so `scannedAt < startsAt` is normal and yields `on_time` with no special branch.
+`starts_at`, so `scannedAt < startsAt` is normal and yields `on_time` with no special branch.
+
+`minutesLate` measures from the end of the grace window, not from `starts_at`, so "+1 min" means one
+minute past the point where lateness began. Measuring from `starts_at` would make every late arrival
+read as at least `grace` minutes late, which is wrong and confusing.
 
 ### Third state: absent
 
-A member with `event_rsvps.state = 'yes'` and no `crs_attendance` row is **absent**. Derived from
-existing tables, no schema change. Surfaced in the event roster (§4) and member profile (§5).
+`RsvpState` is `"going" | "none"` (`src/db/schema.ts:10`). **Absent** = an `event_rsvps` row with
+`state = 'going'` and no `crs_attendance` row. Derived from existing tables, no schema change.
 
-Members who never RSVP'd and never attended are not "absent" — they are simply not in the roster.
+Members who never RSVP'd and never attended are not absent — they are simply not in the roster.
+`event_invites` is deliberately not used: an invitation is not a commitment, and treating invitees as
+expected attendees would mark most of the org absent for every event.
 
 ### UI
 
@@ -195,8 +270,9 @@ Blank submits `NULL`. Validation: integer, `0 <= n <= 240`.
 
 ### Tests
 
-`src/lib/attendance-status.test.ts` — boundary cases: exactly at `startsAt + grace` is `on_time`;
-one ms past is `late`; scan before `startsAt` is `on_time`; `null` grace uses the default.
+`src/lib/attendance-status.test.ts` — exactly at `startsAt + grace` is `on_time`; one ms past is
+`late`; a scan before `startsAt` is `on_time`; `null` grace uses the default; `minutesLate` returns
+0 when on time and floors correctly just past the boundary.
 
 ---
 
@@ -209,43 +285,52 @@ admin console. It owns no writes.
 | Function | Input | Returns |
 |---|---|---|
 | `termEventSummaries` | `actor, termId` | per event: `id, title, type, status, startsAt, place, graceMinutes, attendedCount, lateCount, absentCount, pointsIssued` |
+| `eventRoster` | `actor, eventId` | per member: `memberId, fullName, email, rsvpState, scannedAt \| null, scannedById, scannedByName, pointsEarned[]` |
 | `termMemberSummaries` | `actor, termId, { q?, limit, offset }` | per member: `memberId, fullName, email, eventsAttended, lateCount, pointsByType[]` |
 | `memberAttendance` | `actor, memberId, termId` | rows: `eventId, title, startsAt, graceMinutes, scannedAt \| null, rsvpState, pointsEarned[]` |
-| `scanLog` | `actor, termId, { eventId?, scannerId?, memberId?, limit, offset }` | rows: `scannedAt, memberId, memberName, eventId, eventTitle, eventStartsAt, graceMinutes, scannedById, scannedByName` |
+| `scanLog` | `actor, termId, { eventId?, scannerId?, memberId?, limit, offset }` | rows: `at, action, memberId, memberName, eventId, eventTitle, eventStartsAt, graceMinutes, actorMemberId, actorName` |
 
-All four require `retention:record`. All return `graceMinutes` + `startsAt` so the caller derives
-status via `attendanceStatus` rather than duplicating the rule in SQL.
+All require `retention:record`. All return `graceMinutes` + `startsAt` so the caller derives status
+via `attendanceStatus` rather than duplicating the rule in SQL.
 
 `limit` defaults to 50, hard-capped at 200. `q` matches `members.full_name`, `members.name`,
 `members.email` case-insensitively.
 
+`scanLog` reads `audit_logs`, not `crs_attendance` — see §4. `lateCount` in the summaries is computed
+in SQL against `starts_at + coalesce(grace_minutes, 15) * 60000` for aggregate counts; the per-row
+badge still uses the shared TS function. The duplication is deliberate and narrow (a single
+comparison), and `attendance-reports.integration.test.ts` asserts the two agree on a seeded fixture
+so they cannot drift silently.
+
 `loadAttendance` in `src/app/portal/admin/data/retention/data.ts` is deleted — `termEventSummaries`
-and the per-event roster replace it.
+and `eventRoster` replace it. `loadRetentionPickers` stays; it feeds `ManualRecordSheet`.
 
 ### Tests
 
 `src/db/repositories/attendance-reports.integration.test.ts`, Workers pool, `.ts` only, no jsdom.
 Covers: permission denial for a non-`retention:record` actor; late/absent counting against a seeded
-event; `q` filter; `limit` cap enforcement.
+event; SQL `lateCount` agrees with `attendanceStatus`; `q` filter; `limit` cap enforcement;
+`scanLog` surfaces an undone scan.
 
 ---
 
 ## §4 — Admin information architecture
 
-`/portal/admin/data` becomes a section. Each route loads only its own data.
+`/portal/admin/data` becomes a section. Each route loads only its own data and states the question
+it answers.
 
 ### Routes
 
-| Route | Purpose |
+| Route | Question it answers |
 |---|---|
-| `data/page.tsx` | **Overview** |
-| `data/events/page.tsx` | **Events** — list with attendance/late/points columns |
-| `data/events/[id]/page.tsx` | **Event roster** — one event's attendees |
-| `data/members/page.tsx` | **Members** — attendance stats per member |
-| `data/scans/page.tsx` | **Scan log** — chronological audit |
-| `data/ledger/page.tsx` | **Ledger** — the existing points ledger, paginated |
+| `data/page.tsx` | **Overview** — what needs my attention this term? |
+| `data/events/page.tsx` | **Events** — how did each event turn out? |
+| `data/events/[id]/page.tsx` | **Event roster** — who attended, and who was late? |
+| `data/members/page.tsx` | **Members** — who is participating, and who is short? |
+| `data/scans/page.tsx` | **Scan log** — what happened at the door, and who did it? |
+| `data/ledger/page.tsx` | **Ledger** — where did every point come from? |
 
-`src/app/portal/admin/data/retention/page.tsx` (a bare redirect to `/portal/admin/data`) is deleted.
+`src/app/portal/admin/data/retention/page.tsx` (a bare redirect) is deleted.
 `events-points-dashboard.tsx` is decomposed across the new routes and removed.
 
 ### Overview
@@ -255,45 +340,65 @@ event; `q` filter; `limit` cap enforcement.
   - approved events that have ended with zero attendance
   - events with `event_point_awards` configured but zero scans
   - members below `terms.probation_below` for the selected term
-- Last 5 scans, linking into the scan log.
+- Last 5 scan-log entries.
 
-The "needs attention" block is the reason the overview exists. A metric row alone does not justify
-a page.
-
-### Events list
-
-Columns: event, date, type, status, attended, late, absent, points issued. Row click → event roster.
-Search filters server-side by title/place/type.
+The "needs attention" block is why the overview exists. A metric row alone does not justify a page.
 
 ### Event roster (`data/events/[id]`)
 
 Header: title, date, place, type, grace period, counts.
-Table: member, RSVP, scanned at, status badge (`On time` / `Late` / `Absent`), **scanned by**,
-points awarded from this event.
+Attendee table: member, scanned at, status, **scanned by**, points awarded from this event.
+Absent members collapse behind a `Show 14 absent` disclosure below the attendee table (see §7).
 
-`scanned by` is the answer to "who let this person in" and is currently recorded
-(`crs_attendance.scanned_by`) but never displayed anywhere.
+### Scan log (`data/scans`) — sourced from `audit_logs`
 
-### Members list
+A log that reads current state is not a log. `crs_attendance` answers "who is currently marked
+present"; `undoScan` deletes from it, so a reversed scan leaves no trace there. The scan log
+therefore reads `audit_logs`, filtered to `category = 'event'` and
+`action IN ('event:scan_attendance', 'event:undo_scan')`.
 
-Columns: member, events attended, late count, points by type (compact), total. Server-side search.
-Row click → `/portal/admin/members/[id]`.
+This requires two changes to the audit layer, both in `0014` plus `audit.ts`:
 
-### Scan log
+1. **`audit_logs.target_member_id`** — the scanned member is currently buried in free-text `detail`
+   as `member=<id>`, which cannot be indexed or filtered. The new nullable column is populated going
+   forward and backfilled for existing rows. `detail` stays as-is for compatibility.
+   `AuditRecordInput` gains an optional `targetMemberId`.
+2. **`audit.list` becomes filterable** — today it accepts only `{ category, limit }`
+   (`src/db/repositories/audit.ts:66-79`), which cannot express any of the scan log's filters. It
+   gains `{ action?: string | string[], targetId?, targetMemberId?, actorMemberId?, since?, until?,
+   limit, offset }`. The existing single-argument call sites keep working; the
+   `/portal/admin/system/audit` Activity Log page gains real filtering for free.
 
-Chronological, newest first. Columns: time, member, event, status, scanned by.
-Filters: event, scanner, member. All server-side, all paginated.
+**Atomicity fix.** `recordScan` and `undoScan` currently `await audit.record(...)` *after*
+`runAtomic(...)` (`src/db/repositories/events.ts:622`, `:655`), so a failure between the two loses
+the audit row and the log silently under-reports. Both move the audit insert *into* the
+`runAtomic` batch using the existing `auditInsertValues` helper, which exists for exactly this.
 
-### Ledger
+Columns: time, member, event, action (`Scanned` / `Undone`), status, actor.
+Filters: event, scanner, member, date range. All server-side, all paginated.
 
-The existing ledger table, moved verbatim, with server-side search and pagination replacing the
-client-side `.filter()`.
+Undone rows render struck-through with the reversing actor named, so a scan and its reversal read as
+one story rather than an absence.
+
+### Events list, Members list, Ledger
+
+Events list columns: event, date, type, status, attended, late, absent, points issued. Server-side
+search by title/place/type.
+
+Members list columns: member, events attended, late count, points by type (compact), total.
+Server-side search. Row click → `/portal/admin/members/[id]`.
+
+Ledger: the existing table, moved, with server-side search and pagination replacing the client-side
+`.filter()`.
 
 ### Navigation
 
-The new routes register as pages inside the existing `G("data", "Events & Points", [...])` group in
-`src/app/portal/admin/nav.ts`. No new nav component; `crumbFor` and `adminHeading` pick them up for
-free. Final group order: Overview, Events, Members, Scan log, Ledger, Event Type Rules, Point Types,
+Admin navigation lives in the portal shell sidebar and is generated from
+`src/app/portal/admin/nav.ts` (`src/app/portal/admin/layout.tsx` only guards access). The new routes
+register as pages inside the existing `G("data", "Events & Points", [...])` group; `crumbFor` and
+`adminHeading` pick them up for free. No new nav component.
+
+Final group order: Overview, Events, Members, Scan log, Ledger, Event Type Rules, Point Types,
 Data Exports.
 
 `nav.test.ts` is extended to cover the new pages' permission gating.
@@ -304,20 +409,16 @@ Data Exports.
 
 New route under `members/`, not `data/`, because it is useful beyond points.
 
-Sections:
-
 1. **Header** — full name, email, status, roles.
-2. **Retention** — points of type `pt_retention` for the selected term, against
-   `terms.retained_at` and `terms.probation_below`. Reuses `RetentionProgress`.
+2. **Retention** — points of type `pt_retention` for the selected term, against `terms.retained_at`
+   and `terms.probation_below`. Reuses `RetentionProgress`.
 3. **Points by type** — every type with a nonzero total.
-4. **Events attended** — from `memberAttendance`: event, date, scanned at, status badge, points
-   earned. Includes RSVP'd-but-absent rows.
+4. **Events attended** — from `memberAttendance`: event, date, scanned at, status, points earned.
+   Includes RSVP'd-but-absent rows.
 5. **Ledger** — that member's records for the term, paginated.
 
-Term selector matching the rest of the section.
-
-Gated on `retention:record`. A member reaching their own admin profile without that permission gets
-`notFound()`; their own data is already at `/portal/events`.
+Term selector matching the rest of the section. Gated on `retention:record`; an actor without it gets
+`notFound()` before any query runs. A member's own equivalent already exists at `/portal/events`.
 
 ---
 
@@ -326,8 +427,7 @@ Gated on `retention:record`. A member reaching their own admin profile without t
 ### Placement
 
 `EventScanPanel` moves from the bottom of `src/app/portal/page.tsx` (line 143, after the library
-card) to directly beneath the greeting and above the metric grid. Styling shifts from a plain `Card`
-to an accent-filled panel so it reads as an active call to action rather than another widget.
+card) to directly beneath the greeting and above the metric grid. Visual treatment in §7.
 
 ### Multiple concurrent events
 
@@ -338,65 +438,192 @@ is a scanner. It becomes `.filter()`, rendering one panel per event. Rare, but t
 ### Undo
 
 `src/components/event-scan-panel.tsx:35` hardcodes `canUndo={false}`, and `undoScan`
-(`src/db/repositories/events.ts:634`) requires manage rights. Net effect: a scanner who mis-scans at
-the door has no recovery path.
+(`src/db/repositories/events.ts:634`) requires manage rights. A scanner who mis-scans at the door has
+no recovery path.
 
-Fix, in `undoScan`: permit the delete when `crs_attendance.scanned_by = actor.memberId`, in addition
-to the existing manage-rights path. `EventScanPanel` then passes `canUndo={true}`.
+Fix, in `undoScan`: permit the delete when the target row's `crs_attendance.scanned_by =
+actor.memberId`, in addition to the existing manage-rights path. `EventScanPanel` passes
+`canUndo={true}`.
 
-No time window. A scanner undoing their own scan an hour later is either correcting a real mistake
-or acting maliciously, and a time limit stops neither — the audit log
-(`event:scan_attendance` / undo, already written at `src/db/repositories/events.ts:623`) is the
-control that matters, and the scan log in §4 now surfaces it.
+No time window. A scanner undoing their own scan an hour later is either correcting a real mistake or
+acting maliciously, and a time limit stops neither. The control is the scan log in §4 — which now
+genuinely works, because it reads the audit trail rather than the attendance table, and renders the
+reversal beside the original scan. The original R1 draft claimed this control while §4 still read
+`crs_attendance`, where an undone scan vanishes entirely. That gap is closed.
+
+The scanner overlay's Undo button acts on `lastMemberId` only (`event-scan-overlay.tsx:123`), so this
+widens the permission by exactly one row: the one the scanner just created.
+
+### Shared development mode
+
+Undo does not work through the shared dev Worker, and this is not fixed here:
+
+- `src/server/internal/events.ts:145-150` returns 403 *"Operation is disabled in shared development."*
+- `src/app/internal/events/route.ts` exports `GET`, `POST`, `OPTIONS` and **no `DELETE`**, so that
+  deny-branch is unreachable dead code — Next.js returns its own 405 first.
+
+Consequences for this spec: the `canUndo` change is a production/local capability only. `EventScanPanel`
+must not promise an action the environment cannot perform, so `canUndo` is passed as
+`config.APP_ENV !== "shared"`, and the overlay hides the button rather than showing one that 405s.
+
+The dead deny-branch at `events.ts:145-150` is deleted in the same change — it documents an intent the
+route file does not implement, and leaving it invites someone to trust it. Enabling shared-dev undo
+properly (adding the `DELETE` export and a contract entry) is out of scope and logged under
+"Known debt".
 
 ### Tests
 
 Extend `src/db/repositories/events.integration.test.ts`: a scanner can undo a row they scanned; a
-scanner cannot undo a row another member scanned; an event admin can undo either.
+scanner cannot undo a row another member scanned; an event admin can undo either; the audit row is
+written inside the same atomic batch as the delete.
+
+---
+
+## §7 — Interface design
+
+Mode: **Operate**. Type: **refinement** — the incumbent visual world (Tailwind v4, shadcn-local
+primitives, Unna/Source Sans, navy tokens in `src/app/globals.css`) is preserved, not replaced.
+
+### The constraint that shapes everything
+
+The token set has no semantic color. `--destructive` is `#121315`, near-black. Badge `success`,
+`warn`, and `info` are all blues (`#4986AC`, `#90B4CC`). The brand manual commits to navy, blues, and
+grays. **On-time / late / absent therefore cannot be encoded by hue.**
+
+`src/components/event-scan-overlay.tsx:12-17` does hardcode `emerald`/`amber`/`red`. That is
+defensible where it lives — a full-bleed camera surface read at arm's length in bad light, where
+success/duplicate/invalid is a reflex signal, not a brand moment. Those hues stay there and do not
+propagate into admin tables.
+
+### Move 1 — Exception-first status. On time is silent.
+
+Badging every on-time row builds a wall of badges carrying no information. Only exceptions get marks.
+
+| Status | Treatment |
+|---|---|
+| On time | **No badge.** The scan time in the cell is the whole signal. |
+| Late | `+12 min` chip, `Badge variant="warn"`, `tabular-nums`. The delta, not the word. |
+| Absent | Row text at `muted-foreground`, scan cell shows `—`, the word `Absent` in small muted text. No badge. |
+
+Encoding is position, weight, and a literal number rather than hue: colorblind-safe by construction,
+brand-safe, denser, and `+12 min` is more actionable than `Late`.
+
+A single `<AttendanceStatusCell>` component in `src/components/portal/` owns this rule so it cannot
+drift across the six routes that render it.
+
+### Move 2 — One question per route
+
+Each route carries a one-line subhead naming the question it answers (the right-hand column of §4's
+route table). This is the direct fix for "overwhelming": the page stops asking the reader to work out
+what it is for.
+
+### Move 3 — Density correction
+
+Current sections use `font-heading text-2xl` — Unna, a serif display face, labelling data tables.
+Operate-mode guidance forbids display fonts in UI labels and data.
+
+- Unna stays on the page `h1` only.
+- Section labels become `text-sm font-semibold uppercase tracking-[0.08em]` in Source Sans, matching
+  the existing `Metric` label treatment at `events-points-dashboard.tsx:52`.
+- Row padding tightens from `py-4` to `py-2.5`.
+
+Roughly 40% more rows per screen, which is the actual job.
+
+### Move 4 — The scanner panel is the one loud moment
+
+Everything else stays Restrained; this single surface earns Committed color. It is a time-boxed call
+to action that appears and disappears on its own, and it must not read as another card.
+
+- Full-width accent fill (`--accent`) with `accent-foreground` text, above the metric grid.
+- Primary control ≥44px touch target — this is used one-handed, standing, on a phone.
+- Shows the live scanned count and the check-in window in plain words ("open until 4:30 PM"), so the
+  scanner can tell at a glance whether they are early, live, or closed.
+- One panel per concurrent event (§6), stacked.
+
+### Move 5 — Numbers, not adjectives
+
+"12 late", not "some members were late". `tabular-nums` on every count, already the house habit at
+`events-points-dashboard.tsx:53`.
+
+### Move 6 — Empty states that teach
+
+"No one has checked in to this event" is a dead end. Each empty state names the next action:
+
+- Event roster, no scans, **no scanner assigned** → say so, link to the event's staff panel.
+- Event roster, no scans, **scanner assigned** → state that check-in opens 30 minutes before start,
+  and give the time.
+- Members list under a search → "No members match that search", with a clear-search control.
+- Scan log, filtered to nothing → name the active filters and offer to clear them.
+
+### States and ranges
+
+Realistic: 20-200 events per term, 30-80 members, 0-80 attendees per event. An absent list can exceed
+its attended list.
+
+Member names are user-controlled, so every cell rendering one uses `min-w-0` + `break-all`.
+`break-words` does not work here and has already caused mobile overflow in this codebase.
+
+Every route implements: loading (skeleton rows, not a centred spinner), empty (teaching, per above),
+permission-denied (`notFound()` before any query), overflow (paginated at 50).
+
+### Boundaries
+
+Untouched: the brand palette, the logo, Unna on page titles, the scanner overlay's camera-surface
+hues, the `/portal` shell and its sidebar.
+
+Anti-goals: traffic-light color in tables; modals for anything reachable as a route; decorative
+motion; any charting library.
 
 ---
 
 ## Data flow
 
 ```
-crs_attendance ─┐
-crs_events ─────┼─> attendance-reports.ts ─> admin routes ─> attendanceStatus() ─> status badge
-event_rsvps ────┤        (bounded SQL)         (server)          (pure fn)
+crs_attendance ──┐
+crs_events ──────┼──> attendance-reports.ts ──> admin routes ──> attendanceStatus() ──> status cell
+event_rsvps ─────┤        (bounded SQL)           (server)          (pure fn)
 retention_records ┘
+audit_logs ──────────> audit.list (filtered) ──> scan log route
 ```
 
-Status is never computed in SQL. SQL returns raw timestamps plus `starts_at` and `grace_minutes`;
-one pure function turns them into a label. One rule, one place, one test file.
+Per-row status is never computed in SQL. SQL returns raw timestamps plus `starts_at` and
+`grace_minutes`; one pure function turns them into a label. Aggregate `lateCount` is the single
+deliberate exception, guarded by a test that asserts agreement with the TS function.
+
+State and history come from different tables on purpose: `crs_attendance` for who is present now,
+`audit_logs` for what happened.
 
 ## Error handling
 
 - Repository functions throw on permission failure, matching existing convention
   (`throw new Error("Not authorized to ...")`). Routes catch and `notFound()`.
-- Admin pages that lack `retention:record` `notFound()` before any query runs.
-- Pagination params are parsed with `zod` and clamped, never trusted.
-- `attendanceStatus` cannot throw: `null` grace falls back to the default.
-- Scanner panel keeps the existing fail-soft behaviour — a failed scan shows a banner, never a crash.
+- Admin pages lacking `retention:record` call `notFound()` before any query runs.
+- Pagination and filter params are parsed with `zod` and clamped, never trusted.
+- `attendanceStatus` and `minutesLate` cannot throw; `null` grace falls back to the default.
+- The scanner panel keeps its fail-soft behaviour — a failed scan shows a banner, never a crash.
+- Undo in shared dev is hidden rather than failing at the network layer (§6).
 
 ## Testing strategy
 
-All tests run in the Workers pool: `.ts` only, no jsdom, no render tests, no `better-sqlite3` import.
+All tests run in the Vitest Workers pool: `.ts` only, no jsdom, no render tests, no `better-sqlite3`.
 
 | Area | File | Covers |
 |---|---|---|
-| Late rule | `src/lib/attendance-status.test.ts` | boundaries, null grace, early scan |
-| Reports | `src/db/repositories/attendance-reports.integration.test.ts` | permissions, late/absent counts, search, limit cap |
+| Late rule | `src/lib/attendance-status.test.ts` | boundaries, null grace, early scan, `minutesLate` flooring |
+| Reports | `src/db/repositories/attendance-reports.integration.test.ts` | permissions, late/absent counts, SQL-vs-TS agreement, search, limit cap, undone scan in log |
+| Audit filters | `src/db/repositories/audit.integration.test.ts` | new filter args; `target_member_id` written and queryable |
 | Retention de-special | `src/db/repositories/retention.integration.test.ts` (extend) | totals use `pt_retention` only; leaderboard by arbitrary type |
 | Permanence | `src/db/repositories/pointTypes.integration.test.ts` (extend) | cannot retire, rename-key, or delete `pt_retention` |
-| Undo | `src/db/repositories/events.integration.test.ts` (extend) | scanner undoes own scan; cannot undo another's |
+| Undo | `src/db/repositories/events.integration.test.ts` (extend) | scanner undoes own scan; cannot undo another's; audit row inside the atomic batch |
 | Nav | `src/app/portal/admin/nav.test.ts` (extend) | new pages gated on `retention:record` |
-| Grace input | `src/app/portal/calendar/[eventId]/award-editor-input.test.ts` or sibling | grace parse + range validation |
+| Grace input | sibling of `award-editor-input.test.ts` | grace parse + range validation |
 
 ## Pre-flight
 
 Both must clear before `0014` is applied anywhere.
 
 1. **Audit the flag on every environment.** Any type other than `pt_retention` with the flag set
-   loses its retention contribution silently.
+   loses its retention contribution.
 
    ```bash
    pnpm exec wrangler d1 execute code-portal-dev --remote --command "select id, key, label, counts_toward_retention from point_types"
@@ -413,28 +640,55 @@ Both must clear before `0014` is applied anywhere.
    ```
 
 Per `CLAUDE.md`, the exact `pnpm exec wrangler` command is shown and approved before any D1 write.
-Deploy order after approval: `pnpm db:migrate:dev` then `pnpm deploy:dev`.
+Order: `0014` → `pnpm db:migrate:dev` → `pnpm deploy:dev` → verify → `0015`.
 
 ## Known debt (deliberate, not oversights)
 
-- `retention_records` table and `retention.ts` repository keep names that describe one point type
-  while holding all of them. Rename is a mechanical but wide diff; deferred until something else
-  forces a touch of those files.
-- Point totals are computed per request with no caching. Correct and fast enough at club scale;
-  revisit if a term exceeds a few thousand records.
-- `absent` only covers members who RSVP'd yes. There is no notion of "expected to attend" beyond
-  RSVP, so a mandatory-attendance report is not possible yet.
+- `retention_records` and `retention.ts` keep names describing one point type while holding all of
+  them. Wide mechanical rename; deferred until something else forces a touch.
+- Undo remains unavailable in shared dev mode. Enabling it needs a `DELETE` export on
+  `src/app/internal/events/route.ts` plus a contract entry.
+- `audit_logs.detail` keeps its `member=<id>` free text alongside the new `target_member_id`.
+  Removing it means rewriting every historical row for no functional gain.
+- Point totals are computed per request with no caching. Correct and fast at club scale.
+- `absent` covers only members who RSVP'd `going`. There is no "expected to attend" concept, so a
+  mandatory-attendance report is not yet possible.
 
 ## Phasing
 
-The spec is one unit because late tracking feeds §3, §4, and §5. Implementation phases:
+One spec, because late tracking feeds §3, §4, §5, and §7. Implementation phases:
 
-1. `0014` + constants + `attendance-status.ts` + tests
-2. Retention de-specialization (repo, permanence guard, point-types UI, member page retitle)
-3. `attendance-reports.ts` + tests
-4. Admin routes: Overview, Events, Event roster
-5. Admin routes: Members, Scan log, Ledger + nav registration
-6. `/portal/admin/members/[id]`
-7. Scanner panel: placement, multi-event, undo + tests
+1. `0014` + `src/lib/point-types.ts` + `attendance-status.ts` + tests
+2. Audit layer: `target_member_id`, filterable `list`, atomicity fix + tests
+3. Retention de-specialization: repos, permanence guard, all callers, point-types UI, member retitle
+4. `attendance-reports.ts` + tests
+5. `AttendanceStatusCell` + admin routes: Overview, Events, Event roster
+6. Admin routes: Members, Scan log, Ledger + nav registration
+7. `/portal/admin/members/[id]`
+8. Scanner panel: placement, multi-event, undo, shared-dev gating + tests
+9. `0015` after a verified deploy
 
-Phases 1-2 are independently shippable. Phases 4-6 depend on 3. Phase 7 is independent of all others.
+Phases 1-3 are independently shippable. Phases 5-7 depend on 4. Phase 8 depends only on 2.
+
+## Review log
+
+### Round 1 — Codex adversarial review (partial)
+
+The run stalled during `verifying` at 0% CPU, having emitted three findings and before completing its
+own stated remainder ("caller/test/export coverage and severity ordering"). All three were
+independently verified against source before being accepted; one was accepted with a correction.
+
+| # | Finding | Verified | Disposition |
+|---|---|---|---|
+| 1 | Deploy order incompatible in both directions | Yes — `CLAUDE.md` fixes migrate-then-deploy, so a `DROP COLUMN` lands under running old code | Accepted. Split into `0014` (additive, pre-deploy) and `0015` (destructive, post-deploy). |
+| 2 | `RsvpState` is `going`, not `yes` | Yes — `src/db/schema.ts:10` | Accepted. §2 absent definition corrected. |
+| 3 | Undo's claimed control cannot work: the scan log reads live attendance while undo deletes that row; shared Worker denies undo and exposes no `DELETE` handler | Yes, with a correction — the deny-branch *does* exist at `src/server/internal/events.ts:145`, but `src/app/internal/events/route.ts` exports no `DELETE`, making it unreachable dead code | Accepted, expanded. Scan log re-sourced to `audit_logs` (requiring `target_member_id` + filterable `list` + an atomicity fix); shared-dev undo gated in the UI and the dead branch deleted. |
+
+Round 1 did not reach caller coverage, test coverage, exports, or the shared-dev contract surface.
+Round 2 is scoped to exactly that gap.
+
+### Design brief
+
+`§7` folds in a confirmed Impeccable `shape` brief (Operate mode, refinement). The palette audit that
+produced Move 1 is the load-bearing finding: the token set has no semantic color, so status could not
+be encoded the conventional way.
