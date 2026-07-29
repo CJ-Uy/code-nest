@@ -25,6 +25,7 @@ const updateSchema = z
 		startsAt: z.coerce.date(),
 		endsAt: z.coerce.date(),
 		capacity: z.number().int().min(1).max(100000).nullable().default(null),
+		graceMinutes: z.number().int().min(0).max(240).nullable().default(null),
 	})
 	.refine((v) => v.endsAt > v.startsAt, { path: ["endsAt"], message: "End must be after the start." });
 

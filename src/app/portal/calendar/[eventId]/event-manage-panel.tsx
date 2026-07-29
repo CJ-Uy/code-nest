@@ -61,6 +61,7 @@ export type ManageEvent = {
 	startsAt: Date;
 	endsAt: Date | null;
 	capacity: number | null;
+	graceMinutes: number | null;
 	myRole: "owner" | "admin" | "scanner" | null;
 	canModerate: boolean;
 	canSetPoints: boolean;
@@ -526,6 +527,7 @@ function DetailsSection({
 	const [startsAt, setStartsAt] = useState(toLocalInput(event.startsAt));
 	const [endsAt, setEndsAt] = useState(event.endsAt ? toLocalInput(event.endsAt) : "");
 	const [capacity, setCapacity] = useState(event.capacity?.toString() ?? "");
+	const [graceMinutes, setGraceMinutes] = useState(event.graceMinutes?.toString() ?? "");
 
 	const endBeforeStart = Boolean(startsAt && endsAt && new Date(endsAt) <= new Date(startsAt));
 	// The event's own current type must always be selectable, even if it fell outside the
@@ -557,6 +559,7 @@ function DetailsSection({
 					startsAt: fromLocalInput(startsAt).toISOString(),
 					endsAt: fromLocalInput(endsAt).toISOString(),
 					capacity: capacity ? Number(capacity) : null,
+					graceMinutes: graceMinutes === "" ? null : Number(graceMinutes),
 				});
 				setSaved(true);
 				router.refresh();
@@ -605,6 +608,18 @@ function DetailsSection({
 						value={capacity}
 						placeholder="No limit"
 						onChange={(e) => setCapacity(e.target.value)}
+					/>
+				</label>
+				<label className="grid gap-1.5 text-sm">
+					<span className="font-medium">Grace period</span>
+					<input
+						type="number"
+						min={0}
+						max={240}
+						className={FIELD}
+						value={graceMinutes}
+						placeholder="15"
+						onChange={(e) => setGraceMinutes(e.target.value)}
 					/>
 				</label>
 			</div>

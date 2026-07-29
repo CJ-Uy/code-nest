@@ -49,6 +49,7 @@ export function CreateEventSheet({
 	const [startsAt, setStartsAt] = useState(defaultStart);
 	const [endsAt, setEndsAt] = useState(() => deriveEnd(defaultStart(), 60));
 	const [capacity, setCapacity] = useState("");
+	const [graceMinutes, setGraceMinutes] = useState("");
 
 	function reset() {
 		setTitle("");
@@ -58,6 +59,7 @@ export function CreateEventSheet({
 		setStartsAt(defaultStart());
 		setEndsAt(deriveEnd(defaultStart(), 60));
 		setCapacity("");
+		setGraceMinutes("");
 		setError(null);
 	}
 
@@ -73,6 +75,7 @@ export function CreateEventSheet({
 					startsAt: fromLocalInput(startsAt).toISOString(),
 					endsAt: fromLocalInput(endsAt).toISOString(),
 					capacity: capacity ? Number(capacity) : null,
+					graceMinutes: graceMinutes === "" ? null : Number(graceMinutes),
 				});
 				setOpen(false);
 				reset();
@@ -179,6 +182,22 @@ export function CreateEventSheet({
 							onChange={(e) => setCapacity(e.target.value)}
 							placeholder="No limit"
 						/>
+					</label>
+
+					<label className="grid gap-1.5 text-sm">
+						<span className="font-medium">Grace period (minutes)</span>
+						<input
+							type="number"
+							min={0}
+							max={240}
+							className={FIELD}
+							value={graceMinutes}
+							onChange={(e) => setGraceMinutes(e.target.value)}
+							placeholder="15"
+						/>
+						<span className="text-xs text-muted-foreground">
+							Members scanned after this many minutes are marked late. Blank uses 15.
+						</span>
 					</label>
 
 					{error ? <p className="text-sm text-destructive">{error}</p> : null}

@@ -43,6 +43,7 @@ export type CreateEventInput = {
 	endsAt: Date;
 	points?: number | null;
 	capacity: number | null;
+	graceMinutes?: number | null;
 };
 
 export type UpdateEventInput = Partial<{
@@ -53,6 +54,7 @@ export type UpdateEventInput = Partial<{
 	startsAt: Date;
 	endsAt: Date;
 	capacity: number | null;
+	graceMinutes: number | null;
 }>;
 
 export type ListEventsInput = { limit?: number; offset?: number };
@@ -258,6 +260,7 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 					points: null,
 					place: input.place,
 					capacity: input.capacity,
+					graceMinutes: input.graceMinutes ?? null,
 					startsAt: input.startsAt,
 					endsAt: input.endsAt,
 					description: input.description,
@@ -324,6 +327,7 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 					startsAt: patch.startsAt ?? event.startsAt,
 					endsAt: patch.endsAt ?? event.endsAt,
 					capacity: patch.capacity === undefined ? event.capacity : patch.capacity,
+					graceMinutes: patch.graceMinutes === undefined ? event.graceMinutes : patch.graceMinutes,
 				})
 				.where(eq(crsEvents.id, eventId))
 				.returning();

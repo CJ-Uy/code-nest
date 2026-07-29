@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as schema from "@/db/schema";
-import { auditLogs } from "@/db/schema";
+import { auditLogs, crsEvents } from "@/db/schema";
 import type { Actor } from "@/server/auth/permissions";
 import { createAuditRepository } from "./audit";
 import { createEventsRepository } from "./events";
@@ -294,6 +294,26 @@ describe("events repository on D1", () => {
 			.from(auditLogs)
 			.where(and(eq(auditLogs.action, "event:scan_attendance"), eq(auditLogs.targetMemberId, "mem_a")));
 		expect(rows).toHaveLength(1);
+	});
+
+	it("persists grace minutes through create and update", async () => {
+		const { db, repo } = makeRepos();
+		const event = await repo.create(owner, {
+			title: "Graced",
+			type: "casual",
+			place: "SOM 111",
+			description: "d",
+			startsAt: START,
+			endsAt: END,
+			capacity: null,
+			graceMinutes: 20,
+		});
+		const [created] = await db.select().from(crsEvents).where(eq(crsEvents.id, event.id));
+		expect(created.graceMinutes).toBe(20);
+
+		await repo.update(owner, event.id, { graceMinutes: null });
+		const [updated] = await db.select().from(crsEvents).where(eq(crsEvents.id, event.id));
+		expect(updated.graceMinutes).toBeNull();
 	});
 
 	it("lists owner first and staff with roles and names", async () => {

@@ -128,6 +128,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 						startsAt: managed.startsAt,
 						endsAt: managed.endsAt,
 						capacity: managed.capacity,
+						graceMinutes: managed.graceMinutes,
 						myRole: managed.myRole,
 						canModerate: managed.canModerate,
 						canSetPoints: managed.canSetPoints,
