@@ -145,7 +145,7 @@ export function CreateEventSheet({
 							className={FIELD}
 							value={place}
 							onChange={(e) => setPlace(e.target.value)}
-							placeholder="CS Lab 2 / Discord"
+							placeholder="Leong Hall"
 						/>
 					</label>
 
