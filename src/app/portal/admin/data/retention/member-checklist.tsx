@@ -31,7 +31,7 @@ export function MemberChecklist({ members }: { members: MemberOption[] }) {
 		<div className="grid gap-3">
 			<Input
 				aria-label="Search members"
-				placeholder="Search members by name or email"
+				placeholder="Search members by name"
 				value={query}
 				onChange={(event) => setQuery(event.target.value)}
 			/>

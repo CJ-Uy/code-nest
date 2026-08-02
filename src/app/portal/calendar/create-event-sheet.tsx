@@ -15,16 +15,17 @@ import {
 } from "@/components/ui/sheet";
 import { DateTimePicker } from "@/components/date-time-picker";
 import { deriveEnd, fromLocalInput, toLocalInput } from "@/lib/date-slots";
+import type { EventSignupField } from "@/lib/event-signup-form";
 import type { EventTypeRow } from "@/db/repositories/eventTypeRules";
 import { createEventAction } from "./actions";
+import { EventSignupFormEditor } from "./event-signup-form-editor";
 
 const FIELD = "w-full rounded-lg border border-border bg-background p-2 text-sm";
 
 // datetime-local yields "YYYY-MM-DDTHH:mm" in local time; z.coerce.date() parses it.
 function defaultStart(): string {
-	const d = new Date();
-	d.setMinutes(0, 0, 0);
-	d.setHours(d.getHours() + 1);
+	const d = new Date(Date.now() + 60 * 60_000);
+	d.setUTCMinutes(0, 0, 0);
 	return toLocalInput(d);
 }
 
@@ -50,6 +51,7 @@ export function CreateEventSheet({
 	const [endsAt, setEndsAt] = useState(() => deriveEnd(defaultStart(), 60));
 	const [capacity, setCapacity] = useState("");
 	const [graceMinutes, setGraceMinutes] = useState("");
+	const [rsvpForm, setRsvpForm] = useState<EventSignupField[]>([]);
 
 	function reset() {
 		setTitle("");
@@ -60,6 +62,7 @@ export function CreateEventSheet({
 		setEndsAt(deriveEnd(defaultStart(), 60));
 		setCapacity("");
 		setGraceMinutes("");
+		setRsvpForm([]);
 		setError(null);
 	}
 
@@ -76,6 +79,7 @@ export function CreateEventSheet({
 					endsAt: fromLocalInput(endsAt).toISOString(),
 					capacity: capacity ? Number(capacity) : null,
 					graceMinutes: graceMinutes === "" ? null : Number(graceMinutes),
+					rsvpForm,
 				});
 				setOpen(false);
 				reset();
@@ -87,7 +91,7 @@ export function CreateEventSheet({
 	}
 
 	const noAllowedTypes = allowedTypes.length === 0;
-	const endBeforeStart = Boolean(startsAt && endsAt && new Date(endsAt) <= new Date(startsAt));
+	const endBeforeStart = Boolean(startsAt && endsAt && fromLocalInput(endsAt) <= fromLocalInput(startsAt));
 	const canSubmit =
 		title.trim() && place.trim() && description.trim() && startsAt && endsAt && !endBeforeStart && !noAllowedTypes && !typesUnavailable;
 
@@ -157,7 +161,10 @@ export function CreateEventSheet({
 							setEndsAt(next.endsAt);
 						}}
 					/>
+					<p className="-mt-2 text-xs text-muted-foreground">Times are saved and shown in UTC+8.</p>
 					{endBeforeStart ? <p className="-mt-2 text-xs text-destructive">End must be after the start.</p> : null}
+
+					<EventSignupFormEditor value={rsvpForm} onChange={setRsvpForm} />
 
 					<label className="grid gap-1.5 text-sm">
 						<span className="font-medium">Description</span>

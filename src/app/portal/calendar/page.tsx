@@ -5,6 +5,7 @@ import { allowedEventTypes } from "@/db/repositories/eventTypeRules";
 import { Button } from "@/components/ui/button";
 import { CalendarMonth } from "@/components/calendar-month";
 import { loadEventTypes } from "@/lib/event-type-load";
+import { utc8Parts } from "@/lib/date-slots";
 import { requireActor } from "@/server/auth/actor";
 import { CreateEventSheet } from "./create-event-sheet";
 import { EventsList, type EventListItem } from "./events-list";
@@ -25,8 +26,9 @@ export default async function CalendarPage({
 	const params = await searchParams;
 	const view = params.view === "list" ? "list" : "calendar";
 	const now = new Date();
-	const year = Number(params.year) || now.getUTCFullYear();
-	const month = Number(params.month) || now.getUTCMonth() + 1;
+	const today = utc8Parts(now);
+	const year = Number(params.year) || today.year;
+	const month = Number(params.month) || today.month;
 
 	const repositories = await getRepositories();
 	const typeLoad = await loadEventTypes(() => repositories.eventTypeRules.list());
@@ -75,7 +77,7 @@ export default async function CalendarPage({
 				{view === "calendar" ? (
 					<div className="flex items-center gap-2">
 						<Button asChild variant="outline" size="sm">
-							<Link href={`/portal/calendar?year=${now.getUTCFullYear()}&month=${now.getUTCMonth() + 1}`}>Today</Link>
+							<Link href={`/portal/calendar?year=${today.year}&month=${today.month}`}>Today</Link>
 						</Button>
 						<Button asChild variant="outline" size="icon" aria-label="Previous month">
 							<Link href={`/portal/calendar?year=${prev.year}&month=${prev.month}`}>

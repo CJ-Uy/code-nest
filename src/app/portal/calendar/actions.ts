@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getRepositories } from "@/db";
 import { eventTypeKeySchema } from "@/lib/event-type-key";
+import { eventSignupFormInputSchema } from "@/lib/event-signup-form";
 import { requireActor } from "@/server/auth/actor";
 
 // Server actions get Next's built-in same-origin/POST protection (same as every
@@ -19,6 +20,7 @@ const createSchema = z
 		endsAt: z.coerce.date(),
 		capacity: z.number().int().min(1).max(100000).nullable().default(null),
 		graceMinutes: z.number().int().min(0).max(240).nullable().default(null),
+		rsvpForm: eventSignupFormInputSchema.default([]),
 	})
 	.refine((v) => v.endsAt > v.startsAt, { path: ["endsAt"], message: "End must be after the start." });
 

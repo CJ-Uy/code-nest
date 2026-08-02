@@ -89,8 +89,7 @@ export default async function MembersAdminPage({ searchParams }: { searchParams:
 									return (
 										<tr key={row.memberId}>
 											<td className="min-w-0 px-4 py-2.5">
-												<Link href={`/portal/admin/members/${row.memberId}?termId=${selectedTerm?.id ?? ""}`} className="break-all font-medium text-primary underline-offset-4 hover:underline">{row.memberName ?? row.memberEmail}</Link>
-												<p className="break-all text-xs text-muted-foreground">{row.memberEmail}</p>
+												<Link href={`/portal/admin/members/${row.memberId}?termId=${selectedTerm?.id ?? ""}`} className="break-all font-medium text-primary underline-offset-4 hover:underline">{row.memberName ?? "Member"}</Link>
 											</td>
 											<td className="px-4 py-2.5 text-right tabular-nums">{row.attendedCount}</td>
 											<td className="px-4 py-2.5 text-right tabular-nums">{row.lateCount}</td>

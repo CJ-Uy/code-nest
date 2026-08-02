@@ -24,6 +24,7 @@ import type { AuditRepository } from "./audit";
 import { buildExistingAttendanceAwardUpsert, buildScanAwardUpsert } from "./event-awards";
 import { canCreateType, createEventTypeRulesRepository } from "./eventTypeRules";
 import { notify } from "./notifications";
+import { validateEventSignupAnswers, type EventSignupAnswers, type EventSignupField } from "@/lib/event-signup-form";
 
 export const CHECKIN_LEAD_MS = 30 * 60 * 1000;
 
@@ -45,6 +46,7 @@ export type CreateEventInput = {
 	points?: number | null;
 	capacity: number | null;
 	graceMinutes?: number | null;
+	rsvpForm?: EventSignupField[];
 };
 
 export type UpdateEventInput = Partial<{
@@ -56,10 +58,11 @@ export type UpdateEventInput = Partial<{
 	endsAt: Date;
 	capacity: number | null;
 	graceMinutes: number | null;
+	rsvpForm: EventSignupField[];
 }>;
 
 export type ListEventsInput = { limit?: number; offset?: number };
-export type SetRsvpInput = { eventId: string; state: RsvpState };
+export type SetRsvpInput = { eventId: string; state: RsvpState; answers?: EventSignupAnswers };
 export type RecordScanInput = { eventId: string; memberId: string; termId: string };
 export type UndoScanInput = { eventId: string; memberId: string };
 export type RecordScanResult = {
@@ -86,7 +89,15 @@ export type AttendanceRow = {
 	scannedAt: Date;
 	scannedBy: string;
 };
-export type EventInviteRow = { memberId: string; fullName: string | null; invitedAt: Date };
+export type EventInviteRow = { memberId: string; fullName: string | null; name: string | null; invitedAt: Date };
+export type EventSignupResponseRow = {
+	memberId: string;
+	fullName: string | null;
+	name: string | null;
+	answers: EventSignupAnswers;
+	updatedAt: Date;
+	scannedAt: Date | null;
+};
 export type EventPointAwardRow = EventAwardInput & {
 	pointTypeLabel: string;
 	pointTypeActive: boolean;
@@ -109,6 +120,7 @@ export type EventsRepository = {
 	transferOwnership(actor: Actor, eventId: string, toMemberId: string): Promise<void>;
 	invite(actor: Actor, eventId: string, memberIds: string[]): Promise<{ invited: number }>;
 	listInvites(actor: Actor, eventId: string): Promise<EventInviteRow[]>;
+	listSignupResponses(actor: Actor, eventId: string): Promise<EventSignupResponseRow[]>;
 	listStaff(
 		actor: Actor,
 		eventId: string,
@@ -222,7 +234,7 @@ function toScanResult(eventId: string, memberId: string, row: ScanRow, alreadyPr
 	return {
 		eventId,
 		memberId,
-		memberName: row.memberFullName ?? row.memberName ?? row.memberEmail,
+		memberName: row.memberFullName ?? row.memberName ?? "Member",
 		memberImage: row.memberImage,
 		scannedAt: row.scannedAt,
 		scannedByName: row.scannedByFullName ?? row.scannedByName,
@@ -265,6 +277,7 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 					place: input.place,
 					capacity: input.capacity,
 					graceMinutes: input.graceMinutes ?? null,
+					rsvpFormJson: input.rsvpForm ?? [],
 					startsAt: input.startsAt,
 					endsAt: input.endsAt,
 					description: input.description,
@@ -337,6 +350,7 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 					endsAt: patch.endsAt ?? event.endsAt,
 					capacity: patch.capacity === undefined ? event.capacity : patch.capacity,
 					graceMinutes: patch.graceMinutes === undefined ? event.graceMinutes : patch.graceMinutes,
+					rsvpFormJson: patch.rsvpForm === undefined ? event.rsvpFormJson : patch.rsvpForm,
 				})
 				.where(eq(crsEvents.id, eventId))
 				.returning();
@@ -558,11 +572,32 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 			const { role } = await requireEvent(actor, eventId);
 			if (role !== "owner" && role !== "admin") throw new Error("Not authorized to list event invites.");
 			return db
-				.select({ memberId: eventInvites.memberId, fullName: members.fullName, invitedAt: eventInvites.invitedAt })
+				.select({ memberId: eventInvites.memberId, fullName: members.fullName, name: members.name, invitedAt: eventInvites.invitedAt })
 				.from(eventInvites)
 				.innerJoin(members, eq(members.id, eventInvites.memberId))
 				.where(eq(eventInvites.eventId, eventId))
 				.orderBy(asc(members.fullName));
+		},
+
+		async listSignupResponses(actor, eventId) {
+			const { role } = await requireEvent(actor, eventId);
+			if (role !== "owner" && role !== "admin" && !can(actor, "event:moderate")) {
+				throw new Error("Not authorized to list signup responses.");
+			}
+			return db
+				.select({
+					memberId: eventRsvps.memberId,
+					fullName: members.fullName,
+					name: members.name,
+					answers: eventRsvps.answersJson,
+					updatedAt: eventRsvps.updatedAt,
+					scannedAt: crsAttendance.scannedAt,
+				})
+				.from(eventRsvps)
+				.innerJoin(members, eq(members.id, eventRsvps.memberId))
+				.leftJoin(crsAttendance, and(eq(crsAttendance.eventId, eventRsvps.eventId), eq(crsAttendance.memberId, eventRsvps.memberId)))
+				.where(and(eq(eventRsvps.eventId, eventId), eq(eventRsvps.state, "going")))
+				.orderBy(asc(members.fullName), asc(members.name));
 		},
 
 		async listStaff(actor, eventId) {
@@ -584,12 +619,13 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 		async setRsvp(actor, input) {
 			const event = await loadEvent(db, input.eventId);
 			if (!event) throw new Error("Event not found.");
+			const answers = input.state === "going" ? validateEventSignupAnswers(event.rsvpFormJson ?? [], input.answers ?? {}) : {};
 			await db
 				.insert(eventRsvps)
-				.values({ eventId: input.eventId, memberId: actor.memberId, state: input.state, updatedAt: new Date() })
+				.values({ eventId: input.eventId, memberId: actor.memberId, state: input.state, answersJson: answers, updatedAt: new Date() })
 				.onConflictDoUpdate({
 					target: [eventRsvps.eventId, eventRsvps.memberId],
-					set: { state: input.state, updatedAt: new Date() },
+					set: { state: input.state, answersJson: answers, updatedAt: new Date() },
 				});
 			return { state: input.state };
 		},

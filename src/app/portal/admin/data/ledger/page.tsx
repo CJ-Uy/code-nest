@@ -83,7 +83,7 @@ export default async function LedgerAdminPage({ searchParams }: { searchParams: 
 								) : rows.map((row) => (
 									<tr key={row.recordId}>
 										<td className="px-4 py-2.5 tabular-nums text-muted-foreground">{formatDateTime(row.recordedAt)}</td>
-										<td className="min-w-0 px-4 py-2.5"><Link href={`/portal/admin/members/${row.memberId}?termId=${selectedTerm?.id ?? ""}`} className="break-all font-medium text-primary underline-offset-4 hover:underline">{row.memberName ?? row.memberEmail}</Link><p className="break-all text-xs text-muted-foreground">{row.memberEmail}</p></td>
+										<td className="min-w-0 px-4 py-2.5"><Link href={`/portal/admin/members/${row.memberId}?termId=${selectedTerm?.id ?? ""}`} className="break-all font-medium text-primary underline-offset-4 hover:underline">{row.memberName ?? "Member"}</Link></td>
 										<td className="min-w-0 break-all px-4 py-2.5">{row.pointTypeLabel}</td>
 										<td className="px-4 py-2.5 capitalize">{row.source.replaceAll("_", " ")}</td>
 										<td className="min-w-0 break-all px-4 py-2.5">{row.eventTitle ?? row.reason}</td>

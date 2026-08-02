@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/portal/empty-state";
 import { type EventTypeRow, labelFor } from "@/db/repositories/eventTypeRules";
 import { colourClasses } from "@/lib/event-type-colours";
+import { formatUtc8Time, toLocalDate } from "@/lib/date-slots";
 import { cn } from "@/lib/utils";
 
 export type EventListItem = {
@@ -27,21 +28,22 @@ const ROLE_LABEL: Record<NonNullable<EventListItem["myRole"]>, string> = {
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function timeRange(start: Date, end: Date | null): string {
-	const t = (d: Date) => d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+	const t = formatUtc8Time;
 	return end ? `${t(start)} – ${t(end)}` : t(start);
 }
 
 function Row({ event, types }: { event: EventListItem; types: EventTypeRow[] }) {
 	const manage = event.myRole === "owner" || event.myRole === "admin" || event.canModerate;
 	const chip = colourClasses(types.find((t) => t.type === event.type)?.colour ?? "slate").chip;
+	const [, month, day] = toLocalDate(event.startsAt).split("-").map(Number);
 	return (
 		<Link
 			href={`/portal/calendar/${event.id}`}
 			className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-secondary/40"
 		>
 			<div className="flex w-11 shrink-0 flex-col items-center rounded-lg border border-border py-1.5 leading-none">
-				<span className="text-[10px] font-semibold uppercase text-primary">{MONTHS[event.startsAt.getMonth()]}</span>
-				<span className="font-heading text-lg tabular-nums">{event.startsAt.getDate()}</span>
+				<span className="text-[10px] font-semibold uppercase text-primary">{MONTHS[(month ?? 1) - 1]}</span>
+				<span className="font-heading text-lg tabular-nums">{day}</span>
 			</div>
 			<div className="min-w-0 flex-1">
 				<div className="flex items-center gap-2">

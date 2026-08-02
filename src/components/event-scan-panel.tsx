@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ScanLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EventScanOverlay } from "@/components/event-scan-overlay";
+import { formatUtc8Time } from "@/lib/date-slots";
 
 export function EventScanPanel({
 	eventId,
@@ -21,7 +22,7 @@ export function EventScanPanel({
 	canUndo: boolean;
 }) {
 	const [overlayOpen, setOverlayOpen] = useState(false);
-	const closesLabel = new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(closesAt);
+	const closesLabel = formatUtc8Time(closesAt);
 	const countLabel = `${scannedCount} ${scannedCount === 1 ? "member" : "members"} checked in.`;
 
 	return (

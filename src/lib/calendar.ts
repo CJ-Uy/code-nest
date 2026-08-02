@@ -12,11 +12,11 @@ export type CalendarItem = {
 };
 
 export function monthRange(year: number, month: number): { start: Date; end: Date } {
-	const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
-	const end = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
+	const start = new Date(Date.UTC(year, month - 1, 1, -8, 0, 0, 0));
+	const end = new Date(Date.UTC(year, month, 1, -8, 0, 0, 0));
 	return { start, end };
 }
 
 export function toIsoDate(date: Date): string {
-	return date.toISOString().slice(0, 10);
+	return new Date(date.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }

@@ -22,6 +22,24 @@ const colourLabels: Record<EventTypeColour, string> = {
 	slate: "Slate",
 };
 
+const permissionLabels: Record<string, string> = {
+	"event:moderate": "Events admins only",
+	"event:points": "Points admins only",
+	"event:create_restricted": "Events admins only",
+	"points:assign": "Retention admins only",
+	"retention:record": "Retention admins only",
+	"retention:configure": "Retention admins only",
+	"link:moderate": "Link admins only",
+	"role:assign": "Super admins only",
+	"survey:configure": "Survey admins only",
+	"member:manage": "Member admins only",
+	"roster:manage": "Roster admins only",
+	"nav:configure": "Member admins only",
+	"announcement:manage": "Publishing admins only",
+	"library:manage": "Library admins only",
+	"library:moderate": "Library moderators only",
+};
+
 function move<T>(items: T[], from: number, to: number): T[] {
 	const next = [...items];
 	const [item] = next.splice(from, 1);
@@ -85,10 +103,10 @@ function PermissionSelect({
 	return (
 		<Select name={name} form={form} defaultValue={current}>
 			<option value="">Any member</option>
-			{isUnrecognized ? <option value={current}>{current} (unrecognized, locked to Super)</option> : null}
+			{isUnrecognized ? <option value={current}>Super admins only</option> : null}
 			{permissionActions.map((action) => (
 				<option key={action} value={action}>
-					{action}
+					{permissionLabels[action] ?? action}
 				</option>
 			))}
 		</Select>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { CalendarItem } from "@/lib/calendar";
+import { toLocalDate } from "@/lib/date-slots";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -21,7 +22,7 @@ function isoFor(year: number, month: number, day: number): string {
 }
 
 export function CalendarMonth({ items, year, month }: { items: CalendarItem[]; year: number; month: number }) {
-	const todayIso = new Date().toISOString().slice(0, 10);
+	const todayIso = toLocalDate(new Date());
 
 	// Bucket items by their ISO day.
 	const byDay = new Map<string, CalendarItem[]>();

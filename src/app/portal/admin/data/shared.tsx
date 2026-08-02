@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+import { formatUtc8DateTime, formatUtc8Time } from "@/lib/date-slots";
 
 export const PAGE_SIZE = 50;
 
@@ -18,15 +19,15 @@ export function formatDate(value: Date) {
 }
 
 export function formatDateTime(value: Date) {
-	return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(value);
+	return formatUtc8DateTime(value);
 }
 
 export function formatTime(value: Date) {
-	return new Intl.DateTimeFormat("en", { timeStyle: "short" }).format(value);
+	return formatUtc8Time(value);
 }
 
 export function displayName(row: { memberName?: string | null; memberEmail: string }) {
-	return row.memberName ?? row.memberEmail;
+	return row.memberName ?? "Member";
 }
 
 export function sectionTitle(children: ReactNode) {

@@ -5,6 +5,7 @@ import { crsAttendance, crsEvents, eventMedia, eventRsvps, members, terms } from
 import type { EventStatus, EventType, RsvpState } from "@/db/schema";
 import { can, type Actor } from "@/server/auth/permissions";
 import { monthRange, toIsoDate, type CalendarItem } from "@/lib/calendar";
+import type { EventSignupAnswers, EventSignupField } from "@/lib/event-signup-form";
 
 type Db = DrizzleD1Database<typeof schema>;
 
@@ -19,6 +20,8 @@ export type EventDetail = {
 	startsAt: Date;
 	endsAt: Date | null;
 	description: string;
+	rsvpForm: EventSignupField[];
+	myRsvpAnswers: EventSignupAnswers;
 	myRsvp: RsvpState;
 	attendingCount: number;
 	iAttended: boolean;
@@ -112,12 +115,15 @@ export function createCalendarRepository(db: Db): CalendarRepository {
 			if (!event || event.deletedAt) return null;
 
 			const [myRsvp] = await db
-				.select({ state: eventRsvps.state })
+				.select({ state: eventRsvps.state, answers: eventRsvps.answersJson })
 				.from(eventRsvps)
 				.where(and(eq(eventRsvps.eventId, eventId), eq(eventRsvps.memberId, actor.memberId)))
 				.limit(1);
 
-			const [attending] = await db.select({ value: count() }).from(crsAttendance).where(eq(crsAttendance.eventId, eventId));
+			const [attending] = await db
+				.select({ value: count() })
+				.from(eventRsvps)
+				.where(and(eq(eventRsvps.eventId, eventId), eq(eventRsvps.state, "going")));
 
 			const [mine] = await db
 				.select({ memberId: crsAttendance.memberId })
@@ -141,6 +147,8 @@ export function createCalendarRepository(db: Db): CalendarRepository {
 				startsAt: event.startsAt,
 				endsAt: event.endsAt,
 				description: event.description,
+				rsvpForm: event.rsvpFormJson ?? [],
+				myRsvpAnswers: myRsvp?.answers ?? {},
 				myRsvp: myRsvp?.state ?? "none",
 				attendingCount: attending?.value ?? 0,
 				iAttended: Boolean(mine),

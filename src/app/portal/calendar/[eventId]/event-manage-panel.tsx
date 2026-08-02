@@ -22,7 +22,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DateTimePicker } from "@/components/date-time-picker";
 import { EventScanOverlay } from "@/components/event-scan-overlay";
 import type { EventTypeRow } from "@/db/repositories/eventTypeRules";
-import { fromLocalInput, toLocalInput } from "@/lib/date-slots";
+import { formatUtc8Time, fromLocalInput, toLocalInput } from "@/lib/date-slots";
+import { answerLabel, type EventSignupAnswers, type EventSignupField } from "@/lib/event-signup-form";
 import { cn } from "@/lib/utils";
 import {
 	addStaffAction,
@@ -36,6 +37,7 @@ import {
 } from "./actions";
 import type { AwardEditorRow } from "./award-editor-input";
 import { EventAwardsEditor } from "./event-awards-editor";
+import { EventSignupFormEditor } from "../event-signup-form-editor";
 
 const FIELD = "w-full rounded-lg border border-border bg-background p-2 text-sm";
 const CHECKIN_LEAD_MS = 30 * 60 * 1000;
@@ -50,7 +52,15 @@ export type StaffMember = {
 	role: "owner" | "admin" | "scanner";
 };
 export type AttendanceRow = { memberId: string; fullName: string | null; name: string | null; scannedAt: Date };
-export type InviteRow = { memberId: string; fullName: string | null; invitedAt: Date };
+export type InviteRow = { memberId: string; fullName: string | null; name: string | null; invitedAt: Date };
+export type SignupResponseRow = {
+	memberId: string;
+	fullName: string | null;
+	name: string | null;
+	answers: EventSignupAnswers;
+	updatedAt: Date;
+	scannedAt: Date | null;
+};
 
 export type ManageEvent = {
 	id: string;
@@ -62,6 +72,7 @@ export type ManageEvent = {
 	endsAt: Date | null;
 	capacity: number | null;
 	graceMinutes: number | null;
+	rsvpForm: EventSignupField[];
 	myRole: "owner" | "admin" | "scanner" | null;
 	canModerate: boolean;
 	canSetPoints: boolean;
@@ -78,6 +89,7 @@ export function EventManagePanel({
 	staff,
 	attendance,
 	invites,
+	signups,
 	termId,
 	allowedEventTypes,
 	typeRows,
@@ -89,6 +101,7 @@ export function EventManagePanel({
 	staff: StaffMember[];
 	attendance: AttendanceRow[];
 	invites: InviteRow[];
+	signups: SignupResponseRow[];
 	termId: string | null;
 	allowedEventTypes: EventTypeRow[];
 	typeRows: EventTypeRow[];
@@ -148,7 +161,7 @@ export function EventManagePanel({
 						termId={termId}
 					/>
 				) : null}
-				{section === "people" ? <PeopleSection event={event} staff={staff} invites={invites} isOwner={isOwner} /> : null}
+				{section === "people" ? <PeopleSection event={event} staff={staff} invites={invites} signups={signups} isOwner={isOwner} /> : null}
 				{section === "details" ? (
 					<DetailsSection
 						event={event}
@@ -350,7 +363,7 @@ function CheckinsSection({
 							<li key={a.memberId} className="flex items-center justify-between px-3 py-2 text-sm">
 								<span className="truncate">{displayName(a)}</span>
 								<span className="text-xs text-muted-foreground">
-									{a.scannedAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+									{formatUtc8Time(a.scannedAt)}
 								</span>
 							</li>
 						))}
@@ -370,11 +383,13 @@ function PeopleSection({
 	event,
 	staff,
 	invites,
+	signups,
 	isOwner,
 }: {
 	event: ManageEvent;
 	staff: StaffMember[];
 	invites: InviteRow[];
+	signups: SignupResponseRow[];
 	isOwner: boolean;
 }) {
 	const router = useRouter();
@@ -460,7 +475,7 @@ function PeopleSection({
 					<ul className="flex flex-wrap gap-1.5">
 						{invites.map((i) => (
 							<Badge key={i.memberId} variant="outline" className="font-normal">
-								{i.fullName ?? "Member"}
+								{displayName(i)}
 							</Badge>
 						))}
 					</ul>
@@ -473,6 +488,39 @@ function PeopleSection({
 					onPick={(m) => act(() => inviteAction(event.id, [m.memberId]), () => setInvited(displayName(m)))}
 				/>
 				{invited ? <p className="text-sm text-accent">Invited {invited}.</p> : null}
+			</div>
+
+			<div className="grid gap-2">
+				<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Signed up · {signups.length}</p>
+				{signups.length === 0 ? (
+					<p className="text-sm text-muted-foreground">No one has signed up yet.</p>
+				) : (
+					<ul className="divide-y divide-border rounded-lg border border-border">
+						{signups.map((row) => {
+							const answers = Object.entries(row.answers);
+							return (
+								<li key={row.memberId} className="grid gap-2 px-3 py-2 text-sm">
+									<div className="flex items-center justify-between gap-3">
+										<span className="truncate font-medium">{displayName(row)}</span>
+										<Badge variant={row.scannedAt ? "success" : "secondary"} className="text-[10px]">
+											{row.scannedAt ? "Present" : "No scan"}
+										</Badge>
+									</div>
+									{answers.length > 0 ? (
+										<dl className="grid gap-1 text-xs text-muted-foreground">
+											{answers.map(([fieldId, value]) => (
+												<div key={fieldId} className="grid gap-0.5 sm:grid-cols-[160px_1fr]">
+													<dt className="font-medium text-foreground">{answerLabel(event.rsvpForm, fieldId)}</dt>
+													<dd className="min-w-0 break-words">{value}</dd>
+												</div>
+											))}
+										</dl>
+									) : null}
+								</li>
+							);
+						})}
+					</ul>
+				)}
 			</div>
 
 			{/* Transfer ownership (owner only) */}
@@ -528,8 +576,9 @@ function DetailsSection({
 	const [endsAt, setEndsAt] = useState(event.endsAt ? toLocalInput(event.endsAt) : "");
 	const [capacity, setCapacity] = useState(event.capacity?.toString() ?? "");
 	const [graceMinutes, setGraceMinutes] = useState(event.graceMinutes?.toString() ?? "");
+	const [rsvpForm, setRsvpForm] = useState(event.rsvpForm);
 
-	const endBeforeStart = Boolean(startsAt && endsAt && new Date(endsAt) <= new Date(startsAt));
+	const endBeforeStart = Boolean(startsAt && endsAt && fromLocalInput(endsAt) <= fromLocalInput(startsAt));
 	// The event's own current type must always be selectable, even if it fell outside the
 	// actor's allowed types after the rules changed - leaving it unchanged is always legal,
 	// and dropping it from the options would make an unrelated save silently change the type.
@@ -560,6 +609,7 @@ function DetailsSection({
 					endsAt: fromLocalInput(endsAt).toISOString(),
 					capacity: capacity ? Number(capacity) : null,
 					graceMinutes: graceMinutes === "" ? null : Number(graceMinutes),
+					rsvpForm,
 				});
 				setSaved(true);
 				router.refresh();
@@ -635,7 +685,9 @@ function DetailsSection({
 					setEndsAt(next.endsAt);
 				}}
 			/>
+			<p className="-mt-2 text-xs text-muted-foreground">Times are saved and shown in UTC+8.</p>
 			{endBeforeStart ? <p className="-mt-2 text-xs text-destructive">End must be after the start.</p> : null}
+			<EventSignupFormEditor value={rsvpForm} onChange={setRsvpForm} />
 			<label className="grid gap-1.5 text-sm">
 				<span className="font-medium">Description</span>
 				<textarea className={FIELD} rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />

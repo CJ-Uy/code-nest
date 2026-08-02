@@ -5,6 +5,7 @@ import { z } from "zod";
 import { getRepositories } from "@/db";
 import { eventsContract } from "@/db/contract/events";
 import { eventTypeKeySchema } from "@/lib/event-type-key";
+import { eventSignupAnswersSchema, eventSignupFormInputSchema } from "@/lib/event-signup-form";
 import { requireActor } from "@/server/auth/actor";
 
 // Server actions get Next's built-in same-origin/POST protection (same as the
@@ -13,6 +14,7 @@ import { requireActor } from "@/server/auth/actor";
 function revalidate(eventId: string) {
 	revalidatePath(`/portal/calendar/${eventId}`);
 	revalidatePath("/portal/calendar");
+	revalidatePath("/portal/events");
 }
 
 const updateSchema = z
@@ -26,6 +28,7 @@ const updateSchema = z
 		endsAt: z.coerce.date(),
 		capacity: z.number().int().min(1).max(100000).nullable().default(null),
 		graceMinutes: z.number().int().min(0).max(240).nullable().default(null),
+		rsvpForm: eventSignupFormInputSchema.default([]),
 	})
 	.refine((v) => v.endsAt > v.startsAt, { path: ["endsAt"], message: "End must be after the start." });
 
@@ -59,6 +62,19 @@ export async function markPresentAction(eventId: string, memberId: string) {
 	if (!currentTerm) throw new Error("No active school year to record attendance against.");
 	const result = await repositories.events.recordScan(actor, { eventId, memberId, termId: currentTerm.id });
 	revalidate(eventId);
+	return result;
+}
+
+export async function rsvpAction(eventId: string, state: "going" | "none", answers: unknown) {
+	const actor = await requireActor();
+	const input = eventsContract.rsvp.input.parse({
+		eventId,
+		state,
+		answers: eventSignupAnswersSchema.parse(answers),
+	});
+	const repositories = await getRepositories();
+	const result = await repositories.events.setRsvp(actor, input);
+	revalidate(input.eventId);
 	return result;
 }
 

@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { check, index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import type { EventSignupAnswers, EventSignupField } from "@/lib/event-signup-form";
 
 export type MemberStatus = "active" | "pending" | "inactive";
 /** The three types seeded by migration 0010; kept for seeding and tests only. Event types are data now - see event_type_rules. */
@@ -201,6 +202,7 @@ export const crsEvents = sqliteTable(
 		startsAt: integer("starts_at", { mode: "timestamp_ms" }).notNull(),
 		endsAt: integer("ends_at", { mode: "timestamp_ms" }),
 		description: text("description").notNull(),
+		rsvpFormJson: text("rsvp_form_json", { mode: "json" }).$type<EventSignupField[]>().notNull().default([]),
 		createdBy: text("created_by")
 			.notNull()
 			.references(() => members.id, { onDelete: "cascade" }),
@@ -266,6 +268,7 @@ export const eventRsvps = sqliteTable(
 			.notNull()
 			.references(() => members.id, { onDelete: "cascade" }),
 		state: text("state").$type<RsvpState>().notNull().default("none"),
+		answersJson: text("answers_json", { mode: "json" }).$type<EventSignupAnswers>().notNull().default({}),
 		updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 	},
 	(table) => [primaryKey({ columns: [table.eventId, table.memberId] }), index("event_rsvps_member_id_idx").on(table.memberId)],

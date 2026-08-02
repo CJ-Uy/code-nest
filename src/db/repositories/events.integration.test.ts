@@ -556,6 +556,33 @@ describe("events repository on D1", () => {
 		expect((await repo.listPublished(outsider, {})).map((row) => row.id)).toEqual([event.id]);
 	});
 
+	it("stores signup form answers and exposes them to event admins", async () => {
+		const { repo } = makeRepos();
+		const event = await repo.create(owner, {
+			title: "Signup Night",
+			type: "casual",
+			place: "SOM 111",
+			description: "Signup",
+			startsAt: START,
+			endsAt: END,
+			capacity: null,
+			rsvpForm: [
+				{ id: "role", type: "radio", label: "Role", required: true, options: ["Participant", "Observer"] },
+				{ id: "note", type: "short_text", label: "Note", required: false, options: [] },
+			],
+		});
+
+		await expect(
+			repo.setRsvp(outsider, { eventId: event.id, state: "going", answers: { role: "Speaker" } }),
+		).rejects.toThrow("Choose a valid option");
+		await repo.setRsvp(outsider, { eventId: event.id, state: "going", answers: { role: "Observer", note: "Late" } });
+
+		expect(await repo.listSignupResponses(owner, event.id)).toMatchObject([
+			{ memberId: outsider.memberId, fullName: "Outsider", answers: { role: "Observer", note: "Late" }, scannedAt: null },
+		]);
+		await expect(repo.listSignupResponses(scanner, event.id)).rejects.toThrow("Not authorized");
+	});
+
 	it("limits scanner member search to exact lookups and staff-only attendance reads", async () => {
 		const event = await makeApprovedEvent();
 		const { repo } = makeRepos();

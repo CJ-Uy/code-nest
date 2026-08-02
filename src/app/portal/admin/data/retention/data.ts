@@ -3,6 +3,7 @@ import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { getDb } from "@/db/client";
 import * as schema from "@/db/schema";
 import { crsEvents, members, pointTypes, terms } from "@/db/schema";
+import { toLocalDate } from "@/lib/date-slots";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
 import type { MemberOption } from "./member-checklist";
@@ -54,14 +55,14 @@ export async function loadRetentionPickers(actor: Actor): Promise<{
 	return {
 		members: memberRows.map((row) => ({
 			id: row.id,
-			label: row.fullName ?? row.name ?? row.email,
-			sublabel: row.email,
+			label: row.fullName ?? row.name ?? "Member",
+			sublabel: row.id,
 		})),
 		terms: termRows.map((row) => ({ id: row.id, label: row.name, startsAt: row.startsAt, endsAt: row.endsAt, retainedAt: row.retainedAt, probationBelow: row.probationBelow })),
 		events: eventRows.map((row) => ({
 			id: row.id,
 			label: row.title,
-			detail: `${row.startsAt.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })} · ${row.place}`,
+			detail: `${toLocalDate(row.startsAt)} · ${row.place}`,
 			startsAt: row.startsAt,
 			status: row.status,
 			type: row.type,

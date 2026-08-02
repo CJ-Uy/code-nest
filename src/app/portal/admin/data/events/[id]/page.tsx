@@ -102,7 +102,6 @@ export default async function EventRosterPage({ params }: { params: Promise<{ id
 												<Link href={`/portal/admin/members/${row.memberId}`} className="break-all font-medium text-primary underline-offset-4 hover:underline">
 													{displayName(row)}
 												</Link>
-												<p className="break-all text-xs text-muted-foreground">{row.memberEmail}</p>
 											</td>
 											<td className="px-4 py-2.5 tabular-nums text-muted-foreground">{row.scannedAt ? formatTime(row.scannedAt) : ""}</td>
 											<td className="px-4 py-2.5"><AttendanceStatusCell scannedAt={row.scannedAt} startsAt={row.startsAt} graceMinutes={row.graceMinutes} /></td>
@@ -127,7 +126,6 @@ export default async function EventRosterPage({ params }: { params: Promise<{ id
 									{displayName(row)}
 								</Link>
 								<span className="text-xs">Absent</span>
-								<span className="min-w-0 break-all text-xs sm:col-span-2">{row.memberEmail}</span>
 							</div>
 						))}
 					</div>

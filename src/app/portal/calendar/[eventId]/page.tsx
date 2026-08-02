@@ -6,10 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { MemberCodeCard } from "@/components/member-code-card";
 import { getRepositories } from "@/db";
 import { allowedEventTypes } from "@/db/repositories/eventTypeRules";
+import { formatUtc8DateTime } from "@/lib/date-slots";
 import { loadEventTypes } from "@/lib/event-type-load";
 import { requireActor } from "@/server/auth/actor";
 import { buildAwardEditorRows, formatAwardSummary } from "./award-editor-input";
 import { EventManagePanel } from "./event-manage-panel";
+import { EventSignupPanel } from "./event-signup-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -51,15 +53,16 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 			? allowedTypesForActor
 			: [...allowedTypesForActor, ...rows.filter((row) => row.type === managed.type)]
 		: [];
-	const [staff, attendance, invites, terms] =
+	const [staff, attendance, invites, signups, terms] =
 		managed && isStaff
 			? await Promise.all([
 					repositories.events.listStaff(actor, eventId).catch(() => []),
 					repositories.events.listAttendance(actor, eventId).catch(() => []),
 					repositories.events.listInvites(actor, eventId).catch(() => []),
+					repositories.events.listSignupResponses(actor, eventId).catch(() => []),
 					repositories.retention.listTerms(actor).catch(() => []),
 				])
-			: [[], [], [], []];
+			: [[], [], [], [], []];
 	// Points attach to a term; resolve the active one server-side, same as markPresentAction.
 	const currentTerm = terms.find((t) => t.isCurrent);
 
@@ -83,7 +86,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 							</Badge>
 						</div>
 						<CardDescription>
-							{event.place} · {event.startsAt.toISOString().slice(0, 16).replace("T", " ")}
+							{event.place} · {formatUtc8DateTime(event.startsAt)} UTC+8
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-col gap-3 text-sm">
@@ -91,11 +94,18 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 						<p className="break-all font-medium">
 							{awardLoad.ok ? formatAwardSummary(awardLoad.rows) : "Worth: Unavailable"}
 						</p>
-						<p className="text-muted-foreground">{event.attendingCount} attending</p>
+						<p className="text-muted-foreground">{event.attendingCount} signed up</p>
 					</CardContent>
 				</Card>
 
-				{event.iAttended ? (
+				<div className="grid gap-5">
+					<EventSignupPanel
+						eventId={event.id}
+						form={event.rsvpForm}
+						initialState={event.myRsvp}
+						initialAnswers={event.myRsvpAnswers}
+					/>
+					{event.iAttended ? (
 					<Card>
 						<CardHeader>
 							<CardTitle className="text-base">Check in</CardTitle>
@@ -108,13 +118,14 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 							</div>
 						</CardContent>
 					</Card>
-				) : (
+					) : (
 					<MemberCodeCard
 						memberId={actor.memberId}
 						title="Check in"
 						description="Show this code to an organizer to be marked present."
 					/>
-				)}
+					)}
+				</div>
 			</div>
 
 			{managed && isStaff ? (
@@ -129,6 +140,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 						endsAt: managed.endsAt,
 						capacity: managed.capacity,
 						graceMinutes: managed.graceMinutes,
+						rsvpForm: managed.rsvpFormJson,
 						myRole: managed.myRole,
 						canModerate: managed.canModerate,
 						canSetPoints: managed.canSetPoints,
@@ -136,6 +148,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 					staff={staff}
 					attendance={attendance}
 					invites={invites}
+					signups={signups}
 					termId={currentTerm?.id ?? null}
 					allowedEventTypes={allowedTypesForEdit}
 					typeRows={rows}

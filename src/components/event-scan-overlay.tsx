@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, History, SwitchCamera, Undo2, X, XCircle, Zap, ZapOff } from "lucide-react";
 import { CameraScanner, type CameraFacingMode, type CameraScannerControls } from "@/components/camera-scanner";
+import { formatUtc8Time } from "@/lib/date-slots";
 import { classifyScan, describeScan, type ScanDescription, type ScanResponse } from "@/lib/scan-feedback";
 import { cn } from "@/lib/utils";
 
@@ -267,7 +268,7 @@ export function EventScanOverlay({
 									>
 										<span className="truncate">{entry.title}</span>
 										<span className="shrink-0 text-xs text-white/60">
-											{entry.at.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+											{formatUtc8Time(entry.at)}
 										</span>
 									</li>
 								))}

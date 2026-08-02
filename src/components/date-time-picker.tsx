@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { buildMonthGrid, deriveEnd, timeSlots, toLocalDate } from "@/lib/date-slots";
+import { buildMonthGrid, deriveEnd, formatSlotLabel, timeSlots, toLocalDate, utc8Parts } from "@/lib/date-slots";
 
 const DURATIONS = [
 	{ label: "30m", minutes: 30 },
@@ -29,16 +29,20 @@ export function DateTimePicker({
 }) {
 	const [day, time] = startsAt ? startsAt.split("T") : ["", ""];
 	const [cursor, setCursor] = useState(() => {
-		const base = day ? new Date(`${day}T00:00`) : new Date();
-		return { year: base.getFullYear(), month: base.getMonth() };
+		if (!day) {
+			const now = utc8Parts(new Date());
+			return { year: now.year, month: now.month - 1 };
+		}
+		const [year, month] = day.split("-").map(Number);
+		return { year, month: month - 1 };
 	});
 	const [custom, setCustom] = useState(
 		() => Boolean(startsAt && endsAt) && !DURATIONS.some(({ minutes }) => deriveEnd(startsAt, minutes) === endsAt),
 	);
 
 	const grid = useMemo(() => buildMonthGrid(cursor.year, cursor.month), [cursor]);
-	const monthLabel = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(
-		new Date(cursor.year, cursor.month, 1),
+	const monthLabel = new Intl.DateTimeFormat("en", { month: "long", year: "numeric", timeZone: "UTC" }).format(
+		new Date(Date.UTC(cursor.year, cursor.month, 1)),
 	);
 	const today = toLocalDate(new Date());
 	const activeDuration = DURATIONS.find(({ minutes }) => startsAt && endsAt && deriveEnd(startsAt, minutes) === endsAt);
@@ -102,10 +106,11 @@ export function DateTimePicker({
 							onClick={() => pick(`${day || today}T${slot}`)}
 							className={cn(chip, slot === time ? chipOn : chipOff)}
 						>
-							{slot}
+							{formatSlotLabel(slot)}
 						</button>
 					))}
 				</div>
+				<span className="text-xs text-muted-foreground">UTC+8</span>
 			</div>
 
 			<div className="grid gap-2">

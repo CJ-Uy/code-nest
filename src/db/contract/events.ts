@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { eventAwardsInputSchema } from "@/db/types";
 import { eventTypeKeySchema } from "@/lib/event-type-key";
+import { eventSignupAnswersSchema, eventSignupFormInputSchema } from "@/lib/event-signup-form";
 import { operation } from "./common";
 
 export const eventOutputSchema = z.object({
@@ -14,6 +15,7 @@ export const eventOutputSchema = z.object({
 	startsAt: z.coerce.date(),
 	endsAt: z.coerce.date().nullable(),
 	description: z.string(),
+	rsvpFormJson: eventSignupFormInputSchema,
 	createdBy: z.string(),
 	approvedBy: z.string().nullable(),
 	approvedAt: z.coerce.date().nullable(),
@@ -72,6 +74,7 @@ export const createEventInputSchema = z.object({
 	startsAt: z.coerce.date(),
 	endsAt: z.coerce.date(),
 	capacity: z.number().int().min(1).max(100000).nullable().default(null),
+	rsvpForm: eventSignupFormInputSchema.default([]),
 });
 
 export const updateEventInputSchema = createEventInputSchema.partial().extend({
@@ -162,6 +165,7 @@ export const eventsContract = {
 				z.object({
 					memberId: z.string(),
 					fullName: z.string().nullable(),
+					name: z.string().nullable(),
 					invitedAt: z.coerce.date(),
 				}),
 			),
@@ -176,7 +180,7 @@ export const eventsContract = {
 		sharedDev: "allow",
 	}),
 	rsvp: operation({
-		input: z.object({ eventId: z.string().min(1), state: z.enum(["going", "none"]) }),
+		input: z.object({ eventId: z.string().min(1), state: z.enum(["going", "none"]), answers: eventSignupAnswersSchema.optional() }),
 		output: z.object({ state: z.enum(["going", "none"]) }),
 		auth: "member",
 		sharedDev: "allow",

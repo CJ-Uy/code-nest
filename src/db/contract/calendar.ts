@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { eventTypeKeySchema } from "@/lib/event-type-key";
+import { eventSignupAnswersSchema, eventSignupFormInputSchema } from "@/lib/event-signup-form";
 import { operation } from "./common";
 
 export const calendarItemSchema = z.object({
@@ -29,6 +30,8 @@ export const eventDetailSchema = z.object({
 	startsAt: z.coerce.date(),
 	endsAt: z.coerce.date().nullable(),
 	description: z.string(),
+	rsvpForm: eventSignupFormInputSchema,
+	myRsvpAnswers: eventSignupAnswersSchema,
 	myRsvp: z.enum(["going", "none"]),
 	attendingCount: z.number(),
 	iAttended: z.boolean(),
