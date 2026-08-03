@@ -203,6 +203,7 @@ export const crsEvents = sqliteTable(
 		endsAt: integer("ends_at", { mode: "timestamp_ms" }),
 		description: text("description").notNull(),
 		rsvpFormJson: text("rsvp_form_json", { mode: "json" }).$type<EventSignupField[]>().notNull().default([]),
+		rsvpResponsesPublic: integer("rsvp_responses_public", { mode: "boolean" }).notNull().default(false),
 		createdBy: text("created_by")
 			.notNull()
 			.references(() => members.id, { onDelete: "cascade" }),

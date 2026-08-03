@@ -29,6 +29,7 @@ const updateSchema = z
 		capacity: z.number().int().min(1).max(100000).nullable().default(null),
 		graceMinutes: z.number().int().min(0).max(240).nullable().default(null),
 		rsvpForm: eventSignupFormInputSchema.default([]),
+		rsvpResponsesPublic: z.boolean().default(false),
 	})
 	.refine((v) => v.endsAt > v.startsAt, { path: ["endsAt"], message: "End must be after the start." });
 

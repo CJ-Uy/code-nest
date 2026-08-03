@@ -19,6 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DateTimePicker } from "@/components/date-time-picker";
 import { EventScanOverlay } from "@/components/event-scan-overlay";
 import type { EventTypeRow } from "@/db/repositories/eventTypeRules";
@@ -73,6 +74,7 @@ export type ManageEvent = {
 	capacity: number | null;
 	graceMinutes: number | null;
 	rsvpForm: EventSignupField[];
+	rsvpResponsesPublic: boolean;
 	myRole: "owner" | "admin" | "scanner" | null;
 	canModerate: boolean;
 	canSetPoints: boolean;
@@ -577,6 +579,7 @@ function DetailsSection({
 	const [capacity, setCapacity] = useState(event.capacity?.toString() ?? "");
 	const [graceMinutes, setGraceMinutes] = useState(event.graceMinutes?.toString() ?? "");
 	const [rsvpForm, setRsvpForm] = useState(event.rsvpForm);
+	const [rsvpResponsesPublic, setRsvpResponsesPublic] = useState(event.rsvpResponsesPublic);
 
 	const endBeforeStart = Boolean(startsAt && endsAt && fromLocalInput(endsAt) <= fromLocalInput(startsAt));
 	// The event's own current type must always be selectable, even if it fell outside the
@@ -610,6 +613,7 @@ function DetailsSection({
 					capacity: capacity ? Number(capacity) : null,
 					graceMinutes: graceMinutes === "" ? null : Number(graceMinutes),
 					rsvpForm,
+					rsvpResponsesPublic,
 				});
 				setSaved(true);
 				router.refresh();
@@ -687,6 +691,20 @@ function DetailsSection({
 			/>
 			<p className="-mt-2 text-xs text-muted-foreground">Times are saved and shown in UTC+8.</p>
 			{endBeforeStart ? <p className="-mt-2 text-xs text-destructive">End must be after the start.</p> : null}
+			<div className="flex items-start gap-3 rounded-lg border border-border bg-secondary/30 p-3 text-sm">
+				<Checkbox
+					id="rsvp-responses-public"
+					checked={rsvpResponsesPublic}
+					onCheckedChange={(checked) => setRsvpResponsesPublic(checked === true)}
+					className="mt-0.5"
+				/>
+				<label htmlFor="rsvp-responses-public" className="grid gap-1">
+					<span className="font-medium">Let members see signup answers</span>
+					<span className="text-xs text-muted-foreground">
+						When off, only organizers can see who is going and how they answered the form.
+					</span>
+				</label>
+			</div>
 			<EventSignupFormEditor value={rsvpForm} onChange={setRsvpForm} />
 			<label className="grid gap-1.5 text-sm">
 				<span className="font-medium">Description</span>

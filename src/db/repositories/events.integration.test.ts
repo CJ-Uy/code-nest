@@ -583,6 +583,29 @@ describe("events repository on D1", () => {
 		await expect(repo.listSignupResponses(scanner, event.id)).rejects.toThrow("Not authorized");
 	});
 
+	it("lets regular members read signup answers when organizers make them public", async () => {
+		const { repo } = makeRepos();
+		const event = await repo.create(owner, {
+			title: "Open Signup Night",
+			type: "casual",
+			place: "SOM 111",
+			description: "Signup",
+			startsAt: START,
+			endsAt: END,
+			capacity: null,
+			rsvpResponsesPublic: true,
+			rsvpForm: [{ id: "role", type: "short_text", label: "Role", required: false, options: [] }],
+		});
+		await repo.setRsvp(outsider, { eventId: event.id, state: "going", answers: { role: "Observer" } });
+
+		expect(await repo.listSignupResponses(scanner, event.id)).toMatchObject([
+			{ memberId: outsider.memberId, answers: { role: "Observer" } },
+		]);
+
+		await repo.update(owner, event.id, { rsvpResponsesPublic: false });
+		await expect(repo.listSignupResponses(scanner, event.id)).rejects.toThrow("Not authorized");
+	});
+
 	it("limits scanner member search to exact lookups and staff-only attendance reads", async () => {
 		const event = await makeApprovedEvent();
 		const { repo } = makeRepos();

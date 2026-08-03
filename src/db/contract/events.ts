@@ -16,6 +16,7 @@ export const eventOutputSchema = z.object({
 	endsAt: z.coerce.date().nullable(),
 	description: z.string(),
 	rsvpFormJson: eventSignupFormInputSchema,
+	rsvpResponsesPublic: z.boolean(),
 	createdBy: z.string(),
 	approvedBy: z.string().nullable(),
 	approvedAt: z.coerce.date().nullable(),
@@ -75,6 +76,7 @@ export const createEventInputSchema = z.object({
 	endsAt: z.coerce.date(),
 	capacity: z.number().int().min(1).max(100000).nullable().default(null),
 	rsvpForm: eventSignupFormInputSchema.default([]),
+	rsvpResponsesPublic: z.boolean().default(false),
 });
 
 export const updateEventInputSchema = createEventInputSchema.partial().extend({

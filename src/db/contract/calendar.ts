@@ -31,6 +31,7 @@ export const eventDetailSchema = z.object({
 	endsAt: z.coerce.date().nullable(),
 	description: z.string(),
 	rsvpForm: eventSignupFormInputSchema,
+	rsvpResponsesPublic: z.boolean(),
 	myRsvpAnswers: eventSignupAnswersSchema,
 	myRsvp: z.enum(["going", "none"]),
 	attendingCount: z.number(),

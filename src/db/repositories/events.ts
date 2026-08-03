@@ -47,6 +47,7 @@ export type CreateEventInput = {
 	capacity: number | null;
 	graceMinutes?: number | null;
 	rsvpForm?: EventSignupField[];
+	rsvpResponsesPublic?: boolean;
 };
 
 export type UpdateEventInput = Partial<{
@@ -59,6 +60,7 @@ export type UpdateEventInput = Partial<{
 	capacity: number | null;
 	graceMinutes: number | null;
 	rsvpForm: EventSignupField[];
+	rsvpResponsesPublic: boolean;
 }>;
 
 export type ListEventsInput = { limit?: number; offset?: number };
@@ -278,6 +280,7 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 					capacity: input.capacity,
 					graceMinutes: input.graceMinutes ?? null,
 					rsvpFormJson: input.rsvpForm ?? [],
+					rsvpResponsesPublic: input.rsvpResponsesPublic ?? false,
 					startsAt: input.startsAt,
 					endsAt: input.endsAt,
 					description: input.description,
@@ -351,6 +354,7 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 					capacity: patch.capacity === undefined ? event.capacity : patch.capacity,
 					graceMinutes: patch.graceMinutes === undefined ? event.graceMinutes : patch.graceMinutes,
 					rsvpFormJson: patch.rsvpForm === undefined ? event.rsvpFormJson : patch.rsvpForm,
+					rsvpResponsesPublic: patch.rsvpResponsesPublic === undefined ? event.rsvpResponsesPublic : patch.rsvpResponsesPublic,
 				})
 				.where(eq(crsEvents.id, eventId))
 				.returning();
@@ -580,8 +584,8 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 		},
 
 		async listSignupResponses(actor, eventId) {
-			const { role } = await requireEvent(actor, eventId);
-			if (role !== "owner" && role !== "admin" && !can(actor, "event:moderate")) {
+			const { event, role } = await requireEvent(actor, eventId);
+			if (!event.rsvpResponsesPublic && role !== "owner" && role !== "admin" && !can(actor, "event:moderate")) {
 				throw new Error("Not authorized to list signup responses.");
 			}
 			return db

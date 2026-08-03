@@ -21,6 +21,7 @@ export type EventDetail = {
 	endsAt: Date | null;
 	description: string;
 	rsvpForm: EventSignupField[];
+	rsvpResponsesPublic: boolean;
 	myRsvpAnswers: EventSignupAnswers;
 	myRsvp: RsvpState;
 	attendingCount: number;
@@ -148,6 +149,7 @@ export function createCalendarRepository(db: Db): CalendarRepository {
 				endsAt: event.endsAt,
 				description: event.description,
 				rsvpForm: event.rsvpFormJson ?? [],
+				rsvpResponsesPublic: event.rsvpResponsesPublic,
 				myRsvpAnswers: myRsvp?.answers ?? {},
 				myRsvp: myRsvp?.state ?? "none",
 				attendingCount: attending?.value ?? 0,
