@@ -37,14 +37,28 @@ describe("point types repository", () => {
 		]);
 	});
 
+	it("reads milestones saved by the first milestone editor", async () => {
+		await env.DB.prepare("UPDATE point_types SET milestones_json = ? WHERE id = ?")
+			.bind(JSON.stringify([{ points: 10, label: "Automatic renewal" }]), "pt_frontliner")
+			.run();
+		expect((await repo.list()).find((row) => row.id === "pt_frontliner")?.milestones).toEqual([
+			{ points: 10, title: "Automatic renewal", description: "" },
+		]);
+	});
+
 	it("creates a type with a derived immutable id", async () => {
 		await expect(repo.upsertType(retentionAdmin, {
 			id: null,
 			key: "project_lead",
 			label: "Project Lead",
+			milestones: [{ points: 10, title: "Eligible to lead a project", description: "Lead next term" }],
 			active: true,
 			position: 3,
-		})).resolves.toMatchObject({ id: "pt_project_lead", key: "project_lead" });
+		})).resolves.toMatchObject({
+			id: "pt_project_lead",
+			key: "project_lead",
+			milestones: [{ points: 10, title: "Eligible to lead a project", description: "Lead next term" }],
+		});
 	});
 
 	it("requires retention configuration permission and keeps keys immutable", async () => {

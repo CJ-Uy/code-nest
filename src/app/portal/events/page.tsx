@@ -104,6 +104,7 @@ export default async function RetentionHistoryPage({
 					terms={terms}
 					selectedTermId={selectedTermId}
 					selectedPointTypeId={selectedPointTypeId}
+					pointTypes={pointTypeLoad.rows}
 				/>
 			) : !pointTypeLoad.ok ? (
 				<p className="text-sm text-muted-foreground">Point types are unavailable right now.</p>

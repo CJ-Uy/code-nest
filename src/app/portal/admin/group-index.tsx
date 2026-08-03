@@ -21,7 +21,7 @@ export async function AdminGroupIndex({ segment, whoFor }: { segment: string; wh
 					<Link
 						key={page.href}
 						href={page.href}
-						className="group flex flex-col gap-1 rounded-xl border border-border bg-card p-4 transition-colors hover:border-accent"
+						className="group flex flex-col gap-1 rounded-xl border border-border bg-card p-4 transition-[border-color,transform] hover:border-accent active:scale-[0.99]"
 					>
 						<span className="font-medium group-hover:text-accent">{page.label}</span>
 						<span className="text-sm text-muted-foreground">{page.description}</span>

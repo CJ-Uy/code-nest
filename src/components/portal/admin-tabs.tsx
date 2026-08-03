@@ -18,7 +18,7 @@ export function AdminTabs({ tabs }: { tabs: AdminTab[] }) {
 						key={tab.href}
 						href={tab.href}
 						className={cn(
-							"-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors",
+							"-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-[color,border-color,transform] active:scale-[0.98]",
 							active
 								? "border-accent text-foreground"
 								: "border-transparent text-muted-foreground hover:text-foreground",

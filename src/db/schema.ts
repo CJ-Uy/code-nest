@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { check, index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import type { EventSignupAnswers, EventSignupField } from "@/lib/event-signup-form";
+import type { PointMilestone } from "@/lib/point-milestones";
 
 export type MemberStatus = "active" | "pending" | "inactive";
 /** The three types seeded by migration 0010; kept for seeding and tests only. Event types are data now - see event_type_rules. */
@@ -381,6 +382,7 @@ export const pointTypes = sqliteTable(
 		id: text("id").primaryKey(),
 		key: text("key").notNull().unique(),
 		label: text("label").notNull(),
+		milestonesJson: text("milestones_json", { mode: "json" }).$type<PointMilestone[]>().notNull().default([]),
 		active: integer("active", { mode: "boolean" }).notNull().default(true),
 		position: integer("position").notNull().default(0),
 		updatedBy: text("updated_by").references(() => members.id, { onDelete: "set null" }),

@@ -16,6 +16,10 @@ describe("parsePointTypeUpsertInput", () => {
 		label: "Frontliner",
 		position: "2",
 		active: "on",
+		milestones: JSON.stringify([
+			{ points: "20", title: "Eligible for S7 next year", description: "Next-year eligibility" },
+			{ points: "10", title: "Qualified for automatic renewal", description: "Renew without review" },
+		]),
 	};
 
 	it("parses an existing point type", () => {
@@ -25,6 +29,10 @@ describe("parsePointTypeUpsertInput", () => {
 			label: "Frontliner",
 			position: 2,
 			active: true,
+			milestones: [
+				{ points: 10, title: "Qualified for automatic renewal", description: "Renew without review" },
+				{ points: 20, title: "Eligible for S7 next year", description: "Next-year eligibility" },
+			],
 		});
 	});
 
@@ -47,6 +55,12 @@ describe("parsePointTypeUpsertInput", () => {
 		for (const value of ["pt_retention", "pt_frontliner"]) data.append("ids", value);
 		for (const value of ["retention", "frontliner"]) data.append("keys", value);
 		for (const value of ["Retention", "Frontliner"]) data.append("labels", value);
+		for (const value of [
+			JSON.stringify([{ points: "10", title: "Renewed", description: "" }]),
+			JSON.stringify([{ points: "20", title: "S7", description: "Next year" }]),
+		]) {
+			data.append("milestones", value);
+		}
 		for (const value of ["pt_retention", "pt_frontliner"]) data.append("activeIds", value);
 
 		expect(parsePointTypeRows(data)).toEqual([
@@ -56,6 +70,7 @@ describe("parsePointTypeUpsertInput", () => {
 				label: "Retention",
 				active: true,
 				position: 0,
+				milestones: [{ points: 10, title: "Renewed", description: "" }],
 			},
 			{
 				id: "pt_frontliner",
@@ -63,7 +78,25 @@ describe("parsePointTypeUpsertInput", () => {
 				label: "Frontliner",
 				active: true,
 				position: 1,
+				milestones: [{ points: 20, title: "S7", description: "Next year" }],
 			},
 		]);
+	});
+
+	it("rejects malformed and duplicate milestones", () => {
+		expect(() => parsePointTypeUpsertInput(formDataFor({ ...base, milestones: "not-json" }))).toThrow(
+			"valid JSON",
+		);
+		expect(() =>
+			parsePointTypeUpsertInput(
+				formDataFor({
+					...base,
+					milestones: JSON.stringify([
+						{ points: 10, title: "Renewal", description: "" },
+						{ points: 10, title: "S7", description: "" },
+					]),
+				}),
+			),
+		).toThrow("unique");
 	});
 });

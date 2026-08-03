@@ -100,7 +100,7 @@ function AdminNavLink({ href, label, pathname }: { href: string; label: string; 
 		<Link
 			href={href}
 			className={cn(
-				"relative rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+				"relative rounded-lg px-3 py-2 text-sm font-medium transition-[color,background-color,transform] active:scale-[0.98]",
 				on ? "bg-white/10 text-primary-foreground" : "text-primary-foreground/60 hover:text-primary-foreground",
 			)}
 		>

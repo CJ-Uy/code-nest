@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowUp, GripVertical, Lock, Plus, Save } from "lucide-react";
+import { ArrowDown, ArrowUp, GripVertical, Lock, Plus, Save, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { PointTypeRow } from "@/db/repositories/pointTypes";
+import type { PointMilestone } from "@/lib/point-milestones";
 import { RETENTION_POINT_TYPE_ID } from "@/lib/point-types";
 import { cn } from "@/lib/utils";
 import { savePointTypesAction, upsertPointTypeAction } from "./actions";
@@ -18,7 +19,123 @@ function move<T>(items: T[], from: number, to: number): T[] {
 	return next;
 }
 
+type MilestoneDraft = Omit<PointMilestone, "points"> & { id: string; points: string };
+
+function milestoneDrafts(milestones: PointMilestone[]): MilestoneDraft[] {
+	return milestones.map((milestone, index) => ({ ...milestone, id: `saved-${index}`, points: String(milestone.points) }));
+}
+
+function MilestoneEditor({
+	milestones,
+	onChange,
+	formId,
+}: {
+	milestones: MilestoneDraft[];
+	onChange: (milestones: MilestoneDraft[]) => void;
+	formId?: string;
+}) {
+	function update(id: string, patch: Partial<MilestoneDraft>) {
+		onChange(milestones.map((milestone) => (milestone.id === id ? { ...milestone, ...patch } : milestone)));
+	}
+
+	return (
+		<fieldset className="grid gap-3">
+			<legend className="sr-only">Milestones</legend>
+			<div className="flex flex-wrap items-center justify-between gap-2">
+				<div>
+					<p className="font-medium">Milestones</p>
+					<p className="text-xs text-muted-foreground">Members see these targets on their Retention page.</p>
+				</div>
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					disabled={milestones.length >= 20}
+					onClick={() =>
+						onChange([
+							...milestones,
+							{ id: crypto.randomUUID(), points: "", title: "", description: "" },
+						])
+					}
+				>
+					<Plus />
+					Add new milestone
+				</Button>
+			</div>
+			<input
+				type="hidden"
+				name="milestones"
+				form={formId}
+				value={JSON.stringify(milestones.map(({ points, title, description }) => ({ points, title, description })))}
+			/>
+			{milestones.length === 0 ? (
+				<p className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
+					No milestones yet.
+				</p>
+			) : (
+				<div className="grid gap-3">
+					{milestones.map((milestone, index) => (
+						<div key={milestone.id} className="grid gap-3 rounded-lg border border-border p-3">
+							<div className="flex items-center justify-between gap-3">
+								<p className="text-sm font-semibold">Milestone {index + 1}</p>
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon"
+									onClick={() => onChange(milestones.filter((item) => item.id !== milestone.id))}
+									aria-label={`Remove milestone ${index + 1}`}
+									title="Remove milestone"
+								>
+									<Trash2 />
+								</Button>
+							</div>
+							<div className="grid gap-3 sm:grid-cols-[9rem_minmax(0,1fr)]">
+								<label className="grid gap-1.5 text-sm">
+									<span className="font-medium">Points</span>
+									<Input
+										type="number"
+										inputMode="numeric"
+										min={1}
+										max={1_000_000}
+										required
+										form={formId}
+										value={milestone.points}
+										onChange={(event) => update(milestone.id, { points: event.target.value })}
+										placeholder="10"
+									/>
+								</label>
+								<label className="grid gap-1.5 text-sm">
+									<span className="font-medium">Title</span>
+									<Input
+										required
+										form={formId}
+										maxLength={120}
+										value={milestone.title}
+										onChange={(event) => update(milestone.id, { title: event.target.value })}
+										placeholder="Qualified for automatic renewal"
+									/>
+								</label>
+							</div>
+							<label className="grid gap-1.5 text-sm">
+								<span className="font-medium">Description</span>
+								<Input
+									form={formId}
+									maxLength={240}
+									value={milestone.description}
+									onChange={(event) => update(milestone.id, { description: event.target.value })}
+									placeholder="Explain what this milestone unlocks."
+								/>
+							</label>
+						</div>
+					))}
+				</div>
+			)}
+		</fieldset>
+	);
+}
+
 function AddPointType({ position }: { position: number }) {
+	const [milestones, setMilestones] = useState<MilestoneDraft[]>([]);
 	return (
 		<Card>
 			<CardHeader>
@@ -39,6 +156,7 @@ function AddPointType({ position }: { position: number }) {
 							<Input name="label" required maxLength={60} placeholder="Project Lead" />
 						</label>
 					</div>
+					<MilestoneEditor milestones={milestones} onChange={setMilestones} />
 					<label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
 						<input type="checkbox" name="active" defaultChecked className="mt-0.5 size-4 accent-primary" />
 						<span>
@@ -80,6 +198,7 @@ function PointTypeEditor({
 	onDragEnd: () => void;
 	onMove: (to: number) => void;
 }) {
+	const [milestones, setMilestones] = useState(() => milestoneDrafts(row.milestones ?? []));
 	return (
 		<li
 			onDragOver={(event) => {
@@ -156,6 +275,8 @@ function PointTypeEditor({
 				<span className="font-medium">Label</span>
 				<Input name="labels" form={formId} required maxLength={60} defaultValue={row.label} />
 			</label>
+
+			<MilestoneEditor milestones={milestones} onChange={setMilestones} formId={formId} />
 
 			<label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
 				{row.id === RETENTION_POINT_TYPE_ID ? (
