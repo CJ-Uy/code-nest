@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Sheet,
 	SheetContent,
@@ -52,6 +53,7 @@ export function CreateEventSheet({
 	const [capacity, setCapacity] = useState("");
 	const [graceMinutes, setGraceMinutes] = useState("");
 	const [rsvpForm, setRsvpForm] = useState<EventSignupField[]>([]);
+	const [rsvpResponsesPublic, setRsvpResponsesPublic] = useState(false);
 
 	function reset() {
 		setTitle("");
@@ -63,6 +65,7 @@ export function CreateEventSheet({
 		setCapacity("");
 		setGraceMinutes("");
 		setRsvpForm([]);
+		setRsvpResponsesPublic(false);
 		setError(null);
 	}
 
@@ -80,6 +83,7 @@ export function CreateEventSheet({
 					capacity: capacity ? Number(capacity) : null,
 					graceMinutes: graceMinutes === "" ? null : Number(graceMinutes),
 					rsvpForm,
+					rsvpResponsesPublic,
 				});
 				setOpen(false);
 				reset();
@@ -163,6 +167,21 @@ export function CreateEventSheet({
 					/>
 					<p className="-mt-2 text-xs text-muted-foreground">Times are saved and shown in UTC+8.</p>
 					{endBeforeStart ? <p className="-mt-2 text-xs text-destructive">End must be after the start.</p> : null}
+
+					<div className="flex items-start gap-3 rounded-lg border border-border bg-secondary/30 p-3 text-sm">
+						<Checkbox
+							id="create-rsvp-responses-public"
+							checked={rsvpResponsesPublic}
+							onCheckedChange={(checked) => setRsvpResponsesPublic(checked === true)}
+							className="mt-0.5"
+						/>
+						<label htmlFor="create-rsvp-responses-public" className="grid gap-1">
+							<span className="font-medium">Let members see signup answers</span>
+							<span className="text-xs text-muted-foreground">
+								When off, only organizers can see who is going and how they answered the form.
+							</span>
+						</label>
+					</div>
 
 					<EventSignupFormEditor value={rsvpForm} onChange={setRsvpForm} />
 
