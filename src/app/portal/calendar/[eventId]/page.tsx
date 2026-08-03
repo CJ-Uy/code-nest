@@ -68,7 +68,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 	const currentTerm = terms.find((t) => t.isCurrent);
 
 	return (
-		<div className="grid gap-5">
+		<div className="grid gap-6">
 			<Link
 				href="/portal/calendar"
 				className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -77,43 +77,38 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 				Back to calendar
 			</Link>
 
-			<div className="grid min-w-0 gap-5 lg:grid-cols-[1fr_320px]">
-				<Card className="min-w-0 self-start">
-					<CardHeader>
-						<div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-							<CardTitle className="min-w-0 break-words text-2xl">{event.title}</CardTitle>
-							<Badge variant={event.iAttended ? "default" : "secondary"}>
-								{event.iAttended ? "Attended" : event.myRsvp === "going" ? "Going" : "Not going"}
-							</Badge>
-						</div>
-						<CardDescription>
-							{event.place} · {formatUtc8DateTime(event.startsAt)} UTC+8
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="grid gap-5 text-sm">
-						<p className="leading-relaxed">{event.description}</p>
-						<div className="grid gap-2">
-							<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Worth</p>
-							{awardLoad.ok ? <AwardChips awards={awardLoad.rows} /> : <p className="text-muted-foreground">Unavailable</p>}
-						</div>
-						<SignupResponses
-							count={event.attendingCount}
-							form={event.rsvpForm}
-							signups={signups}
-							canViewResponses={canViewSignupResponses}
-							responsesPublic={event.rsvpResponsesPublic}
-						/>
-					</CardContent>
-				</Card>
+			<header className="grid min-w-0 gap-4 border-b border-border pb-6">
+				<div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+					<h1 className="min-w-0 break-words font-heading text-3xl font-semibold leading-tight text-foreground">
+						{event.title}
+					</h1>
+					<Badge variant={event.iAttended ? "default" : "secondary"}>
+						{event.iAttended ? "Attended" : event.myRsvp === "going" ? "Going" : "Not going"}
+					</Badge>
+				</div>
+				<p className="text-sm text-muted-foreground">
+					{event.place} · {formatUtc8DateTime(event.startsAt)} UTC+8
+				</p>
+				<p className="max-w-3xl text-sm leading-relaxed">{event.description}</p>
+				<div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+					<div className="flex items-center gap-2 text-sm font-medium">
+						<span className="grid size-8 place-items-center rounded-lg bg-secondary text-accent">
+							<Users className="size-4" />
+						</span>
+						<span>{event.attendingCount === 1 ? "1 person going" : `${event.attendingCount} people going`}</span>
+					</div>
+					{awardLoad.ok ? <AwardChips awards={awardLoad.rows} /> : <p className="text-sm text-muted-foreground">Points unavailable</p>}
+				</div>
+			</header>
 
-				<div className="grid gap-5">
-					<EventSignupPanel
-						eventId={event.id}
-						form={event.rsvpForm}
-						initialState={event.myRsvp}
-						initialAnswers={event.myRsvpAnswers}
-					/>
-					{event.iAttended ? (
+			<div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+				<EventSignupPanel
+					eventId={event.id}
+					form={event.rsvpForm}
+					initialState={event.myRsvp}
+					initialAnswers={event.myRsvpAnswers}
+				/>
+				{event.iAttended ? (
 					<Card>
 						<CardHeader>
 							<CardTitle className="text-base">Check in</CardTitle>
@@ -126,15 +121,22 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 							</div>
 						</CardContent>
 					</Card>
-					) : (
+				) : (
 					<MemberCodeCard
 						memberId={actor.memberId}
 						title="Check in"
 						description="Show this code to an organizer to be marked present."
 					/>
-					)}
-				</div>
+				)}
 			</div>
+
+			<SignupResponses
+				count={event.attendingCount}
+				form={event.rsvpForm}
+				signups={signups}
+				canViewResponses={canViewSignupResponses}
+				responsesPublic={event.rsvpResponsesPublic}
+			/>
 
 			{managed && isStaff ? (
 				<EventManagePanel
@@ -207,43 +209,47 @@ function SignupResponses({
 	responsesPublic: boolean;
 }) {
 	return (
-		<section className="grid gap-3 border-t border-border pt-4">
-			<div className="flex items-center justify-between gap-3">
-				<div className="flex items-center gap-2">
-					<span className="grid size-8 place-items-center rounded-lg bg-secondary text-accent">
-						<Users className="size-4" />
-					</span>
-					<div>
-						<p className="font-semibold">Going</p>
-						<p className="text-xs text-muted-foreground">{count} signed up</p>
+		<Card role="region" aria-labelledby="people-going-heading">
+			<CardHeader>
+				<div className="flex items-center justify-between gap-3">
+					<div className="flex items-center gap-2">
+						<span className="grid size-8 place-items-center rounded-lg bg-secondary text-accent">
+							<Users className="size-4" />
+						</span>
+						<div>
+							<CardTitle id="people-going-heading">People going</CardTitle>
+							<p className="text-xs text-muted-foreground">{count} signed up</p>
+						</div>
 					</div>
+					<Badge variant="secondary" className="rounded-full px-3 py-1">{count}</Badge>
 				</div>
-				<Badge variant="secondary" className="rounded-full px-3 py-1">{count}</Badge>
-			</div>
+			</CardHeader>
 
-			{canViewResponses ? (
-				signups.length > 0 ? (
-					<ul className="divide-y divide-border rounded-lg border border-border">
-						{signups.map((row) => (
-							<li key={row.memberId} className="grid gap-2 px-3 py-3">
-								<div className="flex items-center justify-between gap-3">
-									<p className="truncate font-medium">{displayName(row)}</p>
-									<Badge variant={row.scannedAt ? "success" : "secondary"} className="shrink-0 text-[10px]">
-										{row.scannedAt ? "Present" : "Going"}
-									</Badge>
-								</div>
-								<AnswerList form={form} answers={row.answers} />
-							</li>
-						))}
-					</ul>
-				) : (
-					<p className="text-sm text-muted-foreground">No one has signed up yet.</p>
-				)
-			) : null}
-			{canViewResponses && !responsesPublic ? (
-				<p className="text-xs text-muted-foreground">Responses are private to organizers.</p>
-			) : null}
-		</section>
+			<CardContent className="grid gap-3">
+				{canViewResponses ? (
+					signups.length > 0 ? (
+						<ul className="divide-y divide-border rounded-lg border border-border">
+							{signups.map((row) => (
+								<li key={row.memberId} className="grid gap-2 px-3 py-3">
+									<div className="flex items-center justify-between gap-3">
+										<p className="truncate font-medium">{displayName(row)}</p>
+										<Badge variant={row.scannedAt ? "success" : "secondary"} className="shrink-0 text-[10px]">
+											{row.scannedAt ? "Present" : "Going"}
+										</Badge>
+									</div>
+									<AnswerList form={form} answers={row.answers} />
+								</li>
+							))}
+						</ul>
+					) : (
+						<p className="text-sm text-muted-foreground">No one has signed up yet.</p>
+					)
+				) : null}
+				{canViewResponses && !responsesPublic ? (
+					<p className="text-xs text-muted-foreground">Responses are private to organizers.</p>
+				) : null}
+			</CardContent>
+		</Card>
 	);
 }
 

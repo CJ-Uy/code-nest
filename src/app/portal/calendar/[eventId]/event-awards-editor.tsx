@@ -128,7 +128,7 @@ export function EventAwardsEditor({
 										type="button"
 										variant="ghost"
 										size="icon"
-										className="text-muted-foreground hover:text-destructive"
+										className="text-muted-foreground hover:text-white focus-visible:text-white"
 										aria-label={`Remove ${row.label} allocation`}
 										onClick={() => removeAllocation(row)}
 										disabled={pending}
@@ -151,7 +151,7 @@ export function EventAwardsEditor({
 									type="button"
 									variant="ghost"
 									size="icon"
-									className="text-muted-foreground hover:text-destructive"
+									className="text-muted-foreground hover:text-white focus-visible:text-white"
 									aria-label={`Remove retired ${row.label} allocation`}
 									onClick={() => removeRetired(row.pointTypeId)}
 									disabled={pending}
