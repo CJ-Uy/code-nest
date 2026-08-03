@@ -107,7 +107,7 @@ export function CreateEventSheet({
 			}}
 		>
 			<SheetTrigger asChild>
-				<Button size="sm">
+				<Button size="sm" className="desktop-slide-in-from-right">
 					<CalendarPlus className="size-4" />
 					Create event
 				</Button>
