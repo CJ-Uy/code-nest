@@ -75,7 +75,7 @@ export default async function CalendarPage({
 				</div>
 
 				{view === "calendar" ? (
-					<div className="flex items-center gap-2">
+					<div className="flex w-full items-center justify-between gap-1 sm:w-auto sm:justify-start sm:gap-2">
 						<Button asChild variant="outline" size="sm">
 							<Link href={`/portal/calendar?year=${today.year}&month=${today.month}`}>Today</Link>
 						</Button>
@@ -84,7 +84,7 @@ export default async function CalendarPage({
 								<ChevronLeft />
 							</Link>
 						</Button>
-						<span className="min-w-36 text-center text-sm font-semibold">
+						<span className="min-w-0 flex-1 text-center text-sm font-semibold sm:min-w-36">
 							{MONTH_NAMES[month - 1]} {year}
 						</span>
 						<Button asChild variant="outline" size="icon" aria-label="Next month">

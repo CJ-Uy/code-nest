@@ -112,8 +112,8 @@ export function CreateEventSheet({
 					Create event
 				</Button>
 			</SheetTrigger>
-			<SheetContent className="w-full gap-0 overflow-y-auto sm:max-w-md">
-				<SheetHeader>
+			<SheetContent className="h-[100dvh] w-full max-w-none gap-0 overflow-y-auto overscroll-contain sm:h-full sm:max-w-md">
+				<SheetHeader className="sticky top-0 z-10 border-b bg-background pr-12">
 					<SheetTitle className="font-heading text-xl">Create event</SheetTitle>
 					<SheetDescription>Anyone can host. Your event goes on the calendar right away.</SheetDescription>
 				</SheetHeader>
@@ -210,11 +210,11 @@ export function CreateEventSheet({
 					{error ? <p className="text-sm text-destructive">{error}</p> : null}
 				</div>
 
-				<SheetFooter className="flex-row justify-end gap-2">
-					<Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={pending}>
+				<SheetFooter className="sticky bottom-0 z-10 mt-0 flex-row gap-2 border-t bg-background pb-[max(1rem,env(safe-area-inset-bottom))]">
+					<Button type="button" variant="outline" className="flex-1 sm:flex-none" onClick={() => setOpen(false)} disabled={pending}>
 						Cancel
 					</Button>
-					<Button type="button" onClick={submit} disabled={pending || !canSubmit}>
+					<Button type="button" className="flex-1 sm:flex-none" onClick={submit} disabled={pending || !canSubmit}>
 						{pending ? "Creating…" : "Create event"}
 					</Button>
 				</SheetFooter>

@@ -90,7 +90,11 @@ export function CalendarMonth({ items, year, month }: { items: CalendarItem[]; y
 										</div>
 									);
 									return item.href ? (
-										<Link key={item.id} href={item.href} className="block hover:opacity-80">
+										<Link
+											key={item.id}
+											href={item.href}
+											className="block rounded transition-[opacity,transform] hover:opacity-80 active:scale-[0.98]"
+										>
 											{chip}
 										</Link>
 									) : (

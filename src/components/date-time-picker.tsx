@@ -98,13 +98,13 @@ export function DateTimePicker({
 
 			<div className="grid gap-2">
 				<span className="text-sm font-medium">Starts</span>
-				<div className="grid max-h-40 grid-cols-4 gap-2 overflow-y-auto pr-1">
+				<div className="grid max-h-40 grid-cols-3 gap-2 overflow-y-auto pr-1 sm:grid-cols-4">
 					{SLOTS.map((slot) => (
 						<button
 							key={slot}
 							type="button"
 							onClick={() => pick(`${day || today}T${slot}`)}
-							className={cn(chip, slot === time ? chipOn : chipOff)}
+							className={cn(chip, "whitespace-nowrap", slot === time ? chipOn : chipOff)}
 						>
 							{formatSlotLabel(slot)}
 						</button>

@@ -32,12 +32,12 @@ export function EventSignupFormEditor({
 
 	return (
 		<div className="grid gap-3 rounded-lg border border-dashed border-border p-3">
-			<div className="flex items-center justify-between gap-3">
+			<div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<p className="text-sm font-medium">Signup form</p>
 					<p className="text-xs text-muted-foreground">Optional questions members answer when they say they are going.</p>
 				</div>
-				<Button type="button" variant="outline" size="sm" onClick={() => onChange([...value, newField()])}>
+				<Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => onChange([...value, newField()])}>
 					<Plus />
 					Add field
 				</Button>

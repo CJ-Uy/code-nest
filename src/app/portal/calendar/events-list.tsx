@@ -29,7 +29,7 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 
 function timeRange(start: Date, end: Date | null): string {
 	const t = formatUtc8Time;
-	return end ? `${t(start)} – ${t(end)}` : t(start);
+	return end ? `${t(start)} - ${t(end)}` : t(start);
 }
 
 function Row({ event, types }: { event: EventListItem; types: EventTypeRow[] }) {
@@ -39,16 +39,16 @@ function Row({ event, types }: { event: EventListItem; types: EventTypeRow[] }) 
 	return (
 		<Link
 			href={`/portal/calendar/${event.id}`}
-			className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-secondary/40"
+			className="flex items-center gap-3 px-3 py-3 transition-colors hover:bg-secondary/40 active:bg-secondary/60 sm:gap-4 sm:px-4"
 		>
 			<div className="flex w-11 shrink-0 flex-col items-center rounded-lg border border-border py-1.5 leading-none">
 				<span className="text-[10px] font-semibold uppercase text-primary">{MONTHS[(month ?? 1) - 1]}</span>
 				<span className="font-heading text-lg tabular-nums">{day}</span>
 			</div>
 			<div className="min-w-0 flex-1">
-				<div className="flex items-center gap-2">
+				<div className="grid min-w-0 gap-1 sm:flex sm:items-center sm:gap-2">
 					<span className="truncate font-medium">{event.title}</span>
-					<Badge className={cn("min-w-0 max-w-32 truncate", chip)}>{labelFor(types, event.type)}</Badge>
+					<Badge className={cn("min-w-0 max-w-full truncate sm:max-w-32", chip)}>{labelFor(types, event.type)}</Badge>
 					{event.myRole ? (
 						<Badge variant="secondary" className="shrink-0 text-[10px]">
 							{ROLE_LABEL[event.myRole]}

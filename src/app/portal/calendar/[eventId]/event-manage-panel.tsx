@@ -641,7 +641,7 @@ function DetailsSection({
 				<span className="font-medium">Title</span>
 				<input className={FIELD} value={title} onChange={(e) => setTitle(e.target.value)} />
 			</label>
-			<div className="grid grid-cols-2 gap-3">
+			<div className="grid gap-3 sm:grid-cols-2">
 				<label className="grid gap-1.5 text-sm">
 					<span className="font-medium">Type</span>
 					<select className={FIELD} value={type} onChange={(e) => setType(e.target.value)} disabled={typesUnavailable}>
@@ -724,7 +724,7 @@ function DetailsSection({
 				) : null}
 			</div>
 
-			<div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+			<div className="mt-2 flex flex-col items-stretch gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<p className="text-sm font-medium">Delete event</p>
 					<p className="text-xs text-muted-foreground">Removes it from the calendar. Earned points stay.</p>
