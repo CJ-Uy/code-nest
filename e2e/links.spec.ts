@@ -8,7 +8,7 @@ test("a member can create a short link and see it listed", async ({ page }) => {
 
 	const slug = `e2e-${Date.now().toString(36)}`;
 	await page.getByRole("button", { name: "New short link" }).click();
-	await page.getByPlaceholder("welcome").fill(slug);
+	await page.getByPlaceholder("welcome", { exact: true }).fill(slug);
 	await page.getByPlaceholder("https://example.com").fill("https://example.com/e2e-target");
 	await page.getByPlaceholder("Welcome page").fill("E2E target");
 	await page.getByRole("button", { name: /create link/i }).click();

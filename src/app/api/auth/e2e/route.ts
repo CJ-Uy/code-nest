@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
-import { crsEvents, memberRoles, members, roles, seedEventTypes, sessions, terms } from "@/db/schema";
+import { crsEvents, eventStaff, memberRoles, members, roles, seedEventTypes, sessions, terms } from "@/db/schema";
 
 const SEEDED = {
 	"admin@example.com": { id: "mem_demo_admin", name: "Demo Admin", role: "super" },
@@ -49,7 +49,11 @@ export async function POST(request: Request): Promise<Response> {
 }
 
 async function ensureE2eData(db: ReturnType<typeof getDb>): Promise<void> {
-	const now = new Date("2026-06-18T00:00:00.000Z");
+	const now = new Date();
+	const termStartsAt = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+	const termEndsAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+	const eventStartsAt = new Date(now.getTime() - 5 * 60 * 1000);
+	const eventEndsAt = new Date(now.getTime() + 30 * 60 * 1000);
 	await db
 		.insert(roles)
 		.values({ id: "role_super", key: "super", label: "Super admin", description: "Full portal access.", kind: "admin" })
@@ -72,26 +76,36 @@ async function ensureE2eData(db: ReturnType<typeof getDb>): Promise<void> {
 			name: "Term 1 2026",
 			retainedAt: 20,
 			probationBelow: 10,
-			startsAt: now,
-			endsAt: new Date("2026-10-31T00:00:00.000Z"),
+			startsAt: termStartsAt,
+			endsAt: termEndsAt,
 		})
-		.onConflictDoNothing();
+		.onConflictDoUpdate({ target: terms.id, set: { startsAt: termStartsAt, endsAt: termEndsAt } });
 	await db
 		.insert(crsEvents)
 		.values({
-			id: "evt_demo",
-			title: "Consulting Practice Night",
+			id: "evt_e2e_scan",
+			title: "E2E live scan event",
 			type: seedEventTypes[0],
 			status: "approved",
 			points: 5,
 			place: "SOM 111",
-			startsAt: new Date("2026-07-10T10:00:00.000Z"),
-			endsAt: new Date("2026-07-10T12:00:00.000Z"),
-			description: "A sample CRS event for portal modules.",
-			createdBy: "mem_demo_admin",
+			startsAt: eventStartsAt,
+			endsAt: eventEndsAt,
+			description: "A deterministic local scanner fixture.",
+			createdBy: "mem_demo_member",
 			approvedBy: "mem_demo_admin",
 			approvedAt: now,
-			checkinSecret: "demo-checkin-secret",
+			checkinSecret: "e2e-checkin-secret",
 		})
-		.onConflictDoNothing();
+		.onConflictDoUpdate({
+			target: crsEvents.id,
+			set: { status: "approved", startsAt: eventStartsAt, endsAt: eventEndsAt, deletedAt: null, readOnly: false },
+		});
+	await db
+		.insert(eventStaff)
+		.values({ eventId: "evt_e2e_scan", memberId: "mem_demo_admin", role: "scanner", addedBy: "mem_demo_admin" })
+		.onConflictDoUpdate({
+			target: [eventStaff.eventId, eventStaff.memberId],
+			set: { role: "scanner", addedBy: "mem_demo_admin", addedAt: now },
+		});
 }

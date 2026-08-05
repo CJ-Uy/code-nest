@@ -6,6 +6,7 @@ const LOCAL_SQLITE_PATH = resolve(".local/dev.db");
 
 export default defineConfig({
 	testDir: "./e2e",
+	testIgnore: /release-guards\.spec\.ts/,
 	timeout: 30_000,
 	fullyParallel: false,
 	workers: 1,

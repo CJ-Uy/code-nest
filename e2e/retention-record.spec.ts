@@ -8,7 +8,9 @@ test("an admin logs a manual retention record for a member", async ({ page }) =>
 
 	await page.getByRole("button", { name: /add manual record/i }).click();
 	await page.getByLabel(/search members/i).fill("member@example.com");
-	await page.getByRole("listitem").filter({ hasText: /member@example.com/i }).click();
+	const member = page.getByRole("listitem").filter({ hasText: /member@example.com/i });
+	await expect(member).toBeVisible();
+	await member.click();
 	await page.getByLabel(/reason/i).fill("Submitted the required medical waiver");
 	await page.getByRole("button", { name: /add manual record/i }).last().click();
 

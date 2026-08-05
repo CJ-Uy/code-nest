@@ -3,18 +3,14 @@ import { signInAs } from "./fixtures/auth";
 
 test("an admin records attendance via the scan fallback", async ({ page }) => {
 	await signInAs(page, "admin");
-	await page.goto("/portal");
-	await page.waitForTimeout(750);
+	await page.goto("/portal/calendar/evt_e2e_scan");
 
-	await page.getByLabel(/search members/i).fill("member@example.com");
-	await page.getByRole("button", { name: /^search$/i }).click();
-	const row = page.getByRole("listitem").filter({ hasText: /demo member|member@example.com/i });
-	const button = row.getByRole("button", { name: /mark present/i });
-	if (await button.isDisabled()) {
-		await expect(row).toContainText(/present/i);
-		return;
-	}
-	await button.click();
+	await expect(page.getByRole("heading", { name: "E2E live scan event" })).toBeVisible();
+	await expect(page.getByText(/check-in is open/i)).toBeVisible();
+	await page.getByPlaceholder("Search a member to check in…").fill("member@example.com");
+	const member = page.getByRole("button", { name: /demo member (mark present|present)/i });
+	await expect(member).toBeVisible();
+	await member.click();
 
-	await expect(page.getByText(/marked present: mem_demo_member|already present: mem_demo_member/i)).toBeVisible();
+	await expect(page.getByText(/checked in demo member|demo member was already checked in/i)).toBeVisible();
 });

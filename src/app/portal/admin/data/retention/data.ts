@@ -56,7 +56,7 @@ export async function loadRetentionPickers(actor: Actor): Promise<{
 		members: memberRows.map((row) => ({
 			id: row.id,
 			label: row.fullName ?? row.name ?? "Member",
-			sublabel: row.id,
+			sublabel: row.email,
 		})),
 		terms: termRows.map((row) => ({ id: row.id, label: row.name, startsAt: row.startsAt, endsAt: row.endsAt, retainedAt: row.retainedAt, probationBelow: row.probationBelow })),
 		events: eventRows.map((row) => ({
