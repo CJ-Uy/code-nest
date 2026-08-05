@@ -38,6 +38,12 @@ describe("notifications repository on D1", () => {
 		expect(await repository.unreadCount(actor)).toBe(2);
 	});
 
+	it("does not materialize notifications while the feature is disabled", async () => {
+		const db = drizzle(env.DB, { schema });
+		await notify(db, { memberId: "mem_nf", kind: "points_awarded", title: "Points", body: "5 points" }, false);
+		expect(await db.select().from(notifications)).toHaveLength(0);
+	});
+
 	it("only lists the requesting member's own notifications", async () => {
 		const db = drizzle(env.DB, { schema });
 		await notify(db, { memberId: "mem_admin", kind: "forum_reply", title: "Reply", body: "Someone replied." });

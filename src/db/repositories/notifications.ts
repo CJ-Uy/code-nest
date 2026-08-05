@@ -1,6 +1,7 @@
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { notifications } from "@/db/schema";
 import { createId } from "@/lib/ids";
+import { getFeatureFlags } from "@/server/features";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type { Actor } from "@/server/auth/permissions";
 import type * as schema from "@/db/schema";
@@ -52,7 +53,8 @@ function toMs(value: Date | number | null): number | null {
  * Phase 7 Task 7 calls this from the event-approve and survey-assign
  * triggers; Phase 4's forum-reply and points-award write paths call it too.
  */
-export async function notify(db: Db, input: NotifyInput): Promise<void> {
+export async function notify(db: Db, input: NotifyInput, enabled = getFeatureFlags().notifications): Promise<void> {
+	if (!enabled) return;
 	await db.insert(notifications).values({
 		id: createId("ntf"),
 		memberId: input.memberId,

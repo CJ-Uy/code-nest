@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { MemberAvatar } from "@/components/portal/member-avatar";
 import { MemberCodeCard } from "@/components/member-code-card";
 import { getActor } from "@/server/auth/actor";
+import { getFeatureFlags } from "@/server/features";
 import type { OverviewSummary } from "@/db/repositories/overview";
 import { EditProfileForm } from "./edit-profile-form";
 import { buildPointBreakdown } from "./point-breakdown";
@@ -35,10 +36,11 @@ export default async function ProfilePage() {
 	if (!actor) redirect("/signin");
 
 	const repositories = await getRepositories();
+	const features = getFeatureFlags();
 	const member = await repositories.members.getById(actor, actor.memberId);
 	if (!member) redirect("/signin");
 	const [summary, loadedHistory, pointTypes] = await Promise.all([
-		repositories.overview.getSummary(actor).catch(() => EMPTY_SUMMARY),
+		repositories.overview.getSummary(actor, { retention: false, surveys: false }).catch(() => EMPTY_SUMMARY),
 		repositories.retention.myHistory(actor, {}).catch(() => null),
 		repositories.pointTypes.list().catch(() => null),
 	]);
@@ -82,13 +84,13 @@ export default async function ProfilePage() {
 				<CardHeader>
 					<div className="flex items-center justify-between gap-3">
 						<CardTitle>Points this term</CardTitle>
-						{history.summary ? (
+						{features.retention && history.summary ? (
 							<Badge variant={history.summary.status === "probation" ? "warn" : "secondary"}>
 								{STATUS_LABEL[history.summary.status]}
 							</Badge>
 						) : null}
 					</div>
-					{history.summary ? (
+					{features.retention && history.summary ? (
 						<CardDescription>
 							{history.summary.totalPoints} retention points · retained at {history.summary.retainedAt}
 						</CardDescription>
@@ -100,7 +102,7 @@ export default async function ProfilePage() {
 							<div key={row.pointTypeId} className="flex items-center justify-between gap-3 border-t border-border py-3 first:border-t-0">
 								<div className="min-w-0">
 									<p className="break-all text-sm font-medium">{row.label}</p>
-									{row.retention ? (
+									{features.retention && row.retention ? (
 										<p className="text-xs text-muted-foreground">Counts toward retention</p>
 									) : null}
 								</div>

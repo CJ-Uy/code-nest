@@ -90,7 +90,7 @@ describe("overview repository on D1", () => {
 
 		const db = drizzle(env.DB, { schema });
 		const repository = createOverviewRepository(db);
-		const summary = await repository.getSummary(memberActor, NOW);
+		const summary = await repository.getSummary(memberActor, { now: NOW });
 
 		expect(summary.retention).toMatchObject({ points: 8, retainedAt: 20, termName: "Term 1" });
 		expect(summary.pendingSurveys).toBe(1);
@@ -102,7 +102,7 @@ describe("overview repository on D1", () => {
 		await env.DB.prepare("DELETE FROM terms").run();
 		const db = drizzle(env.DB, { schema });
 		const repository = createOverviewRepository(db);
-		const summary = await repository.getSummary(memberActor, NOW);
+		const summary = await repository.getSummary(memberActor, { now: NOW });
 
 		expect(summary).toEqual({
 			retention: { points: 0, retainedAt: null, termName: null },
@@ -110,5 +110,36 @@ describe("overview repository on D1", () => {
 			upcomingEvents: 0,
 			linkClicks: 0,
 		});
+	});
+
+	it("skips deferred retention and survey reads when disabled", async () => {
+		await env.DB.prepare(
+			"INSERT INTO crs_events (id, title, type, status, place, starts_at, description, created_by, checkin_secret) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		)
+			.bind("evt_up", "Upcoming", "official", "approved", "SOM", NOW.getTime() + 1000, "Soon", "mem_admin", "s1")
+			.run();
+		await env.DB.prepare(
+			"INSERT INTO short_links (id, slug, destination_url, title, owner_member_id, click_count) VALUES (?, ?, ?, ?, ?, ?)",
+		)
+			.bind("lnk_1", "mine", "https://example.com", "Mine", "mem_ov", 0)
+			.run();
+		await env.DB.prepare(
+			"INSERT INTO link_daily_stats (link_id, date, referrer_bucket, device_bucket, count) VALUES (?, ?, ?, ?, ?)",
+		)
+			.bind("lnk_1", "2026-06-18", "direct", "desktop", 7)
+			.run();
+
+		const db = drizzle(env.DB, { schema });
+		const repository = createOverviewRepository(db);
+		const summary = await repository.getSummary(memberActor, {
+			now: NOW,
+			retention: false,
+			surveys: false,
+		});
+
+		expect(summary.retention).toEqual({ points: 0, retainedAt: null, termName: null });
+		expect(summary.pendingSurveys).toBe(0);
+		expect(summary.upcomingEvents).toBe(1);
+		expect(summary.linkClicks).toBe(7);
 	});
 });

@@ -27,8 +27,10 @@ export type OverviewSummary = {
 	linkClicks: number;
 };
 
+export type OverviewOptions = { now?: Date; retention?: boolean; surveys?: boolean };
+
 export type OverviewRepository = {
-	getSummary(actor: Actor, now?: Date): Promise<OverviewSummary>;
+	getSummary(actor: Actor, options?: OverviewOptions): Promise<OverviewSummary>;
 };
 
 async function getCurrentTerm(db: Db, now: Date): Promise<{ id: string; name: string; retainedAt: number } | null> {
@@ -43,11 +45,11 @@ async function getCurrentTerm(db: Db, now: Date): Promise<{ id: string; name: st
 
 export function createOverviewRepository(db: Db): OverviewRepository {
 	return {
-		async getSummary(actor, now = new Date()) {
-			const term = await getCurrentTerm(db, now);
+		async getSummary(actor, { now = new Date(), retention = true, surveys: surveysEnabled = true } = {}) {
+			const term = retention ? await getCurrentTerm(db, now) : null;
 
 			let points = 0;
-			if (term) {
+			if (retention && term) {
 				const [row] = await db
 					.select({ total: sql<number>`coalesce(sum(${retentionRecords.points}), 0)` })
 					.from(retentionRecords)
@@ -61,17 +63,21 @@ export function createOverviewRepository(db: Db): OverviewRepository {
 				points = Number(row?.total ?? 0);
 			}
 
-			const [surveyRow] = await db
-				.select({ count: sql<number>`count(*)` })
-				.from(surveyAssignments)
-				.innerJoin(surveys, eq(surveys.id, surveyAssignments.surveyId))
-				.where(
-					and(
-						eq(surveyAssignments.memberId, actor.memberId),
-						isNull(surveyAssignments.completedAt),
-						eq(surveys.status, "running"),
-					),
-				);
+			const surveyRow = surveysEnabled
+				? (
+						await db
+							.select({ count: sql<number>`count(*)` })
+							.from(surveyAssignments)
+							.innerJoin(surveys, eq(surveys.id, surveyAssignments.surveyId))
+							.where(
+								and(
+									eq(surveyAssignments.memberId, actor.memberId),
+									isNull(surveyAssignments.completedAt),
+									eq(surveys.status, "running"),
+								),
+							)
+					)[0]
+				: null;
 
 			const [eventRow] = await db
 				.select({ count: sql<number>`count(*)` })
