@@ -32,8 +32,8 @@ test("deferred member and public routes return 404", async ({ page }) => {
 test("member navigation excludes deferred modules", async ({ page }) => {
 	await signInAs(page, "member");
 	for (const label of ["Retention", "Library", "Announcements", "Notifications"])
-		await expect(page.getByRole("link", { name: label, exact: true })).toHaveCount(0);
-	await expect(page.getByRole("link", { name: "Link shortener", exact: true })).not.toHaveCount(0);
+		await expect(page.getByRole("link", { name: label })).toHaveCount(0);
+	await expect(page.getByRole("link", { name: "Link shortener" })).not.toHaveCount(0);
 });
 
 test("deferred admin routes return 404", async ({ page }) => {
@@ -45,7 +45,7 @@ test("admin navigation excludes deferred content modules", async ({ page }) => {
 	await signInAs(page, "admin");
 	await page.goto("/portal/admin");
 	for (const label of ["Library", "Announcements", "Surveys"])
-		await expect(page.getByRole("link", { name: label, exact: true })).toHaveCount(0);
+		await expect(page.getByRole("link", { name: label })).toHaveCount(0);
 	for (const label of [
 		"Member List",
 		"Roles & Access",
@@ -56,7 +56,7 @@ test("admin navigation excludes deferred content modules", async ({ page }) => {
 		"Events",
 		"Point Types",
 	])
-		await expect(page.getByRole("link", { name: label, exact: true })).not.toHaveCount(0);
+		await expect(page.getByRole("link", { name: label })).not.toHaveCount(0);
 });
 
 test("root and seeded short links keep their redirects", async () => {
