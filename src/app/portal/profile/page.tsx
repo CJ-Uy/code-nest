@@ -1,16 +1,13 @@
 import { redirect } from "next/navigation";
-import { CalendarDays, Link2, Save } from "lucide-react";
+import { CalendarDays, Link2 } from "lucide-react";
 import { getRepositories } from "@/db";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { MemberAvatar } from "@/components/portal/member-avatar";
 import { MemberCodeCard } from "@/components/member-code-card";
 import { getActor } from "@/server/auth/actor";
 import type { OverviewSummary } from "@/db/repositories/overview";
-import { updateProfileAction } from "./actions";
+import { EditProfileForm } from "./edit-profile-form";
 import { buildPointBreakdown } from "./point-breakdown";
 
 export const dynamic = "force-dynamic";
@@ -124,45 +121,19 @@ export default async function ProfilePage() {
 						<CardDescription>Keep the member details used across the portal current.</CardDescription>
 					</CardHeader>
 					<CardContent>
-						<form action={updateProfileAction} className="grid gap-5 sm:grid-cols-2">
-							<Field label="Full name" name="fullName" defaultValue={member.fullName ?? member.name ?? ""} />
-							<Field label="Nickname" name="nickname" defaultValue={member.nickname ?? ""} />
-							<Field label="Pronouns" name="pronouns" defaultValue={member.pronouns ?? ""} />
-							<Field label="Batch" name="batch" defaultValue={member.batch ?? ""} />
-							<Field label="Birthday" name="birthday" type="date" defaultValue={member.birthday ?? ""} />
-							<label className="flex items-center gap-3 self-end pb-2 text-sm font-medium">
-								<Checkbox defaultChecked={member.birthdayPrivate} name="birthdayPrivate" />
-								Keep my birthday private
-							</label>
-							<div className="sm:col-span-2">
-								<Button type="submit">
-									<Save />
-									Save profile
-								</Button>
-							</div>
-						</form>
+						<EditProfileForm
+							values={{
+								fullName: member.fullName ?? member.name ?? "",
+								nickname: member.nickname ?? "",
+								pronouns: member.pronouns ?? "",
+								batch: member.batch ?? "",
+								birthday: member.birthday ?? "",
+								birthdayPrivate: member.birthdayPrivate,
+							}}
+						/>
 					</CardContent>
 				</Card>
 			</div>
 		</div>
-	);
-}
-
-function Field({
-	label,
-	name,
-	defaultValue,
-	type = "text",
-}: {
-	label: string;
-	name: string;
-	defaultValue: string;
-	type?: string;
-}) {
-	return (
-		<label className="grid gap-2 text-sm font-medium">
-			{label}
-			<Input defaultValue={defaultValue} name={name} type={type} />
-		</label>
 	);
 }

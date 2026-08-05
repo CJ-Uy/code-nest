@@ -5,9 +5,15 @@ import { getRepositories } from "@/db";
 import { updateMemberProfileInputSchema } from "@/db/types";
 import { requireActor } from "@/server/auth/actor";
 
-export async function updateProfileAction(formData: FormData) {
+export type UpdateProfileResult = { ok: true } | { ok: false; error: string };
+
+export async function updateProfileAction(
+	_prev: UpdateProfileResult | null,
+	formData: FormData,
+): Promise<UpdateProfileResult> {
 	const actor = await requireActor();
-	const input = updateMemberProfileInputSchema.parse({
+
+	const parsed = updateMemberProfileInputSchema.safeParse({
 		fullName: nullableText(formData.get("fullName")),
 		nickname: nullableText(formData.get("nickname")),
 		pronouns: nullableText(formData.get("pronouns")),
@@ -15,9 +21,19 @@ export async function updateProfileAction(formData: FormData) {
 		birthday: nullableText(formData.get("birthday")),
 		birthdayPrivate: formData.get("birthdayPrivate") === "on",
 	});
-	const repositories = await getRepositories();
-	await repositories.members.updateProfile(actor, actor.memberId, input);
-	revalidatePath("/portal/profile");
+	if (!parsed.success) {
+		return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid profile details." };
+	}
+
+	try {
+		const repositories = await getRepositories();
+		await repositories.members.updateProfile(actor, actor.memberId, parsed.data);
+		revalidatePath("/portal/profile");
+		return { ok: true };
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "Failed to save your profile.";
+		return { ok: false, error: message };
+	}
 }
 
 function nullableText(value: FormDataEntryValue | null): string | null {
