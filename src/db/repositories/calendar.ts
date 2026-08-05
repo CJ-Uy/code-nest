@@ -5,6 +5,7 @@ import { crsAttendance, crsEvents, eventMedia, eventRsvps, eventTypeRules, membe
 import type { EventStatus, EventType, RsvpState } from "@/db/schema";
 import { can, type Actor } from "@/server/auth/permissions";
 import { inclusiveEndDate, monthRange, toIsoDate, type CalendarItem } from "@/lib/calendar";
+import { BIRTHDAY_EVENT_TYPE } from "./eventTypeRules";
 import type { EventSignupAnswers, EventSignupField } from "@/lib/event-signup-form";
 
 type Db = DrizzleD1Database<typeof schema>;
@@ -94,6 +95,13 @@ export function createCalendarRepository(db: Db): CalendarRepository {
 			}
 
 			const canSeePrivate = can(actor, "member:manage");
+			// Birthdays are synthesized rather than stored as events, but they still answer to the
+			// admin-managed `birthday` type row for colour. A missing row degrades to accent.
+			const [birthdayType] = await db
+				.select({ colour: eventTypeRules.colour })
+				.from(eventTypeRules)
+				.where(eq(eventTypeRules.type, BIRTHDAY_EVENT_TYPE));
+			const birthdayColour = birthdayType?.colour || "accent";
 			const memberRows = await db
 				.select({ id: members.id, name: members.name, birthday: members.birthday, birthdayPrivate: members.birthdayPrivate })
 				.from(members);
@@ -111,7 +119,7 @@ export function createCalendarRepository(db: Db): CalendarRepository {
 					endsAt: null,
 					eventId: null,
 					href: null,
-					colour: "accent",
+					colour: birthdayColour,
 					readOnly: false,
 				});
 			}

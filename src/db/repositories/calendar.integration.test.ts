@@ -17,6 +17,8 @@ describe("calendar repository on D1", () => {
 		for (const table of ["event_media", "crs_attendance", "event_rsvps", "crs_events", "terms", "members"]) {
 			await env.DB.prepare(`DELETE FROM ${table}`).run();
 		}
+		// Seeded by migration 0010/0012 and never deleted here, so restore the colour a test may change.
+		await env.DB.prepare("UPDATE event_type_rules SET colour = ? WHERE type = ?").bind("accent", "birthday").run();
 		await env.DB.prepare("INSERT INTO members (id, email, name, birthday, birthday_private) VALUES (?, ?, ?, ?, ?)")
 			.bind("mem_view", "view@example.com", "Viewer", "1990-06-10", 1)
 			.run();
@@ -63,6 +65,14 @@ describe("calendar repository on D1", () => {
 		const birthdayTitles = items.filter((i) => i.source === "birthday").map((i) => i.title);
 		expect(birthdayTitles.some((t) => t.includes("Public Bday"))).toBe(true);
 		expect(birthdayTitles.some((t) => t.includes("Viewer"))).toBe(false);
+	});
+
+	it("colours birthdays from the admin-managed birthday event type", async () => {
+		await env.DB.prepare("UPDATE event_type_rules SET colour = ? WHERE type = ?").bind("rose", "birthday").run();
+		const repo = createCalendarRepository(db());
+		const items = await repo.getMonth(memberActor, { year: 2026, month: 6 });
+		const birthday = items.find((i) => i.source === "birthday");
+		expect(birthday?.colour).toBe("rose");
 	});
 
 	it("reveals private birthdays to an actor with member:manage", async () => {

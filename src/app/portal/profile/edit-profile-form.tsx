@@ -3,6 +3,7 @@
 import { useActionState, useRef, useState } from "react";
 import { Check, Pencil, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { updateProfileAction, type UpdateProfileResult } from "./actions";
@@ -13,6 +14,7 @@ export type ProfileFormValues = {
 	pronouns: string;
 	batch: string;
 	birthday: string;
+	birthdayPublic: boolean;
 };
 
 export function EditProfileForm({ values }: { values: ProfileFormValues }) {
@@ -52,14 +54,16 @@ export function EditProfileForm({ values }: { values: ProfileFormValues }) {
 				<Field label="Nickname" name="nickname" defaultValue={values.nickname} editing={editing} />
 				<Field label="Pronouns" name="pronouns" defaultValue={values.pronouns} editing={editing} />
 				<Field label="Batch" name="batch" defaultValue={values.batch} editing={editing} />
-				<Field
-					label="Birthday"
-					name="birthday"
-					type="date"
-					defaultValue={values.birthday}
-					editing={editing}
-					hint="Shown on the club calendar."
-				/>
+				<Field label="Birthday" name="birthday" type="date" defaultValue={values.birthday} editing={editing} />
+				<label className="flex gap-3 self-end pb-2 text-sm font-medium">
+					<Checkbox defaultChecked={values.birthdayPublic} name="birthdayPublic" className="mt-0.5" />
+					<span className="grid gap-1">
+						Show my birthday
+						<span className="text-xs font-normal text-muted-foreground">
+							Adds a Birthday event to the org calendar each year. Uncheck to keep it hidden.
+						</span>
+					</span>
+				</label>
 			</fieldset>
 
 			{state && !state.ok ? (
@@ -94,14 +98,12 @@ function Field({
 	name,
 	defaultValue,
 	editing,
-	hint,
 	type = "text",
 }: {
 	label: string;
 	name: string;
 	defaultValue: string;
 	editing: boolean;
-	hint?: string;
 	type?: string;
 }) {
 	return (
@@ -117,7 +119,6 @@ function Field({
 						"disabled:cursor-default disabled:border-transparent disabled:bg-muted/50 disabled:text-foreground disabled:opacity-100",
 				)}
 			/>
-			{hint ? <span className="text-xs font-normal text-muted-foreground">{hint}</span> : null}
 		</label>
 	);
 }

@@ -36,6 +36,13 @@ export type EventTypeRulesRepository = {
 export const EVENT_TYPE_KEY_PATTERN = /^[a-z0-9_]{1,32}$/;
 
 /**
+ * Seeded by migration 0010. Member birthdays are synthesized onto the calendar from
+ * `members.birthday` rather than stored as events, but they read this row for their colour so the
+ * admin console governs them like any other type.
+ */
+export const BIRTHDAY_EVENT_TYPE = "birthday";
+
+/**
  * FAILS CLOSED on a missing row. Once this table IS the list of event types, a missing row
  * means the type does not exist. Falling open here would let any string through the repository
  * now that the zod enums are gone.

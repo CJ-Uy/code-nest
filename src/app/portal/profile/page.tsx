@@ -128,6 +128,9 @@ export default async function ProfilePage() {
 								pronouns: member.pronouns ?? "",
 								batch: member.batch ?? "",
 								birthday: member.birthday ?? "",
+								// birthday_private defaults to 1, so a member who never set a birthday has made no
+								// choice yet — show them the default (public) rather than a stale opt-out.
+								birthdayPublic: member.birthday ? !member.birthdayPrivate : true,
 							}}
 						/>
 					</CardContent>
