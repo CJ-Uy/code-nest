@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { featureForPath } from "./proxy";
+import { featureForPath } from "./middleware";
 
 describe("featureForPath", () => {
 	it("maps only disabled page routes to their feature", () => {

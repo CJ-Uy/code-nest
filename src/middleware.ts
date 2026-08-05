@@ -20,7 +20,7 @@ export function featureForPath(pathname: string): FeatureKey | null {
 	return featurePaths.find(([, path]) => pathname === path || pathname.startsWith(`${path}/`))?.[0] ?? null;
 }
 
-export function proxy(request: NextRequest): Response | undefined {
+export function middleware(request: NextRequest): Response | undefined {
 	const feature = featureForPath(request.nextUrl.pathname);
 	if (feature && !getFeatureFlags()[feature]) return new Response("Not found", { status: 404 });
 }
