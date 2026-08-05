@@ -51,7 +51,7 @@
 			"binding": "DB",
 			"database_name": "code-nest-staged-db",
 			"database_id": "18b0f067-101b-4aac-b724-6382a7d3cdd0",
-			"migrations_dir": "drizzle/migrations"
+			"migrations_dir": "drizzle/release-migrations"
 		}
 	],
 	"r2_buckets": [
