@@ -29,13 +29,12 @@ export default async function PortalOverviewPage() {
 	const features = getFeatureFlags();
 	// Each read degrades to an empty/zeroed value so the dashboard never crashes
 	// when a repository is unavailable through the shared-dev adapter.
-	const [member, summary, announcements, libraryItems, scanEvents, terms] = await Promise.all([
+	const [member, summary, announcements, libraryItems, scanEvents] = await Promise.all([
 		repositories.members.getById(actor, actor.memberId).catch(() => null),
 		repositories.overview.getSummary(actor, { retention: features.retention, surveys: features.surveys }).catch(() => EMPTY_SUMMARY),
 		features.announcements ? repositories.announcements.listForMember(actor, { limit: 3 }).catch(() => []) : Promise.resolve([]),
 		features.library ? repositories.library.listItems(actor, { limit: 3 }).catch(() => []) : Promise.resolve([]),
 		repositories.events.listPublished(actor, { limit: 100 }).catch(() => []),
-		features.retention ? repositories.retention.listTerms(actor).catch(() => []) : Promise.resolve([]),
 	]);
 	const now = new Date();
 	const liveScanEvents = scanEvents.filter(
@@ -45,7 +44,9 @@ export default async function PortalOverviewPage() {
 			now.getTime() >= event.startsAt.getTime() - CHECKIN_LEAD_MS &&
 			now.getTime() <= event.endsAt.getTime(),
 	);
-	const currentTerm = terms.find((term) => term.isCurrent);
+	// Scanning remains available when retention is deferred, so it resolves its
+	// current term through the event repository instead of dashboard retention reads.
+	const scannerTermId = liveScanEvents.length > 0 ? await repositories.events.getCurrentTermId().catch(() => null) : null;
 	const canUndoScans = getAppConfig().APP_ENV !== "shared";
 
 	const firstName = (member?.nickname ?? member?.fullName ?? member?.name ?? "there").split(/\s+/)[0];
@@ -58,13 +59,13 @@ export default async function PortalOverviewPage() {
 				<h1 className="font-heading text-3xl">Kumusta, {firstName}</h1>
 			</div>
 
-			{currentTerm
+			{scannerTermId
 				? liveScanEvents.map((event) => (
 					<EventScanPanel
 						key={event.id}
 						eventId={event.id}
 						eventTitle={event.title}
-						termId={currentTerm.id}
+						termId={scannerTermId}
 						closesAt={event.endsAt!}
 						scannedCount={event.scannedCount}
 						canUndo={canUndoScans}

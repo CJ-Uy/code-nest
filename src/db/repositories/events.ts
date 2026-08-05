@@ -113,6 +113,7 @@ export type EventPointAwardRow = EventAwardInput & {
 
 export type EventsRepository = {
 	resolveCapability(actor: Actor, event: { createdBy: string; id: string }): Promise<EventRole | null>;
+	getCurrentTermId(now?: Date): Promise<string | null>;
 	/**
 	 * Share-code lookup for /events/<CODE>. Takes no actor: it runs before sign-in and returns only
 	 * an id, so it decides nothing about visibility — the page it redirects to does that.
@@ -306,6 +307,16 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 
 	return {
 		resolveCapability,
+
+		async getCurrentTermId(now = new Date()) {
+			const [term] = await db
+				.select({ id: terms.id })
+				.from(terms)
+				.where(and(lte(terms.startsAt, now), gte(terms.endsAt, now)))
+				.orderBy(desc(terms.startsAt))
+				.limit(1);
+			return term?.id ?? null;
+		},
 
 		async resolveShareCode(code) {
 			const normalized = normalizeEventCode(code);

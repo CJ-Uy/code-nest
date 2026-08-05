@@ -96,6 +96,11 @@ describe("events repository on D1", () => {
 		vi.useRealTimers();
 	});
 
+	it("returns the active term ID for a scanner panel", async () => {
+		const { repo } = makeRepos();
+		expect(await repo.getCurrentTermId()).toBe("term_1");
+	});
+
 	async function makeApprovedEvent(actor: Actor = owner) {
 		const { repo } = makeRepos();
 		return repo.create(actor, {
