@@ -100,7 +100,6 @@ export function CalendarMonth({ items, year, month }: { items: CalendarItem[]; y
 								const item = byId.get(bar.item.id);
 								if (!item) return null;
 								const colour = colourClasses(item.colour);
-								const single = bar.startCol === bar.endCol;
 								const body = (
 									<div
 										className={cn(
@@ -112,9 +111,9 @@ export function CalendarMonth({ items, year, month }: { items: CalendarItem[]; y
 										)}
 									>
 										{bar.continuesLeft ? <span className="shrink-0 text-muted-foreground">‹</span> : null}
-										{single && !bar.continuesLeft ? (
-											<span className={cn("size-1.5 shrink-0 rounded-full", colour.dot)} />
-										) : null}
+										{/* The dot marks where an event STARTS, so any bar carrying its real start gets
+										    one whatever its span. Continuation segments show the chevron instead. */}
+										{bar.continuesLeft ? null : <span className={cn("size-1.5 shrink-0 rounded-full", colour.dot)} />}
 										<span className="min-w-0 flex-1 truncate">{item.title}</span>
 										{bar.continuesRight ? <span className="shrink-0 text-muted-foreground">›</span> : null}
 									</div>
