@@ -1186,13 +1186,20 @@ Show the merge hash and verification results. Obtain approval before pushing the
 
 ```powershell
 pnpm exec wrangler d1 migrations list DB --config wrangler.staging.jsonc --remote
-pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name; SELECT * FROM d1_migrations ORDER BY id;"
+pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
+```
+
+Inspect migration history and the table list before choosing exactly one branch:
+
+- **Legacy target:** If `point_awards` exists, run the exact query below against the actual target environment using its target config. The result must contain zero rows before every release migration. If any row returns, stop and do not apply the migration; investigate and obtain an approved reconciliation plan first.
+
+```powershell
 pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --command "SELECT event_id, member_id, COUNT(*) AS award_count FROM point_awards WHERE event_id IS NOT NULL GROUP BY event_id, member_id HAVING COUNT(*) > 1;"
 ```
 
-Expected before first release migration: staged DB contains only Cloudflare system tables and an empty migration list. If this changed, stop and redesign against observed state.
+- **Clean target:** If `point_awards` does not exist, proceed only when the migration list is empty and `sqlite_master` contains only the Cloudflare system tables expected for a fresh D1 database. If any application table or migration history exists, stop and redesign against the observed state. Do not run the duplicate query against a target without `point_awards`.
 
-Before every release migration, run the exact duplicate query above against the actual target environment using its target config. The result must be empty. If any row returns, stop and do not apply the migration; investigate and obtain an approved reconciliation plan first.
+Every actual target must take one of these schema-aware branches before migration. Legacy targets always run the exact duplicate query; clean empty targets take the clean-target branch.
 
 - [ ] **Step 2: Record staged Time Travel bookmark**
 
