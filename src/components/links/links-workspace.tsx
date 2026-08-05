@@ -1,18 +1,20 @@
 "use client";
 
-import { FormEvent, MouseEvent, useMemo, useState } from "react";
+import { FormEvent, MouseEvent, useMemo, useState, useSyncExternalStore } from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
-import { ArrowDown, ArrowUp, ChevronsUpDown, Copy, ExternalLink, ImageUp, Info, Plus, QrCode, RefreshCw, Save, Search, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, CalendarDays, ChevronsUpDown, Copy, ExternalLink, ImageUp, Info, Plus, QrCode, RefreshCw, Save, Search, SlidersHorizontal, Trash2, X } from "lucide-react";
 import type { LinkListItem, LinkStats, QrStyle } from "@/db/repositories/links";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TabButton, TabsList } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { ClicksOverTime, DonutChart, formatBucket } from "./charts";
 import { LinkQrCustomizer } from "./link-qr-customizer";
+import { hourlyTrendSeries, normalizeDateRange, presetDateRange, summarizeTrend, trendSeries, type DateRangePreset, type TrendGranularity } from "./stats-utils";
 import { shortLinkUrl } from "./urls";
 
 type LinkView = Omit<LinkListItem, "createdAt" | "updatedAt"> & { createdAt: Date | string; updatedAt: Date | string };
@@ -27,9 +29,21 @@ type LinksWorkspaceProps = {
 	canModerate: boolean;
 };
 
+function subscribeOrigin() {
+	return () => {};
+}
+
+function getClientOrigin() {
+	return window.location.origin;
+}
+
+function getServerOrigin() {
+	return "";
+}
+
 export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: LinksWorkspaceProps) {
 	const [links, setLinks] = useState(initialLinks);
-	const [origin] = useState(() => (typeof window === "undefined" ? "" : window.location.origin));
+	const origin = useSyncExternalStore(subscribeOrigin, getClientOrigin, getServerOrigin);
 	const [status, setStatus] = useState("");
 	const [view, setView] = useState<ViewMode>("all");
 	const [search, setSearch] = useState("");
@@ -169,14 +183,14 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 	}
 
 	return (
-		<div className="grid gap-5">
+		<div className="grid min-w-0 grid-cols-1 gap-5">
 			<div className="flex flex-wrap items-end justify-between gap-3">
-				<div>
+				<div className="min-w-0 basis-full sm:flex-1">
 					<p className="text-xs font-semibold uppercase text-primary">Short links</p>
 					<h1 className="font-heading text-3xl">Links</h1>
 					<p className="mt-1 max-w-xl text-sm text-muted-foreground">Turn long web addresses into tidy <span className="font-medium text-foreground">{baseLabel}/name</span> links, share them, and see how many people click.</p>
 				</div>
-				<div className="flex items-center gap-2">
+				<div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
 					{canModerate ? <Badge variant="info">Moderator</Badge> : null}
 					<Button variant="outline" size="sm" onClick={refresh}>
 						<RefreshCw />
@@ -200,10 +214,10 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 					New here? What these words mean
 				</summary>
 				<div className="mt-3 grid max-w-3xl gap-2 text-muted-foreground">
-					<p><strong className="text-foreground">Short link</strong> — a tidy CODE web address that forwards to a longer one. Share <UrlToken>{`${baseLabel}/welcome`}</UrlToken> instead of a giant URL.</p>
-					<p><strong className="text-foreground">Slug</strong> — the custom ending you choose, the part after the slash. In <UrlToken>{`${baseLabel}/welcome`}</UrlToken> the slug is <strong className="text-foreground">welcome</strong>. Use letters, numbers, and dashes.</p>
-					<p><strong className="text-foreground">Destination</strong> — where people actually land when they open the link.</p>
-					<p><strong className="text-foreground">Clicks</strong> — every time someone opens your link we count it, so you can see what&rsquo;s getting attention. Open any link for a day-by-day breakdown and its QR code.</p>
+					<p><strong className="text-foreground">Short link</strong> - a tidy CODE web address that forwards to a longer one. Share <UrlToken>{`${baseLabel}/welcome`}</UrlToken> instead of a giant URL.</p>
+					<p><strong className="text-foreground">Slug</strong> - the custom ending you choose, the part after the slash. In <UrlToken>{`${baseLabel}/welcome`}</UrlToken> the slug is <strong className="text-foreground">welcome</strong>. Use letters, numbers, and dashes.</p>
+					<p><strong className="text-foreground">Destination</strong> - where people actually land when they open the link.</p>
+					<p><strong className="text-foreground">Clicks</strong> - every time someone opens your link we count it, so you can see what&rsquo;s getting attention. Open any link for a day-by-day breakdown and its QR code.</p>
 				</div>
 			</details>
 
@@ -235,32 +249,30 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 
 			{status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
 
-			<MobileLinksList links={sorted} baseLabel={baseLabel} onOpen={openDialog} />
-
-			<div className="hidden min-w-0 rounded-lg border bg-card md:block">
-				<Table className="table-fixed">
+			<div className="rounded-lg border bg-card">
+				<Table>
 					<TableHeader>
 						<TableRow>
-							<SortHeader label="Title" column="title" sort={sort} onSort={toggleSort} className="w-[26%]" />
-							<SortHeader label="Short link" column="slug" sort={sort} onSort={toggleSort} className="w-[18%]" />
-							<TableHead className="hidden w-[8%] lg:table-cell">Tags</TableHead>
-							<SortHeader label="Clicks" column="clicks" sort={sort} onSort={toggleSort} align="right" className="w-[7%]" />
-							<SortHeader label="Owner" column="owner" sort={sort} onSort={toggleSort} className="w-[17%]" />
-							<SortHeader label="Created" column="created" sort={sort} onSort={toggleSort} className="hidden w-[10%] lg:table-cell" />
-							<TableHead className="w-[120px] text-right">Actions</TableHead>
+							<SortHeader label="Title" column="title" sort={sort} onSort={toggleSort} />
+							<SortHeader label="Short link" column="slug" sort={sort} onSort={toggleSort} />
+							<TableHead>Tags</TableHead>
+							<SortHeader label="Clicks" column="clicks" sort={sort} onSort={toggleSort} align="right" />
+							<SortHeader label="Owner" column="owner" sort={sort} onSort={toggleSort} />
+							<SortHeader label="Created" column="created" sort={sort} onSort={toggleSort} />
+							<TableHead className="text-right">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{sorted.map((link) => (
 							<TableRow key={link.id} className="cursor-pointer" onClick={() => openDialog(link.id)}>
-								<TableCell><p className="truncate font-medium">{link.title}</p><p className="truncate text-xs text-muted-foreground">to {link.destinationUrl}</p></TableCell>
+								<TableCell className="min-w-48"><p className="font-medium">{link.title}</p><p className="truncate text-xs text-muted-foreground">to {link.destinationUrl}</p></TableCell>
 								<TableCell><ShortLinkCell origin={origin} baseLabel={baseLabel} slug={link.slug} /></TableCell>
-								<TableCell className="hidden lg:table-cell"><TagList tags={link.tags} /></TableCell>
+								<TableCell><TagList tags={link.tags} /></TableCell>
 								<TableCell className="text-right tabular-nums">{link.clickCount}</TableCell>
 								<TableCell><Owner owner={link.owner} /></TableCell>
-								<TableCell className="hidden whitespace-nowrap text-muted-foreground lg:table-cell">{new Date(link.createdAt).toLocaleDateString()}</TableCell>
+								<TableCell className="whitespace-nowrap text-muted-foreground">{new Date(link.createdAt).toLocaleDateString()}</TableCell>
 								<TableCell>
-									<div className="flex justify-end gap-1" onClick={(event) => event.stopPropagation()}>
+									<div className="flex justify-end gap-1">
 										<Button variant="outline" size="icon" aria-label="Copy link" onClick={(event) => copy(event, link)}><Copy /></Button>
 										<Button variant="outline" size="icon" aria-label="View details and QR code" onClick={(event) => { event.stopPropagation(); void openDialog(link.id); }}><QrCode /></Button>
 										{canEdit(link) ? <Button variant="ghost" size="icon" aria-label="Delete link" onClick={(event) => { event.stopPropagation(); setConfirmDeleteId(link.id); }}><Trash2 /></Button> : null}
@@ -303,7 +315,7 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 			<DialogPrimitive.Root open={Boolean(active)} onOpenChange={(open) => !open && setActiveId("")}>
 				<DialogPrimitive.Portal>
 					<DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-black/45" />
-					<DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 max-h-[90dvh] w-[min(100%-1.5rem,980px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg border bg-background p-5 shadow-lg">
+					<DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 max-h-[90dvh] w-[min(100%-1.5rem,1080px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg border bg-background p-5 shadow-lg">
 						{active ? <LinkDialog link={active} url={activeUrl} baseLabel={baseLabel} stats={stats} loading={statsLoading} editable={canEdit(active)} onSave={(patch) => updateLink(active.id, patch)} onUpload={(file) => uploadPreview(active.id, file, updateLink, setStatus)} /> : null}
 						<DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"><X className="size-4" /><span className="sr-only">Close</span></DialogPrimitive.Close>
 					</DialogPrimitive.Content>
@@ -313,29 +325,15 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 	);
 }
 
-function MobileLinksList({ links, baseLabel, onOpen }: { links: LinkView[]; baseLabel: string; onOpen(id: string): void }) {
-	return (
-		<div className="overflow-hidden rounded-lg border bg-card md:hidden">
-			{links.map((link) => (
-				<button key={link.id} type="button" onClick={() => onOpen(link.id)} className="grid w-full gap-1 border-b p-4 text-left last:border-b-0 active:bg-secondary">
-					<span className="truncate font-medium text-foreground">{link.title}</span>
-					<span className="truncate text-sm text-primary">{baseLabel}/{link.slug}</span>
-				</button>
-			))}
-			{!links.length ? <p className="p-6 text-center text-sm text-muted-foreground">No links match these filters.</p> : null}
-		</div>
-	);
-}
-
 function UrlToken({ children }: { children: string }) {
 	return <span className="rounded bg-secondary px-1.5 py-0.5 font-mono text-xs text-foreground">{children}</span>;
 }
 
-function SortHeader({ label, column, sort, onSort, align = "left", className }: { label: string; column: SortKey; sort: SortState; onSort(key: SortKey): void; align?: "left" | "right"; className?: string }) {
+function SortHeader({ label, column, sort, onSort, align = "left" }: { label: string; column: SortKey; sort: SortState; onSort(key: SortKey): void; align?: "left" | "right" }) {
 	const activeSort = sort.key === column;
 	const Icon = !activeSort ? ChevronsUpDown : sort.dir === "asc" ? ArrowUp : ArrowDown;
 	return (
-		<TableHead className={cn(align === "right" && "text-right", className)}>
+		<TableHead className={align === "right" ? "text-right" : undefined}>
 			<button type="button" onClick={() => onSort(column)} className={cn("inline-flex items-center gap-1 font-medium transition-colors hover:text-foreground", activeSort ? "text-foreground" : "text-muted-foreground", align === "right" && "flex-row-reverse")}>
 				{label}
 				<Icon className={cn("size-3.5", activeSort ? "opacity-100" : "opacity-40")} />
@@ -347,7 +345,7 @@ function SortHeader({ label, column, sort, onSort, align = "left", className }: 
 function ShortLinkCell({ origin, baseLabel, slug }: { origin: string; baseLabel: string; slug: string }) {
 	const href = origin ? shortLinkUrl(origin, slug) : `/${slug}`;
 	return (
-		<a href={href} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} className="inline-flex max-w-full items-center gap-1 font-medium text-primary hover:underline">
+		<a href={href} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} className="inline-flex max-w-[16rem] items-center gap-1 font-medium text-primary hover:underline">
 			<span className="truncate">{baseLabel}/{slug}</span>
 			<ExternalLink className="size-3.5 shrink-0 opacity-60" />
 		</a>
@@ -355,12 +353,12 @@ function ShortLinkCell({ origin, baseLabel, slug }: { origin: string; baseLabel:
 }
 
 function Owner({ owner }: { owner: LinkView["owner"] }) {
-	if (!owner) return <span className="text-muted-foreground">—</span>;
+	if (!owner) return <span className="text-muted-foreground">None</span>;
 	return <span className="flex items-center gap-2"><Avatar image={owner.image} name={owner.name} size="sm" /><span className="max-w-32 truncate">{owner.name ?? "Member"}</span></span>;
 }
 
 function TagList({ tags }: { tags: string[] }) {
-	if (!tags.length) return <span className="text-muted-foreground">—</span>;
+	if (!tags.length) return <span className="text-muted-foreground">None</span>;
 	return <span className="flex flex-wrap gap-1">{tags.map((tag) => <Badge key={tag} variant="secondary">{tag}</Badge>)}</span>;
 }
 
@@ -390,7 +388,7 @@ function CreateLinkDialog({ open, onOpenChange, form, setForm, onSubmit, tagOpti
 								<span className="whitespace-nowrap border-r border-input px-2 py-2 text-sm text-muted-foreground">{baseLabel}/</span>
 								<Input value={form.slug} placeholder="welcome" onChange={(event) => setForm({ ...form, slug: event.target.value })} required className="border-0 shadow-none focus-visible:ring-0" />
 							</div>
-							<span className="text-xs font-normal text-muted-foreground">No need to type a slash — just the custom ending. Your link will be <span className="font-medium text-foreground">{baseLabel}/{form.slug || "your-slug"}</span></span>
+							<span className="text-xs font-normal text-muted-foreground">No need to type a slash. Just the custom ending. Your link will be <span className="font-medium text-foreground">{baseLabel}/{form.slug || "your-slug"}</span></span>
 						</label>
 						<label className="grid gap-1 text-sm font-medium">
 							Destination
@@ -462,7 +460,7 @@ function LinkDialog({ link, url, baseLabel, stats, loading, editable, onSave, on
 				<div className={cn("grid gap-4", editable && "lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)]")}>
 					<section className="grid content-start gap-3 rounded-lg border p-4">
 						<h2 className="font-semibold">QR code</h2>
-						<p className="text-sm text-muted-foreground">Print it, project it, or download it — anyone who scans it lands on your short link.</p>
+						<p className="text-sm text-muted-foreground">Print it, project it, or download it. Anyone who scans it lands on your short link.</p>
 						{url ? <LinkQrCustomizer url={url} style={link.qrStyle} editable={editable} linkId={link.id} onSave={(qrStyle: QrStyle) => onSave({ qrStyle } as Partial<LinkView>)} /> : null}
 					</section>
 					{editable ? <EditPanel link={link} onSave={onSave} onUpload={onUpload} /> : null}
@@ -474,32 +472,214 @@ function LinkDialog({ link, url, baseLabel, stats, loading, editable, onSave, on
 	);
 }
 
+const RANGE_TABS: Array<{ id: DateRangePreset; label: string }> = [
+	{ id: "today", label: "Today" },
+	{ id: "7d", label: "Last 7 days" },
+	{ id: "month", label: "This month" },
+	{ id: "all", label: "All time" },
+];
+
+const GRANULARITY_TABS: Array<{ id: TrendGranularity; label: string }> = [
+	{ id: "hour", label: "Hour" },
+	{ id: "day", label: "Day" },
+	{ id: "week", label: "Week" },
+	{ id: "month", label: "Month" },
+];
+
 function StatsBlock({ stats }: { stats: StatsView | null }) {
 	if (!stats) return <p className="text-sm text-muted-foreground">Could not load stats.</p>;
+	return <StatsDetails key={stats.link.id} stats={stats} />;
+}
+
+function StatsDetails({ stats }: { stats: StatsView }) {
+	const nowIso = useMemo(() => new Date().toISOString().slice(0, 10), []);
+	const allRange = useMemo(() => presetDateRange("all", nowIso, stats.series), [nowIso, stats.series]);
+	const [rangeMode, setRangeMode] = useState<DateRangePreset | "custom">("all");
+	const [customStart, setCustomStart] = useState(allRange.start);
+	const [customEnd, setCustomEnd] = useState(allRange.end);
+	const [granularity, setGranularity] = useState<TrendGranularity>("day");
+	const [showAverage, setShowAverage] = useState(true);
+	const [cumulative, setCumulative] = useState(false);
+
+	const selectedRange = useMemo(() => (
+		rangeMode === "custom"
+			? normalizeDateRange(customStart || allRange.start, customEnd || allRange.end)
+			: presetDateRange(rangeMode, nowIso, stats.series)
+	), [allRange.end, allRange.start, customEnd, customStart, nowIso, rangeMode, stats.series]);
+	const chartData = useMemo(() => (
+		granularity === "hour"
+			? hourlyTrendSeries(stats.hourly ?? [], selectedRange)
+			: trendSeries(stats.series, selectedRange, granularity)
+	), [granularity, selectedRange, stats.hourly, stats.series]);
+	const summary = useMemo(() => summarizeTrend(stats.series, selectedRange), [selectedRange, stats.series]);
+	const chartTotal = chartData.reduce((sum, row) => sum + row.count, 0);
+	const chartAverage = chartTotal / Math.max(1, chartData.length);
+	const chartActive = chartData.filter((row) => row.count > 0).length;
+	const chartPeak = chartData.reduce((best, point) => (point.count > best.count ? point : best), { date: selectedRange.start, count: 0 });
 	const total = stats.series.reduce((sum, row) => sum + row.count, 0);
-	const topSource = [...stats.referrers].sort((a, b) => b.count - a.count)[0]?.bucket;
 	const topDevice = [...stats.devices].sort((a, b) => b.count - a.count)[0]?.bucket;
 	const sourceData = stats.referrers.map((row) => ({ ...row, bucket: formatBucket(row.bucket) }));
 	const deviceData = stats.devices.map((row) => ({ ...row, bucket: formatBucket(row.bucket) }));
+
+	function pickRange(id: DateRangePreset) {
+		const range = presetDateRange(id, nowIso, stats.series);
+		setRangeMode(id);
+		setCustomStart(range.start);
+		setCustomEnd(range.end);
+	}
+
 	return (
 		<section className="grid gap-4">
-			<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-				<Stat label="Total clicks" value={String(total)} />
-				<Stat label="Days tracked" value={String(stats.series.length)} />
-				<Stat label="Top source" value={topSource ? formatBucket(topSource) : "None"} />
-				<Stat label="Top device" value={topDevice ? formatBucket(topDevice) : "None"} />
+			<div className="rounded-lg border bg-card p-4">
+				<div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+					<div className="min-w-0">
+						<div className="flex items-center gap-2">
+							<CalendarDays className="size-4 text-primary" />
+							<h2 className="font-semibold">Click trends</h2>
+						</div>
+						<p className="mt-1 text-sm text-muted-foreground">
+							{formatRange(selectedRange.start, selectedRange.end)} grouped by {granularity}.
+						</p>
+					</div>
+					<TabsList className="grid w-full grid-cols-2 sm:flex sm:w-auto sm:flex-wrap">
+						{RANGE_TABS.map((range) => (
+							<TabButton key={range.id} type="button" active={rangeMode === range.id} onClick={() => pickRange(range.id)} className="text-xs sm:text-sm">
+								{range.label}
+							</TabButton>
+						))}
+					</TabsList>
+				</div>
+
+				<div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
+					<Stat label="Range clicks" value={formatWhole(summary.total)} />
+					<Stat label={granularity === "hour" ? "Average per hour" : "Average per day"} value={formatAverage(granularity === "hour" ? chartAverage : summary.averagePerDay)} />
+					<Stat label={granularity === "hour" ? "Active hours" : "Active days"} value={granularity === "hour" ? `${chartActive}/${Math.max(1, chartData.length)}` : `${summary.activeDays}/${chartDaysLabel(selectedRange)}`} />
+					<Stat label={granularity === "hour" ? "Best hour" : "Best day"} value={chartPeak.count ? `${chartPeak.count} on ${formatShortPoint(chartPeak.date)}` : "None"} />
+					<Stat label="Previous period" value={formatChange(summary.change, summary.changePct)} />
+				</div>
+
+				<details className="mt-4 rounded-lg border bg-background p-3">
+					<summary className="flex cursor-pointer items-center justify-between gap-3 text-sm font-semibold text-foreground">
+						<span className="inline-flex items-center gap-2"><SlidersHorizontal className="size-4 text-primary" />Advanced settings</span>
+						<span className="text-xs font-normal text-muted-foreground">{formatRange(selectedRange.start, selectedRange.end)} by {granularity}</span>
+					</summary>
+					<div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+						<div className="grid gap-3 sm:grid-cols-2">
+							<label className="grid gap-1 text-sm font-medium">
+								Start date
+								<Input type="date" value={customStart} onChange={(event) => { setRangeMode("custom"); setCustomStart(event.target.value); }} />
+							</label>
+							<label className="grid gap-1 text-sm font-medium">
+								End date
+								<Input type="date" value={customEnd} onChange={(event) => { setRangeMode("custom"); setCustomEnd(event.target.value); }} />
+							</label>
+						</div>
+						<div className="grid gap-3 sm:grid-cols-[auto_auto] lg:grid-cols-1">
+							<fieldset className="grid gap-1">
+								<legend className="text-sm font-medium">Group by</legend>
+								<TabsList className="grid w-full grid-cols-2 sm:flex">
+									{GRANULARITY_TABS.map((item) => (
+										<TabButton
+											key={item.id}
+											type="button"
+											active={granularity === item.id}
+											onClick={() => setGranularity(item.id)}
+											className={cn(
+												"flex-1 px-2 text-xs",
+												granularity === item.id && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+											)}
+										>
+											{item.label}
+										</TabButton>
+									))}
+								</TabsList>
+							</fieldset>
+							<div className="flex flex-wrap items-end gap-2">
+								<SettingToggle checked={showAverage} label="Average line" onChange={setShowAverage} />
+								<SettingToggle checked={cumulative} label="Cumulative" onChange={setCumulative} />
+							</div>
+						</div>
+					</div>
+				</details>
+
+				<div className="mt-4">
+					<ClicksOverTime data={chartData} average={showAverage && !cumulative ? (granularity === "hour" ? chartAverage : summary.averagePerDay) : undefined} cumulative={cumulative} verbose />
+				</div>
 			</div>
-			<div className="rounded-lg border p-4"><h2 className="mb-3 font-semibold">Clicks over time</h2><ClicksOverTime data={stats.series} /></div>
+
 			<div className="grid gap-4 sm:grid-cols-2">
-				<div className="rounded-lg border p-4"><h2 className="mb-3 font-semibold">How people arrived</h2><DonutChart data={sourceData} label="Traffic source" /></div>
-				<div className="rounded-lg border p-4"><h2 className="mb-3 font-semibold">Devices used</h2><DonutChart data={deviceData} label="Devices" /></div>
+				<div className="rounded-lg border bg-card p-4">
+					<div className="mb-3 flex items-start justify-between gap-3">
+						<div>
+							<h2 className="font-semibold">Traffic source</h2>
+							<p className="text-xs text-muted-foreground">All recorded clicks</p>
+						</div>
+						<Badge variant="secondary">{formatWhole(total)} total</Badge>
+					</div>
+					<DonutChart data={sourceData} label="Traffic source" />
+				</div>
+				<div className="rounded-lg border bg-card p-4">
+					<div className="mb-3 flex items-start justify-between gap-3">
+						<div>
+							<h2 className="font-semibold">Devices</h2>
+							<p className="text-xs text-muted-foreground">All recorded clicks</p>
+						</div>
+						<Badge variant="secondary">{topDevice ? formatBucket(topDevice) : "None"}</Badge>
+					</div>
+					<DonutChart data={deviceData} label="Devices" />
+				</div>
 			</div>
 		</section>
 	);
 }
 
+function SettingToggle({ checked, label, onChange }: { checked: boolean; label: string; onChange(value: boolean): void }) {
+	return (
+		<label className="inline-flex h-10 items-center gap-2 rounded-md border bg-card px-3 text-sm font-medium">
+			<input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="size-4 accent-[#06192F]" />
+			{label}
+		</label>
+	);
+}
+
 function Stat({ label, value }: { label: string; value: string }) {
-	return <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 truncate font-semibold">{value}</p></div>;
+	return <div className="rounded-lg border bg-background p-3"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 truncate font-semibold tabular-nums">{value}</p></div>;
+}
+
+function formatWhole(value: number): string {
+	return new Intl.NumberFormat("en").format(value);
+}
+
+function formatAverage(value: number): string {
+	return value >= 10 ? value.toFixed(1) : value.toFixed(2);
+}
+
+function formatShortDate(value: string): string {
+	const [year, month, day] = value.split("-").map(Number);
+	return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
+function formatShortPoint(value: string): string {
+	if (value.includes("T")) {
+		return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", hour: "numeric", timeZone: "UTC" }).format(new Date(`${value}:00.000Z`));
+	}
+	return formatShortDate(value);
+}
+
+function formatRange(start: string, end: string): string {
+	return start === end ? formatShortDate(start) : `${formatShortDate(start)} to ${formatShortDate(end)}`;
+}
+
+function chartDaysLabel(range: { start: string; end: string }): number {
+	const start = new Date(`${range.start}T00:00:00Z`).getTime();
+	const end = new Date(`${range.end}T00:00:00Z`).getTime();
+	return Math.max(1, Math.round((end - start) / 86400000) + 1);
+}
+
+function formatChange(change: number, pct: number | null): string {
+	const signed = `${change >= 0 ? "+" : ""}${formatWhole(change)}`;
+	if (pct === null) return signed;
+	return `${signed} (${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%)`;
 }
 
 function EditPanel({ link, onSave, onUpload }: { link: LinkView; onSave(patch: Partial<LinkView>): void; onUpload(file: File): void }) {
@@ -524,7 +704,7 @@ function EditPanel({ link, onSave, onUpload }: { link: LinkView; onSave(patch: P
 					<div className="grid gap-1">
 						<span className="font-medium">Preview image</span>
 						<Button asChild variant="outline" size="sm" className="w-fit"><label className="cursor-pointer"><ImageUp />Upload image<input className="sr-only" type="file" accept="image/*" onChange={(event) => event.target.files?.[0] && onUpload(event.target.files[0])} /></label></Button>
-						<span className="text-xs font-normal text-muted-foreground">The thumbnail on the card. {link.previewImageKey ? "An image is set — uploading replaces it." : "No image yet."} Saved as soon as it uploads.</span>
+						<span className="text-xs font-normal text-muted-foreground">The thumbnail on the card. {link.previewImageKey ? "An image is set. Uploading replaces it." : "No image yet."} Saved as soon as it uploads.</span>
 					</div>
 				</div>
 			</details>

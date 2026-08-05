@@ -1,15 +1,14 @@
 import { desc, eq, sql } from "drizzle-orm";
-import type { InferSelectModel } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
+import type { InferSelectModel } from "drizzle-orm";
 import * as schema from "@/db/schema";
-import { linkDailyStats, members, reservedSlugs, shortLinks } from "@/db/schema";
+import { linkDailyStats, linkHourlyStats, members, reservedSlugs, shortLinks } from "@/db/schema";
 import { createId } from "@/lib/ids";
 import { isValidDestinationUrl, isValidSlugFormat, normalizeSlug, RESERVED_SLUG_DEFAULTS } from "@/lib/links";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
 import type { AuditRepository } from "./audit";
 import { pageLimit } from "./types";
-import type { getDb } from "../client";
 
 export type ShortLink = InferSelectModel<typeof shortLinks>;
 export type LinkOwner = { id: string; name: string | null; image: string | null };
@@ -54,13 +53,12 @@ export type ResolvedLink = {
 export type LinkStats = {
 	link: ShortLink;
 	series: Array<{ date: string; count: number }>;
+	hourly: Array<{ hour: string; count: number }>;
 	referrers: Array<{ bucket: string; count: number }>;
 	devices: Array<{ bucket: string; count: number }>;
 };
 
 export type LinksRepository = {
-	findBySlug(slug: string): Promise<{ id: string; slug: string; destinationUrl: string } | null>;
-	recordVisit(id: string, visit: { date: string; referrerBucket: string; deviceBucket: string }): Promise<void>;
 	listVisible(actor: Actor, input?: { limit?: number; offset?: number }): Promise<LinkListItem[]>;
 	listOwn(actor: Actor, input?: { limit?: number; offset?: number }): Promise<LinkListItem[]>;
 	listAll(actor: Actor, input?: { limit?: number; offset?: number }): Promise<LinkListItem[]>;
@@ -70,10 +68,10 @@ export type LinksRepository = {
 	remove(actor: Actor, id: string): Promise<void>;
 	getStats(actor: Actor, id: string): Promise<LinkStats>;
 	resolveForRedirect(slug: string): Promise<ResolvedLink | null>;
-	recordClick(linkId: string, input: { date: string; referrerBucket: string; deviceBucket: string }): Promise<void>;
+	recordClick(linkId: string, input: { date: string; hour?: string; referrerBucket: string; deviceBucket: string }): Promise<void>;
 };
 
-export type LinkDb = ReturnType<typeof getDb>;
+export type LinkDb = DrizzleD1Database<typeof schema>;
 export type LinkErrorCode = "not_found" | "not_authorized" | "validation";
 
 export class LinkRepositoryError extends Error {
@@ -162,7 +160,7 @@ function rowToListItem(row: { link: ShortLink; owner: LinkOwner | null }): LinkL
 	return { ...row.link, owner: row.owner, tags: parseTags(row.link.tags), qrStyle: parseQrStyle(row.link.qrStyle) };
 }
 
-async function enrichLink(db: DrizzleD1Database<typeof schema>, link: ShortLink): Promise<LinkListItem> {
+async function enrichLink(db: LinkDb, link: ShortLink): Promise<LinkListItem> {
 	const [row] = await db
 		.select({ link: shortLinks, owner: { id: members.id, name: members.name, image: members.image } })
 		.from(shortLinks)
@@ -172,35 +170,22 @@ async function enrichLink(db: DrizzleD1Database<typeof schema>, link: ShortLink)
 	return rowToListItem(row ?? { link, owner: null });
 }
 
-function listQuery(db: DrizzleD1Database<typeof schema>) {
+function listQuery(db: LinkDb) {
 	return db.select({ link: shortLinks, owner: { id: members.id, name: members.name, image: members.image } }).from(shortLinks).leftJoin(members, eq(members.id, shortLinks.ownerMemberId));
 }
 
-const noopAudit: AuditRepository = { record: async () => undefined };
-
-export function createLinksRepository(db: LinkDb, audit: AuditRepository = noopAudit): LinksRepository {
-	const queryDb = db as unknown as DrizzleD1Database<typeof schema>;
-
+export function createLinksRepository(db: LinkDb, audit: AuditRepository): LinksRepository {
 	return {
-		async findBySlug(slug) {
-			const [link] = await db.select().from(shortLinks).where(eq(shortLinks.slug, slug)).limit(1);
-			return link ? { id: link.id, slug: link.slug, destinationUrl: link.destinationUrl } : null;
-		},
-
-		async recordVisit(id, visit) {
-			await this.recordClick(id, visit);
-		},
-
 		async listVisible(actor, input) {
 			void actor;
 			const page = ensurePage(input);
-			const rows = await listQuery(queryDb).orderBy(desc(shortLinks.createdAt)).limit(page.limit).offset(page.offset);
+			const rows = await listQuery(db).orderBy(desc(shortLinks.createdAt)).limit(page.limit).offset(page.offset);
 			return rows.map(rowToListItem);
 		},
 
 		async listOwn(actor, input) {
 			const page = ensurePage(input);
-			const rows = await listQuery(queryDb)
+			const rows = await listQuery(db)
 				.where(eq(shortLinks.ownerMemberId, actor.memberId))
 				.orderBy(desc(shortLinks.createdAt))
 				.limit(page.limit)
@@ -211,7 +196,7 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository = noopA
 		async listAll(actor, input) {
 			if (!can(actor, "link:moderate")) throw linkError("not_authorized", "Not authorized to list all links.");
 			const page = ensurePage(input);
-			const rows = await listQuery(queryDb).orderBy(desc(shortLinks.createdAt)).limit(page.limit).offset(page.offset);
+			const rows = await listQuery(db).orderBy(desc(shortLinks.createdAt)).limit(page.limit).offset(page.offset);
 			return rows.map(rowToListItem);
 		},
 
@@ -236,12 +221,12 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository = noopA
 
 			const tags = validateTags(input.tags);
 			const qrStyle = validateQrStyle(input.qrStyle);
-			const [link] = await queryDb
+			const [link] = await db
 				.insert(shortLinks)
 				.values({ id: createId("lnk"), slug, destinationUrl: input.destinationUrl, title, ownerMemberId: actor.memberId, tags: JSON.stringify(tags), qrStyle: JSON.stringify(qrStyle) })
 				.returning();
 			await audit.record(actor, { action: "link:create", targetType: "link", targetId: link.id, category: "link" });
-			return enrichLink(queryDb, link);
+			return enrichLink(db, link);
 		},
 
 		async update(actor, id, input) {
@@ -270,7 +255,7 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository = noopA
 				targetId: link.id,
 				category: "link",
 			});
-			return enrichLink(queryDb, link);
+			return enrichLink(db, link);
 		},
 
 		async remove(actor, id) {
@@ -289,7 +274,9 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository = noopA
 			void actor;
 			const link = await loadReadable(db, id);
 			const rows = await db.select().from(linkDailyStats).where(eq(linkDailyStats.linkId, link.id)).limit(2000);
+			const hourlyRows = await db.select().from(linkHourlyStats).where(eq(linkHourlyStats.linkId, link.id)).limit(5000);
 			const byDate = new Map<string, number>();
+			const byHour = new Map<string, number>();
 			const byReferrer = new Map<string, number>();
 			const byDevice = new Map<string, number>();
 			for (const row of rows) {
@@ -297,16 +284,20 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository = noopA
 				byReferrer.set(row.referrerBucket, (byReferrer.get(row.referrerBucket) ?? 0) + row.count);
 				byDevice.set(row.deviceBucket, (byDevice.get(row.deviceBucket) ?? 0) + row.count);
 			}
+			for (const row of hourlyRows) {
+				byHour.set(row.hour, (byHour.get(row.hour) ?? 0) + row.count);
+			}
 			return {
 				link,
 				series: sortedBuckets(byDate).map(({ key, count }) => ({ date: key, count })),
+				hourly: sortedBuckets(byHour).map(({ key, count }) => ({ hour: key, count })),
 				referrers: sortedBuckets(byReferrer).map(({ key, count }) => ({ bucket: key, count })),
 				devices: sortedBuckets(byDevice).map(({ key, count }) => ({ bucket: key, count })),
 			};
 		},
 
 		async resolveForRedirect(slug) {
-			const [link] = await queryDb
+			const [link] = await db
 				.select({
 					id: shortLinks.id,
 					slug: shortLinks.slug,
@@ -323,12 +314,20 @@ export function createLinksRepository(db: LinkDb, audit: AuditRepository = noopA
 		},
 
 		async recordClick(linkId, input) {
+			const hour = input.hour ?? `${input.date}T00:00`;
 			await db
 				.insert(linkDailyStats)
 				.values({ linkId, date: input.date, referrerBucket: input.referrerBucket, deviceBucket: input.deviceBucket, count: 1 })
 				.onConflictDoUpdate({
 					target: [linkDailyStats.linkId, linkDailyStats.date, linkDailyStats.referrerBucket, linkDailyStats.deviceBucket],
 					set: { count: sql`${linkDailyStats.count} + 1` },
+				});
+			await db
+				.insert(linkHourlyStats)
+				.values({ linkId, hour, referrerBucket: input.referrerBucket, deviceBucket: input.deviceBucket, count: 1 })
+				.onConflictDoUpdate({
+					target: [linkHourlyStats.linkId, linkHourlyStats.hour, linkHourlyStats.referrerBucket, linkHourlyStats.deviceBucket],
+					set: { count: sql`${linkHourlyStats.count} + 1` },
 				});
 			await db.update(shortLinks).set({ clickCount: sql`${shortLinks.clickCount} + 1` }).where(eq(shortLinks.id, linkId));
 		},
@@ -340,8 +339,6 @@ export function createUnavailableLinksRepository(): LinksRepository {
 		throw new Error("Links are unavailable through this repository adapter.");
 	};
 	return {
-		findBySlug: unavailable,
-		recordVisit: unavailable,
 		listVisible: unavailable,
 		listOwn: unavailable,
 		listAll: unavailable,

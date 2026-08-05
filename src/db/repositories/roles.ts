@@ -1,17 +1,15 @@
 import { and, eq, ne, sql } from "drizzle-orm";
+import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { auditLogs, memberRoles, members, roles } from "@/db/schema";
 import { createId } from "@/lib/ids";
 import type { Actor, RoleKey } from "@/server/auth/permissions";
 import { can, normalizeRoleKey, normalizeRoleKeys, roleKeys } from "@/server/auth/permissions";
+import type * as schema from "../schema";
 
-// Drizzle's D1 and local SQLite clients expose the same query builder at runtime,
-// but their overloaded select signatures do not intersect cleanly as a union.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Db = any;
-type RoleKeyRow = { key: string };
+type Db = DrizzleD1Database<typeof schema>;
 
 /** Role keys that exist but grant nothing yet: shown disabled, never assignable. */
-const INACTIVE_ROLE_KEYS: RoleKey[] = ["calendar"];
+const INACTIVE_ROLE_KEYS: RoleKey[] = [];
 /** The implicit baseline role: never surfaced or assignable on the Roles page. */
 const NON_ASSIGNABLE: RoleKey[] = ["member"];
 
@@ -38,7 +36,7 @@ export function createRolesRepository(db: Db): RolesRepository {
 			.from(memberRoles)
 			.innerJoin(roles, eq(roles.id, memberRoles.roleId))
 			.where(eq(memberRoles.memberId, memberId));
-		return normalizeRoleKeys(rows.map((r: RoleKeyRow) => r.key)).sort();
+		return normalizeRoleKeys(rows.map((r) => r.key)).sort();
 	}
 
 	function auditStmt(actor: Actor, targetId: string, action: "role:assign" | "role:revoke", key: RoleKey) {
@@ -63,7 +61,7 @@ export function createRolesRepository(db: Db): RolesRepository {
 			if (!can(actor, "role:assign")) throw new Error("Not authorized to view roles.");
 			const rows = await db.select().from(roles);
 			const seen = new Set<RoleKey>();
-			return rows.flatMap((r: { key: string; label: string; description: string }) => {
+			return rows.flatMap((r) => {
 				const key = normalizeRoleKey(r.key);
 				if (!key || seen.has(key) || NON_ASSIGNABLE.includes(key)) return [];
 				seen.add(key);
@@ -189,18 +187,5 @@ export function createRolesRepository(db: Db): RolesRepository {
 
 			return { roleKeys: await loadKeys(input.memberId) };
 		},
-	};
-}
-
-export function createUnavailableRolesRepository(): RolesRepository {
-	const unavailable = async () => {
-		throw new Error("Roles are unavailable in shared mode.");
-	};
-	return {
-		listAssignableRoles: unavailable,
-		listAdmins: unavailable,
-		getMemberRoleKeys: unavailable,
-		baseVersionOf: (keys) => [...keys].sort().join("|"),
-		saveMemberRoles: unavailable,
 	};
 }

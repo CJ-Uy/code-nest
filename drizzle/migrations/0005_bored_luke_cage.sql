@@ -1,0 +1,1 @@
+ALTER TABLE `member_feed_state` ADD `tour_seen_at` integer;

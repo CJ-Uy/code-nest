@@ -1,11 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { QrCode } from "lucide-react";
 import QRCode from "qrcode";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { encodeMemberCode } from "@/lib/member-code";
 
-export function MemberCodeCard({ memberId }: { memberId: string }) {
+export function MemberCodeCard({
+	memberId,
+	title = "Event check-in",
+	description = "Show this to an event host to be marked present. Your code never changes.",
+	className,
+}: {
+	memberId: string;
+	title?: string;
+	description?: string;
+	className?: string;
+}) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const [error, setError] = useState<string | null>(null);
 	const payload = encodeMemberCode(memberId);
@@ -53,14 +64,25 @@ export function MemberCodeCard({ memberId }: { memberId: string }) {
 	}, [payload]);
 
 	return (
-		<Card>
+		<Card className={className}>
 			<CardHeader>
-				<CardTitle>My member code</CardTitle>
-				<CardDescription>Show this to an event admin to be marked present. It does not change.</CardDescription>
+				<CardTitle className="flex items-center gap-2">
+					<span className="grid size-7 place-items-center rounded-lg bg-secondary text-accent">
+						<QrCode className="size-4" />
+					</span>
+					{title}
+				</CardTitle>
+				<CardDescription>{description}</CardDescription>
 			</CardHeader>
 			<CardContent className="flex flex-col items-center gap-3">
-				<canvas ref={canvasRef} aria-label="Member attendance QR code" className="rounded-md border bg-white p-2" />
-				{error ? <p className="text-sm text-destructive">{error}</p> : null}
+				<div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-border">
+					<canvas ref={canvasRef} aria-label="Member attendance QR code" className="block" />
+				</div>
+				{error ? (
+					<p className="text-sm text-destructive">{error}</p>
+				) : (
+					<p className="text-center text-xs text-muted-foreground">Check-in opens 30 minutes before each event starts.</p>
+				)}
 			</CardContent>
 		</Card>
 	);

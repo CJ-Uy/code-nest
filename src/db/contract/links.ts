@@ -58,6 +58,7 @@ export const updateLinkInputSchema = z.object({
 export const linkStatsOutputSchema = z.object({
 	link: linkOutputSchema,
 	series: z.array(z.object({ date: z.string(), count: z.number().int() })),
+	hourly: z.array(z.object({ hour: z.string(), count: z.number().int() })),
 	referrers: z.array(z.object({ bucket: z.string(), count: z.number().int() })),
 	devices: z.array(z.object({ bucket: z.string(), count: z.number().int() })),
 });

@@ -4,7 +4,7 @@ import { deviceBucket } from "@/lib/links";
 
 export type RedirectDependencies = {
 	resolveForRedirect(slug: string): Promise<ResolvedLink | null>;
-	recordClick(linkId: string, input: { date: string; referrerBucket: string; deviceBucket: string }): Promise<void>;
+	recordClick(linkId: string, input: { date: string; hour?: string; referrerBucket: string; deviceBucket: string }): Promise<void>;
 	scheduleBackground(task: Promise<unknown>): void;
 	previewImageBaseUrl: string;
 };
@@ -17,13 +17,16 @@ export async function buildRedirectResponse(deps: RedirectDependencies, request:
 
 	const userAgent = request.headers.get("user-agent");
 	// Two sources only: a QR scan (its URL carries ?s=qr) or a placed/pasted link.
-	// Referrer headers are unreliable — messaging/native apps strip them — so everything
+	// Referrer headers are unreliable since messaging/native apps strip them, so everything
 	// that isn't a scan is just "direct".
 	const scanned = requestUrl.searchParams.get("s") === "qr";
+	const clickedAt = new Date();
+	const clickedAtIso = clickedAt.toISOString();
 	deps.scheduleBackground(
 		deps
 			.recordClick(link.id, {
-				date: new Date().toISOString().slice(0, 10),
+				date: clickedAtIso.slice(0, 10),
+				hour: clickedAtIso.slice(0, 13) + ":00",
 				referrerBucket: scanned ? "qr scan" : "direct",
 				deviceBucket: deviceBucket(userAgent),
 			})

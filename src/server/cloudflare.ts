@@ -8,10 +8,19 @@ export type CloudflareRuntimeEnv = CloudflareEnv & {
 	AUTH_SECRET?: string;
 	AUTH_GOOGLE_ID?: string;
 	AUTH_GOOGLE_SECRET?: string;
+	AUTH_URL?: string;
+	APP_BASE_URL?: string;
 	AUTH_ALLOWED_DOMAINS?: string;
-	AUTH_ALLOWLIST_EMAILS?: string;
+	AUTH_BOOTSTRAP_SUPER_ADMIN_EMAIL?: string;
 	SHARED_API_BASE_URL?: string;
 	SHARED_API_TOKEN?: string;
+	SHARED_API_ALLOWED_ORIGINS?: string;
+	FEATURE_RETENTION?: string;
+	FEATURE_LIBRARY?: string;
+	FEATURE_ANNOUNCEMENTS?: string;
+	FEATURE_NOTIFICATIONS?: string;
+	FEATURE_SURVEYS?: string;
+	FEATURE_PUBLIC_SITE?: string;
 };
 
 export function getCloudflareEnv(): CloudflareRuntimeEnv {

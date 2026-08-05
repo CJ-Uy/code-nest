@@ -1,6 +1,6 @@
 # CODE Portal prototype
 
-This repo contains a Next.js prototype for CODE. The public site lives at `/`, public articles live under `/articles`, and the member portal demo lives at `/portal`.
+This repo contains a Next.js prototype for CODE. The public site lives at `/`, and the member portal lives at `/portal`. Public articles are planned but not a live route yet.
 
 ## Design
 
@@ -9,8 +9,6 @@ The original static exports live in `open design/`. The current product directio
 Route map:
 
 - `/`: public publishing home
-- `/articles`: public article index
-- `/articles/[slug]`: public article detail
 - `/portal`: member workspace demo
 
 The UI uses Tailwind CSS v4 and shadcn-style local components in `src/components/ui`. Shared design tokens live in `src/app/globals.css`.
@@ -32,6 +30,11 @@ pnpm dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 Edit `src/app/page.tsx` for the public site and `src/components/portal-workspace.tsx` for the member workspace.
+
+## Testing
+
+- `pnpm test` - unit and integration tests with Vitest.
+- `pnpm test:e2e` - light Playwright happy-path suite. See `e2e/README.md`.
 
 ## Preview
 

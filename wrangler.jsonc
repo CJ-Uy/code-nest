@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "code-nest",
+	"name": "code-nest-prod",
 	"account_id": "8527ec1369d46f55304a6f59ab5356e4",
 	"main": ".open-next/worker.js",
 	"workers_dev": true,
@@ -36,6 +36,12 @@
 		"APP_ENV": "production",
 		"DEPLOY_ENV": "prod",
 		"STORAGE_MODE": "binding",
+		"FEATURE_RETENTION": "false",
+		"FEATURE_LIBRARY": "false",
+		"FEATURE_ANNOUNCEMENTS": "false",
+		"FEATURE_NOTIFICATIONS": "false",
+		"FEATURE_SURVEYS": "false",
+		"FEATURE_PUBLIC_SITE": "false",
 		"LOCAL_SQLITE_PATH": "./.local/dev.db",
 		"LOCAL_STORAGE_DIR": "./.local/uploads",
 		"NEXT_PRIVATE_MINIMAL_MODE": "1"
@@ -45,7 +51,7 @@
 			"binding": "DB",
 			"database_name": "code-nest-prod-db",
 			"database_id": "a66fac5e-c122-466d-b7fe-5910ba6a98b9",
-			"migrations_dir": "drizzle/migrations"
+			"migrations_dir": "drizzle/release-migrations"
 		}
 	],
 	"r2_buckets": [
