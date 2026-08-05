@@ -6,11 +6,14 @@ import { ArticleCard, PageHero } from "@/components/public/public-page";
 import { SiteFooter } from "@/components/public/site-footer";
 import { SiteHeader } from "@/components/public/site-header";
 import { ARTICLE_CATS, ARTICLES } from "@/content/site";
+import { getFeatureFlags } from "@/server/features";
+import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Product Center — CODE" };
 
 export default async function ProductCenterPage({ searchParams }: { searchParams: Promise<{ cat?: string; q?: string }> }) {
+	if (!getFeatureFlags().publicSite) notFound();
 	const { cat, q } = await searchParams;
 	const category = cat && ARTICLE_CATS.includes(cat) ? cat : "All";
 	const query = q?.trim().toLowerCase() ?? "";

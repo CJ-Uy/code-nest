@@ -7,6 +7,7 @@ import { PlaceholderBlock } from "@/components/public/placeholder-block";
 import { SiteFooter } from "@/components/public/site-footer";
 import { SiteHeader } from "@/components/public/site-header";
 import { ARTICLES, getArticle } from "@/content/site";
+import { getFeatureFlags } from "@/server/features";
 
 export const dynamic = "force-static";
 
@@ -21,6 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+	if (!getFeatureFlags().publicSite) notFound();
 	const { slug } = await params;
 	const article = getArticle(slug);
 	if (!article) notFound();

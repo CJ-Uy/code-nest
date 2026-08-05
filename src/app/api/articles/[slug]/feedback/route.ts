@@ -4,6 +4,7 @@ import { getRepositories } from "@/db";
 import { getArticle } from "@/content/site";
 import { enforceRateLimit } from "@/server/ratelimit/guard";
 import { clientIpFromRequest, RATE_LIMITS } from "@/server/ratelimit/policies";
+import { getFeatureFlags } from "@/server/features";
 
 const bodySchema = z.object({
 	rating: z.number().int().min(1).max(5),
@@ -11,6 +12,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request, { params }: { params: Promise<{ slug: string }> }) {
+	if (!getFeatureFlags().publicSite) return new Response("Not found", { status: 404 });
 	const { slug } = await params;
 	if (!getArticle(slug)) {
 		return NextResponse.json({ error: "Unknown article." }, { status: 404 });

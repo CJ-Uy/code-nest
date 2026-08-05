@@ -1,10 +1,12 @@
 import { getRepositories } from "@/db";
 import { submitSurveyResponseInputSchema } from "@/db/types";
 import { getAppConfig } from "@/server/env";
+import { getFeatureFlags } from "@/server/features";
 import { assertSameOrigin } from "@/server/http/origin";
 import { proxySharedApiRequest } from "@/server/shared-api";
 
 export async function POST(request: Request) {
+	if (!getFeatureFlags().surveys) return new Response("Not found", { status: 404 });
 	const config = getAppConfig();
 	try {
 		assertSameOrigin(request, config.APP_BASE_URL);
