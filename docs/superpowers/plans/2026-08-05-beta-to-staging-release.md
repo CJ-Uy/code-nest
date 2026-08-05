@@ -910,15 +910,26 @@ Use `node:fs`, `node:os`, `node:path`, `node:assert/strict`, and the already-ins
 
 1. Create a temporary SQLite database with `mkdtempSync`.
 2. Apply release migrations `0000` through `0003` with `db.exec(sql.replaceAll("--> statement-breakpoint", ""))`.
-3. Insert two synthetic members, one term, one event, one `point_awards` row, two short links, three daily-stat rows, and one audit row.
-4. Record counts and destinations.
-5. Apply `0004_beta_release_bridge.sql`.
-6. Assert unchanged member, short-link, daily-stat, and audit counts.
-7. Assert both link destinations are byte-for-byte unchanged.
-8. Assert the old point award exists in `retention_records` as `pt_retention`.
-9. Assert `link_hourly_stats`, `quick_links`, `event_type_rules`, `point_types`, `event_point_awards`, `event_staff`, and `event_invites` exist.
-10. Assert `crs_events` has `deleted_at`, `grace_minutes`, `rsvp_form_json`, `rsvp_responses_public`, `all_day`, `read_only`, and `public_code`.
-11. Close the DB and remove only the created temp directory in `finally`.
+3. Insert two synthetic members, one term, one event, two `point_awards` rows with the same non-null `event_id` and `member_id`, two short links, three daily-stat rows, and one audit row.
+4. Run the exact release preflight query and assert it returns the synthetic event/member with `award_count = 2`:
+
+```sql
+SELECT event_id, member_id, COUNT(*) AS award_count
+FROM point_awards
+WHERE event_id IS NOT NULL
+GROUP BY event_id, member_id
+HAVING COUNT(*) > 1;
+```
+
+5. Delete only the second synthetic duplicate, rerun the preflight, and assert it returns no rows before applying the preservation migration.
+6. Record counts and destinations.
+7. Apply `0004_beta_release_bridge.sql`.
+8. Assert unchanged member, short-link, daily-stat, and audit counts.
+9. Assert both link destinations are byte-for-byte unchanged.
+10. Assert the remaining old point award exists in `retention_records` as `pt_retention`.
+11. Assert `link_hourly_stats`, `quick_links`, `event_type_rules`, `point_types`, `event_point_awards`, `event_staff`, and `event_invites` exist.
+12. Assert `crs_events` has `deleted_at`, `grace_minutes`, `rsvp_form_json`, `rsvp_responses_public`, `all_day`, `read_only`, and `public_code`.
+13. Close the DB and remove only the created temp directory in `finally`.
 
 Core assertion shape:
 
@@ -1176,9 +1187,12 @@ Show the merge hash and verification results. Obtain approval before pushing the
 ```powershell
 pnpm exec wrangler d1 migrations list DB --config wrangler.staging.jsonc --remote
 pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name; SELECT * FROM d1_migrations ORDER BY id;"
+pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --command "SELECT event_id, member_id, COUNT(*) AS award_count FROM point_awards WHERE event_id IS NOT NULL GROUP BY event_id, member_id HAVING COUNT(*) > 1;"
 ```
 
 Expected before first release migration: staged DB contains only Cloudflare system tables and an empty migration list. If this changed, stop and redesign against observed state.
+
+Before every release migration, run the exact duplicate query above against the actual target environment using its target config. The result must be empty. If any row returns, stop and do not apply the migration; investigate and obtain an approved reconciliation plan first.
 
 - [ ] **Step 2: Record staged Time Travel bookmark**
 

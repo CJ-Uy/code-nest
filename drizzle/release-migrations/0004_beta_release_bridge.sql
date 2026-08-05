@@ -66,6 +66,7 @@ CREATE INDEX `retention_records_term_id_idx` ON `retention_records` (`term_id`);
 --> statement-breakpoint
 CREATE INDEX `retention_records_event_id_idx` ON `retention_records` (`event_id`);
 --> statement-breakpoint
+-- Release blocker: the target DB must pass the documented duplicate point_awards preflight before this migration runs.
 INSERT INTO `retention_records`
 	(`id`, `member_id`, `term_id`, `event_id`, `point_type_id`, `points`, `reason`, `source`, `recorded_by`, `recorded_at`)
 SELECT
