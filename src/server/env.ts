@@ -4,6 +4,7 @@ import { getOptionalCloudflareEnv } from "./cloudflare";
 export const appEnvSchema = z.enum(["local", "shared", "production"]);
 export const deployEnvSchema = z.enum(["dev", "prod"]);
 export const storageModeSchema = z.enum(["local", "api", "r2-s3", "binding"]);
+export const featureFlagSchema = z.string().optional().transform((value) => value === "true");
 
 const rawEnvSchema = z.object({
 	APP_ENV: appEnvSchema.default("local"),
@@ -27,6 +28,12 @@ const rawEnvSchema = z.object({
 	R2_ENDPOINT: z.string().optional(),
 	LOCAL_SQLITE_PATH: z.string().default("./.local/dev.db"),
 	LOCAL_STORAGE_DIR: z.string().default("./.local/uploads"),
+	FEATURE_RETENTION: featureFlagSchema,
+	FEATURE_LIBRARY: featureFlagSchema,
+	FEATURE_ANNOUNCEMENTS: featureFlagSchema,
+	FEATURE_NOTIFICATIONS: featureFlagSchema,
+	FEATURE_SURVEYS: featureFlagSchema,
+	FEATURE_PUBLIC_SITE: featureFlagSchema,
 });
 
 export type AppConfig = z.infer<typeof rawEnvSchema>;
@@ -70,6 +77,12 @@ export function getAppConfig(): AppConfig {
 		R2_ENDPOINT: runtimeEnvValue("R2_ENDPOINT"),
 		LOCAL_SQLITE_PATH: runtimeEnvValue("LOCAL_SQLITE_PATH"),
 		LOCAL_STORAGE_DIR: runtimeEnvValue("LOCAL_STORAGE_DIR"),
+		FEATURE_RETENTION: runtimeEnvValue("FEATURE_RETENTION"),
+		FEATURE_LIBRARY: runtimeEnvValue("FEATURE_LIBRARY"),
+		FEATURE_ANNOUNCEMENTS: runtimeEnvValue("FEATURE_ANNOUNCEMENTS"),
+		FEATURE_NOTIFICATIONS: runtimeEnvValue("FEATURE_NOTIFICATIONS"),
+		FEATURE_SURVEYS: runtimeEnvValue("FEATURE_SURVEYS"),
+		FEATURE_PUBLIC_SITE: runtimeEnvValue("FEATURE_PUBLIC_SITE"),
 	});
 
 	const issues: string[] = [];
@@ -120,6 +133,14 @@ export function getPublicEnvStatus() {
 		APP_ENV: config.APP_ENV,
 		DEPLOY_ENV: config.DEPLOY_ENV ?? null,
 		STORAGE_MODE: config.STORAGE_MODE,
+		features: {
+			retention: config.FEATURE_RETENTION,
+			library: config.FEATURE_LIBRARY,
+			announcements: config.FEATURE_ANNOUNCEMENTS,
+			notifications: config.FEATURE_NOTIFICATIONS,
+			surveys: config.FEATURE_SURVEYS,
+			publicSite: config.FEATURE_PUBLIC_SITE,
+		},
 		requiredEnv: {
 			AUTH_SECRET: Boolean(config.AUTH_SECRET),
 			AUTH_GOOGLE_ID: Boolean(config.AUTH_GOOGLE_ID),

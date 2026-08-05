@@ -29,6 +29,12 @@ export default defineConfig({
 			AUTH_GOOGLE_SECRET: "e2e-google-client-secret",
 			E2E_AUTH_BYPASS: "1",
 			LOCAL_SQLITE_PATH,
+			FEATURE_RETENTION: "true",
+			FEATURE_LIBRARY: "true",
+			FEATURE_ANNOUNCEMENTS: "true",
+			FEATURE_NOTIFICATIONS: "true",
+			FEATURE_SURVEYS: "true",
+			FEATURE_PUBLIC_SITE: "true",
 		},
 	},
 });

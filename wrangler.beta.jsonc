@@ -36,6 +36,12 @@
 		"APP_ENV": "production",
 		"DEPLOY_ENV": "dev",
 		"STORAGE_MODE": "binding",
+		"FEATURE_RETENTION": "true",
+		"FEATURE_LIBRARY": "true",
+		"FEATURE_ANNOUNCEMENTS": "true",
+		"FEATURE_NOTIFICATIONS": "true",
+		"FEATURE_SURVEYS": "true",
+		"FEATURE_PUBLIC_SITE": "true",
 		"LOCAL_SQLITE_PATH": "./.local/dev.db",
 		"LOCAL_STORAGE_DIR": "./.local/uploads",
 		"NEXT_PRIVATE_MINIMAL_MODE": "1"
