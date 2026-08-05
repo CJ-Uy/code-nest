@@ -36,6 +36,7 @@
 		"db:seed:dev:export": "tsx scripts/export-seed-sql.ts",
 		"db:studio": "drizzle-kit studio",
 		"check:shared-dev-note": "node scripts/check-shared-dev-note.mjs",
+		"check:release-migrations": "node scripts/check-release-migrations.mjs",
 		"cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
 		"cf-typegen:beta": "pnpm cf-typegen:dev",
 		"cf-typegen:dev": "wrangler types --config wrangler.beta.jsonc --env-interface CloudflareEnv ./cloudflare-env.d.ts",
