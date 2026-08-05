@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/portal/empty-state";
 import { type EventTypeRow, labelFor } from "@/db/repositories/eventTypeRules";
 import { colourClasses } from "@/lib/event-type-colours";
-import { formatUtc8Time, toLocalDate } from "@/lib/date-slots";
+import { formatEventRange, formatUtc8Time, toLocalDate } from "@/lib/date-slots";
 import { cn } from "@/lib/utils";
 
 export type EventListItem = {
@@ -15,6 +15,8 @@ export type EventListItem = {
 	place: string;
 	startsAt: Date;
 	endsAt: Date | null;
+	allDay: boolean;
+	readOnly: boolean;
 	myRole: "owner" | "admin" | "scanner" | null;
 	canModerate: boolean;
 };
@@ -27,7 +29,12 @@ const ROLE_LABEL: Record<NonNullable<EventListItem["myRole"]>, string> = {
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-function timeRange(start: Date, end: Date | null): string {
+function timeRange(start: Date, end: Date | null, allDay: boolean): string {
+	// Multi-day and all-day events need the span, not just clock times, or a three-day event reads
+	// as if it were over by the afternoon.
+	if (allDay || (end && toLocalDate(start) !== toLocalDate(new Date(end.getTime() - 1)))) {
+		return formatEventRange(start, end, allDay);
+	}
 	const t = formatUtc8Time;
 	return end ? `${t(start)} - ${t(end)}` : t(start);
 }
@@ -54,9 +61,14 @@ function Row({ event, types }: { event: EventListItem; types: EventTypeRow[] }) 
 							{ROLE_LABEL[event.myRole]}
 						</Badge>
 					) : null}
+					{event.readOnly ? (
+						<Badge variant="secondary" className="shrink-0 text-[10px]">
+							Info
+						</Badge>
+					) : null}
 				</div>
 				<p className="truncate text-sm text-muted-foreground">
-					{event.place} · {timeRange(event.startsAt, event.endsAt)}
+					{event.place} · {timeRange(event.startsAt, event.endsAt, event.allDay)}
 				</p>
 			</div>
 			<span className="hidden shrink-0 items-center gap-1 text-xs font-medium text-muted-foreground sm:flex">

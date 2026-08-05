@@ -2,6 +2,7 @@ import { and, asc, count, desc, eq, gte, getTableColumns, inArray, isNull, like,
 import type { InferSelectModel } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
 import { createId } from "@/lib/ids";
+import { generateEventCode, normalizeEventCode } from "@/lib/event-code";
 import {
 	auditLogs,
 	crsAttendance,
@@ -48,6 +49,8 @@ export type CreateEventInput = {
 	graceMinutes?: number | null;
 	rsvpForm?: EventSignupField[];
 	rsvpResponsesPublic?: boolean;
+	allDay?: boolean;
+	readOnly?: boolean;
 };
 
 export type UpdateEventInput = Partial<{
@@ -61,6 +64,8 @@ export type UpdateEventInput = Partial<{
 	graceMinutes: number | null;
 	rsvpForm: EventSignupField[];
 	rsvpResponsesPublic: boolean;
+	allDay: boolean;
+	readOnly: boolean;
 }>;
 
 export type ListEventsInput = { limit?: number; offset?: number };
@@ -108,6 +113,11 @@ export type EventPointAwardRow = EventAwardInput & {
 
 export type EventsRepository = {
 	resolveCapability(actor: Actor, event: { createdBy: string; id: string }): Promise<EventRole | null>;
+	/**
+	 * Share-code lookup for /events/<CODE>. Takes no actor: it runs before sign-in and returns only
+	 * an id, so it decides nothing about visibility — the page it redirects to does that.
+	 */
+	resolveShareCode(code: string): Promise<{ id: string } | null>;
 	create(actor: Actor, input: CreateEventInput): Promise<EventRecord>;
 	listPublished(actor: Actor, input?: ListEventsInput): Promise<EventRecord[]>;
 	listPending(actor: Actor, input?: ListEventsInput): Promise<EventRecord[]>;
@@ -170,6 +180,40 @@ function canManage(role: EventRole | null, actor: Actor): boolean {
 function canOperate(role: EventRole | null, actor: Actor): boolean {
 	return role !== null || can(actor, "event:moderate");
 }
+
+/**
+ * A read-only event is informational: it takes no signups, check-ins, points, uploads or posts.
+ *
+ * Called at the top of every member-facing mutation rather than from a shared wrapper, so a method
+ * added later without this guard shows up as a missing line in review instead of silently
+ * inheriting protection it never got.
+ */
+function assertNotReadOnly(event: BaseEventRecord, message: string): void {
+	if (event.readOnly) throw new Error(message);
+}
+
+/**
+ * Setting or clearing read_only is an event:moderate action, NOT an ownership one.
+ *
+ * canManage() returns true for the event owner, so gating this on canManage alone would let any
+ * member who created an event mark it informational and strip its own signup and check-in surface.
+ * The capability is therefore checked against the specific field, independently of canManage.
+ */
+function assertMaySetReadOnly(actor: Actor, current: boolean, next: boolean | undefined): void {
+	if (next === undefined || next === current) return;
+	if (!can(actor, "event:moderate")) {
+		throw new Error("Not authorized to change whether this event is read-only.");
+	}
+}
+
+/** Interaction fields are meaningless on an informational event; coerce rather than reject. */
+const READ_ONLY_FIELDS = {
+	capacity: null,
+	graceMinutes: null,
+	points: null,
+	rsvpFormJson: [] as EventSignupField[],
+	rsvpResponsesPublic: false,
+} as const;
 
 function inCheckinWindow(event: BaseEventRecord, now: Date): boolean {
 	if (!event.endsAt) return false;
@@ -263,33 +307,66 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 	return {
 		resolveCapability,
 
+		async resolveShareCode(code) {
+			const normalized = normalizeEventCode(code);
+			if (!normalized) return null;
+			// Selects the id ALONE. This is the only event lookup an unauthenticated request can
+			// reach, and checkin_secret must never travel through it.
+			const [row] = await db
+				.select({ id: crsEvents.id })
+				.from(crsEvents)
+				.where(and(eq(crsEvents.publicCode, normalized), isNull(crsEvents.deletedAt)))
+				.limit(1);
+			return row ?? null;
+		},
+
 		async create(actor, input) {
 			const rules = await createEventTypeRulesRepository(db, audit).list();
 			if (!canCreateType(actor, rules, input.type)) {
 				throw new Error(`Not authorized to create ${input.type} events.`);
 			}
-			const [event] = await db
-				.insert(crsEvents)
-				.values({
-					id: createId("evt"),
-					title: input.title,
-					type: input.type,
-					status: "approved",
-					points: null,
-					place: input.place,
-					capacity: input.capacity,
-					graceMinutes: input.graceMinutes ?? null,
-					rsvpFormJson: input.rsvpForm ?? [],
-					rsvpResponsesPublic: input.rsvpResponsesPublic ?? false,
-					startsAt: input.startsAt,
-					endsAt: input.endsAt,
-					description: input.description,
-					createdBy: actor.memberId,
-					approvedBy: actor.memberId,
-					approvedAt: new Date(),
-					checkinSecret: "",
-				})
-				.returning();
+			const readOnly = input.readOnly ?? false;
+			assertMaySetReadOnly(actor, false, input.readOnly);
+
+			const values = {
+				id: createId("evt"),
+				title: input.title,
+				type: input.type,
+				status: "approved" as const,
+				points: null,
+				place: input.place,
+				capacity: readOnly ? READ_ONLY_FIELDS.capacity : input.capacity,
+				graceMinutes: readOnly ? READ_ONLY_FIELDS.graceMinutes : (input.graceMinutes ?? null),
+				rsvpFormJson: readOnly ? [...READ_ONLY_FIELDS.rsvpFormJson] : (input.rsvpForm ?? []),
+				rsvpResponsesPublic: readOnly ? READ_ONLY_FIELDS.rsvpResponsesPublic : (input.rsvpResponsesPublic ?? false),
+				allDay: input.allDay ?? false,
+				readOnly,
+				startsAt: input.startsAt,
+				endsAt: input.endsAt,
+				description: input.description,
+				createdBy: actor.memberId,
+				approvedBy: actor.memberId,
+				approvedAt: new Date(),
+				checkinSecret: "",
+			};
+
+			// public_code is unique. 30^6 is a large space, but the birthday bound over the lifetime of
+			// the club is not negligible, so retry a fresh code rather than failing the create.
+			let event: BaseEventRecord | undefined;
+			for (let attempt = 0; attempt < 5; attempt += 1) {
+				try {
+					[event] = await db
+						.insert(crsEvents)
+						.values({ ...values, publicCode: generateEventCode() })
+						.returning();
+					break;
+				} catch (error) {
+					const message = error instanceof Error ? error.message : String(error);
+					if (attempt === 4 || !/unique/i.test(message)) throw error;
+				}
+			}
+			if (!event) throw new Error("Could not allocate a share code for this event.");
+
 			await audit.record(actor, { action: "event:create", targetType: "event", targetId: event.id, category: "event" });
 			return decorate(actor, event);
 		},
@@ -342,6 +419,12 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 					throw new Error(`Not authorized to change this event to ${patch.type}.`);
 				}
 			}
+			// Field-level, deliberately not folded into canManage above: canManage is true for the
+			// event owner, so an ordinary member who created an event could otherwise mark it
+			// read-only and strip its own signup and check-in surface.
+			assertMaySetReadOnly(actor, event.readOnly, patch.readOnly);
+			const readOnly = patch.readOnly ?? event.readOnly;
+
 			const [updated] = await db
 				.update(crsEvents)
 				.set({
@@ -351,10 +434,27 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 					description: patch.description ?? event.description,
 					startsAt: patch.startsAt ?? event.startsAt,
 					endsAt: patch.endsAt ?? event.endsAt,
-					capacity: patch.capacity === undefined ? event.capacity : patch.capacity,
-					graceMinutes: patch.graceMinutes === undefined ? event.graceMinutes : patch.graceMinutes,
-					rsvpFormJson: patch.rsvpForm === undefined ? event.rsvpFormJson : patch.rsvpForm,
-					rsvpResponsesPublic: patch.rsvpResponsesPublic === undefined ? event.rsvpResponsesPublic : patch.rsvpResponsesPublic,
+					allDay: patch.allDay ?? event.allDay,
+					readOnly,
+					// Collected rows (RSVPs, attendance, awards) are deliberately left in place when an
+					// event is flipped read-only; only the configuration that invites new interaction
+					// is cleared, so a mistaken flip stays reversible without data loss.
+					capacity: readOnly ? READ_ONLY_FIELDS.capacity : patch.capacity === undefined ? event.capacity : patch.capacity,
+					graceMinutes: readOnly
+						? READ_ONLY_FIELDS.graceMinutes
+						: patch.graceMinutes === undefined
+							? event.graceMinutes
+							: patch.graceMinutes,
+					rsvpFormJson: readOnly
+						? [...READ_ONLY_FIELDS.rsvpFormJson]
+						: patch.rsvpForm === undefined
+							? event.rsvpFormJson
+							: patch.rsvpForm,
+					rsvpResponsesPublic: readOnly
+						? READ_ONLY_FIELDS.rsvpResponsesPublic
+						: patch.rsvpResponsesPublic === undefined
+							? event.rsvpResponsesPublic
+							: patch.rsvpResponsesPublic,
 				})
 				.where(eq(crsEvents.id, eventId))
 				.returning();
@@ -372,6 +472,9 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 		async setAwards(actor, eventId, awards) {
 			if (!can(actor, "event:points")) throw new Error("Not authorized to set event point awards.");
 			if (awards.length > 100) throw new Error("Set at most 100 point awards per event.");
+			const awardEvent = await loadEvent(db, eventId);
+			if (!awardEvent) throw new Error("Event not found.");
+			assertNotReadOnly(awardEvent, "This event does not award points.");
 
 			const ids = awards.map((award) => award.pointTypeId);
 			if (new Set(ids).size !== ids.length) throw new Error("Point type IDs must be unique.");
@@ -492,6 +595,10 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 			if (!can(actor, "event:points")) throw new Error("Not authorized to set event points.");
 			const event = await loadEvent(db, eventId);
 			if (!event) throw new Error("Event not found.");
+			// Blocked for consistency with setAwards rather than for escalation risk: this can only
+			// remove awards. Leaving its sibling open would read as an oversight later. The escape
+			// hatch is the same one undoScan documents — flip read-only off, clean up, flip back.
+			assertNotReadOnly(event, "This event does not award points.");
 			const [type] = await db
 				.select({ active: pointTypes.active })
 				.from(pointTypes)
@@ -551,6 +658,7 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 		async invite(actor, eventId, memberIds) {
 			const { event, role } = await requireEvent(actor, eventId);
 			if (role !== "owner" && role !== "admin") throw new Error("Not authorized to invite members.");
+			assertNotReadOnly(event, "This event does not take signups.");
 			let invited = 0;
 			for (const memberId of [...new Set(memberIds)]) {
 				const rows = await db
@@ -623,6 +731,7 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 		async setRsvp(actor, input) {
 			const event = await loadEvent(db, input.eventId);
 			if (!event) throw new Error("Event not found.");
+			assertNotReadOnly(event, "This event does not take signups.");
 			const answers = input.state === "going" ? validateEventSignupAnswers(event.rsvpFormJson ?? [], input.answers ?? {}) : {};
 			await db
 				.insert(eventRsvps)
@@ -637,6 +746,7 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 		async recordScan(actor, input) {
 			const { event, role } = await requireEvent(actor, input.eventId);
 			if (!canOperate(role, actor)) throw new Error("Not authorized to scan attendance.");
+			assertNotReadOnly(event, "This event does not take check-ins.");
 			const scannedAt = new Date();
 			if (role === "scanner" && !inCheckinWindow(event, scannedAt)) throw new Error("Check-in is closed.");
 
@@ -688,8 +798,9 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 		},
 
 		async undoScan(actor, input) {
-			const { role } = await requireEvent(actor, input.eventId);
+			const { event, role } = await requireEvent(actor, input.eventId);
 			if (!canManage(role, actor) && role !== "scanner") throw new Error("Not authorized to undo attendance.");
+			assertNotReadOnly(event, "This event does not take check-ins.");
 
 			const existing = await loadScanRow(db, input.eventId, input.memberId);
 			if (!existing) return { removed: false };
@@ -725,8 +836,11 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 		},
 
 		async searchAttendableMembers(actor, input) {
-			const { role } = await requireEvent(actor, input.eventId);
+			const { event, role } = await requireEvent(actor, input.eventId);
 			if (!canOperate(role, actor)) throw new Error("Not authorized to search members for attendance.");
+			// A read path that exists only to feed a blocked write; empty rather than throwing so the
+			// scanner UI degrades quietly instead of erroring on every keystroke.
+			if (event.readOnly) return [];
 			const query = input.query.trim();
 			const broad = role === "owner" || role === "admin" || can(actor, "event:moderate");
 			const term = `%${query.toLowerCase()}%`;

@@ -7,7 +7,11 @@ import { MemberCodeCard } from "@/components/member-code-card";
 import { getRepositories } from "@/db";
 import type { EventPointAwardRow } from "@/db/repositories/events";
 import { allowedEventTypes } from "@/db/repositories/eventTypeRules";
-import { formatUtc8DateTime } from "@/lib/date-slots";
+import { formatEventRange } from "@/lib/date-slots";
+import { inclusiveEndDate, toIsoDate } from "@/lib/calendar";
+import { googleCalendarUrl } from "@/lib/calendar-export";
+import { getAppConfig } from "@/server/env";
+import { EventShareBar } from "./event-share-bar";
 import { loadEventTypes } from "@/lib/event-type-load";
 import { answerLabel, type EventSignupAnswers, type EventSignupField } from "@/lib/event-signup-form";
 import { requireActor } from "@/server/auth/actor";
@@ -67,6 +71,30 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 	// Points attach to a term; resolve the active one server-side, same as markPresentAction.
 	const currentTerm = terms.find((t) => t.isCurrent);
 
+	// Share + calendar handoff. Built server-side so the Google URL and .ics agree on the same
+	// inclusive end date; a null public_code (row written by an older Worker) just hides the bar.
+	const baseUrl = getAppConfig().APP_BASE_URL ?? "https://ateneocode.org";
+	const shareLinks = event.publicCode
+		? {
+				shareUrl: `${baseUrl}/events/${event.publicCode}`,
+				icsUrl: `/events/${event.publicCode}/event.ics`,
+				googleUrl: googleCalendarUrl(
+					{
+						title: event.title,
+						place: event.place,
+						description: event.description,
+						startsAt: event.startsAt,
+						endsAt: event.endsAt,
+						allDay: event.allDay,
+						startDate: toIsoDate(event.startsAt),
+						endDate: inclusiveEndDate(event.startsAt, event.endsAt),
+						uid: `${event.id}@ateneocode.org`,
+					},
+					`${baseUrl}/events/${event.publicCode}`,
+				),
+			}
+		: null;
+
 	return (
 		<div className="grid gap-6">
 			<Link
@@ -82,13 +110,25 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 					<h1 className="min-w-0 break-words font-heading text-3xl font-semibold leading-tight text-foreground">
 						{event.title}
 					</h1>
-					<Badge variant={event.iAttended ? "default" : "secondary"}>
-						{event.iAttended ? "Attended" : event.myRsvp === "going" ? "Going" : "Not going"}
-					</Badge>
+					{event.readOnly ? (
+						<Badge variant="secondary">Informational</Badge>
+					) : (
+						<Badge variant={event.iAttended ? "default" : "secondary"}>
+							{event.iAttended ? "Attended" : event.myRsvp === "going" ? "Going" : "Not going"}
+						</Badge>
+					)}
 				</div>
 				<p className="text-sm text-muted-foreground">
-					{event.place} · {formatUtc8DateTime(event.startsAt)} UTC+8
+					{event.place} · {formatEventRange(event.startsAt, event.endsAt, event.allDay)} UTC+8
 				</p>
+				{event.readOnly ? (
+					<p className="rounded-lg border border-border bg-secondary/30 p-3 text-sm text-muted-foreground">
+						Informational event — no signup or check-in.
+					</p>
+				) : null}
+				{shareLinks ? (
+					<EventShareBar shareUrl={shareLinks.shareUrl} googleUrl={shareLinks.googleUrl} icsUrl={shareLinks.icsUrl} />
+				) : null}
 				<p className="max-w-3xl text-sm leading-relaxed">{event.description}</p>
 				<div className="flex flex-wrap items-center gap-x-5 gap-y-3">
 					<div className="flex items-center gap-2 text-sm font-medium">
@@ -101,6 +141,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 				</div>
 			</header>
 
+			{/* An informational event has no signup and no check-in, so the whole interaction column
+			    goes away rather than rendering controls that the repository would reject. */}
+			{event.readOnly ? null : (
 			<div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
 				<EventSignupPanel
 					eventId={event.id}
@@ -129,14 +172,19 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 					/>
 				)}
 			</div>
+			)}
 
-			<SignupResponses
-				count={event.attendingCount}
-				form={event.rsvpForm}
-				signups={signups}
-				canViewResponses={canViewSignupResponses}
-				responsesPublic={event.rsvpResponsesPublic}
-			/>
+			{/* Rows collected before the event was made informational stay visible to organizers —
+			    flipping the flag hides the affordances, it does not delete history. */}
+			{event.readOnly && !canViewSignupResponses ? null : (
+				<SignupResponses
+					count={event.attendingCount}
+					form={event.rsvpForm}
+					signups={signups}
+					canViewResponses={canViewSignupResponses}
+					responsesPublic={event.rsvpResponsesPublic}
+				/>
+			)}
 
 			{managed && isStaff ? (
 				<EventManagePanel
@@ -152,6 +200,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 						graceMinutes: managed.graceMinutes,
 						rsvpForm: managed.rsvpFormJson,
 						rsvpResponsesPublic: managed.rsvpResponsesPublic,
+						allDay: Boolean(managed.allDay),
+						readOnly: Boolean(managed.readOnly),
+						attendingCount: event.attendingCount,
 						myRole: managed.myRole,
 						canModerate: managed.canModerate,
 						canSetPoints: managed.canSetPoints,

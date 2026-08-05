@@ -202,6 +202,14 @@ export const crsEvents = sqliteTable(
 		graceMinutes: integer("grace_minutes"),
 		startsAt: integer("starts_at", { mode: "timestamp_ms" }).notNull(),
 		endsAt: integer("ends_at", { mode: "timestamp_ms" }),
+		// Stored, not derived: "Aug 12 09:00 -> Aug 14 17:00" and "Aug 12-14, all day" both span
+		// three days, and the edit form has to round-trip which one the author chose.
+		allDay: integer("all_day", { mode: "boolean" }).notNull().default(false),
+		// Informational event: no RSVP, check-in, attendance or points. Set via event:moderate.
+		readOnly: integer("read_only", { mode: "boolean" }).notNull().default(false),
+		// Short share code behind /events/<CODE>. Nullable so a row written by an older Worker
+		// mid-deploy resolves as "not shareable" instead of throwing.
+		publicCode: text("public_code"),
 		description: text("description").notNull(),
 		rsvpFormJson: text("rsvp_form_json", { mode: "json" }).$type<EventSignupField[]>().notNull().default([]),
 		rsvpResponsesPublic: integer("rsvp_responses_public", { mode: "boolean" }).notNull().default(false),
@@ -217,6 +225,8 @@ export const crsEvents = sqliteTable(
 	(table) => [
 		index("crs_events_status_idx").on(table.status),
 		index("crs_events_starts_at_idx").on(table.startsAt),
+		index("crs_events_ends_at_idx").on(table.endsAt),
+		uniqueIndex("crs_events_public_code_idx").on(table.publicCode),
 		index("crs_events_type_idx").on(table.type),
 		index("crs_events_created_by_idx").on(table.createdBy),
 	],

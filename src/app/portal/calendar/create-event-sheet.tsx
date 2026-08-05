@@ -18,6 +18,8 @@ import { DateTimePicker } from "@/components/date-time-picker";
 import { deriveEnd, fromLocalInput, toLocalInput } from "@/lib/date-slots";
 import type { EventSignupField } from "@/lib/event-signup-form";
 import type { EventTypeRow } from "@/db/repositories/eventTypeRules";
+import { colourClasses } from "@/lib/event-type-colours";
+import { cn } from "@/lib/utils";
 import { createEventAction } from "./actions";
 import { EventSignupFormEditor } from "./event-signup-form-editor";
 
@@ -33,9 +35,12 @@ function defaultStart(): string {
 export function CreateEventSheet({
 	allowedTypes,
 	typesUnavailable,
+	canSetReadOnly = false,
 }: {
 	allowedTypes: EventTypeRow[];
 	typesUnavailable: boolean;
+	/** event:moderate. The repository re-checks this; the prop only hides the control. */
+	canSetReadOnly?: boolean;
 }) {
 	const router = useRouter();
 	// The mobile "+" quick action links to /portal/calendar?create=1 to open this directly.
@@ -54,6 +59,10 @@ export function CreateEventSheet({
 	const [graceMinutes, setGraceMinutes] = useState("");
 	const [rsvpForm, setRsvpForm] = useState<EventSignupField[]>([]);
 	const [rsvpResponsesPublic, setRsvpResponsesPublic] = useState(false);
+	const [allDay, setAllDay] = useState(false);
+	const [startDay, setStartDay] = useState(() => defaultStart().slice(0, 10));
+	const [endDay, setEndDay] = useState(() => defaultStart().slice(0, 10));
+	const [readOnly, setReadOnly] = useState(false);
 
 	function reset() {
 		setTitle("");
@@ -66,6 +75,10 @@ export function CreateEventSheet({
 		setGraceMinutes("");
 		setRsvpForm([]);
 		setRsvpResponsesPublic(false);
+		setAllDay(false);
+		setStartDay(defaultStart().slice(0, 10));
+		setEndDay(defaultStart().slice(0, 10));
+		setReadOnly(false);
 		setError(null);
 	}
 
@@ -78,12 +91,16 @@ export function CreateEventSheet({
 					type,
 					place,
 					description,
-					startsAt: fromLocalInput(startsAt).toISOString(),
-					endsAt: fromLocalInput(endsAt).toISOString(),
+					// All-day sends bare days; the server snaps them to whole UTC+8 day boundaries
+					// rather than trusting whatever time the client happened to attach.
+					startsAt: fromLocalInput(allDay ? `${startDay}T00:00` : startsAt).toISOString(),
+					endsAt: fromLocalInput(allDay ? `${endDay}T00:00` : endsAt).toISOString(),
 					capacity: capacity ? Number(capacity) : null,
 					graceMinutes: graceMinutes === "" ? null : Number(graceMinutes),
 					rsvpForm,
 					rsvpResponsesPublic,
+					allDay,
+					readOnly,
 				});
 				setOpen(false);
 				reset();
@@ -95,9 +112,14 @@ export function CreateEventSheet({
 	}
 
 	const noAllowedTypes = allowedTypes.length === 0;
-	const endBeforeStart = Boolean(startsAt && endsAt && fromLocalInput(endsAt) <= fromLocalInput(startsAt));
+	const endBeforeStart = allDay
+		? Boolean(startDay && endDay && endDay < startDay)
+		: Boolean(startsAt && endsAt && fromLocalInput(endsAt) <= fromLocalInput(startsAt));
+	const datesFilled = allDay ? Boolean(startDay && endDay) : Boolean(startsAt && endsAt);
+	const selectedType = allowedTypes.find((option) => option.type === type);
+	const preview = colourClasses(selectedType?.colour ?? "slate");
 	const canSubmit =
-		title.trim() && place.trim() && description.trim() && startsAt && endsAt && !endBeforeStart && !noAllowedTypes && !typesUnavailable;
+		title.trim() && place.trim() && description.trim() && datesFilled && !endBeforeStart && !noAllowedTypes && !typesUnavailable;
 
 	return (
 		<Sheet
@@ -147,6 +169,16 @@ export function CreateEventSheet({
 						)}
 					</label>
 
+					{selectedType ? (
+						<div className="-mt-2 grid gap-1.5">
+							<span className="text-xs text-muted-foreground">How it will look on the calendar</span>
+							<div className={cn("flex items-center gap-1 rounded px-1 py-0.5 text-xs", preview.chip)}>
+								<span className={cn("size-1.5 shrink-0 rounded-full", preview.dot)} aria-hidden />
+								<span className="min-w-0 truncate">{title.trim() || selectedType.label}</span>
+							</div>
+						</div>
+					) : null}
+
 					<label className="grid gap-1.5 text-sm">
 						<span className="font-medium">Place</span>
 						<input
@@ -157,33 +189,108 @@ export function CreateEventSheet({
 						/>
 					</label>
 
-					<DateTimePicker
-						startsAt={startsAt}
-						endsAt={endsAt}
-						onChange={(next) => {
-							setStartsAt(next.startsAt);
-							setEndsAt(next.endsAt);
-						}}
-					/>
-					<p className="-mt-2 text-xs text-muted-foreground">Times are saved and shown in UTC+8.</p>
-					{endBeforeStart ? <p className="-mt-2 text-xs text-destructive">End must be after the start.</p> : null}
-
 					<div className="flex items-start gap-3 rounded-lg border border-border bg-secondary/30 p-3 text-sm">
 						<Checkbox
-							id="create-rsvp-responses-public"
-							checked={rsvpResponsesPublic}
-							onCheckedChange={(checked) => setRsvpResponsesPublic(checked === true)}
+							id="create-all-day"
+							checked={allDay}
+							onCheckedChange={(checked) => {
+								const next = checked === true;
+								setAllDay(next);
+								// Carry the chosen day across so toggling does not lose the date.
+								if (next) {
+									const day = startsAt.slice(0, 10);
+									setStartDay(day);
+									setEndDay((current) => (current < day ? day : current));
+								}
+							}}
 							className="mt-0.5"
 						/>
-						<label htmlFor="create-rsvp-responses-public" className="grid gap-1">
-							<span className="font-medium">Let members see signup answers</span>
+						<label htmlFor="create-all-day" className="grid gap-1">
+							<span className="font-medium">All day / multi-day</span>
 							<span className="text-xs text-muted-foreground">
-								When off, only organizers can see who is going and how they answered the form.
+								Runs whole days instead of set times. Pick an end date later than the start for a multi-day event.
 							</span>
 						</label>
 					</div>
 
-					<EventSignupFormEditor value={rsvpForm} onChange={setRsvpForm} />
+					{allDay ? (
+						<div className="grid gap-3 sm:grid-cols-2">
+							<label className="grid gap-1.5 text-sm">
+								<span className="font-medium">Starts</span>
+								<input
+									type="date"
+									className={FIELD}
+									value={startDay}
+									onChange={(e) => {
+										setStartDay(e.target.value);
+										setEndDay((current) => (current < e.target.value ? e.target.value : current));
+									}}
+								/>
+							</label>
+							<label className="grid gap-1.5 text-sm">
+								<span className="font-medium">Ends</span>
+								<input type="date" className={FIELD} min={startDay} value={endDay} onChange={(e) => setEndDay(e.target.value)} />
+							</label>
+						</div>
+					) : (
+						<DateTimePicker
+							startsAt={startsAt}
+							endsAt={endsAt}
+							onChange={(next) => {
+								setStartsAt(next.startsAt);
+								setEndsAt(next.endsAt);
+							}}
+						/>
+					)}
+					<p className="-mt-2 text-xs text-muted-foreground">
+						{allDay ? "All-day events cover whole days in UTC+8." : "Times are saved and shown in UTC+8."}
+					</p>
+					{endBeforeStart ? (
+						<p className="-mt-2 text-xs text-destructive">
+							{allDay ? "End date cannot be before the start date." : "End must be after the start."}
+						</p>
+					) : null}
+
+					{canSetReadOnly ? (
+						<div className="flex items-start gap-3 rounded-lg border border-border bg-secondary/30 p-3 text-sm">
+							<Checkbox
+								id="create-read-only"
+								checked={readOnly}
+								onCheckedChange={(checked) => setReadOnly(checked === true)}
+								className="mt-0.5"
+							/>
+							<label htmlFor="create-read-only" className="grid gap-1">
+								<span className="font-medium">Informational only (read-only)</span>
+								<span className="text-xs text-muted-foreground">
+									Shows on the calendar with no signup, check-in, attendance or points. For things like &ldquo;Finals week&rdquo;
+									or &ldquo;Campus closed&rdquo;.
+								</span>
+							</label>
+						</div>
+					) : null}
+
+					{/* Interaction settings are meaningless on an informational event, and the repository
+					    clears them on write regardless — so hide rather than show dead controls. */}
+					{readOnly ? null : (
+						<>
+							<div className="flex items-start gap-3 rounded-lg border border-border bg-secondary/30 p-3 text-sm">
+								<Checkbox
+									id="create-rsvp-responses-public"
+									checked={rsvpResponsesPublic}
+									onCheckedChange={(checked) => setRsvpResponsesPublic(checked === true)}
+									className="mt-0.5"
+								/>
+								<label htmlFor="create-rsvp-responses-public" className="grid gap-1">
+									<span className="font-medium">Let members see signup answers</span>
+									<span className="text-xs text-muted-foreground">
+										When off, only organizers can see who is going and how they answered the form.
+									</span>
+								</label>
+							</div>
+
+							<EventSignupFormEditor value={rsvpForm} onChange={setRsvpForm} />
+						</>
+					)}
 
 					<label className="grid gap-1.5 text-sm">
 						<span className="font-medium">Description</span>
@@ -196,35 +303,39 @@ export function CreateEventSheet({
 						/>
 					</label>
 
-					<label className="grid gap-1.5 text-sm">
-						<span className="font-medium">
-							Capacity <span className="font-normal text-muted-foreground">· optional</span>
-						</span>
-						<input
-							type="number"
-							min={1}
-							className={FIELD}
-							value={capacity}
-							onChange={(e) => setCapacity(e.target.value)}
-							placeholder="No limit"
-						/>
-					</label>
+					{readOnly ? null : (
+						<>
+							<label className="grid gap-1.5 text-sm">
+								<span className="font-medium">
+									Capacity <span className="font-normal text-muted-foreground">· optional</span>
+								</span>
+								<input
+									type="number"
+									min={1}
+									className={FIELD}
+									value={capacity}
+									onChange={(e) => setCapacity(e.target.value)}
+									placeholder="No limit"
+								/>
+							</label>
 
-					<label className="grid gap-1.5 text-sm">
-						<span className="font-medium">Grace period (minutes)</span>
-						<input
-							type="number"
-							min={0}
-							max={240}
-							className={FIELD}
-							value={graceMinutes}
-							onChange={(e) => setGraceMinutes(e.target.value)}
-							placeholder="15"
-						/>
-						<span className="text-xs text-muted-foreground">
-							Members scanned after this many minutes are marked late. Blank uses 15.
-						</span>
-					</label>
+							<label className="grid gap-1.5 text-sm">
+								<span className="font-medium">Grace period (minutes)</span>
+								<input
+									type="number"
+									min={0}
+									max={240}
+									className={FIELD}
+									value={graceMinutes}
+									onChange={(e) => setGraceMinutes(e.target.value)}
+									placeholder="15"
+								/>
+								<span className="text-xs text-muted-foreground">
+									Members scanned after this many minutes are marked late. Blank uses 15.
+								</span>
+							</label>
+						</>
+					)}
 
 					{error ? <p className="text-sm text-destructive">{error}</p> : null}
 				</div>

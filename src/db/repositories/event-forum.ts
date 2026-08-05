@@ -47,6 +47,8 @@ export function createEventForumRepository(db: Db, audit: AuditRepository): Even
 		async post(actor, input) {
 			const [event] = await db.select().from(crsEvents).where(eq(crsEvents.id, input.eventId)).limit(1);
 			if (!event || event.deletedAt) throw new Error("Event not found.");
+			// Informational events have no discussion thread. Existing posts stay readable.
+			if (event.readOnly) throw new Error("This event does not have a discussion thread.");
 			if (input.parentId) {
 				const [parent] = await db
 					.select({ eventId: eventForumPosts.eventId })

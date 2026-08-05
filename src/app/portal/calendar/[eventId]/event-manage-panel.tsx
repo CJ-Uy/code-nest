@@ -33,6 +33,7 @@ import {
 	markPresentAction,
 	removeStaffAction,
 	searchMembersAction,
+	setEventReadOnlyAction,
 	transferOwnershipAction,
 	updateEventAction,
 } from "./actions";
@@ -75,9 +76,13 @@ export type ManageEvent = {
 	graceMinutes: number | null;
 	rsvpForm: EventSignupField[];
 	rsvpResponsesPublic: boolean;
+	allDay: boolean;
+	readOnly: boolean;
 	myRole: "owner" | "admin" | "scanner" | null;
 	canModerate: boolean;
 	canSetPoints: boolean;
+	/** Rows already collected; used to warn before hiding them from members. */
+	attendingCount: number;
 };
 
 type Section = "checkins" | "people" | "details" | "points";
@@ -635,8 +640,47 @@ function DetailsSection({
 		});
 	}
 
+	function toggleReadOnly() {
+		const next = !event.readOnly;
+		if (next) {
+			const collected = event.attendingCount;
+			const warning = collected
+				? `Make this informational? Signup and check-in disappear for members. ${
+						collected === 1 ? "1 person who is going" : `${collected} people who are going`
+					} will be kept and stay visible to organizers, not deleted.`
+				: "Make this informational? Signup, check-in, attendance and points are turned off for members.";
+			if (!window.confirm(warning)) return;
+		}
+		startTransition(async () => {
+			try {
+				await setEventReadOnlyAction({ eventId: event.id, readOnly: next });
+				router.refresh();
+			} catch (e) {
+				setError(e instanceof Error ? e.message : "Could not change the event type.");
+			}
+		});
+	}
+
 	return (
 		<div className="grid gap-4">
+			{/* event:moderate only. The repository re-checks this independently of ownership, so a
+			    plain owner cannot strip their own event's signup surface. */}
+			{event.canModerate ? (
+				<div className="grid gap-2 rounded-lg border border-border bg-secondary/30 p-3 text-sm">
+					<div className="flex flex-wrap items-center justify-between gap-2">
+						<span className="font-medium">{event.readOnly ? "Informational event" : "Normal event"}</span>
+						<Button type="button" variant="outline" size="sm" onClick={toggleReadOnly} disabled={pending}>
+							{event.readOnly ? "Allow signups again" : "Make informational"}
+						</Button>
+					</div>
+					<span className="text-xs text-muted-foreground">
+						{event.readOnly
+							? "Members see this on the calendar only. Anything already collected is kept and reappears if you turn signups back on."
+							: "Turns off signup, check-in, attendance and points. Use it for notices like “Finals week”, or to correct a mistake."}
+					</span>
+				</div>
+			) : null}
+
 			<label className="grid gap-1.5 text-sm">
 				<span className="font-medium">Title</span>
 				<input className={FIELD} value={title} onChange={(e) => setTitle(e.target.value)} />

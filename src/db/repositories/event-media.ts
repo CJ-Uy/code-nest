@@ -24,6 +24,8 @@ export function createEventMediaRepository(db: Db, audit: AuditRepository): Even
 			if (!input.r2Key.startsWith(`events/${input.eventId}/`)) throw new Error("Media key does not belong to this event.");
 			const [event] = await db.select().from(crsEvents).where(eq(crsEvents.id, input.eventId)).limit(1);
 			if (!event || event.deletedAt) throw new Error("Event not found.");
+			// Informational events take no member contributions. Existing media stays readable.
+			if (event.readOnly) throw new Error("This event does not accept uploads.");
 			const [media] = await db
 				.insert(eventMedia)
 				.values({

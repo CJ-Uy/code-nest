@@ -1,21 +1,14 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { CalendarItem } from "@/lib/calendar";
+import { layoutMonthBars, toWeeks } from "@/lib/calendar-layout";
+import { colourClasses } from "@/lib/event-type-colours";
 import { toLocalDate } from "@/lib/date-slots";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// Source colour keyed to the theme; a left dot + tint keeps the grid legible in light/dark.
-const SOURCE_CHIP: Record<CalendarItem["source"], string> = {
-	event: "bg-primary/10 text-foreground",
-	birthday: "bg-accent/15 text-foreground",
-	term_deadline: "bg-destructive/10 text-foreground",
-};
-const SOURCE_DOT: Record<CalendarItem["source"], string> = {
-	event: "bg-primary",
-	birthday: "bg-accent",
-	term_deadline: "bg-destructive",
-};
+// Three bars plus a "+N more" line is what fits a 375px cell without the grid growing unbounded.
+const MAX_LANES = 3;
 
 function isoFor(year: number, month: number, day: number): string {
 	return new Date(Date.UTC(year, month - 1, day)).toISOString().slice(0, 10);
@@ -24,22 +17,23 @@ function isoFor(year: number, month: number, day: number): string {
 export function CalendarMonth({ items, year, month }: { items: CalendarItem[]; year: number; month: number }) {
 	const todayIso = toLocalDate(new Date());
 
-	// Bucket items by their ISO day.
-	const byDay = new Map<string, CalendarItem[]>();
-	for (const item of items) {
-		const list = byDay.get(item.date);
-		if (list) list.push(item);
-		else byDay.set(item.date, [item]);
-	}
-
-	// UTC to match the ISO date strings the repository emits.
+	// Sunday-first, matching this grid's own history. date-slots' buildMonthGrid is Monday-first and
+	// drives the create-event picker; reusing it here would silently move the week start.
 	const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
 	const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-	const cells: (number | null)[] = [
+	const cells: (string | null)[] = [
 		...Array.from({ length: firstWeekday }, () => null),
-		...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+		...Array.from({ length: daysInMonth }, (_, i) => isoFor(year, month, i + 1)),
 	];
 	while (cells.length % 7 !== 0) cells.push(null);
+
+	const weeks = toWeeks(cells);
+	const byId = new Map(items.map((item) => [item.id, item]));
+	const { bars, overflowByDay } = layoutMonthBars(
+		items.map((item) => ({ id: item.id, startDate: item.date, endDate: item.endDate })),
+		weeks,
+		MAX_LANES,
+	);
 
 	return (
 		<div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -51,64 +45,103 @@ export function CalendarMonth({ items, year, month }: { items: CalendarItem[]; y
 					</div>
 				))}
 			</div>
-			<div className="grid grid-cols-7">
-				{cells.map((day, idx) => {
-					if (day === null) return <div key={`blank-${idx}`} className="min-h-20 border-b border-r border-border bg-secondary/10 last:border-r-0" />;
-					const iso = isoFor(year, month, day);
-					const dayItems = byDay.get(iso) ?? [];
-					const isToday = iso === todayIso;
-					return (
-						<div
-							key={iso}
-							className={cn(
-								"min-h-20 border-b border-r border-border p-1 sm:min-h-28 sm:p-1.5",
-								(idx + 1) % 7 === 0 && "border-r-0",
-								isToday && "bg-accent/5",
-							)}
-						>
-							<div className="flex justify-end">
-								<span
-									className={cn(
-										"grid size-6 place-items-center rounded-full text-xs tabular-nums",
-										isToday ? "bg-accent font-semibold text-accent-foreground" : "text-muted-foreground",
-									)}
-								>
-									{day}
-								</span>
-							</div>
-							<div className="mt-0.5 flex flex-col gap-0.5">
-								{dayItems.slice(0, 3).map((item) => {
-									const chip = (
+
+			{weeks.map((week, weekIndex) => {
+				const weekBars = bars.filter((bar) => bar.weekIndex === weekIndex);
+				return (
+					<div key={`week-${weekIndex}`} className="relative">
+						{/* Day cells carry the borders, the date number, and a spacer sized to the lanes. */}
+						<div className="grid grid-cols-7">
+							{week.map((iso, cellIndex) => {
+								if (!iso) {
+									return (
 										<div
-											className={cn(
-												"flex items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight sm:text-xs",
-												SOURCE_CHIP[item.source],
-											)}
-										>
-											<span className={cn("size-1.5 shrink-0 rounded-full", SOURCE_DOT[item.source])} aria-hidden />
-											<span className="truncate">{item.title}</span>
+											key={`blank-${weekIndex}-${cellIndex}`}
+											className="min-h-20 border-b border-r border-border bg-secondary/10 last:border-r-0 sm:min-h-28"
+										/>
+									);
+								}
+								const isToday = iso === todayIso;
+								const overflow = overflowByDay.get(iso) ?? 0;
+								return (
+									<div
+										key={iso}
+										className={cn(
+											"min-h-20 border-b border-r border-border p-1 sm:min-h-28 sm:p-1.5",
+											(cellIndex + 1) % 7 === 0 && "border-r-0",
+											isToday && "bg-accent/5",
+										)}
+									>
+										<div className="flex justify-end">
+											<span
+												className={cn(
+													"grid size-6 place-items-center rounded-full text-xs tabular-nums",
+													isToday ? "bg-accent font-semibold text-accent-foreground" : "text-muted-foreground",
+												)}
+											>
+												{Number(iso.slice(8, 10))}
+											</span>
 										</div>
-									);
-									return item.href ? (
-										<Link
-											key={item.id}
-											href={item.href}
-											className="block rounded transition-[opacity,transform] hover:opacity-80 active:scale-[0.98]"
-										>
-											{chip}
-										</Link>
-									) : (
-										<div key={item.id}>{chip}</div>
-									);
-								})}
-								{dayItems.length > 3 ? (
-									<span className="px-1 text-[10px] text-muted-foreground">+{dayItems.length - 3} more</span>
-								) : null}
-							</div>
+										{/* Reserves the vertical space the absolutely-positioned bars occupy:
+										    MAX_LANES lanes of 1.0625rem plus the 0.125rem gaps between them. */}
+										<div aria-hidden className="h-[3.4375rem]" />
+										{overflow > 0 ? <span className="text-[10px] text-muted-foreground">+{overflow} more</span> : null}
+									</div>
+								);
+							})}
 						</div>
-					);
-				})}
-			</div>
+
+						{/* Bar layer. A bar spans real grid columns, so a multi-day event is one element
+						    crossing several cells rather than a chip repeated per day. */}
+						{/* Not aria-hidden: the event titles live here now, so hiding this layer would
+						    hide every event from assistive tech. */}
+						<div className="pointer-events-none absolute inset-x-0 top-8 grid grid-cols-7 gap-y-0.5 px-1 sm:top-9 sm:px-1.5">
+							{weekBars.map((bar) => {
+								const item = byId.get(bar.item.id);
+								if (!item) return null;
+								const colour = colourClasses(item.colour);
+								const single = bar.startCol === bar.endCol;
+								const body = (
+									<div
+										className={cn(
+											"flex h-[1.0625rem] items-center gap-1 overflow-hidden px-1 text-[10px] leading-tight sm:text-xs",
+											colour.chip,
+											// Square off the clipped end so a continued bar reads as continuing.
+											bar.continuesLeft ? "rounded-l-none" : "rounded-l",
+											bar.continuesRight ? "rounded-r-none" : "rounded-r",
+										)}
+									>
+										{bar.continuesLeft ? <span className="shrink-0 text-muted-foreground">‹</span> : null}
+										{single && !bar.continuesLeft ? (
+											<span className={cn("size-1.5 shrink-0 rounded-full", colour.dot)} />
+										) : null}
+										<span className="min-w-0 flex-1 truncate">{item.title}</span>
+										{bar.continuesRight ? <span className="shrink-0 text-muted-foreground">›</span> : null}
+									</div>
+								);
+								return (
+									<div
+										key={`${bar.item.id}-${bar.weekIndex}`}
+										className="pointer-events-auto min-w-0"
+										style={{ gridColumn: `${bar.startCol} / ${bar.endCol + 1}`, gridRow: bar.lane + 1 }}
+									>
+										{item.href ? (
+											<Link
+												href={item.href}
+												className="block rounded transition-[opacity,transform] hover:opacity-80 active:scale-[0.98]"
+											>
+												{body}
+											</Link>
+										) : (
+											body
+										)}
+									</div>
+								);
+							})}
+						</div>
+					</div>
+				);
+			})}
 		</div>
 	);
 }

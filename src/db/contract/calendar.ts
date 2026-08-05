@@ -8,10 +8,16 @@ export const calendarItemSchema = z.object({
 	source: z.enum(["event", "birthday", "term_deadline"]),
 	title: z.string(),
 	date: z.string(),
+	// z.object STRIPS unknown keys rather than rejecting them, so every field added to CalendarItem
+	// must be added here too — otherwise it silently vanishes across the shared-Worker boundary and
+	// the calendar renders colourless and single-day in APP_ENV=shared only.
+	endDate: z.string(),
 	startsAt: z.string().nullable(),
 	endsAt: z.string().nullable(),
 	eventId: z.string().nullable(),
 	href: z.string().nullable(),
+	colour: z.string(),
+	readOnly: z.boolean(),
 });
 
 export const getMonthInputSchema = z.object({

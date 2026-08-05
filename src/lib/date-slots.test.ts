@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { buildMonthGrid, deriveEnd, fromLocalInput, timeSlots, toLocalInput } from "./date-slots";
+import {
+	buildMonthGrid,
+	deriveEnd,
+	endOfUtc8Day,
+	formatEventRange,
+	fromLocalInput,
+	startOfUtc8Day,
+	timeSlots,
+	toLocalDate,
+	toLocalInput,
+} from "./date-slots";
 
 describe("buildMonthGrid", () => {
 	it("always returns six full weeks so the grid never jumps height", () => {
@@ -45,6 +55,61 @@ describe("deriveEnd", () => {
 
 	it("returns an empty string for an empty start", () => {
 		expect(deriveEnd("", 60)).toBe("");
+	});
+});
+
+describe("all-day boundaries", () => {
+	it("snaps to the first and last instant of the UTC+8 day", () => {
+		const middle = fromLocalInput("2026-08-12T14:30");
+		expect(toLocalDate(startOfUtc8Day(middle))).toBe("2026-08-12");
+		expect(toLocalDate(endOfUtc8Day(middle))).toBe("2026-08-12");
+		// The last instant, not the next midnight: midnight belongs to the following day and would
+		// render multi-day bars one day too long.
+		expect(endOfUtc8Day(middle).getTime() - startOfUtc8Day(middle).getTime()).toBe(24 * 60 * 60 * 1000 - 1);
+	});
+
+	it("keeps a same-day all-day event ordered so validation accepts it", () => {
+		const day = fromLocalInput("2026-08-12T09:00");
+		expect(endOfUtc8Day(day).getTime()).toBeGreaterThan(startOfUtc8Day(day).getTime());
+	});
+});
+
+describe("formatEventRange", () => {
+	it("shows a time range for a timed single-day event", () => {
+		const text = formatEventRange(fromLocalInput("2026-08-12T09:00"), fromLocalInput("2026-08-12T17:00"), false);
+		expect(text).toContain("Aug 12");
+		expect(text).not.toContain("All day");
+	});
+
+	it("shows both dates for a timed multi-day event", () => {
+		const text = formatEventRange(fromLocalInput("2026-08-12T09:00"), fromLocalInput("2026-08-14T17:00"), false);
+		expect(text).toContain("Aug 12");
+		expect(text).toContain("Aug 14");
+	});
+
+	it("labels a single all-day event without a range", () => {
+		const day = fromLocalInput("2026-08-12T00:00");
+		expect(formatEventRange(startOfUtc8Day(day), endOfUtc8Day(day), true)).toBe("Aug 12, 2026 · All day");
+	});
+
+	it("labels a multi-day all-day event with both ends", () => {
+		const text = formatEventRange(
+			startOfUtc8Day(fromLocalInput("2026-08-12T00:00")),
+			endOfUtc8Day(fromLocalInput("2026-08-14T00:00")),
+			true,
+		);
+		expect(text).toContain("Aug 12");
+		expect(text).toContain("Aug 14");
+		expect(text).toContain("All day");
+	});
+
+	it("shows a timed event's literal end instant, midnight included", () => {
+		// Deliberately NOT clamped to the inclusive last day: the event really does end at that
+		// moment, and "ends Aug 14" would leave the reader guessing at what time. The inclusive-day
+		// rule governs how long the calendar BAR is drawn (see inclusiveEndDate), not this text.
+		const text = formatEventRange(fromLocalInput("2026-08-12T09:00"), fromLocalInput("2026-08-15T00:00"), false);
+		expect(text).toContain("Aug 12");
+		expect(text).toContain("Aug 15");
 	});
 });
 

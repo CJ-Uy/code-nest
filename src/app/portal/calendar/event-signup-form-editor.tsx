@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import type { EventSignupField, EventSignupFieldType } from "@/lib/event-signup-form";
 
 const FIELD_TYPES: Array<{ value: EventSignupFieldType; label: string }> = [
-	{ value: "radio", label: "Radio" },
+	// Label only — the stored key stays "radio" so existing rsvp_form_json blobs keep parsing.
+	{ value: "radio", label: "Multiple choice" },
 	{ value: "select", label: "Select" },
 	{ value: "short_text", label: "Short answer" },
 	{ value: "long_text", label: "Long answer" },

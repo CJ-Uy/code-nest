@@ -7,6 +7,7 @@ import { eventsContract } from "@/db/contract/events";
 import { eventTypeKeySchema } from "@/lib/event-type-key";
 import { eventSignupAnswersSchema, eventSignupFormInputSchema } from "@/lib/event-signup-form";
 import { requireActor } from "@/server/auth/actor";
+import { endOfUtc8Day, startOfUtc8Day } from "@/lib/date-slots";
 
 // Server actions get Next's built-in same-origin/POST protection (same as the
 // other mutation actions in this app, e.g. members/list/actions.ts).
@@ -30,8 +31,29 @@ const updateSchema = z
 		graceMinutes: z.number().int().min(0).max(240).nullable().default(null),
 		rsvpForm: eventSignupFormInputSchema.default([]),
 		rsvpResponsesPublic: z.boolean().default(false),
+		allDay: z.boolean().default(false),
+		readOnly: z.boolean().default(false),
 	})
+	// Normalized before the ordering check so a same-day all-day event stays valid.
+	.transform((v) =>
+		v.allDay ? { ...v, startsAt: startOfUtc8Day(v.startsAt), endsAt: endOfUtc8Day(v.endsAt) } : v,
+	)
 	.refine((v) => v.endsAt > v.startsAt, { path: ["endsAt"], message: "End must be after the start." });
+
+/**
+ * Toggling an existing event to informational and back. Separate from updateEventAction so a
+ * mis-set event can be repaired without resubmitting the whole form.
+ *
+ * Authorization is NOT decided here: events.update checks the readOnly field against event:moderate
+ * independently of ownership, which is also what protects the HTTP routes.
+ */
+export async function setEventReadOnlyAction(input: { eventId: string; readOnly: boolean }) {
+	const actor = await requireActor();
+	const parsed = z.object({ eventId: z.string().min(1), readOnly: z.boolean() }).parse(input);
+	const repositories = await getRepositories();
+	await repositories.events.update(actor, parsed.eventId, { readOnly: parsed.readOnly });
+	revalidate(parsed.eventId);
+}
 
 export async function updateEventAction(input: z.input<typeof updateSchema>) {
 	const actor = await requireActor();

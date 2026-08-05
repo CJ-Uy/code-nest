@@ -1,10 +1,10 @@
-import { and, count, eq, gte, isNull, lt } from "drizzle-orm";
+import { and, count, eq, gt, gte, isNotNull, isNull, lt, or } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import * as schema from "@/db/schema";
-import { crsAttendance, crsEvents, eventMedia, eventRsvps, members, terms } from "@/db/schema";
+import { crsAttendance, crsEvents, eventMedia, eventRsvps, eventTypeRules, members, terms } from "@/db/schema";
 import type { EventStatus, EventType, RsvpState } from "@/db/schema";
 import { can, type Actor } from "@/server/auth/permissions";
-import { monthRange, toIsoDate, type CalendarItem } from "@/lib/calendar";
+import { inclusiveEndDate, monthRange, toIsoDate, type CalendarItem } from "@/lib/calendar";
 import type { EventSignupAnswers, EventSignupField } from "@/lib/event-signup-form";
 
 type Db = DrizzleD1Database<typeof schema>;
@@ -19,6 +19,9 @@ export type EventDetail = {
 	capacity: number | null;
 	startsAt: Date;
 	endsAt: Date | null;
+	allDay: boolean;
+	readOnly: boolean;
+	publicCode: string | null;
 	description: string;
 	rsvpForm: EventSignupField[];
 	rsvpResponsesPublic: boolean;
@@ -48,25 +51,45 @@ export function createCalendarRepository(db: Db): CalendarRepository {
 			const { start, end } = monthRange(input.year, input.month);
 			const items: CalendarItem[] = [];
 
+			// Select by OVERLAP, not by start, so an event running in from the previous month is
+			// visible. monthRange is half-open [start, end), so a span ending exactly at `start` has
+			// zero overlap and must be excluded — hence the strict `>` for a real end, while a
+			// point-in-time event (null endsAt) starting exactly at `start` is inside the month.
 			const events = await db
 				.select({
 					id: crsEvents.id,
 					title: crsEvents.title,
 					startsAt: crsEvents.startsAt,
 					endsAt: crsEvents.endsAt,
+					readOnly: crsEvents.readOnly,
+					colour: eventTypeRules.colour,
 				})
 				.from(crsEvents)
-				.where(and(isNull(crsEvents.deletedAt), gte(crsEvents.startsAt, start), lt(crsEvents.startsAt, end)));
+				.leftJoin(eventTypeRules, eq(eventTypeRules.type, crsEvents.type))
+				.where(
+					and(
+						isNull(crsEvents.deletedAt),
+						lt(crsEvents.startsAt, end),
+						or(
+							and(isNull(crsEvents.endsAt), gte(crsEvents.startsAt, start)),
+							and(isNotNull(crsEvents.endsAt), gt(crsEvents.endsAt, start)),
+						),
+					),
+				);
 			for (const event of events) {
 				items.push({
 					id: `event:${event.id}`,
 					source: "event",
 					title: event.title,
 					date: toIsoDate(event.startsAt),
+					endDate: inclusiveEndDate(event.startsAt, event.endsAt),
 					startsAt: event.startsAt.toISOString(),
 					endsAt: event.endsAt ? event.endsAt.toISOString() : null,
 					eventId: event.id,
 					href: `/portal/calendar/${event.id}`,
+					// A retired or missing type row degrades to slate rather than blanking the grid.
+					colour: event.colour || "slate",
+					readOnly: Boolean(event.readOnly),
 				});
 			}
 
@@ -83,10 +106,13 @@ export function createCalendarRepository(db: Db): CalendarRepository {
 					source: "birthday",
 					title: `${member.name ?? "Member"} birthday`,
 					date,
+					endDate: date,
 					startsAt: null,
 					endsAt: null,
 					eventId: null,
 					href: null,
+					colour: "accent",
+					readOnly: false,
 				});
 			}
 
@@ -100,10 +126,13 @@ export function createCalendarRepository(db: Db): CalendarRepository {
 					source: "term_deadline",
 					title: `${term.name} ends`,
 					date: toIsoDate(term.endsAt),
+					endDate: toIsoDate(term.endsAt),
 					startsAt: null,
 					endsAt: null,
 					eventId: null,
 					href: null,
+					colour: "rose",
+					readOnly: false,
 				});
 			}
 
@@ -147,6 +176,9 @@ export function createCalendarRepository(db: Db): CalendarRepository {
 				capacity: event.capacity,
 				startsAt: event.startsAt,
 				endsAt: event.endsAt,
+				allDay: Boolean(event.allDay),
+				readOnly: Boolean(event.readOnly),
+				publicCode: event.publicCode ?? null,
 				description: event.description,
 				rsvpForm: event.rsvpFormJson ?? [],
 				rsvpResponsesPublic: event.rsvpResponsesPublic,

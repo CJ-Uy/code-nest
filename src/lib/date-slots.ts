@@ -53,12 +53,49 @@ export function deriveEnd(startLocal: string, durationMinutes: number): string {
 	return toLocalInput(new Date(fromLocalInput(startLocal).getTime() + durationMinutes * 60_000));
 }
 
+/**
+ * All-day events are stored as the full UTC+8 span of their days, so every existing read path
+ * (month overlap, inclusive end date, exports) keeps working without a special case.
+ *
+ * The end is the last millisecond of the day rather than the next midnight: midnight belongs to the
+ * following day, and treating it as the end renders multi-day bars one day too long.
+ */
+export function startOfUtc8Day(date: Date): Date {
+	return fromLocalInput(`${toLocalDate(date)}T00:00`);
+}
+
+export function endOfUtc8Day(date: Date): Date {
+	return new Date(fromLocalInput(`${toLocalDate(date)}T00:00`).getTime() + 24 * 60 * 60 * 1000 - 1);
+}
+
 export function formatUtc8Time(date: Date): string {
 	return new Intl.DateTimeFormat("en", { timeZone: "Asia/Manila", hour: "numeric", minute: "2-digit" }).format(date);
 }
 
 export function formatUtc8DateTime(date: Date): string {
 	return new Intl.DateTimeFormat("en", { timeZone: "Asia/Manila", dateStyle: "medium", timeStyle: "short" }).format(date);
+}
+
+/**
+ * Human range for an event, covering the four cases multi-day introduced:
+ *   timed single day   "Aug 12, 9:00 AM – 5:00 PM"
+ *   timed multi-day    "Aug 12, 9:00 AM → Aug 14, 5:00 PM"
+ *   all-day single     "Aug 12 · All day"
+ *   all-day multi-day  "Aug 12 – Aug 14 · All day"
+ */
+export function formatEventRange(startsAt: Date, endsAt: Date | null, allDay: boolean): string {
+	const dayOf = (date: Date) =>
+		new Intl.DateTimeFormat("en", { timeZone: "Asia/Manila", dateStyle: "medium" }).format(date);
+	// The inclusive last day: an end at exactly midnight belongs to the previous day.
+	const lastDay = endsAt ? dayOf(new Date(endsAt.getTime() - 1)) : dayOf(startsAt);
+	const firstDay = dayOf(startsAt);
+
+	if (allDay) {
+		return firstDay === lastDay ? `${firstDay} · All day` : `${firstDay} – ${lastDay} · All day`;
+	}
+	if (!endsAt) return formatUtc8DateTime(startsAt);
+	if (firstDay === lastDay) return `${firstDay}, ${formatUtc8Time(startsAt)} – ${formatUtc8Time(endsAt)}`;
+	return `${formatUtc8DateTime(startsAt)} → ${formatUtc8DateTime(endsAt)}`;
 }
 
 export function formatSlotLabel(slot: string): string {

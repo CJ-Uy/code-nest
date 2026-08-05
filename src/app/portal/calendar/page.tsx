@@ -7,6 +7,7 @@ import { CalendarMonth } from "@/components/calendar-month";
 import { loadEventTypes } from "@/lib/event-type-load";
 import { utc8Parts } from "@/lib/date-slots";
 import { requireActor } from "@/server/auth/actor";
+import { can } from "@/server/auth/permissions";
 import { CreateEventSheet } from "./create-event-sheet";
 import { EventsList, type EventListItem } from "./events-list";
 
@@ -49,7 +50,11 @@ export default async function CalendarPage({
 					<p className="text-xs font-semibold uppercase text-primary">Member workspace</p>
 					<h1 className="font-heading text-3xl">Calendar</h1>
 				</div>
-				<CreateEventSheet allowedTypes={allowedTypes} typesUnavailable={!typeLoad.ok} />
+				<CreateEventSheet
+					allowedTypes={allowedTypes}
+					typesUnavailable={!typeLoad.ok}
+					canSetReadOnly={can(actor, "event:moderate")}
+				/>
 			</div>
 
 			<div className="flex flex-wrap items-center justify-between gap-3">
@@ -123,6 +128,8 @@ async function loadEventList(
 		place: e.place,
 		startsAt: e.startsAt,
 		endsAt: e.endsAt,
+		allDay: Boolean(e.allDay),
+		readOnly: Boolean(e.readOnly),
 		myRole: e.myRole,
 		canModerate: e.canModerate,
 	}));
