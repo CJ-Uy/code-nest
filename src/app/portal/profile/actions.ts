@@ -19,7 +19,8 @@ export async function updateProfileAction(
 		pronouns: nullableText(formData.get("pronouns")),
 		batch: nullableText(formData.get("batch")),
 		birthday: nullableText(formData.get("birthday")),
-		birthdayPrivate: formData.get("birthdayPrivate") === "on",
+		// Birthdays a member fills in are public on the calendar; no opt-out in the form.
+		birthdayPrivate: false,
 	});
 	if (!parsed.success) {
 		return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid profile details." };

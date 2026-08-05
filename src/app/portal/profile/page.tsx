@@ -128,7 +128,6 @@ export default async function ProfilePage() {
 								pronouns: member.pronouns ?? "",
 								batch: member.batch ?? "",
 								birthday: member.birthday ?? "",
-								birthdayPrivate: member.birthdayPrivate,
 							}}
 						/>
 					</CardContent>
