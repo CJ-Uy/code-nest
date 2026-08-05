@@ -12,5 +12,5 @@ test("an admin records attendance via the scan fallback", async ({ page }) => {
 	await expect(member).toBeVisible();
 	await member.click();
 
-	await expect(page.getByText(/checked in demo member|demo member was already checked in/i)).toBeVisible();
+	await expect(page.getByText("Checked in Demo Member.", { exact: true })).toBeVisible();
 });

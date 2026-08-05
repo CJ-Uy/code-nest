@@ -1,6 +1,17 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
-import { crsEvents, eventStaff, memberRoles, members, roles, seedEventTypes, sessions, terms } from "@/db/schema";
+import {
+	crsAttendance,
+	crsEvents,
+	eventStaff,
+	memberRoles,
+	members,
+	retentionRecords,
+	roles,
+	seedEventTypes,
+	sessions,
+	terms,
+} from "@/db/schema";
 
 const SEEDED = {
 	"admin@example.com": { id: "mem_demo_admin", name: "Demo Admin", role: "super" },
@@ -54,6 +65,28 @@ async function ensureE2eData(db: ReturnType<typeof getDb>): Promise<void> {
 	const termEndsAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 	const eventStartsAt = new Date(now.getTime() - 5 * 60 * 1000);
 	const eventEndsAt = new Date(now.getTime() + 30 * 60 * 1000);
+	const scanEvent = {
+		title: "E2E live scan event",
+		type: seedEventTypes[0],
+		status: "approved" as const,
+		points: 5,
+		place: "SOM 111",
+		capacity: null,
+		graceMinutes: null,
+		startsAt: eventStartsAt,
+		endsAt: eventEndsAt,
+		allDay: false,
+		readOnly: false,
+		publicCode: null,
+		description: "A deterministic local scanner fixture.",
+		rsvpFormJson: [],
+		rsvpResponsesPublic: false,
+		createdBy: "mem_demo_member",
+		approvedBy: "mem_demo_admin",
+		approvedAt: now,
+		checkinSecret: "e2e-checkin-secret",
+		deletedAt: null,
+	};
 	await db
 		.insert(roles)
 		.values({ id: "role_super", key: "super", label: "Super admin", description: "Full portal access.", kind: "admin" })
@@ -81,26 +114,21 @@ async function ensureE2eData(db: ReturnType<typeof getDb>): Promise<void> {
 		})
 		.onConflictDoUpdate({ target: terms.id, set: { startsAt: termStartsAt, endsAt: termEndsAt } });
 	await db
+		.delete(retentionRecords)
+		.where(
+			and(
+				eq(retentionRecords.eventId, "evt_e2e_scan"),
+				eq(retentionRecords.memberId, "mem_demo_member"),
+				eq(retentionRecords.source, "event_attendance"),
+			),
+		);
+	await db
+		.delete(crsAttendance)
+		.where(and(eq(crsAttendance.eventId, "evt_e2e_scan"), eq(crsAttendance.memberId, "mem_demo_member")));
+	await db
 		.insert(crsEvents)
-		.values({
-			id: "evt_e2e_scan",
-			title: "E2E live scan event",
-			type: seedEventTypes[0],
-			status: "approved",
-			points: 5,
-			place: "SOM 111",
-			startsAt: eventStartsAt,
-			endsAt: eventEndsAt,
-			description: "A deterministic local scanner fixture.",
-			createdBy: "mem_demo_member",
-			approvedBy: "mem_demo_admin",
-			approvedAt: now,
-			checkinSecret: "e2e-checkin-secret",
-		})
-		.onConflictDoUpdate({
-			target: crsEvents.id,
-			set: { status: "approved", startsAt: eventStartsAt, endsAt: eventEndsAt, deletedAt: null, readOnly: false },
-		});
+		.values({ id: "evt_e2e_scan", ...scanEvent })
+		.onConflictDoUpdate({ target: crsEvents.id, set: scanEvent });
 	await db
 		.insert(eventStaff)
 		.values({ eventId: "evt_e2e_scan", memberId: "mem_demo_admin", role: "scanner", addedBy: "mem_demo_admin" })
