@@ -22,7 +22,18 @@ describe("admin nav registry", () => {
 			"/portal/admin/members/list",
 			"/portal/admin/members/roles",
 		]);
-		expect(adminGroups.find((group) => group.segment === "data")?.label).toBe("Events & Points");
+		const eventsAndPoints = adminGroups.find((group) => group.segment === "data");
+		expect(eventsAndPoints?.label).toBe("Events & Points");
+		expect(eventsAndPoints?.pages.map((page) => page.segment)).toEqual([
+			"dashboard",
+			"events",
+			"members",
+			"scans",
+			"ledger",
+			"event-types",
+			"point-types",
+			"exports",
+		]);
 	});
 
 	it("gates events and points pages on retention:record", () => {
@@ -50,11 +61,22 @@ describe("admin nav registry", () => {
 	});
 
 	it("builds breadcrumbs and headings for admin paths", () => {
+		expect(crumbFor("/portal/admin/members")).toEqual([
+			{ label: "Admin", href: "/portal/admin" },
+			{ label: "Members & Access" },
+		]);
 		expect(crumbFor("/portal/admin/members/roles")).toEqual([
 			{ label: "Admin", href: "/portal/admin" },
 			{ label: "Members & Access", href: "/portal/admin/members" },
 			{ label: "Roles & Access" },
 		]);
+		expect(crumbFor("/portal/admin/system/point-types")).toEqual([
+			{ label: "Admin", href: "/portal/admin" },
+			{ label: "Events & Points", href: "/portal/admin/data" },
+			{ label: "Point Types" },
+		]);
+		expect(adminHeading("/portal/admin")).toEqual({ section: "Admin", title: "Console" });
+		expect(adminHeading("/portal/admin/members")).toEqual({ section: "Admin", title: "Members & Access" });
 		expect(adminHeading("/portal/admin/members/roles")).toEqual({ section: "Members & Access", title: "Roles & Access" });
 		expect(adminHeading("/portal/library")).toBeNull();
 	});
