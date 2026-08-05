@@ -1,5 +1,6 @@
 import { CalendarDays, CircleUserRound, House, Bell, BookOpen, Link2, Award, Megaphone, ShieldCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { FeatureFlags } from "@/server/features";
 
 export type NavItem = { id: string; label: string; href: string; icon: LucideIcon };
 
@@ -22,6 +23,23 @@ export const secondaryNav: NavItem[] = [
 	{ id: "links", label: "Link shortener", href: "/portal/links", icon: Link2 },
 	{ id: "notifications", label: "Notifications", href: "/portal/notifications", icon: Bell },
 ];
+
+export function portalNavigation(flags: FeatureFlags): { primary: NavItem[]; secondary: NavItem[] } {
+	const overview = primaryNav.find((item) => item.id === "overview")!;
+	const calendar = primaryNav.find((item) => item.id === "calendar")!;
+	const retention = primaryNav.find((item) => item.id === "retention")!;
+	const profile = primaryNav.find((item) => item.id === "profile")!;
+	const links = secondaryNav.find((item) => item.id === "links")!;
+	const primary = [overview, calendar, flags.retention ? retention : links, profile];
+	const secondary = secondaryNav.filter((item) => {
+		if (item.id === "links") return flags.retention;
+		if (item.id === "library") return flags.library;
+		if (item.id === "announcements") return flags.announcements;
+		if (item.id === "notifications") return flags.notifications;
+		return true;
+	});
+	return { primary, secondary };
+}
 
 // Admin entry is rendered only when the actor has at least one admin scope.
 export const adminNav: NavItem = { id: "admin", label: "Admin", href: "/portal/admin", icon: ShieldCheck };

@@ -1,5 +1,6 @@
 import type { Actor, PermissionAction } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
+import type { FeatureFlags, FeatureKey } from "@/server/features";
 
 export type AdminPermission = PermissionAction | null;
 export type AdminPage = {
@@ -8,6 +9,7 @@ export type AdminPage = {
 	href: string;
 	description: string;
 	permission: AdminPermission;
+	feature?: FeatureKey;
 };
 export type AdminGroup = { segment: string; label: string; href: string; pages: AdminPage[] };
 
@@ -29,9 +31,9 @@ export const adminGroups: AdminGroup[] = [
 		{ segment: "roles", label: "Roles & Access", description: "Grant admin roles to members.", permission: "role:assign" },
 	]),
 	G("content", "Content", [
-		{ segment: "announcements", label: "Announcements", description: "Org posts.", permission: "announcement:manage" },
-		{ segment: "library", label: "Library", description: "Articles & case studies.", permission: "library:manage" },
-		{ segment: "surveys", label: "Surveys", description: "Sampling & questions.", permission: "survey:configure" },
+		{ segment: "announcements", label: "Announcements", description: "Org posts.", permission: "announcement:manage", feature: "announcements" },
+		{ segment: "library", label: "Library", description: "Articles & case studies.", permission: "library:manage", feature: "library" },
+		{ segment: "surveys", label: "Surveys", description: "Sampling & questions.", permission: "survey:configure", feature: "surveys" },
 		{
 			segment: "submissions",
 			label: "Public Submissions",
@@ -100,11 +102,12 @@ export const adminGroups: AdminGroup[] = [
 	]),
 ];
 
-const pageVisible = (actor: Actor, p: AdminPage) => p.permission === null || can(actor, p.permission);
+const pageVisible = (actor: Actor, flags: FeatureFlags, page: AdminPage) =>
+	(!page.feature || flags[page.feature]) && (page.permission === null || can(actor, page.permission));
 
-export function visibleGroups(actor: Actor): AdminGroup[] {
+export function visibleGroups(actor: Actor, flags: FeatureFlags): AdminGroup[] {
 	return adminGroups
-		.map((g) => ({ ...g, pages: g.pages.filter((p) => pageVisible(actor, p)) }))
+		.map((g) => ({ ...g, pages: g.pages.filter((page) => pageVisible(actor, flags, page)) }))
 		.filter((g) => g.pages.length > 0);
 }
 

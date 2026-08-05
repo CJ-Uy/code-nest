@@ -10,9 +10,10 @@ import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/com
 import { cn } from "@/lib/utils";
 import { Breadcrumb } from "./breadcrumb";
 import { MemberAvatar } from "./member-avatar";
-import { adminNav, primaryNav, secondaryNav, type NavItem } from "./nav-items";
+import { adminNav, portalNavigation, primaryNav, secondaryNav, type NavItem } from "./nav-items";
 import { navPinIconFor } from "./nav-pin-icons";
 import { adminHeading, crumbFor } from "@/app/portal/admin/nav";
+import type { FeatureFlags } from "@/server/features";
 
 export type AdminNavGroup = { segment: string; label: string; href: string; pages: { href: string; label: string }[] };
 
@@ -20,6 +21,7 @@ export type PortalShellProps = {
 	member: { displayName: string; initials: string; subtitle?: string };
 	memberId: string;
 	navPins: { id: string; label: string; url: string; icon: string }[];
+	features: FeatureFlags;
 	showAdmin: boolean;
 	adminGroups: AdminNavGroup[];
 	bell: React.ReactNode;
@@ -110,15 +112,16 @@ function AdminNavLink({ href, label, pathname }: { href: string; label: string; 
 	);
 }
 
-export function PortalShell({ member, memberId, navPins, showAdmin, adminGroups, bell, signOutAction, children }: PortalShellProps) {
+export function PortalShell({ member, memberId, navPins, features, showAdmin, adminGroups, bell, signOutAction, children }: PortalShellProps) {
 	const pathname = usePathname();
 	const [menuOpen, setMenuOpen] = useState(false);
 	const inAdmin = pathname.startsWith("/portal/admin");
 	const pageHeading = getPageHeading(pathname);
 
-	const sheetItems: NavItem[] = [...secondaryNav, ...(showAdmin ? [adminNav] : [])];
-	const leftTabs = primaryNav.slice(0, 2);
-	const rightTabs = primaryNav.slice(2, 4);
+	const { primary, secondary } = portalNavigation(features);
+	const sheetItems: NavItem[] = [...secondary, ...(showAdmin ? [adminNav] : [])];
+	const leftTabs = primary.slice(0, 2);
+	const rightTabs = primary.slice(2, 4);
 
 	return (
 		<div className="min-h-screen bg-background text-foreground lg:flex">
@@ -160,13 +163,13 @@ export function PortalShell({ member, memberId, navPins, showAdmin, adminGroups,
 				) : (
 					<>
 						<nav className="flex flex-col gap-1" aria-label="Portal modules">
-							{primaryNav.map((item) => (
+							{primary.map((item) => (
 								<RailItem key={item.id} item={item} pathname={pathname} />
 							))}
 						</nav>
 						<Separator className="my-3 bg-white/10" />
 						<nav className="flex flex-col gap-1" aria-label="More modules">
-							{secondaryNav.map((item) => (
+							{secondary.map((item) => (
 								<RailItem key={item.id} item={item} pathname={pathname} />
 							))}
 							{navPins.length > 0 ? (
