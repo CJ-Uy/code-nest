@@ -1,4 +1,4 @@
-import { and, eq, like, or } from "drizzle-orm";
+import { eq, like, or } from "drizzle-orm";
 import type { InferInsertModel } from "drizzle-orm";
 import { createId } from "@/lib/ids";
 import { members } from "@/db/schema";
@@ -58,19 +58,16 @@ export function createMembersRepository(db: MemberDb, audit: AuditRepository): M
 			const q = query.trim().toLowerCase();
 			if (q.length < 2) return [];
 			const pattern = `%${q}%`;
-			// SQLite LIKE is case-insensitive for ASCII; active members only, capped at 20.
+			// SQLite LIKE is case-insensitive for ASCII; every member status, capped at 20.
 			return db
 				.select()
 				.from(members)
 				.where(
-					and(
-						eq(members.status, "active"),
-						or(
-							like(members.name, pattern),
-							like(members.fullName, pattern),
-							like(members.nickname, pattern),
-							like(members.email, pattern),
-						),
+					or(
+						like(members.name, pattern),
+						like(members.fullName, pattern),
+						like(members.nickname, pattern),
+						like(members.email, pattern),
 					),
 				)
 				.limit(20);

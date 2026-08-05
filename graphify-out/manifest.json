@@ -485,8 +485,8 @@
     "semantic_hash": ""
   },
   "src/db/repositories/members.ts": {
-    "mtime": 1785916465.162349,
-    "ast_hash": "e6c10441d04c20165d2bd0c87ea8cbed",
+    "mtime": 1785921496.8215961,
+    "ast_hash": "9dc2f4ea67497f62d23f7bb616e16790",
     "semantic_hash": ""
   },
   "src/db/repositories/notifications.ts": {
@@ -2425,8 +2425,8 @@
     "semantic_hash": ""
   },
   "src/db/repositories/roles.integration.test.ts": {
-    "mtime": 1785916291.0881245,
-    "ast_hash": "10ed00d44abe5cd1a7b64c260044f048",
+    "mtime": 1785921432.643719,
+    "ast_hash": "7b710117d9439d0d14edf81c0e3f178d",
     "semantic_hash": ""
   },
   "src/db/repositories/roles.ts": {
@@ -3977,6 +3977,21 @@
   "src/middleware.ts": {
     "mtime": 1785916291.1011286,
     "ast_hash": "c5c77176186b3fac3f37e70d9c6eca0c",
+    "semantic_hash": ""
+  },
+  "docs/releases/2026-08-05-staging-release-report.md": {
+    "mtime": 1785919762.034824,
+    "ast_hash": "9a78fb5a20339494f74e211cc5c31489",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-05-inactive-admin-assignment.md": {
+    "mtime": 1785921412.515506,
+    "ast_hash": "2ad98d9c719727d54d9496173b61b8df",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-05-inactive-admin-assignment-design.md": {
+    "mtime": 1785921316.9557815,
+    "ast_hash": "0dfd9023e0b9cb15226acf09f5f0dfaa",
     "semantic_hash": ""
   }
 }

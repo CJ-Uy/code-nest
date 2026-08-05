@@ -58,12 +58,12 @@ describe("roles + member search on D1", () => {
 		}
 	});
 
-	it("members.search: active only, name/email, min length, rejects unauthorized", async () => {
+	it("members.search: includes inactive members for role assignment", async () => {
 		const { members } = repos();
 		expect((await members.search(memberAdmin, "dela")).map((m) => m.email)).toContain("juan@code.org");
 		expect((await members.search(memberAdmin, "JUAN@")).length).toBe(1);
-		expect(await members.search(memberAdmin, "old")).toEqual([]); // inactive excluded
-		expect(await members.search(memberAdmin, "d")).toEqual([]); // < 2 chars
+		expect((await members.search(memberAdmin, "old")).map((m) => m.email)).toContain("old@code.org");
+		expect(await members.search(memberAdmin, "d")).toEqual([]);
 		await expect(members.search(plain, "dela")).rejects.toThrow(/Not authorized/);
 	});
 
