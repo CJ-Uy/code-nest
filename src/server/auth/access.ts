@@ -42,15 +42,14 @@ export function getGoogleAuthorizationParams(error?: string): Record<string, str
 	return error === "NotMember" ? { prompt: "select_account" } : undefined;
 }
 
-export function getGoogleProviderOptions(
-	clientId: string | undefined,
-	clientSecret: string | undefined,
-	allowedDomains: string[],
-) {
+// No `hd` param on purpose. `hd` accepts a single hosted domain, so it would
+// have pinned the account chooser to allowedDomains[0] and hidden every other
+// account — including @student.ateneo.edu and personal accounts we do allow.
+// isGoogleSignInAllowed plus the roster gate are the real boundary anyway.
+export function getGoogleProviderOptions(clientId: string | undefined, clientSecret: string | undefined) {
 	return {
 		clientId,
 		clientSecret,
-		authorization: allowedDomains[0] ? { params: { hd: allowedDomains[0] } } : undefined,
 		// Safe because the sign-in callback accepts only Google profiles with a verified email.
 		allowDangerousEmailAccountLinking: true,
 	};

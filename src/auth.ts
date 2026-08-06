@@ -43,7 +43,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 	return {
 		adapter,
 		providers: [
-			Google(getGoogleProviderOptions(config.AUTH_GOOGLE_ID, config.AUTH_GOOGLE_SECRET, allowedDomains)),
+			Google(getGoogleProviderOptions(config.AUTH_GOOGLE_ID, config.AUTH_GOOGLE_SECRET)),
 		],
 		session: { strategy: "database" },
 		secret: config.AUTH_SECRET,

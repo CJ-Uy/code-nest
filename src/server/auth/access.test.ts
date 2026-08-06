@@ -23,12 +23,15 @@ describe("Google sign-in policy", () => {
 	});
 
 	it("allows verified Google accounts to link to pre-created members", () => {
-		expect(getGoogleProviderOptions("client-id", "client-secret", ["ateneo.edu"])).toEqual({
+		expect(getGoogleProviderOptions("client-id", "client-secret")).toEqual({
 			clientId: "client-id",
 			clientSecret: "client-secret",
-			authorization: { params: { hd: "ateneo.edu" } },
 			allowDangerousEmailAccountLinking: true,
 		});
+	});
+
+	it("never pins the account chooser to one hosted domain", () => {
+		expect(getGoogleProviderOptions("client-id", "client-secret")).not.toHaveProperty("authorization");
 	});
 
 	it("allows a verified email from an allowed domain", () => {
