@@ -55,8 +55,9 @@ function AnnouncementCard({ item }: { item: AnnouncementFeedItem }) {
 }
 
 export default async function AnnouncementsPage() {
-	// Ahead of the auth check on purpose: a disabled surface should 404 for everyone rather
-	// than bounce to /signin, which would confirm the route exists.
+	// The portal layout already redirects signed-out visitors to /signin, so this guard is
+	// what a signed-in member hits. Kept above the data loading so a disabled surface
+	// never touches a repository.
 	if (!isFeatureEnabled("announcements")) notFound();
 
 	const actor = await getActor();
