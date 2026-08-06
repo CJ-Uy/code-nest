@@ -1,12 +1,12 @@
 {
   ".remember/tmp/last-ndc.ts": {
-    "mtime": 1785891999.343706,
-    "ast_hash": "eb3fb47aed5acd19218f48a3139c4f08",
+    "mtime": 1786036117.1188633,
+    "ast_hash": "e91bb97755fb2a70c9fda5fe744d3a96",
     "semantic_hash": ""
   },
   ".remember/tmp/last-save.json": {
-    "mtime": 1785891997.5575204,
-    "ast_hash": "e7193e72f752b857dc156fb56ab63a20",
+    "mtime": 1786036570.9107263,
+    "ast_hash": "6df9a27b4d1066e52a398a9b9fe2a5f4",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -350,13 +350,13 @@
     "semantic_hash": ""
   },
   "src/app/portal/profile/actions.ts": {
-    "mtime": 1782144217.0828688,
-    "ast_hash": "081ecf22d42e38f43d7cafad98164f39",
-    "semantic_hash": "081ecf22d42e38f43d7cafad98164f39"
+    "mtime": 1785897780.3369212,
+    "ast_hash": "24f5f4b9dac5d4750fcf547af528e43e",
+    "semantic_hash": ""
   },
   "src/app/portal/profile/page.tsx": {
-    "mtime": 1785260950.343562,
-    "ast_hash": "2399cc26d0ff49e6b1115ce77e12ac10",
+    "mtime": 1785897787.446066,
+    "ast_hash": "a02538bbe2ede6ac3ad7a3dbe5162c3c",
     "semantic_hash": ""
   },
   "src/app/signin/page.tsx": {
@@ -365,8 +365,8 @@
     "semantic_hash": ""
   },
   "src/auth.ts": {
-    "mtime": 1785339007.6314502,
-    "ast_hash": "183af08656b752fb74ce0ec994515eb2",
+    "mtime": 1786030982.1029286,
+    "ast_hash": "f7adc40b1bd57f24cd628fa2df4d4d40",
     "semantic_hash": ""
   },
   "src/components/ui/badge.tsx": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "src/db/repositories/calendar.ts": {
-    "mtime": 1785865136.3463454,
-    "ast_hash": "07473ba3b9582581e9a586d7bae8e9f9",
+    "mtime": 1785897826.8132198,
+    "ast_hash": "7f84a2eaaa89421e64f610ad24fe7dae",
     "semantic_hash": ""
   },
   "src/db/repositories/events.ts": {
@@ -505,8 +505,8 @@
     "semantic_hash": ""
   },
   "src/db/repositories/retention.ts": {
-    "mtime": 1785361460.4686532,
-    "ast_hash": "1d48f119a7e8366ab646d6092a0ad63a",
+    "mtime": 1786030140.4632168,
+    "ast_hash": "e0a8801f18fad62b144ad3d30983290b",
     "semantic_hash": ""
   },
   "src/db/repositories/sessions.ts": {
@@ -560,13 +560,13 @@
     "semantic_hash": "bb36ea825a37986c69eae74eefe688d3"
   },
   "src/server/auth/access.test.ts": {
-    "mtime": 1785338963.4607604,
-    "ast_hash": "2bda76056c4604c1dc764d77551709b0",
+    "mtime": 1786030985.644738,
+    "ast_hash": "8d633543ddacb6c1cde17aaa761ac81c",
     "semantic_hash": ""
   },
   "src/server/auth/access.ts": {
-    "mtime": 1785339142.6890032,
-    "ast_hash": "56caccaf8b578d1603eee134dcc5cef6",
+    "mtime": 1786030976.0120301,
+    "ast_hash": "43b483633a690d4cf7a4a83e20bbe3ce",
     "semantic_hash": ""
   },
   "src/server/auth/actor.ts": {
@@ -720,18 +720,18 @@
     "semantic_hash": "31c1e65b6e7722dc5d5faefffdd11b84"
   },
   ".remember/archive.md": {
-    "mtime": 1785512288.255379,
-    "ast_hash": "36744c969dae0a37a148c28b90e73929",
+    "mtime": 1786031956.3920588,
+    "ast_hash": "229fb7327829bd94ef03b988e8317b21",
     "semantic_hash": ""
   },
   ".remember/now.md": {
-    "mtime": 1785892026.7647486,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "mtime": 1786036570.5401819,
+    "ast_hash": "24f32bb18149d92cfb18f08a43b3dcca",
     "semantic_hash": ""
   },
   ".remember/recent.md": {
-    "mtime": 1785512288.23409,
-    "ast_hash": "fe19f96b238403698d334bfd95df3d50",
+    "mtime": 1786031956.363737,
+    "ast_hash": "bb29c939fe655d2c4c3936a61af5a800",
     "semantic_hash": ""
   },
   ".remember/today-2026-06-17.done.md": {
@@ -1580,8 +1580,8 @@
     "semantic_hash": ""
   },
   "src/components/member-code-card.tsx": {
-    "mtime": 1783252002.0512934,
-    "ast_hash": "67860fd19e3d06814c045a2ba51a3d86",
+    "mtime": 1786036592.0234728,
+    "ast_hash": "9946dc5ffc9d8ace2e7c04bc52c17f6b",
     "semantic_hash": ""
   },
   "src/db/contract/events.ts": {
@@ -1655,8 +1655,8 @@
     "semantic_hash": ""
   },
   "src/db/repositories/retention-unavailable.ts": {
-    "mtime": 1785190257.1527815,
-    "ast_hash": "f80797c5d027146c9b3a997a4138598f",
+    "mtime": 1786030151.1021347,
+    "ast_hash": "a90817cca0cb79cfa1264af1b421701d",
     "semantic_hash": ""
   },
   "src/db/types.test.ts": {
@@ -1740,8 +1740,8 @@
     "semantic_hash": ""
   },
   "src/app/portal/calendar/[eventId]/page.tsx": {
-    "mtime": 1785865530.6174636,
-    "ast_hash": "aeb1a13e152c396ec250fabc4820c6a3",
+    "mtime": 1786036682.427872,
+    "ast_hash": "54b738004c50e4f894a855ea9fc15717",
     "semantic_hash": ""
   },
   "src/app/portal/calendar/page.tsx": {
@@ -1755,8 +1755,8 @@
     "semantic_hash": ""
   },
   "src/components/calendar-month.tsx": {
-    "mtime": 1785864780.3395326,
-    "ast_hash": "c595b837ba42cfad6b82a87777c5477b",
+    "mtime": 1785895532.5679612,
+    "ast_hash": "71140b3d192c4ac857d1c384ae3e188b",
     "semantic_hash": ""
   },
   "src/components/retention-history.tsx": {
@@ -1770,8 +1770,8 @@
     "semantic_hash": ""
   },
   "src/db/repositories/calendar.integration.test.ts": {
-    "mtime": 1783252851.5741477,
-    "ast_hash": "33a598e2c24d5409c98ed7294bc696b5",
+    "mtime": 1785897903.4127417,
+    "ast_hash": "34f89afad64860eeddd63a9249fbd5b0",
     "semantic_hash": ""
   },
   "src/lib/calendar.test.ts": {
@@ -2430,13 +2430,13 @@
     "semantic_hash": ""
   },
   "src/app/portal/admin/nav.test.ts": {
-    "mtime": 1785363103.8565683,
-    "ast_hash": "228e8f133ebc452340b3c540338c8026",
+    "mtime": 1786031082.1628366,
+    "ast_hash": "a936b116682a42e7662d45011a706229",
     "semantic_hash": ""
   },
   "src/app/portal/admin/nav.ts": {
-    "mtime": 1785362966.3406816,
-    "ast_hash": "99ef2d9943da4b69e51b624e2afa9882",
+    "mtime": 1786031057.679096,
+    "ast_hash": "9334e9afb54daeec08b19af657ac49d5",
     "semantic_hash": ""
   },
   "src/app/portal/admin/system/audit/page.tsx": {
@@ -2620,8 +2620,8 @@
     "semantic_hash": ""
   },
   "src/db/repositories/eventTypeRules.ts": {
-    "mtime": 1785180144.655341,
-    "ast_hash": "141658bf7557662f30d50af0ee7ec831",
+    "mtime": 1785897818.888003,
+    "ast_hash": "4e8777d2ef4e938a73bd6132aca151cc",
     "semantic_hash": ""
   },
   ".remember/today-2026-07-25.done.md": {
@@ -4005,8 +4005,8 @@
     "semantic_hash": ""
   },
   "src/app/portal/calendar/[eventId]/event-share-bar.tsx": {
-    "mtime": 1785865331.728101,
-    "ast_hash": "2ee243d561168b3e7fa12c1760b52b22",
+    "mtime": 1786036654.2971232,
+    "ast_hash": "8d8f61db01e3a545e33db69f10b275f5",
     "semantic_hash": ""
   },
   "src/db/repositories/events.readonly.integration.test.ts": {
@@ -4274,19 +4274,69 @@
     "ast_hash": "5bdd7a3aac2cd7bc71002182422b3315",
     "semantic_hash": ""
   },
-  ".remember/today-2026-08-04.md": {
+  "docs/superpowers/specs/2026-08-04-calendar-multiday-colours-readonly-design.md": {
+    "mtime": 1785862562.0977676,
+    "ast_hash": "666ca8e6960f3c61007c6eee936f01c9",
+    "semantic_hash": ""
+  },
+  "src/app/portal/admin/system/school-years/actions.ts": {
+    "mtime": 1786030178.9929583,
+    "ast_hash": "707f4ebcb79b1df9456f53a01fe066ff",
+    "semantic_hash": ""
+  },
+  "src/app/portal/admin/system/school-years/input.ts": {
+    "mtime": 1786030161.8463116,
+    "ast_hash": "de8587b7b3a018c78ef39906c6217bc8",
+    "semantic_hash": ""
+  },
+  "src/app/portal/admin/system/school-years/page.tsx": {
+    "mtime": 1786030206.6182406,
+    "ast_hash": "e7cdcbca7cb742ad75195b4385b9e80d",
+    "semantic_hash": ""
+  },
+  "src/app/portal/admin/system/school-years/school-years-manager.tsx": {
+    "mtime": 1786030199.9749866,
+    "ast_hash": "4c50296aedf153b907e032912e36a2c8",
+    "semantic_hash": ""
+  },
+  "src/app/portal/profile/edit-profile-form.tsx": {
+    "mtime": 1785897772.9292462,
+    "ast_hash": "5ed1c37cf461a30765095405fe1ef69e",
+    "semantic_hash": ""
+  },
+  "src/components/qr-canvas.tsx": {
+    "mtime": 1786036517.8138723,
+    "ast_hash": "c05f5155e2ce6802228a83d75ff453ed",
+    "semantic_hash": ""
+  },
+  "src/db/repositories/terms.integration.test.ts": {
+    "mtime": 1786030253.020028,
+    "ast_hash": "17e582f525d1336c7a900ab7fe8d303c",
+    "semantic_hash": ""
+  },
+  ".remember/today-2026-08-04.done.md": {
     "mtime": 1785856169.0464244,
     "ast_hash": "c338859f276d463cbfb79a3ef5b1e501",
     "semantic_hash": ""
   },
-  ".remember/today-2026-08-05.md": {
-    "mtime": 1785892026.7367454,
-    "ast_hash": "aac3593998f71b8bf3bb323cfd410ce4",
+  ".remember/today-2026-08-05.done.md": {
+    "mtime": 1786030116.3280902,
+    "ast_hash": "4290ca69a0013a582b292833495df202",
     "semantic_hash": ""
   },
-  "docs/superpowers/specs/2026-08-04-calendar-multiday-colours-readonly-design.md": {
-    "mtime": 1785862562.0977676,
-    "ast_hash": "666ca8e6960f3c61007c6eee936f01c9",
+  ".remember/today-2026-08-06.md": {
+    "mtime": 1786036210.4645674,
+    "ast_hash": "0f432ff06c4355397f65e85ec836a5d8",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-05-beta-to-staging-release.md": {
+    "mtime": 1785900291.1715238,
+    "ast_hash": "7f700ed24ce950843f99c5c9875508e4",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-05-beta-to-staging-release-design.md": {
+    "mtime": 1785899332.13098,
+    "ast_hash": "dd2907873a91bad01543918604442d89",
     "semantic_hash": ""
   }
 }

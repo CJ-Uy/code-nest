@@ -169,6 +169,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
 						memberId={actor.memberId}
 						title="Check in"
 						description="Show this code to an organizer to be marked present."
+						eventShareUrl={shareLinks?.shareUrl}
 					/>
 				)}
 			</div>
