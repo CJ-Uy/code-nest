@@ -10,7 +10,11 @@ describe("admin nav registry", () => {
 	it("has 4 groups with the spec's routes", () => {
 		expect(adminGroups.map((g) => g.segment)).toEqual(["members", "content", "data", "system"]);
 		const members = adminGroups.find((g) => g.segment === "members")!;
-		expect(members.pages.map((p) => p.href)).toEqual(["/portal/admin/members/list", "/portal/admin/members/roles"]);
+		expect(members.pages.map((p) => p.href)).toEqual([
+			"/portal/admin/members/list",
+			"/portal/admin/members/roles",
+			"/portal/admin/system/school-years",
+		]);
 		const eventsAndPoints = adminGroups.find((g) => g.segment === "data")!;
 		expect(eventsAndPoints.label).toBe("Events & Points");
 		expect(eventsAndPoints.pages.map((p) => p.segment)).toEqual([
@@ -50,6 +54,20 @@ describe("admin nav registry", () => {
 			{ label: "Events & Points", href: "/portal/admin/data" },
 			{ label: "Point Types" },
 		]);
+	});
+
+	it("files School Years under Members & Access and gates it on retention configuration", () => {
+		expect(crumbFor("/portal/admin/system/school-years")).toEqual([
+			{ label: "Admin", href: "/portal/admin" },
+			{ label: "Members & Access", href: "/portal/admin/members" },
+			{ label: "School Years" },
+		]);
+		expect(visibleGroups(retentionActor).flatMap((g) => g.pages.map((p) => p.href))).toContain(
+			"/portal/admin/system/school-years",
+		);
+		expect(visibleGroups(linkOnly).flatMap((g) => g.pages.map((p) => p.href))).not.toContain(
+			"/portal/admin/system/school-years",
+		);
 	});
 
 	it("builds a breadcrumb trail with clickable ancestors", () => {

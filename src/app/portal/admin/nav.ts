@@ -27,6 +27,13 @@ export const adminGroups: AdminGroup[] = [
 			permission: "roster:manage",
 		},
 		{ segment: "roles", label: "Roles & Access", description: "Grant admin roles to members.", permission: "role:assign" },
+		{
+			segment: "school-years",
+			label: "School Years",
+			description: "Set each school year's span and point thresholds; check-ins need one covering today.",
+			permission: "retention:configure",
+			href: "/portal/admin/system/school-years",
+		},
 	]),
 	G("content", "Content", [
 		{ segment: "announcements", label: "Announcements", description: "Org posts.", permission: "announcement:manage" },

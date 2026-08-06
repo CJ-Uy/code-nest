@@ -65,6 +65,25 @@ export type MyHistorySummary = {
 
 export type TermOption = { id: string; name: string; isCurrent: boolean };
 
+export type TermAdminRow = {
+	id: string;
+	name: string;
+	retainedAt: number;
+	probationBelow: number;
+	startsAt: Date;
+	endsAt: Date;
+	isCurrent: boolean;
+};
+
+export type TermUpsertInput = {
+	id: string | null;
+	name: string;
+	retainedAt: number;
+	probationBelow: number;
+	startsAt: Date;
+	endsAt: Date;
+};
+
 export type RetentionRepository = {
 	listForMember(actor: Actor, input: ListForMemberInput): Promise<TypedRetentionRecord[]>;
 	getMemberTermSummary(actor: Actor, input: MemberTermSummaryInput): Promise<RetentionSummary>;
@@ -80,6 +99,8 @@ export type RetentionRepository = {
 		now?: Date,
 	): Promise<{ summary: MyHistorySummary | null; records: TypedRetentionRecord[] }>;
 	listTerms(actor: Actor, now?: Date): Promise<TermOption[]>;
+	listTermsAdmin(actor: Actor, now?: Date): Promise<TermAdminRow[]>;
+	upsertTerm(actor: Actor, input: TermUpsertInput, now?: Date): Promise<TermAdminRow>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -426,6 +447,58 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				name: row.name,
 				isCurrent: row.id === currentTermId,
 			}));
+		},
+
+		async listTermsAdmin(actor, now = new Date()) {
+			if (!can(actor, "retention:configure")) throw new Error("Not authorized to manage school years.");
+			const currentTermId = await getCurrentTermId(db, now);
+			const rows = await db.select().from(terms).orderBy(desc(terms.startsAt));
+			return rows.map((row: Omit<TermAdminRow, "isCurrent">) => ({ ...row, isCurrent: row.id === currentTermId }));
+		},
+
+		async upsertTerm(actor, input, now = new Date()) {
+			if (!can(actor, "retention:configure")) throw new Error("Not authorized to manage school years.");
+			const name = input.name.trim();
+			if (!name || name.length > 80) throw new Error("School year name is required.");
+			if (input.endsAt <= input.startsAt) throw new Error("The end date must be after the start date.");
+			if (input.probationBelow > input.retainedAt) {
+				throw new Error("Probation threshold cannot be higher than the retained threshold.");
+			}
+
+			// Scans resolve their term by date range and take the latest match, so overlapping
+			// school years would silently file attendance under the wrong one.
+			const overlapping = await db
+				.select({ id: terms.id, name: terms.name })
+				.from(terms)
+				.where(and(lte(terms.startsAt, input.endsAt), gte(terms.endsAt, input.startsAt)));
+			const clash = overlapping.find((row: { id: string }) => row.id !== input.id);
+			if (clash) throw new Error(`These dates overlap "${clash.name}". School years cannot overlap.`);
+
+			const values = {
+				name,
+				retainedAt: input.retainedAt,
+				probationBelow: input.probationBelow,
+				startsAt: input.startsAt,
+				endsAt: input.endsAt,
+			};
+			const isCurrent = input.startsAt <= now && now <= input.endsAt;
+
+			if (input.id === null) {
+				const id = createId("term");
+				await db.insert(terms).values({ id, ...values });
+				await audit.record(actor, { action: "term:create", targetType: "term", targetId: id, category: "retention" });
+				return { id, ...values, isCurrent };
+			}
+
+			const updated = await db.update(terms).set(values).where(eq(terms.id, input.id)).returning();
+			if (updated.length === 0) throw new Error("School year not found.");
+			await audit.record(actor, {
+				action: "term:update",
+				targetType: "term",
+				targetId: input.id,
+				category: "retention",
+			});
+			return { id: input.id, ...values, isCurrent };
 		},
 	};
 }
