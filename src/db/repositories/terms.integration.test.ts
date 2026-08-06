@@ -79,6 +79,24 @@ describe("school year management", () => {
 		expect(renamed.name).toBe("SY 2026-27");
 	});
 
+	it("edits a seed-era school year whose id predates createId", async () => {
+		await env.DB.prepare(
+			"INSERT INTO terms (id, name, retained_at, probation_below, starts_at, ends_at) VALUES (?, ?, ?, ?, ?, ?)",
+		)
+			.bind("term_2026_1", "Term 1 2026", 20, 10, day("2026-06-18").getTime(), day("2026-10-31").getTime())
+			.run();
+
+		const edited = await repo().upsertTerm(
+			admin,
+			{ ...sy2026, id: "term_2026_1", name: "SY 2026-2027", startsAt: day("2026-06-18"), endsAt: day("2026-10-31") },
+			NOW,
+		);
+
+		expect(edited.id).toBe("term_2026_1");
+		expect(edited.name).toBe("SY 2026-2027");
+		expect(await repo().listTermsAdmin(admin, NOW)).toHaveLength(1);
+	});
+
 	it("rejects an end date on or before the start date", async () => {
 		await expect(
 			repo().upsertTerm(admin, { ...sy2026, endsAt: day("2026-08-01") }, NOW),
