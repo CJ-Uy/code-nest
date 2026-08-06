@@ -38,7 +38,14 @@
 		"STORAGE_MODE": "binding",
 		"LOCAL_SQLITE_PATH": "./.local/dev.db",
 		"LOCAL_STORAGE_DIR": "./.local/uploads",
-		"NEXT_PRIVATE_MINIMAL_MODE": "1"
+		"NEXT_PRIVATE_MINIMAL_MODE": "1",
+		// Beta is where unfinished surfaces get exercised, so every flag is on here.
+		"FEATURE_RETENTION": "true",
+		"FEATURE_LIBRARY": "true",
+		"FEATURE_ANNOUNCEMENTS": "true",
+		"FEATURE_NOTIFICATIONS": "true",
+		"FEATURE_SURVEYS": "true",
+		"FEATURE_PUBLIC_SITE": "true"
 	},
 	"d1_databases": [
 		{

@@ -7,11 +7,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { getActor } from "@/server/auth/actor";
 import { can } from "@/server/auth/permissions";
+import { isFeatureEnabled } from "@/server/features";
 import { sampleSurveyAction } from "../actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSurveyDetailPage({ params }: { params: Promise<{ id: string }> }) {
+	// Ahead of the auth check on purpose: a disabled surface should 404 for everyone rather
+	// than bounce to /signin, which would confirm the route exists.
+	if (!isFeatureEnabled("surveys")) notFound();
+
 	const actor = await getActor();
 	if (!actor) redirect("/signin");
 	if (!can(actor, "survey:configure")) redirect("/portal");

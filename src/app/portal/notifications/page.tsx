@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
 import { getRepositories } from "@/db";
@@ -6,11 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/portal/empty-state";
 import { getActor } from "@/server/auth/actor";
+import { isFeatureEnabled } from "@/server/features";
 import { markAllNotificationsReadAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function NotificationsPage() {
+	// Ahead of the auth check on purpose: a disabled surface should 404 for everyone rather
+	// than bounce to /signin, which would confirm the route exists.
+	if (!isFeatureEnabled("notifications")) notFound();
+
 	const actor = await getActor();
 	if (!actor) redirect("/signin");
 

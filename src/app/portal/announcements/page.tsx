@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Check, Megaphone, Pin } from "lucide-react";
 import { getRepositories } from "@/db";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/portal/empty-state";
 import { getActor } from "@/server/auth/actor";
+import { isFeatureEnabled } from "@/server/features";
 import type { AnnouncementFeedItem } from "@/db/repositories/announcements";
 import { markAnnouncementReadAction } from "./actions";
 
@@ -54,6 +55,10 @@ function AnnouncementCard({ item }: { item: AnnouncementFeedItem }) {
 }
 
 export default async function AnnouncementsPage() {
+	// Ahead of the auth check on purpose: a disabled surface should 404 for everyone rather
+	// than bounce to /signin, which would confirm the route exists.
+	if (!isFeatureEnabled("announcements")) notFound();
+
 	const actor = await getActor();
 	if (!actor) redirect("/signin");
 

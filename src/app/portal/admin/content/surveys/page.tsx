@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Plus } from "lucide-react";
 import { getRepositories } from "@/db";
 import { Badge } from "@/components/ui/badge";
@@ -10,11 +10,16 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { getActor } from "@/server/auth/actor";
 import { can } from "@/server/auth/permissions";
+import { isFeatureEnabled } from "@/server/features";
 import { createSurveyAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSurveysPage() {
+	// Ahead of the auth check on purpose: a disabled surface should 404 for everyone rather
+	// than bounce to /signin, which would confirm the route exists.
+	if (!isFeatureEnabled("surveys")) notFound();
+
 	const actor = await getActor();
 	if (!actor) redirect("/signin");
 	if (!can(actor, "survey:configure")) redirect("/portal");

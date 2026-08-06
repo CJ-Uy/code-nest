@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ArticleCard } from "@/components/public/public-page";
@@ -8,10 +9,17 @@ import { PlaceholderBlock } from "@/components/public/placeholder-block";
 import { SiteFooter } from "@/components/public/site-footer";
 import { SiteHeader } from "@/components/public/site-header";
 import { ARTICLES, COMPETENCIES, HERO_STATS, MISSION, ORG, VISION, WHAT_IS_OD } from "@/content/site";
+import { isFeatureEnabled } from "@/server/features";
 
-export const dynamic = "force-static";
+const LANDING_PAGE_URL = "https://sites.google.com/view/ateneo-code/landing";
+
+// The flag lives in the Worker env, so this cannot be force-static any more. The page reads
+// no database and renders from a content module, so dynamic rendering only costs CDN caching.
+export const dynamic = "force-dynamic";
 
 export default function Home() {
+	if (!isFeatureEnabled("publicSite")) redirect(LANDING_PAGE_URL);
+
 	return (
 		<div className="min-h-screen bg-background text-foreground">
 			<SiteHeader />

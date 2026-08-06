@@ -5,6 +5,17 @@ export const appEnvSchema = z.enum(["local", "shared", "production"]);
 export const deployEnvSchema = z.enum(["dev", "prod"]);
 export const storageModeSchema = z.enum(["local", "api", "r2-s3", "binding"]);
 
+/**
+ * Fail closed. Only the literal string "true" enables a surface, so a missing var, a typo,
+ * a half-applied deploy, or a boolean that survived a JSON round trip as "True" all leave
+ * the feature off. Exposing an unfinished page is the expensive mistake; hiding a finished
+ * one is a one-line fix.
+ */
+export const featureFlagSchema = z
+	.string()
+	.optional()
+	.transform((value) => value === "true");
+
 const rawEnvSchema = z.object({
 	APP_ENV: appEnvSchema.default("local"),
 	DEPLOY_ENV: deployEnvSchema.optional(),
@@ -27,6 +38,12 @@ const rawEnvSchema = z.object({
 	R2_ENDPOINT: z.string().optional(),
 	LOCAL_SQLITE_PATH: z.string().default("./.local/dev.db"),
 	LOCAL_STORAGE_DIR: z.string().default("./.local/uploads"),
+	FEATURE_RETENTION: featureFlagSchema,
+	FEATURE_LIBRARY: featureFlagSchema,
+	FEATURE_ANNOUNCEMENTS: featureFlagSchema,
+	FEATURE_NOTIFICATIONS: featureFlagSchema,
+	FEATURE_SURVEYS: featureFlagSchema,
+	FEATURE_PUBLIC_SITE: featureFlagSchema,
 });
 
 export type AppConfig = z.infer<typeof rawEnvSchema>;
@@ -70,6 +87,12 @@ export function getAppConfig(): AppConfig {
 		R2_ENDPOINT: runtimeEnvValue("R2_ENDPOINT"),
 		LOCAL_SQLITE_PATH: runtimeEnvValue("LOCAL_SQLITE_PATH"),
 		LOCAL_STORAGE_DIR: runtimeEnvValue("LOCAL_STORAGE_DIR"),
+		FEATURE_RETENTION: runtimeEnvValue("FEATURE_RETENTION"),
+		FEATURE_LIBRARY: runtimeEnvValue("FEATURE_LIBRARY"),
+		FEATURE_ANNOUNCEMENTS: runtimeEnvValue("FEATURE_ANNOUNCEMENTS"),
+		FEATURE_NOTIFICATIONS: runtimeEnvValue("FEATURE_NOTIFICATIONS"),
+		FEATURE_SURVEYS: runtimeEnvValue("FEATURE_SURVEYS"),
+		FEATURE_PUBLIC_SITE: runtimeEnvValue("FEATURE_PUBLIC_SITE"),
 	});
 
 	const issues: string[] = [];

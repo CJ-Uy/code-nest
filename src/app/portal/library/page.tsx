@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { BookOpen, Clock, Lock, Search } from "lucide-react";
 import { getRepositories } from "@/db";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/portal/empty-state";
 import { getActor } from "@/server/auth/actor";
+import { isFeatureEnabled } from "@/server/features";
 import type { LibraryConfidentiality } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,10 @@ export default async function LibraryPage({
 }: {
 	searchParams: Promise<{ category?: string; q?: string }>;
 }) {
+	// Ahead of the auth check on purpose: a disabled surface should 404 for everyone rather
+	// than bounce to /signin, which would confirm the route exists.
+	if (!isFeatureEnabled("library")) notFound();
+
 	const actor = await getActor();
 	if (!actor) redirect("/signin");
 	const params = await searchParams;

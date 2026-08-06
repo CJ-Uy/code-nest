@@ -1,10 +1,14 @@
 import { getRepositories } from "@/db";
 import { submitSurveyResponseInputSchema } from "@/db/types";
 import { getAppConfig } from "@/server/env";
+import { isFeatureEnabled } from "@/server/features";
 import { assertSameOrigin } from "@/server/http/origin";
 import { proxySharedApiRequest } from "@/server/shared-api";
 
 export async function POST(request: Request) {
+	// Fail before any repository access, so a disabled survey surface cannot be written to.
+	if (!isFeatureEnabled("surveys")) return new Response(null, { status: 404 });
+
 	const config = getAppConfig();
 	try {
 		assertSameOrigin(request, config.APP_BASE_URL);
