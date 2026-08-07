@@ -4,7 +4,14 @@
 
 **Goal:** Collapse the two incompatible D1 migration histories into one trunk that every environment shares, so promotion is `wrangler d1 migrations apply` with no per-release reconciliation.
 
-**Architecture:** Production's history becomes the trunk; beta's gives way, because production holds live data and cannot be rewritten. One authored migration, `0004_unify_schema.sql`, carries a database from production's `0003` state to what `src/db/schema.ts` describes. It is authored rather than generated because `drizzle-kit generate` emits no DML and nine load-bearing seed and backfill statements would be lost, and because SQLite cannot alter nullability or a foreign key, so table rebuilds are unavoidable and are reviewed rather than accepted unread. Correctness is enforced by two tests in the suite: one comparing a replayed trunk against a rendered `schema.ts`, one asserting data survives.
+**Architecture:** Production's history becomes the trunk; beta's gives way, because production holds live data and cannot be rewritten. One authored migration, `0004_unify_schema.sql`, carries a database from production's `0003` state to what `src/db/schema.ts` describes. It is authored rather than generated because `drizzle-kit generate` emits no DML and nine load-bearing seed and backfill statements would be lost, and because SQLite cannot alter nullability or a foreign key, so table rebuilds are unavoidable and are reviewed rather than accepted unread. Correctness is enforced by a structural comparison of a replayed trunk against a rendered `schema.ts`, plus a preservation check that data survives.
+
+**Revision 3, 2026-08-07.** Revision 2 was reviewed by executing its own gates, and two failed:
+
+- The convergence check compared `sqlite_master` DDL as text. It cannot converge: `ALTER TABLE ADD COLUMN` appends to the end of a table while a from-scratch render uses declaration order, so `crs_events` holds the same 22 columns in a different order. Text reported 8 differing tables that were identical. Task 2 now compares `PRAGMA` output keyed by column name, which reduced the same comparison to 1 real difference.
+- The reset script relied on `PRAGMA defer_foreign_keys`, which defers the constraint check but not the cascade action, so 2 of 53 drops failed with `no such table`. `PRAGMA foreign_keys = OFF` fixes it locally but D1 rejects that pragma outright. Tasks 5 and 6 now repeat the drop pass until the database is empty, which converged in two passes.
+
+Both fixes were verified by running them, not by reasoning about them.
 
 **Tech Stack:** Cloudflare D1, Wrangler 4.98, Drizzle ORM 0.45, drizzle-kit 0.31, better-sqlite3 12 (local verification only), Vitest with `@cloudflare/vitest-pool-workers`, TypeScript, tsx.
 
@@ -174,7 +181,11 @@ Deleting a member clears authorship instead of deleting their pins."
 
 ### Task 2: Convergence and preservation tests
 
-These are the gate. Everything after depends on them, and they are why an authored migration is safe.
+These are the gate. Everything after depends on them.
+
+**Compare structure, not DDL text.** Verified empirically on 2026-08-07, and the naive approach fails: `ALTER TABLE ADD COLUMN` appends columns to the end of a table, while a from-scratch render emits them in `schema.ts` declaration order. `crs_events` ends up with the same 22 columns in a completely different order. Comparing `sqlite_master.sql` as text reported 8 differing tables that were in fact identical, so a text-based gate never passes and Task 3 would loop forever. Comparing `PRAGMA` output keyed by column name reduced the same comparison to 1 genuine difference.
+
+SQLite has no boolean type, so hand-written `DEFAULT 0` and a rendered `DEFAULT false` are the same value. Normalise `true` to `1` and `false` to `0`, or four columns report false differences.
 
 **Files:**
 - Create: `scripts/schema-compare.ts` (pure, zero imports)
@@ -183,8 +194,9 @@ These are the gate. Everything after depends on them, and they are why an author
 - Create: `scripts/verify-trunk.ts`
 
 **Interfaces:**
-- Produces from `scripts/schema-compare.ts`: `normalizeDdl(sql: string): string`, `compareSchemas(a: SchemaObject[], b: SchemaObject[]): SchemaDiff`, with `SchemaObject = { type: string; name: string; sql: string }` and `SchemaDiff = { onlyInA: string[]; onlyInB: string[]; differing: Array<{ key: string; a: string; b: string }> }`.
-- Produces from `scripts/sqlite-schema.ts`: `applyMigrations(db, dir)`, `readSchema(db): SchemaObject[]`, `openScratch(file)`.
+- Produces from `scripts/schema-compare.ts`: `normalizeDefault(value: string | null): string | null` and `compareSnapshots(a: DbSnapshot, b: DbSnapshot): string[]`, returning human-readable problems, empty when converged.
+- `DbSnapshot = { tables: Record<string, { cols: Record<string, ColumnSpec>; fks: string[] }>; indexes: Record<string, { table: string; unique: number; cols: string[] }> }` and `ColumnSpec = { type: string; notnull: number; dflt: string | null; pk: number }`.
+- Produces from `scripts/sqlite-schema.ts`: `applyMigrations(db, dir)`, `snapshot(db): DbSnapshot`, `openScratch(file)`.
 - Consumed by: Task 3.
 
 - [ ] **Step 1: Write the failing test**
@@ -193,59 +205,62 @@ Create `scripts/schema-compare.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
-import { compareSchemas, normalizeDdl } from "./schema-compare";
+import { compareSnapshots, normalizeDefault, type DbSnapshot } from "./schema-compare";
 
-describe("normalizeDdl", () => {
-	it("ignores formatting sqlite does not care about", () => {
-		expect(normalizeDdl("CREATE TABLE `a` (x  INTEGER,\n y TEXT)")).toBe(
-			normalizeDdl("create table a (x integer, y text)"),
-		);
+const col = (over = {}) => ({ type: "text", notnull: 0, dflt: null as string | null, pk: 0, ...over });
+const snap = (tables: DbSnapshot["tables"], indexes: DbSnapshot["indexes"] = {}): DbSnapshot => ({ tables, indexes });
+
+describe("normalizeDefault", () => {
+	it("treats sqlite boolean keywords as their integer values", () => {
+		expect(normalizeDefault("false")).toBe(normalizeDefault("0"));
+		expect(normalizeDefault("true")).toBe(normalizeDefault("1"));
 	});
 
-	it("keeps nullability visible", () => {
-		expect(normalizeDdl("CREATE TABLE a (x INTEGER NOT NULL)")).not.toBe(normalizeDdl("CREATE TABLE a (x INTEGER)"));
+	it("strips the parentheses sqlite adds around expressions", () => {
+		expect(normalizeDefault("(unixepoch() * 1000)")).toBe(normalizeDefault("unixepoch()*1000"));
 	});
 
-	it("keeps foreign key actions visible", () => {
-		expect(normalizeDdl("FOREIGN KEY (a) REFERENCES b(id) ON DELETE CASCADE")).not.toBe(
-			normalizeDdl("FOREIGN KEY (a) REFERENCES b(id) ON DELETE SET NULL"),
-		);
-	});
-
-	it("does not fold case inside string literals", () => {
-		// The previous normaliser lowercased everything and made these equal,
-		// which would have hidden a real default-value difference.
-		expect(normalizeDdl("CREATE TABLE a (t TEXT DEFAULT 'CODE')")).not.toBe(
-			normalizeDdl("CREATE TABLE a (t TEXT DEFAULT 'code')"),
-		);
-	});
-
-	it("does not collapse whitespace inside string literals", () => {
-		expect(normalizeDdl("CREATE TABLE a (t TEXT DEFAULT 'x  y')")).not.toBe(
-			normalizeDdl("CREATE TABLE a (t TEXT DEFAULT 'x y')"),
-		);
+	it("keeps different values apart", () => {
+		expect(normalizeDefault("'CODE'")).not.toBe(normalizeDefault("'other'"));
+		expect(normalizeDefault(null)).toBeNull();
 	});
 });
 
-describe("compareSchemas", () => {
-	const base = [{ type: "table", name: "a", sql: "CREATE TABLE a (x INTEGER)" }];
-
-	it("reports nothing for identical schemas", () => {
-		const diff = compareSchemas(base, [...base]);
-		expect(diff.onlyInA).toEqual([]);
-		expect(diff.onlyInB).toEqual([]);
-		expect(diff.differing).toEqual([]);
+describe("compareSnapshots", () => {
+	it("ignores column order, which ALTER ADD COLUMN always changes", () => {
+		const a = snap({ t: { cols: { x: col(), y: col() }, fks: [] } });
+		const b = snap({ t: { cols: { y: col(), x: col() }, fks: [] } });
+		expect(compareSnapshots(a, b)).toEqual([]);
 	});
 
-	it("reports objects missing from each side", () => {
-		const diff = compareSchemas(base, [{ type: "table", name: "b", sql: "CREATE TABLE b (y TEXT)" }]);
-		expect(diff.onlyInA).toEqual(["table:a"]);
-		expect(diff.onlyInB).toEqual(["table:b"]);
+	it("reports a column present on only one side", () => {
+		const a = snap({ t: { cols: { x: col() }, fks: [] } });
+		const b = snap({ t: { cols: { x: col(), y: col() }, fks: [] } });
+		expect(compareSnapshots(a, b).join()).toContain("t.y");
 	});
 
-	it("reports a changed definition for a shared name", () => {
-		const diff = compareSchemas(base, [{ type: "table", name: "a", sql: "CREATE TABLE a (x TEXT)" }]);
-		expect(diff.differing.map((row) => row.key)).toEqual(["table:a"]);
+	it("reports a nullability difference", () => {
+		const a = snap({ t: { cols: { x: col({ notnull: 1 }) }, fks: [] } });
+		const b = snap({ t: { cols: { x: col({ notnull: 0 }) }, fks: [] } });
+		expect(compareSnapshots(a, b).join()).toContain("t.x");
+	});
+
+	it("reports a foreign key action difference", () => {
+		const a = snap({ t: { cols: { x: col() }, fks: ["x->m.id del=SET NULL upd=NO ACTION"] } });
+		const b = snap({ t: { cols: { x: col() }, fks: ["x->m.id del=CASCADE upd=NO ACTION"] } });
+		expect(compareSnapshots(a, b).join()).toContain("t FKs differ");
+	});
+
+	it("reports a missing index", () => {
+		const a = snap({ t: { cols: { x: col() }, fks: [] } }, {});
+		const b = snap({ t: { cols: { x: col() }, fks: [] } }, { i: { table: "t", unique: 1, cols: ["x"] } });
+		expect(compareSnapshots(a, b).join()).toContain("i");
+	});
+
+	it("reports a table present on only one side", () => {
+		const a = snap({ t: { cols: { x: col() }, fks: [] } });
+		const b = snap({});
+		expect(compareSnapshots(a, b).join()).toContain("t");
 	});
 });
 ```
@@ -260,56 +275,76 @@ Expected: FAIL, cannot resolve `./schema-compare`.
 Create `scripts/schema-compare.ts`. It imports nothing, so the Workers pool can load it.
 
 ```ts
-export type SchemaObject = { type: string; name: string; sql: string };
-export type SchemaDiff = {
-	onlyInA: string[];
-	onlyInB: string[];
-	differing: Array<{ key: string; a: string; b: string }>;
+export type ColumnSpec = { type: string; notnull: number; dflt: string | null; pk: number };
+export type DbSnapshot = {
+	tables: Record<string, { cols: Record<string, ColumnSpec>; fks: string[] }>;
+	indexes: Record<string, { table: string; unique: number; cols: string[] }>;
 };
 
 /**
- * Collapses formatting sqlite does not distinguish, while leaving quoted string
- * literals untouched. Folding case or whitespace inside a literal would make
- * DEFAULT 'CODE' and DEFAULT 'code' compare equal, which is a real difference.
+ * sqlite stores a default as the literal text it was declared with, so the same value
+ * arrives spelled differently depending on whether the column came from hand-written SQL
+ * or a drizzle render. sqlite has no boolean type: true and false are keywords for 1 and
+ * 0, and it wraps expression defaults in parentheses.
  */
-export function normalizeDdl(sql: string): string {
-	const literals: string[] = [];
-	// Park every single-quoted literal, including '' escapes, before touching case.
-	const parked = (sql ?? "").replace(/'(?:[^']|'')*'/g, (match) => {
-		literals.push(match);
-		return `\u0000${literals.length - 1}\u0000`;
-	});
-	const folded = parked
-		.replace(/`/g, "")
-		.replace(/"/g, "")
-		.replace(/\s+/g, " ")
-		.replace(/\s*,\s*/g, ",")
-		.replace(/\(\s*/g, "(")
-		.replace(/\s*\)/g, ")")
-		.trim()
-		.toLowerCase();
-	return folded.replace(/\u0000(\d+)\u0000/g, (_, index) => literals[Number(index)]);
+export function normalizeDefault(value: string | null): string | null {
+	if (value === null || value === undefined) return null;
+	let v = String(value).replace(/\s+/g, "").replace(/^\((.*)\)$/, "$1").toLowerCase();
+	if (v === "true") v = "1";
+	if (v === "false") v = "0";
+	return v;
 }
 
-export function compareSchemas(a: SchemaObject[], b: SchemaObject[]): SchemaDiff {
-	const key = (row: SchemaObject) => `${row.type}:${row.name}`;
-	const mapA = new Map(a.map((row) => [key(row), normalizeDdl(row.sql)]));
-	const mapB = new Map(b.map((row) => [key(row), normalizeDdl(row.sql)]));
-	return {
-		onlyInA: [...mapA.keys()].filter((k) => !mapB.has(k)).sort(),
-		onlyInB: [...mapB.keys()].filter((k) => !mapA.has(k)).sort(),
-		differing: [...mapA.keys()]
-			.filter((k) => mapB.has(k) && mapA.get(k) !== mapB.get(k))
-			.sort()
-			.map((k) => ({ key: k, a: mapA.get(k)!, b: mapB.get(k)! })),
-	};
+/**
+ * Compares structure rather than DDL text. Column order is deliberately ignored: a column
+ * added by ALTER TABLE lands at the end of the table while a from-scratch render places it
+ * in declaration order, so one schema has two equally valid texts.
+ */
+export function compareSnapshots(a: DbSnapshot, b: DbSnapshot): string[] {
+	const problems: string[] = [];
+	const spec = (c: ColumnSpec) => JSON.stringify({ ...c, dflt: normalizeDefault(c.dflt) });
+
+	for (const table of [...new Set([...Object.keys(a.tables), ...Object.keys(b.tables)])].sort()) {
+		const ta = a.tables[table];
+		const tb = b.tables[table];
+		if (!ta) {
+			problems.push(`table only in B: ${table}`);
+			continue;
+		}
+		if (!tb) {
+			problems.push(`table only in A: ${table}`);
+			continue;
+		}
+		for (const name of [...new Set([...Object.keys(ta.cols), ...Object.keys(tb.cols)])].sort()) {
+			if (!ta.cols[name]) problems.push(`${table}.${name} only in B`);
+			else if (!tb.cols[name]) problems.push(`${table}.${name} only in A`);
+			else if (spec(ta.cols[name]) !== spec(tb.cols[name])) {
+				problems.push(`${table}.${name} differs: A=${spec(ta.cols[name])} B=${spec(tb.cols[name])}`);
+			}
+		}
+		if (JSON.stringify([...ta.fks].sort()) !== JSON.stringify([...tb.fks].sort())) {
+			problems.push(`${table} FKs differ: A=[${[...ta.fks].sort().join(" | ")}] B=[${[...tb.fks].sort().join(" | ")}]`);
+		}
+	}
+
+	for (const name of [...new Set([...Object.keys(a.indexes), ...Object.keys(b.indexes)])].sort()) {
+		const ia = a.indexes[name];
+		const ib = b.indexes[name];
+		if (!ia) problems.push(`index only in B: ${name}`);
+		else if (!ib) problems.push(`index only in A: ${name}`);
+		else if (JSON.stringify(ia) !== JSON.stringify(ib)) {
+			problems.push(`index ${name} differs: A=${JSON.stringify(ia)} B=${JSON.stringify(ib)}`);
+		}
+	}
+
+	return problems;
 }
 ```
 
 - [ ] **Step 4: Run the test and watch it pass**
 
 Run: `pnpm exec vitest run scripts/schema-compare.test.ts`
-Expected: PASS, 8 tests. A failure resolving `node:fs` means an import leaked in.
+Expected: PASS, 9 tests. A failure resolving `node:fs` means an import leaked in.
 
 - [ ] **Step 5: Implement the sqlite side**
 
@@ -319,15 +354,17 @@ Create `scripts/sqlite-schema.ts`. Run only through `tsx`, never imported by a t
 import Database from "better-sqlite3";
 import { readdirSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
-import type { SchemaObject } from "./schema-compare";
+import type { DbSnapshot } from "./schema-compare";
 
-export function openScratch(file: string) {
+type Db = InstanceType<typeof Database>;
+
+export function openScratch(file: string): Db {
 	rmSync(file, { force: true });
 	return new Database(file);
 }
 
 /** Applies every .sql file in order, the same way wrangler d1 migrations apply does. */
-export function applyMigrations(db: InstanceType<typeof Database>, dir: string): void {
+export function applyMigrations(db: Db, dir: string): void {
 	for (const file of readdirSync(dir).filter((f) => f.endsWith(".sql")).sort()) {
 		const sql = readFileSync(path.join(dir, file), "utf8");
 		for (const statement of sql.split("--> statement-breakpoint")) {
@@ -342,87 +379,127 @@ export function applyMigrations(db: InstanceType<typeof Database>, dir: string):
 	}
 }
 
-export function readSchema(db: InstanceType<typeof Database>): SchemaObject[] {
-	return db
-		.prepare("SELECT type, name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' AND sql IS NOT NULL ORDER BY type, name")
-		.all() as SchemaObject[];
+export function snapshot(db: Db): DbSnapshot {
+	const out: DbSnapshot = { tables: {}, indexes: {} };
+	const tables = db
+		.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+		.all() as Array<{ name: string }>;
+	for (const { name } of tables) {
+		const cols: DbSnapshot["tables"][string]["cols"] = {};
+		const info = db.prepare(`PRAGMA table_info("${name}")`).all() as Array<{
+			name: string;
+			type: string;
+			notnull: number;
+			dflt_value: string | null;
+			pk: number;
+		}>;
+		for (const row of info) {
+			cols[row.name] = { type: row.type.toLowerCase(), notnull: row.notnull, dflt: row.dflt_value, pk: row.pk > 0 ? 1 : 0 };
+		}
+		const fkRows = db.prepare(`PRAGMA foreign_key_list("${name}")`).all() as Array<{
+			from: string;
+			table: string;
+			to: string;
+			on_delete: string;
+			on_update: string;
+		}>;
+		const fks = fkRows.map((f) => `${f.from}->${f.table}.${f.to} del=${f.on_delete} upd=${f.on_update}`).sort();
+		out.tables[name] = { cols, fks };
+	}
+	const indexes = db
+		.prepare("SELECT name, tbl_name FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%'")
+		.all() as Array<{ name: string; tbl_name: string }>;
+	for (const { name, tbl_name } of indexes) {
+		const listed = (db.prepare(`PRAGMA index_list("${tbl_name}")`).all() as Array<{ name: string; unique: number }>).find(
+			(i) => i.name === name,
+		);
+		const cols = (db.prepare(`PRAGMA index_info("${name}")`).all() as Array<{ name: string }>).map((c) => c.name);
+		out.indexes[name] = { table: tbl_name, unique: listed ? listed.unique : 0, cols };
+	}
+	return out;
 }
 ```
 
 - [ ] **Step 6: Implement the trunk verifier**
 
-Create `scripts/verify-trunk.ts`. This is the non-circular check: side A is the replayed trunk, side B is `schema.ts` rendered from scratch by drizzle-kit. Neither derives from the other.
+Create `scripts/verify-trunk.ts`. Side A is the replayed trunk, side B is `schema.ts` rendered from scratch. Neither derives from the other.
 
 ```ts
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { compareSchemas } from "./schema-compare";
-import { applyMigrations, openScratch, readSchema } from "./sqlite-schema";
+import { compareSnapshots } from "./schema-compare";
+import { applyMigrations, openScratch, snapshot } from "./sqlite-schema";
 
 const repo = process.cwd();
 const work = mkdtempSync(path.join(tmpdir(), "trunk-"));
 
-// Side A: replay the trunk exactly as D1 would.
 const trunkDb = openScratch(path.join(work, "trunk.db"));
 applyMigrations(trunkDb, path.join(repo, "drizzle/migrations"));
-const trunk = readSchema(trunkDb);
+const trunk = snapshot(trunkDb);
 trunkDb.close();
 
-// Side B: render schema.ts from scratch. drizzle-kit writes a from-empty
-// migration when it has no snapshot, which is exactly the target schema.
+// drizzle-kit writes a from-empty migration when it has no snapshot, which is exactly
+// the target schema described by schema.ts.
 const renderDir = path.join(work, "render");
-writeFileSync(
-	path.join(work, "drizzle.render.config.ts"),
-	`import { defineConfig } from "drizzle-kit";\nexport default defineConfig({ schema: "./src/db/schema.ts", out: ${JSON.stringify(renderDir)}, dialect: "sqlite" });\n`,
-);
-execFileSync("pnpm", ["exec", "drizzle-kit", "generate", "--config", path.join(work, "drizzle.render.config.ts")], {
+const config = `import { defineConfig } from "drizzle-kit";\nexport default defineConfig({ schema: "./src/db/schema.ts", out: ${JSON.stringify(renderDir)}, dialect: "sqlite" });\n`;
+writeFileSync(path.join(work, "render.config.ts"), config);
+execFileSync("pnpm", ["exec", "drizzle-kit", "generate", "--config", path.join(work, "render.config.ts")], {
 	cwd: repo,
 	stdio: "pipe",
 	shell: true,
 });
 const renderDb = openScratch(path.join(work, "render.db"));
 applyMigrations(renderDb, renderDir);
-const target = readSchema(renderDb);
+const target = snapshot(renderDb);
 renderDb.close();
 
-const diff = compareSchemas(trunk, target);
+const problems = compareSnapshots(trunk, target);
 rmSync(work, { recursive: true, force: true });
 
-const problems = diff.onlyInA.length + diff.onlyInB.length + diff.differing.length;
-console.log(`trunk objects: ${trunk.length}, target objects: ${target.length}`);
-if (problems === 0) {
+console.log(`trunk tables: ${Object.keys(trunk.tables).length}, target tables: ${Object.keys(target.tables).length}`);
+if (problems.length === 0) {
 	console.log("CONVERGED: the trunk and schema.ts describe the same database.");
 	process.exit(0);
 }
-console.error(`NOT CONVERGED (${problems})`);
-for (const key of diff.onlyInA) console.error(`  only in trunk:     ${key}`);
-for (const key of diff.onlyInB) console.error(`  only in schema.ts: ${key}`);
-for (const row of diff.differing) {
-	console.error(`  differs: ${row.key}\n    trunk:     ${row.a}\n    schema.ts: ${row.b}`);
-}
+console.error(`NOT CONVERGED (${problems.length})`);
+for (const problem of problems) console.error("  " + problem);
 process.exit(1);
 ```
 
 - [ ] **Step 7: Confirm the suite still passes**
 
 Run: `pnpm test`
-Expected: 467 tests pass, the 459 from Task 1 plus 8 here. `vitest.config.mts:43` already includes `scripts/**/*.test.ts`.
+Expected: 468 tests pass, the 459 from Task 1 plus 9 here. `vitest.config.mts:43` already includes `scripts/**/*.test.ts`.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 8: Calibrate the comparer against today's beta lineage**
+
+Before trusting it on the trunk, point it at the current `drizzle/migrations` and confirm it behaves. Run on 2026-08-07 it reported exactly one problem: `index only in B: point_types_key_unique`, a real unique index on `point_types.key` that `schema.ts` declares and beta's lineage never created.
+
+Run: `pnpm exec tsx scripts/verify-trunk.ts`
+Expected: `NOT CONVERGED (1)` naming `point_types_key_unique`, and nothing else.
+
+More problems than that means the comparer is too strict and will block Task 3 for benign reasons. Zero problems means it is too loose, because that index really is missing. Either outcome is a stop: fix the comparer before continuing, since Task 3 depends entirely on this being trustworthy.
+
+- [ ] **Step 9: Commit**
 
 ```bash
 git add scripts/schema-compare.ts scripts/schema-compare.test.ts scripts/sqlite-schema.ts scripts/verify-trunk.ts
-git commit -m "test(db): add a non-circular trunk convergence check
+git commit -m "test(db): add a structural trunk convergence check
 
 Nothing compared the migrations to schema.ts, which is how the bridge
-drifted until staging lacked a column schema.ts declared. This replays the
-trunk into one database, renders schema.ts from scratch into another, and
-diffs them. Neither side derives from the other.
+drifted until staging lacked a column schema.ts declared.
 
-The normaliser parks quoted literals before folding case, so DEFAULT
-'CODE' and DEFAULT 'code' no longer compare equal."
+The check compares PRAGMA output keyed by column name, not sqlite_master
+text. Text cannot work here: ALTER TABLE ADD COLUMN appends to the end of
+a table while a from-scratch render uses declaration order, so crs_events
+holds the same 22 columns in a different order. Text reported 8 differing
+tables that were identical; structure reports 1 real difference, a unique
+index on point_types.key that beta never created.
+
+sqlite has no boolean type, so DEFAULT 0 and DEFAULT false normalise to
+the same value."
 ```
 
 ---
@@ -750,6 +827,12 @@ Expected: a plausible table count. A throw means stop; there is no usable backup
 
 - [ ] **Step 3: Build the reset script**
 
+`DROP TABLE` with foreign keys enforced performs an implicit `DELETE FROM` that cascades. If a table dropped earlier in the batch is the parent of one still present, the cascade resolves into a table that no longer exists and the statement fails with `no such table`. Verified locally on 2026-08-07: 2 of 53 drops failed this way.
+
+`PRAGMA defer_foreign_keys = true` does not help, because it defers the constraint *check*, not the cascade *action*. `PRAGMA foreign_keys = OFF` does fix it locally but **D1 rejects that pragma** with `not authorized to access this service [code: 7403]`, also verified.
+
+The fix is to repeat the pass. Each pass drops every table whose dependents are already gone, so the set shrinks until empty. Locally this converged in two passes, 51 tables then 2. Treat two or three passes as normal, not as a fault.
+
 ```bash
 pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --json --command "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'" > .local/staged-tables.json
 node -e "
@@ -762,15 +845,23 @@ console.log('includes d1_migrations:',names.includes('d1_migrations'));
 cat .local/reset-staged.sql
 ```
 
-Expected: `includes d1_migrations: true`. If false, the replay in Step 5 will skip every migration; stop and fix.
+Expected: `includes d1_migrations: true`. If false, the replay in Step 5 skips every migration; stop and fix.
 
-- [ ] **Step 4: Apply the reset, with approval**
+- [ ] **Step 4: Apply the reset, with approval, until the database is empty**
 
 Show and wait for approval. This destroys every table in `code-nest-staged-db`.
 
 ```bash
 pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --file .local/reset-staged.sql
 ```
+
+Some drops are expected to fail on the first pass. Now count what survived:
+
+```bash
+pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --command "SELECT COUNT(*) AS remaining FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+```
+
+If `remaining` is greater than zero, repeat Step 3 to regenerate the script from the surviving tables, then apply it again with approval. Repeat until `remaining` is zero. Stop and report if it has not reached zero after four passes, since that means something other than cascade ordering is holding a table open.
 
 - [ ] **Step 5: Replay to production's state**
 
@@ -858,14 +949,19 @@ pnpm exec wrangler d1 export DB --config wrangler.beta.jsonc --remote --output .
 
 Same check as Task 5 Step 2, against the beta file.
 
-- [ ] **Step 3: Build and apply the reset, with approval**
+- [ ] **Step 3: Build and apply the reset, with approval, until empty**
+
+Same repeated-pass procedure as Task 5 Step 3 and 4, and for the same reason: a cascade into an already-dropped parent fails, `defer_foreign_keys` does not prevent it, and D1 rejects `PRAGMA foreign_keys = OFF`.
 
 ```bash
 pnpm exec wrangler d1 execute DB --config wrangler.beta.jsonc --remote --json --command "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'" > .local/beta-tables.json
 node -e "
 const r=require('./.local/beta-tables.json');
 const names=r[0].results.map(x=>x.name);
-require('fs').writeFileSync('.local/reset-beta.sql','PRAGMA defer_foreign_keys = true;\n'+names.map(n=>'DROP TABLE IF EXISTS \"'+n+'\";').join('\n')+'\n');
+require('fs').writeFileSync('.local/reset-beta.sql','PRAGMA defer_foreign_keys = true;
+'+names.map(n=>'DROP TABLE IF EXISTS \"'+n+'\";').join('
+')+'
+');
 console.log('tables to drop:',names.length,'includes d1_migrations:',names.includes('d1_migrations'));
 "
 ```
@@ -874,6 +970,12 @@ Show and wait for approval:
 
 ```bash
 pnpm exec wrangler d1 execute DB --config wrangler.beta.jsonc --remote --file .local/reset-beta.sql
+```
+
+Then count survivors and repeat until zero:
+
+```bash
+pnpm exec wrangler d1 execute DB --config wrangler.beta.jsonc --remote --command "SELECT COUNT(*) AS remaining FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
 ```
 
 - [ ] **Step 4: Replay the full trunk, with approval**
