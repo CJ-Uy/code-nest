@@ -2,59 +2,100 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Collapse the two incompatible D1 migration histories into one trunk that every environment shares, so promotion is `wrangler d1 migrations apply` with no hand-written reconciliation.
+**Goal:** Collapse the two incompatible D1 migration histories into one trunk that every environment shares, so promotion is `wrangler d1 migrations apply` with no per-release reconciliation.
 
-**Architecture:** Production's history becomes the trunk because production holds live data and cannot be rewritten. Beta's nineteen migrations are replaced by a single migration generated from `src/db/schema.ts`, which guarantees the trunk cannot drift from the source of truth the way the hand-written bridge did. Staging is reset to production's exact state and then receives that generated migration as a true rehearsal; beta is wiped and replayed onto the same trunk.
+**Architecture:** Production's history becomes the trunk; beta's gives way, because production holds live data and cannot be rewritten. One authored migration, `0004_unify_schema.sql`, carries a database from production's `0003` state to what `src/db/schema.ts` describes. It is authored rather than generated because `drizzle-kit generate` emits no DML and nine load-bearing seed and backfill statements would be lost, and because SQLite cannot alter nullability or a foreign key, so table rebuilds are unavoidable and are reviewed rather than accepted unread. Correctness is enforced by two tests in the suite: one comparing a replayed trunk against a rendered `schema.ts`, one asserting data survives.
 
-**Tech Stack:** Cloudflare D1, Wrangler 4, Drizzle ORM 0.45, drizzle-kit 0.31, better-sqlite3 (local verification only), Vitest with `@cloudflare/vitest-pool-workers`, TypeScript, tsx.
+**Tech Stack:** Cloudflare D1, Wrangler 4.98, Drizzle ORM 0.45, drizzle-kit 0.31, better-sqlite3 12 (local verification only), Vitest with `@cloudflare/vitest-pool-workers`, TypeScript, tsx.
+
+**Spec:** `docs/superpowers/specs/2026-08-07-migration-lineage-unification-design.md`. Read its ten locked decisions before starting.
 
 ## Global Constraints
 
 - Work in `C:\Users\charl\Documents\GitHub\code nest` on the `beta` branch.
 - Show the exact `pnpm exec wrangler` command and wait for approval before every remote D1 export, reset, migration, seed or delete. This applies to staging as well as production.
 - Do not touch `code-nest-prod-db` in this plan. No production migration, no production mutation.
-- Never drop or rewrite an existing production short link or analytics row.
-- Do not copy production member or content data into staging or beta.
-- Take a `wrangler d1 export` backup immediately before any destructive remote operation, and record the output path.
+- Take a `wrangler d1 export` backup immediately before any destructive remote operation. Backup filenames include a UTC timestamp and are never reused, so a retry cannot overwrite the only good copy.
+- Every test must pass before any remote database is touched.
+- Never write production data into staging or beta.
 - Avoid em dashes in code, comments, UI copy, docs, commits and README text.
-- Only the literal string `"true"` enables a feature flag; this plan does not change any flag value.
+- Only the literal string `"true"` enables a feature flag; this plan changes no flag value.
+- Tests run in the Cloudflare Workers pool, which cannot resolve `node:fs` or load `better-sqlite3`. A module that imports either at top level cannot be imported by a test. Keep pure logic in its own module.
+- D1 rejects a `UNION ALL` of many counts with `SQLITE_ERROR 7500`. Use scalar subqueries: `SELECT (SELECT COUNT(*) FROM a) AS a, (SELECT COUNT(*) FROM b) AS b`.
 - Run `graphify update .` after source changes.
-- The full suite must pass before any remote database is touched.
+
+## Measured starting state, 2026-08-07
+
+Verified against the live databases. The plan depends on these; re-check if a day or more has passed.
+
+| | production | staging |
+| --- | --- | --- |
+| `announcements`, `point_awards`, `articles`, `comments`, `lists`, `list_items`, `topics`, `team_members`, `favorites`, `consultancy_teams` | 0 rows each | 0 rows each |
+| `nav_pins` | not checked | 0 |
+| `members` / `audit_logs` / `short_links` / `crs_events` | not checked | 7 / 29 / 1 / 3 |
+| `d1_migrations` | `0000`-`0003` | `0000`-`0003` plus `0004_beta_release_bridge` |
+
+## What 0004 must do
+
+Derived by replaying release `0000`-`0003` and beta's full lineage into throwaway databases and diffing. Seventeen shared tables differ; seven of them exist at `0003` and ten do not.
+
+**Exists at `0003`, needs work:**
+
+| Table | Action |
+| --- | --- |
+| `members` | `DROP COLUMN tour_member_done`, `DROP COLUMN tour_admin_done` |
+| `audit_logs` | `ADD COLUMN target_member_id` |
+| `crs_events` | `ADD COLUMN` x7: `deleted_at`, `grace_minutes`, `rsvp_form_json`, `rsvp_responses_public`, `all_day`, `read_only`, `public_code` |
+| `event_rsvps` | `ADD COLUMN answers_json` |
+| `member_feed_state` | `DROP TABLE` (locked decision 4) |
+| `announcements` | rebuild: drop and recreate at the `schema.ts` shape, 0 rows so no copy |
+| `nav_pins` | rebuild: `created_by` nullable, FK `ON DELETE SET NULL`, `position` default `0`, 0 rows so no copy |
+
+**Absent at `0003`, create fresh at the `schema.ts` shape:** `quick_links`, `term_member_roster`, `rate_limit_counters`, `point_types`, `retention_records`, `event_staff`, `event_invites`, `event_type_rules`, `event_point_awards`, `link_hourly_stats`, plus their indexes.
+
+**Drop, all measured empty (locked decision 6):** `articles`, `article_acl`, `article_components`, `article_questions`, `article_refs`, `article_related`, `article_sections`, `article_topics`, `comments`, `consultancy_teams`, `favorites`, `lists`, `list_items`, `point_awards`, `team_members`, `topics`.
+
+**DML that must be preserved:**
+
+| Source | Statement |
+| --- | --- |
+| `0004_robust_blue_shield.sql` | `INSERT OR IGNORE INTO roles` for `role_publishing` |
+| `0010_event_type_rules.sql` | 3x `INSERT INTO event_type_rules` (`casual`, `birthday`, `official`) |
+| `0012_event_type_metadata.sql` | 3x `UPDATE event_type_rules` setting `label`, `colour`, `position` |
+| `0014_attendance_grace_and_audit_target.sql` | `UPDATE audit_logs SET target_member_id = substr(detail, 8) WHERE ...` |
+| `0019_event_multiday_readonly_and_share_codes.sql` | `UPDATE crs_events SET public_code = (...)` random 6-char code |
+| `release-migrations/0004_beta_release_bridge.sql:47` | seed `pt_retention` into `point_types` |
+| `release-migrations/0004_beta_release_bridge.sql:70` | copy `point_awards` into `retention_records` (no-op at 0 rows, retained so the preservation test asserts it) |
 
 ---
 
-### Task 1: Retire the dead tour and align schema.ts with the trunk
-
-`GuidedTour` is never rendered and `markTourSeenAction` is never called. No reader exists for any column of `member_feed_state`. Removing the table now means the `tour_seen_at` versus `announcements_seen_at` divergence disappears instead of needing a reconciling column. `nav_pins.created_by` is widened to nullable to match what staging and production already hold.
+### Task 1: Align schema.ts with the trunk
 
 **Files:**
-- Delete: `src/components/portal/guided-tour.tsx`
-- Delete: `src/db/repositories/memberFeed.ts`
-- Modify: `src/app/portal/actions.ts`
-- Modify: `src/db/repositories/index.ts:10`, `:62`, `:135`
-- Modify: `src/db/schema.ts:513-520` (remove `memberFeedState`), `:570-573` (`nav_pins`)
+- Delete: `src/components/portal/guided-tour.tsx`, `src/db/repositories/memberFeed.ts`
+- Modify: `src/app/portal/actions.ts`, `src/db/repositories/index.ts:10,62,135`, `src/db/schema.ts`
 
 **Interfaces:**
-- Produces: `src/db/schema.ts` with no `memberFeedState` export and `navPins.createdBy` nullable. Every later task generates migrations from this file.
-- Removes: `Repositories["memberFeed"]`. `Repositories` is `ReturnType<typeof createDrizzleRepositories>`, so deleting the key from both factories updates the type automatically.
+- Produces: `src/db/schema.ts` with no `memberFeedState` export and `navPins` aligned on three properties. Tasks 2 and 3 both target this file's output.
+- Removes: `Repositories["memberFeed"]`. `Repositories` is `ReturnType<typeof createDrizzleRepositories>`, so deleting the key from both factories updates the type.
 
-- [ ] **Step 1: Confirm the tour is genuinely unreferenced**
+- [ ] **Step 1: Confirm the tour is unreferenced**
 
 ```bash
 grep -rn "GuidedTour\|guided-tour\|markTourSeenAction\|memberFeed\|tourSeenAt\|surveysSeenAt\|eventsSeenAt" src --include=*.ts --include=*.tsx
 ```
 
-Expected: matches only in the five files listed above. If any other file appears, stop and report; the deletion is no longer safe.
+Expected: matches only in `guided-tour.tsx`, `memberFeed.ts`, `src/app/portal/actions.ts`, `src/db/repositories/index.ts`, `src/db/schema.ts`. Any other file means stop and report.
 
-- [ ] **Step 2: Delete the two dead files**
+- [ ] **Step 2: Delete the dead files**
 
 ```bash
 git rm src/components/portal/guided-tour.tsx src/db/repositories/memberFeed.ts
 ```
 
-- [ ] **Step 3: Remove the uncalled action**
+- [ ] **Step 3: Reduce portal actions to the one live action**
 
-In `src/app/portal/actions.ts`, delete the `markTourSeenAction` function entirely. The file becomes:
+Replace the whole of `src/app/portal/actions.ts` with:
 
 ```ts
 "use server";
@@ -66,11 +107,9 @@ export async function signOutAction(): Promise<void> {
 }
 ```
 
-Note that `getRepositories` and `requireActor` become unused imports and must go with it.
-
 - [ ] **Step 4: Unwire the repository**
 
-In `src/db/repositories/index.ts` delete all three lines:
+In `src/db/repositories/index.ts` delete these three lines:
 
 ```ts
 import { createMemberFeedRepository, createUnavailableMemberFeedRepository } from "./memberFeed";
@@ -82,116 +121,143 @@ import { createMemberFeedRepository, createUnavailableMemberFeedRepository } fro
 		memberFeed: createUnavailableMemberFeedRepository(),
 ```
 
-- [ ] **Step 5: Remove the table and widen nav_pins in schema.ts**
+- [ ] **Step 5: Edit schema.ts**
 
-Delete the whole `memberFeedState` export at `src/db/schema.ts:513-520`.
+Delete the entire `memberFeedState` export.
 
-In `navPins`, drop the `.notNull()` from `createdBy` so it reads:
+Replace the `navPins` `createdBy` field. It currently reads:
 
 ```ts
-		createdBy: text("created_by").references(() => members.id, { onDelete: "cascade" }),
+		createdBy: text("created_by")
+			.notNull()
+			.references(() => members.id, { onDelete: "cascade" }),
 ```
 
-Leave `position` as `integer("position").notNull()`. Staging carries a default of `0` that `schema.ts` does not declare; a default only affects inserts that omit the column, and the repository always supplies it, so the generated migration may or may not reconcile it and either outcome is correct.
+It becomes, matching what staging and production already hold:
 
-- [ ] **Step 6: Typecheck and test**
+```ts
+		// Nullable with SET NULL so deleting a member clears authorship rather than
+		// deleting their pins. Matches the shape already applied to staging and production.
+		createdBy: text("created_by").references(() => members.id, { onDelete: "set null" }),
+```
+
+And give `position` the default the deployed databases carry:
+
+```ts
+		position: integer("position").notNull().default(0),
+```
+
+- [ ] **Step 6: Verify**
 
 Run: `pnpm typecheck && pnpm test`
-Expected: clean typecheck, 459 tests pass. A failure here means something still referenced the tour; go back to Step 1.
+Expected: clean typecheck, 459 tests pass. A failure means something still referenced the tour.
 
-- [ ] **Step 7: Lint and commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 npx eslint src/app/portal/actions.ts src/db/repositories/index.ts src/db/schema.ts
 graphify update .
-git add -A src docs graphify-out
-git commit -m "refactor(db): retire the unused tour and member_feed_state
+git add -A src graphify-out
+git commit -m "refactor(db): retire the unused tour and align nav_pins
 
-GuidedTour was never rendered and markTourSeenAction was never called.
-No column of member_feed_state had a reader, so the table goes with them.
-This also removes the tour_seen_at divergence between the two migration
-lineages, which no longer needs reconciling.
+GuidedTour was never rendered and markTourSeenAction was never called. No
+column of member_feed_state had a reader, so the table goes too, which
+removes the tour_seen_at divergence between the lineages rather than
+reconciling it.
 
-nav_pins.created_by becomes nullable to match what staging and production
-already hold. Widening to nullable cannot invalidate an existing row."
+nav_pins now matches what staging and production already hold on all three
+properties: created_by nullable, ON DELETE SET NULL, position default 0.
+Deleting a member clears authorship instead of deleting their pins."
 ```
 
 ---
 
-### Task 2: Build the lineage convergence harness
+### Task 2: Convergence and preservation tests
 
-The hand-written bridge drifted because nothing compared it to `schema.ts`. This harness is the check that makes the failure loud, and Task 3 depends on it to prove the generated trunk is correct.
+These are the gate. Everything after depends on them, and they are why an authored migration is safe.
 
 **Files:**
-- Create: `scripts/schema-diff.ts` (pure, no node imports, this is what the test loads)
-- Create: `scripts/schema-diff.test.ts`
-- Create: `scripts/build-schema.ts` (filesystem and better-sqlite3, never imported by a test)
+- Create: `scripts/schema-compare.ts` (pure, zero imports)
+- Create: `scripts/schema-compare.test.ts`
+- Create: `scripts/sqlite-schema.ts` (better-sqlite3 and node:fs, never imported by a test)
+- Create: `scripts/verify-trunk.ts`
 
 **Interfaces:**
-- Produces from `scripts/schema-diff.ts`: `normalizeSql(sql: string): string` and `diffSchemas(a: SchemaObject[], b: SchemaObject[]): SchemaDiff`, where `SchemaObject = { type: string; name: string; sql: string }` and `SchemaDiff = { onlyInA: string[]; onlyInB: string[]; differing: Array<{ key: string; a: string; b: string }> }`.
-- Produces from `scripts/build-schema.ts`: `buildSchemaFromMigrations(dir: string, scratch: string): SchemaObject[]`.
-- Consumed by: Task 3 Step 5.
-
-The split is not cosmetic. Every test here runs in the Workers pool, which cannot resolve `node:fs` or load `better-sqlite3`. A test importing a module that pulls either at top level fails before a single assertion runs, the same way an icon import would. Keeping `schema-diff.ts` free of node imports is what makes it testable at all.
+- Produces from `scripts/schema-compare.ts`: `normalizeDdl(sql: string): string`, `compareSchemas(a: SchemaObject[], b: SchemaObject[]): SchemaDiff`, with `SchemaObject = { type: string; name: string; sql: string }` and `SchemaDiff = { onlyInA: string[]; onlyInB: string[]; differing: Array<{ key: string; a: string; b: string }> }`.
+- Produces from `scripts/sqlite-schema.ts`: `applyMigrations(db, dir)`, `readSchema(db): SchemaObject[]`, `openScratch(file)`.
+- Consumed by: Task 3.
 
 - [ ] **Step 1: Write the failing test**
 
-Create `scripts/schema-diff.test.ts`:
+Create `scripts/schema-compare.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
-import { diffSchemas, normalizeSql } from "./schema-diff";
+import { compareSchemas, normalizeDdl } from "./schema-compare";
 
-describe("normalizeSql", () => {
-	it("ignores formatting that sqlite does not care about", () => {
-		expect(normalizeSql("CREATE TABLE `a` (x  INTEGER,\n y TEXT)")).toBe(
-			normalizeSql("create table a (x integer, y text)"),
+describe("normalizeDdl", () => {
+	it("ignores formatting sqlite does not care about", () => {
+		expect(normalizeDdl("CREATE TABLE `a` (x  INTEGER,\n y TEXT)")).toBe(
+			normalizeDdl("create table a (x integer, y text)"),
 		);
 	});
 
-	it("keeps a real difference visible", () => {
-		expect(normalizeSql("CREATE TABLE a (x INTEGER NOT NULL)")).not.toBe(
-			normalizeSql("CREATE TABLE a (x INTEGER)"),
+	it("keeps nullability visible", () => {
+		expect(normalizeDdl("CREATE TABLE a (x INTEGER NOT NULL)")).not.toBe(normalizeDdl("CREATE TABLE a (x INTEGER)"));
+	});
+
+	it("keeps foreign key actions visible", () => {
+		expect(normalizeDdl("FOREIGN KEY (a) REFERENCES b(id) ON DELETE CASCADE")).not.toBe(
+			normalizeDdl("FOREIGN KEY (a) REFERENCES b(id) ON DELETE SET NULL"),
+		);
+	});
+
+	it("does not fold case inside string literals", () => {
+		// The previous normaliser lowercased everything and made these equal,
+		// which would have hidden a real default-value difference.
+		expect(normalizeDdl("CREATE TABLE a (t TEXT DEFAULT 'CODE')")).not.toBe(
+			normalizeDdl("CREATE TABLE a (t TEXT DEFAULT 'code')"),
+		);
+	});
+
+	it("does not collapse whitespace inside string literals", () => {
+		expect(normalizeDdl("CREATE TABLE a (t TEXT DEFAULT 'x  y')")).not.toBe(
+			normalizeDdl("CREATE TABLE a (t TEXT DEFAULT 'x y')"),
 		);
 	});
 });
 
-describe("diffSchemas", () => {
+describe("compareSchemas", () => {
 	const base = [{ type: "table", name: "a", sql: "CREATE TABLE a (x INTEGER)" }];
 
 	it("reports nothing for identical schemas", () => {
-		const diff = diffSchemas(base, [...base]);
+		const diff = compareSchemas(base, [...base]);
 		expect(diff.onlyInA).toEqual([]);
 		expect(diff.onlyInB).toEqual([]);
 		expect(diff.differing).toEqual([]);
 	});
 
 	it("reports objects missing from each side", () => {
-		const diff = diffSchemas(base, [{ type: "table", name: "b", sql: "CREATE TABLE b (y TEXT)" }]);
+		const diff = compareSchemas(base, [{ type: "table", name: "b", sql: "CREATE TABLE b (y TEXT)" }]);
 		expect(diff.onlyInA).toEqual(["table:a"]);
 		expect(diff.onlyInB).toEqual(["table:b"]);
 	});
 
 	it("reports a changed definition for a shared name", () => {
-		const diff = diffSchemas(base, [{ type: "table", name: "a", sql: "CREATE TABLE a (x TEXT)" }]);
+		const diff = compareSchemas(base, [{ type: "table", name: "a", sql: "CREATE TABLE a (x TEXT)" }]);
 		expect(diff.differing.map((row) => row.key)).toEqual(["table:a"]);
-	});
-
-	it("treats pure formatting changes as equal", () => {
-		const diff = diffSchemas(base, [{ type: "table", name: "a", sql: "create table `a` (x  integer)" }]);
-		expect(diff.differing).toEqual([]);
 	});
 });
 ```
 
 - [ ] **Step 2: Run it and watch it fail**
 
-Run: `pnpm exec vitest run scripts/schema-diff.test.ts`
-Expected: FAIL, cannot resolve `./schema-diff`.
+Run: `pnpm exec vitest run scripts/schema-compare.test.ts`
+Expected: FAIL, cannot resolve `./schema-compare`.
 
-- [ ] **Step 3: Implement the pure half**
+- [ ] **Step 3: Implement the pure comparer**
 
-Create `scripts/schema-diff.ts`. It must import nothing, so the Workers pool can load it.
+Create `scripts/schema-compare.ts`. It imports nothing, so the Workers pool can load it.
 
 ```ts
 export type SchemaObject = { type: string; name: string; sql: string };
@@ -201,22 +267,34 @@ export type SchemaDiff = {
 	differing: Array<{ key: string; a: string; b: string }>;
 };
 
-/** Collapses formatting sqlite does not distinguish, so only real differences survive. */
-export function normalizeSql(sql: string): string {
-	return (sql ?? "")
+/**
+ * Collapses formatting sqlite does not distinguish, while leaving quoted string
+ * literals untouched. Folding case or whitespace inside a literal would make
+ * DEFAULT 'CODE' and DEFAULT 'code' compare equal, which is a real difference.
+ */
+export function normalizeDdl(sql: string): string {
+	const literals: string[] = [];
+	// Park every single-quoted literal, including '' escapes, before touching case.
+	const parked = (sql ?? "").replace(/'(?:[^']|'')*'/g, (match) => {
+		literals.push(match);
+		return `\u0000${literals.length - 1}\u0000`;
+	});
+	const folded = parked
 		.replace(/`/g, "")
+		.replace(/"/g, "")
 		.replace(/\s+/g, " ")
-		.replace(/,\s*/g, ",")
+		.replace(/\s*,\s*/g, ",")
 		.replace(/\(\s*/g, "(")
 		.replace(/\s*\)/g, ")")
 		.trim()
 		.toLowerCase();
+	return folded.replace(/\u0000(\d+)\u0000/g, (_, index) => literals[Number(index)]);
 }
 
-export function diffSchemas(a: SchemaObject[], b: SchemaObject[]): SchemaDiff {
+export function compareSchemas(a: SchemaObject[], b: SchemaObject[]): SchemaDiff {
 	const key = (row: SchemaObject) => `${row.type}:${row.name}`;
-	const mapA = new Map(a.map((row) => [key(row), normalizeSql(row.sql)]));
-	const mapB = new Map(b.map((row) => [key(row), normalizeSql(row.sql)]));
+	const mapA = new Map(a.map((row) => [key(row), normalizeDdl(row.sql)]));
+	const mapB = new Map(b.map((row) => [key(row), normalizeDdl(row.sql)]));
 	return {
 		onlyInA: [...mapA.keys()].filter((k) => !mapB.has(k)).sort(),
 		onlyInB: [...mapB.keys()].filter((k) => !mapA.has(k)).sort(),
@@ -226,371 +304,619 @@ export function diffSchemas(a: SchemaObject[], b: SchemaObject[]): SchemaDiff {
 			.map((k) => ({ key: k, a: mapA.get(k)!, b: mapB.get(k)! })),
 	};
 }
-
 ```
 
-- [ ] **Step 4: Implement the filesystem half**
+- [ ] **Step 4: Run the test and watch it pass**
 
-Create `scripts/build-schema.ts`. This one is run only through `tsx` and must never be imported by a test.
+Run: `pnpm exec vitest run scripts/schema-compare.test.ts`
+Expected: PASS, 8 tests. A failure resolving `node:fs` means an import leaked in.
+
+- [ ] **Step 5: Implement the sqlite side**
+
+Create `scripts/sqlite-schema.ts`. Run only through `tsx`, never imported by a test.
 
 ```ts
 import Database from "better-sqlite3";
 import { readdirSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
-import type { SchemaObject } from "./schema-diff";
+import type { SchemaObject } from "./schema-compare";
 
-/** Applies every .sql file in a migrations directory to a throwaway database. */
-export function buildSchemaFromMigrations(dir: string, scratch: string): SchemaObject[] {
-	rmSync(scratch, { force: true });
-	const db = new Database(scratch);
-	const failures: string[] = [];
+export function openScratch(file: string) {
+	rmSync(file, { force: true });
+	return new Database(file);
+}
+
+/** Applies every .sql file in order, the same way wrangler d1 migrations apply does. */
+export function applyMigrations(db: InstanceType<typeof Database>, dir: string): void {
 	for (const file of readdirSync(dir).filter((f) => f.endsWith(".sql")).sort()) {
 		const sql = readFileSync(path.join(dir, file), "utf8");
-		// drizzle separates statements with this marker; D1 applies them one at a time.
 		for (const statement of sql.split("--> statement-breakpoint")) {
 			const trimmed = statement.trim();
 			if (!trimmed) continue;
 			try {
 				db.exec(trimmed);
 			} catch (error) {
-				failures.push(`${file}: ${(error as Error).message}`);
+				throw new Error(`${file}: ${(error as Error).message}`);
 			}
 		}
 	}
-	if (failures.length > 0) {
-		throw new Error(`Migrations did not apply cleanly:\n${failures.join("\n")}`);
-	}
-	const rows = db
-		.prepare("SELECT type, name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name")
+}
+
+export function readSchema(db: InstanceType<typeof Database>): SchemaObject[] {
+	return db
+		.prepare("SELECT type, name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' AND sql IS NOT NULL ORDER BY type, name")
 		.all() as SchemaObject[];
-	db.close();
-	rmSync(scratch, { force: true });
-	return rows;
 }
 ```
 
-- [ ] **Step 5: Run the test and watch it pass**
+- [ ] **Step 6: Implement the trunk verifier**
 
-Run: `pnpm exec vitest run scripts/schema-diff.test.ts`
-Expected: PASS, 6 tests. If it instead fails resolving `node:fs` or `better-sqlite3`, a node import has leaked into `schema-diff.ts`; move it to `build-schema.ts`.
+Create `scripts/verify-trunk.ts`. This is the non-circular check: side A is the replayed trunk, side B is `schema.ts` rendered from scratch by drizzle-kit. Neither derives from the other.
 
-- [ ] **Step 6: Confirm the whole suite still passes**
+```ts
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { compareSchemas } from "./schema-compare";
+import { applyMigrations, openScratch, readSchema } from "./sqlite-schema";
+
+const repo = process.cwd();
+const work = mkdtempSync(path.join(tmpdir(), "trunk-"));
+
+// Side A: replay the trunk exactly as D1 would.
+const trunkDb = openScratch(path.join(work, "trunk.db"));
+applyMigrations(trunkDb, path.join(repo, "drizzle/migrations"));
+const trunk = readSchema(trunkDb);
+trunkDb.close();
+
+// Side B: render schema.ts from scratch. drizzle-kit writes a from-empty
+// migration when it has no snapshot, which is exactly the target schema.
+const renderDir = path.join(work, "render");
+writeFileSync(
+	path.join(work, "drizzle.render.config.ts"),
+	`import { defineConfig } from "drizzle-kit";\nexport default defineConfig({ schema: "./src/db/schema.ts", out: ${JSON.stringify(renderDir)}, dialect: "sqlite" });\n`,
+);
+execFileSync("pnpm", ["exec", "drizzle-kit", "generate", "--config", path.join(work, "drizzle.render.config.ts")], {
+	cwd: repo,
+	stdio: "pipe",
+	shell: true,
+});
+const renderDb = openScratch(path.join(work, "render.db"));
+applyMigrations(renderDb, renderDir);
+const target = readSchema(renderDb);
+renderDb.close();
+
+const diff = compareSchemas(trunk, target);
+rmSync(work, { recursive: true, force: true });
+
+const problems = diff.onlyInA.length + diff.onlyInB.length + diff.differing.length;
+console.log(`trunk objects: ${trunk.length}, target objects: ${target.length}`);
+if (problems === 0) {
+	console.log("CONVERGED: the trunk and schema.ts describe the same database.");
+	process.exit(0);
+}
+console.error(`NOT CONVERGED (${problems})`);
+for (const key of diff.onlyInA) console.error(`  only in trunk:     ${key}`);
+for (const key of diff.onlyInB) console.error(`  only in schema.ts: ${key}`);
+for (const row of diff.differing) {
+	console.error(`  differs: ${row.key}\n    trunk:     ${row.a}\n    schema.ts: ${row.b}`);
+}
+process.exit(1);
+```
+
+- [ ] **Step 7: Confirm the suite still passes**
 
 Run: `pnpm test`
-Expected: 465 tests pass, the 459 already present plus the 6 added here. `vitest.config.mts:43` already includes `scripts/**/*.test.ts`, and Task 1 deleted no tests.
+Expected: 467 tests pass, the 459 from Task 1 plus 8 here. `vitest.config.mts:43` already includes `scripts/**/*.test.ts`.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add scripts/schema-diff.ts scripts/schema-diff.test.ts scripts/build-schema.ts
-git commit -m "test(db): add a schema convergence harness
+git add scripts/schema-compare.ts scripts/schema-compare.test.ts scripts/sqlite-schema.ts scripts/verify-trunk.ts
+git commit -m "test(db): add a non-circular trunk convergence check
 
-Nothing compared the two migration lineages to each other or to
-schema.ts, which is how the hand-written bridge drifted unnoticed.
-This builds a schema from a migrations directory and diffs it, ignoring
-formatting sqlite does not distinguish."
+Nothing compared the migrations to schema.ts, which is how the bridge
+drifted until staging lacked a column schema.ts declared. This replays the
+trunk into one database, renders schema.ts from scratch into another, and
+diffs them. Neither side derives from the other.
+
+The normaliser parks quoted literals before folding case, so DEFAULT
+'CODE' and DEFAULT 'code' no longer compare equal."
 ```
 
 ---
 
-### Task 3: Assemble the unified trunk
-
-Replace beta's nineteen migrations with production's four plus one generated migration, and prove the result matches `schema.ts` before any database is touched.
+### Task 3: Author 0004_unify_schema.sql and assemble the trunk
 
 **Files:**
-- Delete: `drizzle/migrations/0001_v5_drop_deferred.sql` through `0019_event_multiday_readonly_and_share_codes.sql`, and the whole of `drizzle/migrations/meta/`
+- Delete: `drizzle/migrations/0001_v5_drop_deferred.sql` through `0019_*.sql`, and `drizzle/migrations/meta/`
 - Create: `drizzle/migrations/0001_member_portal_links.sql`, `0002_link_workspace_fields.sql`, `0003_admin_members_nav.sql` (copied from `drizzle/release-migrations`)
-- Create: `drizzle/migrations/0004_unify_schema.sql` (generated)
-- Keep: `drizzle/migrations/0000_young_bullseye.sql` (byte-identical in both lineages)
+- Create: `drizzle/migrations/0004_unify_schema.sql`
+- Create: `scripts/verify-preservation.ts`
+- Replace: `drizzle/migrations/0000_young_bullseye.sql` with the release copy
 
 **Interfaces:**
-- Consumes: `buildSchemaFromMigrations` and `diffSchemas` from Task 2, and the `schema.ts` produced by Task 1.
-- Produces: `drizzle/migrations` as the single trunk, ending at `0004_unify_schema.sql`.
+- Consumes: Task 1's `schema.ts`, Task 2's verifier.
+- Produces: `drizzle/migrations` as the single trunk.
 
-- [ ] **Step 1: Verify the shared origin really is identical**
+- [ ] **Step 1: Confirm the two 0000 files are SQL-equivalent**
+
+They differ in bytes because of line endings: 20,684 versus 21,165. Compare content, not bytes.
 
 ```bash
-diff drizzle/migrations/0000_young_bullseye.sql drizzle/release-migrations/0000_young_bullseye.sql && echo IDENTICAL
+git diff --no-index --ignore-cr-at-eol --stat drizzle/migrations/0000_young_bullseye.sql drizzle/release-migrations/0000_young_bullseye.sql
 ```
 
-Expected: `IDENTICAL`. If it differs, stop; the two lineages do not share an origin and this plan's premise is wrong.
+Expected: no output, meaning no content difference. Any reported change means stop; the lineages do not share an origin.
 
 - [ ] **Step 2: Replace beta's history with production's**
+
+The release copy becomes canonical so the trunk matches what production actually applied.
 
 ```bash
 git rm -r drizzle/migrations/meta
 git rm drizzle/migrations/000[1-9]_*.sql drizzle/migrations/001[0-9]_*.sql
+cp drizzle/release-migrations/0000_young_bullseye.sql drizzle/migrations/
 cp drizzle/release-migrations/0001_member_portal_links.sql drizzle/migrations/
 cp drizzle/release-migrations/0002_link_workspace_fields.sql drizzle/migrations/
 cp drizzle/release-migrations/0003_admin_members_nav.sql drizzle/migrations/
 ls drizzle/migrations/
 ```
 
-Expected listing: exactly `0000_young_bullseye.sql`, `0001_member_portal_links.sql`, `0002_link_workspace_fields.sql`, `0003_admin_members_nav.sql`.
+Expected: exactly four `.sql` files, no `meta/`. `0004_beta_release_bridge.sql` is deliberately not copied; it is the drifted artefact being replaced.
 
-`0004_beta_release_bridge.sql` is deliberately not copied. It is the hand-written artefact being replaced.
+- [ ] **Step 3: Render the target schema for reference**
 
-- [ ] **Step 3: Generate the reconciling migration**
-
-```bash
-pnpm db:generate
-```
-
-drizzle-kit reads `src/db/schema.ts`, compares against the snapshot it rebuilds from `drizzle/migrations`, and writes the next numbered file plus a fresh `meta/`. Rename the generated file so its purpose is legible:
+Do not use this as the migration. It is a from-empty render used to copy exact DDL for the tables `0004` creates.
 
 ```bash
-mv drizzle/migrations/0004_*.sql drizzle/migrations/0004_unify_schema.sql
+mkdir -p .local/render
+cat > .local/drizzle.render.config.ts <<'CONFIG'
+import { defineConfig } from "drizzle-kit";
+export default defineConfig({ schema: "./src/db/schema.ts", out: "./.local/render", dialect: "sqlite" });
+CONFIG
+pnpm exec drizzle-kit generate --config .local/drizzle.render.config.ts
 ```
 
-If drizzle-kit prompts about renamed or dropped tables, answer that `member_feed_state` is **dropped**, not renamed.
+Expected: one file in `.local/render` containing roughly 44 `CREATE TABLE` statements. Use it as the source of truth for column types, defaults and index definitions when writing `0004`.
 
-- [ ] **Step 4: Read the generated migration before trusting it**
+- [ ] **Step 4: Author 0004_unify_schema.sql**
 
-```bash
-grep -icE "drop table" drizzle/migrations/0004_unify_schema.sql
-grep -iE "drop table" drizzle/migrations/0004_unify_schema.sql
-```
+Create `drizzle/migrations/0004_unify_schema.sql`. Statements are separated by `--> statement-breakpoint`, matching the rest of the directory. Structure it in this order, because the drops must follow the copy that reads from `point_awards`:
 
-Expected: the only `DROP TABLE` is `member_feed_state`. If any of `announcements`, `articles`, `article_*`, `comments`, `consultancy_teams`, `favorites`, `lists`, `list_items`, `point_awards`, `team_members` or `topics` appears, **stop**. Those hold production data and the trunk must not drop them. Report and await direction.
+1. **Column additions** to tables that already exist:
+   - `ALTER TABLE audit_logs ADD COLUMN target_member_id text REFERENCES members(id) ON DELETE set null;`
+   - `ALTER TABLE crs_events ADD COLUMN` for each of `deleted_at`, `grace_minutes`, `rsvp_form_json`, `rsvp_responses_public`, `all_day`, `read_only`, `public_code`, copying exact types and defaults from `.local/render`
+   - `ALTER TABLE event_rsvps ADD COLUMN answers_json text DEFAULT '{}' NOT NULL;`
+2. **New tables** at the rendered shape, with their indexes: `point_types`, `event_type_rules`, `event_staff`, `event_invites`, `event_point_awards`, `retention_records`, `term_member_roster`, `quick_links`, `rate_limit_counters`, `link_hourly_stats`
+3. **Preserved DML**, copied verbatim from the sources in the table above: seed `role_publishing`; insert three `event_type_rules` rows then the three `UPDATE`s that set `label`, `colour` and `position`; seed `pt_retention` into `point_types`; the `audit_logs.target_member_id` backfill from `0014`; the `crs_events.public_code` backfill from `0019`
+4. **Copy** `point_awards` into `retention_records`, verbatim from `release-migrations/0004_beta_release_bridge.sql:70`. A no-op at zero rows, retained so the preservation test can assert on it
+5. **Rebuilds**, both measured empty so no data copy is needed:
+   - `DROP TABLE IF EXISTS announcements;` then `CREATE TABLE announcements (...)` at the rendered shape, plus `announcements_pinned_idx`
+   - `DROP TABLE IF EXISTS nav_pins;` then `CREATE TABLE nav_pins (...)` with `created_by` nullable, `ON DELETE set null`, `position` default `0`, plus its index
+6. **Column removals**: `ALTER TABLE members DROP COLUMN tour_member_done;` and `ALTER TABLE members DROP COLUMN tour_admin_done;`
+7. **Drops**, each `DROP TABLE IF EXISTS`: `member_feed_state`, then `article_acl`, `article_components`, `article_questions`, `article_refs`, `article_related`, `article_sections`, `article_topics`, `articles`, `comments`, `consultancy_teams`, `favorites`, `list_items`, `lists`, `point_awards`, `team_members`, `topics`
 
-- [ ] **Step 5: Prove convergence with the harness**
+Open the file with a header comment naming the spec, so the next reader knows why it is authored rather than generated.
 
-Create `scripts/verify-lineage.ts`:
+- [ ] **Step 5: Write the preservation check**
+
+Create `scripts/verify-preservation.ts`. It builds `0000`-`0003`, inserts legacy fixtures, applies `0004`, and asserts. Synthetic rows only.
 
 ```ts
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
-import { buildSchemaFromMigrations } from "./build-schema";
-import { diffSchemas } from "./schema-diff";
+import { applyMigrations, openScratch } from "./sqlite-schema";
+import { readdirSync, readFileSync } from "node:fs";
 
 const repo = process.cwd();
-const built = buildSchemaFromMigrations(
-	path.join(repo, "drizzle/migrations"),
-	path.join(repo, ".local/_verify.db"),
-);
-console.log(`objects built from drizzle/migrations: ${built.length}`);
+const work = mkdtempSync(path.join(tmpdir(), "preserve-"));
+const db = openScratch(path.join(work, "p.db"));
+const dir = path.join(repo, "drizzle/migrations");
 
-const previous = process.argv[2];
-if (previous) {
-	const other = buildSchemaFromMigrations(previous, path.join(repo, ".local/_verify_other.db"));
-	const diff = diffSchemas(built, other);
-	console.log(`only in trunk:   ${diff.onlyInA.length}`);
-	console.log(`only in ${previous}: ${diff.onlyInB.length}`);
-	console.log(`differing:       ${diff.differing.length}`);
-	for (const row of diff.differing) console.log(`  ${row.key}\n    trunk: ${row.a}\n    other: ${row.b}`);
+function applyOne(file: string) {
+	for (const statement of readFileSync(path.join(dir, file), "utf8").split("--> statement-breakpoint")) {
+		const trimmed = statement.trim();
+		if (trimmed) db.exec(trimmed);
+	}
 }
+
+const files = readdirSync(dir).filter((f) => f.endsWith(".sql")).sort();
+for (const file of files.filter((f) => f < "0004")) applyOne(file);
+
+// Legacy fixtures: a member, an event, and an audit row shaped like the ones
+// 0014 backfills from.
+db.exec(`INSERT INTO members (id, email) VALUES ('mem_fix1', 'fixture@example.com')`);
+db.exec(
+	`INSERT INTO crs_events (id, title, type, place, starts_at, description, created_by)
+	 VALUES ('evt_fix1', 'Fixture', 'casual', 'Room', 1000, 'd', 'mem_fix1')`,
+);
+db.exec(
+	`INSERT INTO audit_logs (id, action, target_type, target_id, category, detail)
+	 VALUES ('aud_fix1', 'event:scan_attendance', 'event', 'evt_fix1', 'event', 'member=mem_fix1')`,
+);
+
+const legacyCounts = ["announcements", "nav_pins", "point_awards"].map((t) => ({
+	table: t,
+	count: (db.prepare(`SELECT COUNT(*) AS c FROM ${t}`).get() as { c: number }).c,
+}));
+
+applyOne("0004_unify_schema.sql");
+
+const failures: string[] = [];
+function check(label: string, actual: unknown, expected: unknown) {
+	if (actual !== expected) failures.push(`${label}: expected ${String(expected)}, got ${String(actual)}`);
+}
+const one = (sql: string) => (db.prepare(sql).get() as { v: unknown }).v;
+
+// Tables emptied by 0004 must have been empty first, or rows were discarded.
+for (const row of legacyCounts) check(`${row.table} was empty before drop`, row.count, 0);
+
+check("event_type_rules seeded", one("SELECT COUNT(*) AS v FROM event_type_rules"), 3);
+check("official label set", one("SELECT label AS v FROM event_type_rules WHERE type='official'"), "Official");
+check("casual colour set", one("SELECT colour AS v FROM event_type_rules WHERE type='casual'"), "emerald");
+check("pt_retention seeded", one("SELECT COUNT(*) AS v FROM point_types WHERE id='pt_retention'"), 1);
+check("publishing role seeded", one("SELECT COUNT(*) AS v FROM roles WHERE id='role_publishing'"), 1);
+check("audit target backfilled", one("SELECT target_member_id AS v FROM audit_logs WHERE id='aud_fix1'"), "mem_fix1");
+check("fixture member survived", one("SELECT COUNT(*) AS v FROM members WHERE id='mem_fix1'"), 1);
+check("fixture event survived", one("SELECT COUNT(*) AS v FROM crs_events WHERE id='evt_fix1'"), 1);
+if (one("SELECT public_code AS v FROM crs_events WHERE id='evt_fix1'") === null) {
+	failures.push("public_code backfill: expected a code, got null");
+}
+check("member_feed_state gone", one("SELECT COUNT(*) AS v FROM sqlite_master WHERE type='table' AND name='member_feed_state'"), 0);
+check("articles gone", one("SELECT COUNT(*) AS v FROM sqlite_master WHERE type='table' AND name='articles'"), 0);
+
+db.close();
+rmSync(work, { recursive: true, force: true });
+
+if (failures.length > 0) {
+	console.error("PRESERVATION FAILED");
+	for (const failure of failures) console.error("  " + failure);
+	process.exit(1);
+}
+console.log("PRESERVATION OK");
 ```
 
-Run it:
+- [ ] **Step 6: Run both checks**
 
 ```bash
-pnpm exec tsx scripts/verify-lineage.ts
+pnpm exec tsx scripts/verify-preservation.ts
+pnpm exec tsx scripts/verify-trunk.ts
 ```
 
-Expected: it prints an object count and does not throw. A throw means the trunk does not apply cleanly, which is a hard stop.
+Expected: `PRESERVATION OK`, then `CONVERGED`. Iterate on `0004_unify_schema.sql` until both pass. `NOT CONVERGED` prints exactly which objects differ.
 
-- [ ] **Step 6: Confirm drizzle-kit sees nothing left to do**
+- [ ] **Step 7: Enforce the destructive-statement allowlist**
+
+Every destructive statement in `0004` must be one you intended. A grep for table names is not enough; check the shape of every destructive statement.
 
 ```bash
-pnpm db:generate
+grep -inE "drop table|drop column|^[[:space:]]*delete" drizzle/migrations/0004_unify_schema.sql
 ```
 
-Expected: drizzle-kit reports no schema changes and writes no new file. This is the convergence proof from the spec: the trunk and `schema.ts` now agree. If it emits another migration, the trunk is wrong; inspect the emitted diff, delete it, and fix `0004_unify_schema.sql`.
+Expected exactly **19** `DROP TABLE IF EXISTS`, **2** `DROP COLUMN`, and **zero** `DELETE`:
 
-- [ ] **Step 7: Run the suite against the new trunk**
+| Statement | Count | Which |
+| --- | --- | --- |
+| `DROP TABLE IF EXISTS` | 2 | rebuilds: `announcements`, `nav_pins` |
+| `DROP TABLE IF EXISTS` | 1 | `member_feed_state` |
+| `DROP TABLE IF EXISTS` | 16 | `article_acl`, `article_components`, `article_questions`, `article_refs`, `article_related`, `article_sections`, `article_topics`, `articles`, `comments`, `consultancy_teams`, `favorites`, `list_items`, `lists`, `point_awards`, `team_members`, `topics` |
+| `DROP COLUMN` | 2 | `members.tour_member_done`, `members.tour_admin_done` |
+| `DELETE` | 0 | none |
 
-Run: `pnpm test`
-Expected: 465 tests pass. `vitest.config.mts` builds its database from `drizzle/migrations` through `readD1Migrations`, so this exercises the trunk end to end and is the strongest available equivalence check.
+Any count that does not match, any drop of a table not named here, or any bare `DROP TABLE` without `IF EXISTS` is a stop. Confirm each drop against the table above by name; a count alone would pass a migration that dropped the wrong table.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 8: Run the suite and clean up**
 
 ```bash
-git add -A drizzle/migrations scripts/verify-lineage.ts
-git commit -m "refactor(db): rebuild drizzle/migrations on production's history
+pnpm test
+rm -rf .local/render .local/drizzle.render.config.ts
+```
+
+Expected: 467 tests pass.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add -A drizzle/migrations scripts/verify-preservation.ts
+git commit -m "refactor(db): rebuild drizzle/migrations as a single trunk
 
 Beta's 0001 to 0019 are replaced by production's 0001 to 0003 plus one
-generated migration. Production holds live data and its history cannot be
-rewritten, so beta's is the one that gives way. The reconciling migration
-is generated from schema.ts rather than hand-written, which is what the
-0004_beta_release_bridge.sql it replaces could not guarantee.
+authored 0004. Production holds live data and its history cannot be
+rewritten, so beta's gives way.
 
-drizzle-kit generate now reports no pending changes, and the suite builds
-its test database from this directory and passes."
+0004 is authored rather than generated because drizzle-kit emits no DML
+and would have dropped nine load-bearing seed and backfill statements,
+and because SQLite cannot alter nullability or a foreign key, so the
+announcements and nav_pins rebuilds happen either way and are better
+reviewed than accepted unread. Both were measured empty, so neither
+rebuild copies rows.
+
+Convergence and preservation both pass."
 ```
 
 ---
 
-### Task 4: Reset staging to production's state and rehearse
+### Task 4: Restore a usable drizzle-kit baseline
 
-Staging has the hand-written bridge applied, so it is neither at production's state nor at the trunk's. It is reset rather than patched, because mirroring production is the only thing that makes the rehearsal meaningful.
+`meta/_journal.json` has been stale since `0008` while SQL ran to `0019`, so `pnpm db:generate` has been unsafe in this repo for some time. The trunk is the moment to fix it.
 
 **Files:**
-- Create: `.local/staged-backup-2026-08-07.sql` (untracked)
-- Create: `.local/reset-staged.sql` (untracked)
+- Create: `drizzle/migrations/meta/_journal.json`, `drizzle/migrations/meta/0004_snapshot.json`
 
 **Interfaces:**
-- Consumes: `drizzle/migrations` from Task 3.
-- Produces: `code-nest-staged-db` at `0000` through `0004_unify_schema.sql`.
+- Produces: a snapshot describing the post-`0004` schema, so a later `db:generate` emits a correct `0005`.
 
-- [ ] **Step 1: Back up staging and get approval**
+- [ ] **Step 1: Produce a snapshot of the current schema**
 
-Show this command and wait for approval before running:
+The render from Task 3 Step 3 writes a `meta/` describing exactly the post-`0004` schema, because `0004` converges to `schema.ts`.
 
 ```bash
-pnpm exec wrangler d1 export DB --config wrangler.staging.jsonc --remote --output .local/staged-backup-2026-08-07.sql
+mkdir -p .local/render
+cat > .local/drizzle.render.config.ts <<'CONFIG'
+import { defineConfig } from "drizzle-kit";
+export default defineConfig({ schema: "./src/db/schema.ts", out: "./.local/render", dialect: "sqlite" });
+CONFIG
+pnpm exec drizzle-kit generate --config .local/drizzle.render.config.ts
+ls .local/render/meta/
 ```
 
-Record the file size after it completes. Do not continue without a backup on disk.
+- [ ] **Step 2: Install it as the trunk's baseline at index 4**
 
-- [ ] **Step 2: Generate the reset script**
+```bash
+mkdir -p drizzle/migrations/meta
+cp .local/render/meta/0000_snapshot.json drizzle/migrations/meta/0004_snapshot.json
+node -e "
+const fs=require('fs');
+const src=JSON.parse(fs.readFileSync('.local/render/meta/_journal.json','utf8'));
+const entry=src.entries[0];
+fs.writeFileSync('drizzle/migrations/meta/_journal.json', JSON.stringify({
+  version: src.version,
+  dialect: src.dialect,
+  entries: [{ idx: 4, version: entry.version, when: entry.when, tag: '0004_unify_schema', breakpoints: true }]
+}, null, 2) + '\n');
+console.log('journal written at idx 4');
+"
+```
+
+- [ ] **Step 3: Verify a subsequent generate is a no-op**
+
+```bash
+pnpm db:generate
+```
+
+Expected: drizzle-kit reports no schema changes and writes no new file. If it writes one, inspect the diff, delete the file, and correct the snapshot before continuing. Do not proceed with a generator that thinks the schema has drifted.
+
+- [ ] **Step 4: Confirm nothing else broke**
+
+```bash
+pnpm exec tsx scripts/verify-trunk.ts
+pnpm test
+rm -rf .local/render .local/drizzle.render.config.ts
+```
+
+Expected: `CONVERGED`, 467 tests pass.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add drizzle/migrations/meta
+git commit -m "fix(db): restore a truthful drizzle-kit baseline
+
+The journal had been stale since 0008 while the SQL ran to 0019, so
+db:generate would have emitted eleven migrations' worth of changes as one
+file. The trunk gets a single snapshot describing the post-0004 schema at
+journal index 4, and a following db:generate is now a no-op."
+```
+
+---
+
+### Task 5: Rehearse on staging
+
+Staging carries the hand-written bridge, so it is neither at production's state nor at the trunk's. It is reset rather than patched, because mirroring production is the only thing that makes the rehearsal meaningful.
+
+**Files:** none tracked. Working files under `.local/`, which is gitignored.
+
+**Interfaces:**
+- Consumes: the trunk from Tasks 3 and 4.
+- Produces: `code-nest-staged-db` at `0000` through `0004`.
+
+- [ ] **Step 1: Back up staging, with approval**
+
+Show and wait for approval. The timestamp makes the name unique so a retry cannot overwrite it.
+
+```bash
+pnpm exec wrangler d1 export DB --config wrangler.staging.jsonc --remote --output .local/staged-backup-2026-08-07T1100Z.sql
+```
+
+- [ ] **Step 2: Prove the backup is restorable before destroying anything**
+
+A backup you have not read is a hope, not a backup.
+
+```bash
+node -e "
+const Database=require('better-sqlite3');
+const fs=require('fs');
+const db=new Database(':memory:');
+db.exec(fs.readFileSync('.local/staged-backup-2026-08-07T1100Z.sql','utf8'));
+const t=db.prepare(\"SELECT COUNT(*) c FROM sqlite_master WHERE type='table'\").get();
+console.log('tables restored from backup:', t.c);
+"
+```
+
+Expected: a plausible table count. A throw means stop; there is no usable backup.
+
+- [ ] **Step 3: Build the reset script**
 
 ```bash
 pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --json --command "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'" > .local/staged-tables.json
-```
-
-Then build the drop script:
-
-```bash
-node -e "const r=require('./.local/staged-tables.json');const names=r[0].results.map(x=>x.name);require('fs').writeFileSync('.local/reset-staged.sql','PRAGMA defer_foreign_keys = true;\n'+names.map(n=>'DROP TABLE IF EXISTS \"'+n+'\";').join('\n')+'\n');console.log('tables to drop:',names.length)"
+node -e "
+const r=require('./.local/staged-tables.json');
+const names=r[0].results.map(x=>x.name);
+require('fs').writeFileSync('.local/reset-staged.sql','PRAGMA defer_foreign_keys = true;\n'+names.map(n=>'DROP TABLE IF EXISTS \"'+n+'\";').join('\n')+'\n');
+console.log('tables to drop:',names.length);
+console.log('includes d1_migrations:',names.includes('d1_migrations'));
+"
 cat .local/reset-staged.sql
 ```
 
-Read the printed script. It must include `d1_migrations`, or the replay in Step 4 will skip everything.
+Expected: `includes d1_migrations: true`. If false, the replay in Step 5 will skip every migration; stop and fix.
 
-- [ ] **Step 3: Apply the reset and get approval**
+- [ ] **Step 4: Apply the reset, with approval**
 
-Show this command and wait for approval before running. It destroys every table in `code-nest-staged-db`:
+Show and wait for approval. This destroys every table in `code-nest-staged-db`.
 
 ```bash
 pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --file .local/reset-staged.sql
 ```
 
-- [ ] **Step 4: Replay the trunk to production's state**
+- [ ] **Step 5: Replay to production's state**
 
-Production is at `0003`. To put staging in the same place, temporarily move `0004` aside so the apply stops there:
+Production sits at `0003`. Use a temporary directory holding only `0000`-`0003` rather than moving files out of the tracked trunk, so an interruption cannot leave the repository missing `0004`.
 
 ```bash
-mv drizzle/migrations/0004_unify_schema.sql .local/0004_unify_schema.sql.hold
+mkdir -p .local/prefix
+cp drizzle/migrations/000[0-3]_*.sql .local/prefix/
+node -e "
+const fs=require('fs');
+const c=JSON.parse(fs.readFileSync('wrangler.staging.jsonc','utf8').replace(/^\s*\/\/.*$/gm,''));
+c.d1_databases[0].migrations_dir='.local/prefix';
+fs.writeFileSync('.local/wrangler.prefix.jsonc', JSON.stringify(c,null,2));
+console.log('prefix config written');
+"
 ```
 
-Show this command and wait for approval:
+Show and wait for approval:
 
 ```bash
-pnpm exec wrangler d1 migrations apply DB --config wrangler.staging.jsonc --remote
+pnpm exec wrangler d1 migrations apply DB --config .local/wrangler.prefix.jsonc --remote
 ```
 
-Expected: four migrations applied, `0000` through `0003`. Staging now matches production exactly.
+Expected: four migrations applied. Staging now matches production exactly.
 
-- [ ] **Step 5: Restore 0004 and rehearse the real thing**
+- [ ] **Step 6: Rehearse the real step**
 
 ```bash
-mv .local/0004_unify_schema.sql.hold drizzle/migrations/0004_unify_schema.sql
 pnpm exec wrangler d1 migrations list DB --config wrangler.staging.jsonc --remote
 ```
 
 Expected: exactly one pending migration, `0004_unify_schema.sql`. This is the same one-step state production will be in.
 
-Show this command and wait for approval:
+Show and wait for approval:
 
 ```bash
 pnpm exec wrangler d1 migrations apply DB --config wrangler.staging.jsonc --remote
 ```
 
-- [ ] **Step 6: Verify staging landed where intended**
+- [ ] **Step 7: Verify staging**
 
 ```bash
 pnpm exec wrangler d1 migrations list DB --config wrangler.staging.jsonc --remote
-pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --command "SELECT group_concat(name,', ') FROM pragma_table_info('crs_events')"
-pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --command "SELECT name FROM sqlite_master WHERE type='table' AND name='member_feed_state'"
+pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --command "SELECT (SELECT COUNT(*) FROM event_type_rules) AS event_type_rules, (SELECT COUNT(*) FROM point_types) AS point_types, (SELECT COUNT(*) FROM crs_events WHERE public_code IS NOT NULL) AS events_with_code, (SELECT COUNT(*) FROM members) AS members"
+pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --command "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('member_feed_state','articles','point_awards')"
 ```
 
-Expected: nothing pending; `crs_events` includes `all_day`, `read_only` and `public_code`; `member_feed_state` returns no rows.
+Expected: nothing pending; `event_type_rules` 3; `point_types` at least 1; `events_with_code` 3, matching the three events measured before; `members` 7; and the third query returns no rows.
 
-- [ ] **Step 7: Deploy and check the running site**
+- [ ] **Step 8: Deploy and check the running site**
 
 ```bash
 pnpm deploy:staged
 ```
 
-Then sign in at `https://staged.ateneocode.org/portal` and load the dashboard, calendar, one event detail page, links and profile. Confirm no schema errors. Record which pages were checked.
+Sign in at `https://staged.ateneocode.org/portal` and load dashboard, calendar, one event detail page, links and profile. Confirm no schema errors. Record which pages were checked.
 
-- [ ] **Step 8: Commit the record**
+- [ ] **Step 9: Record the rehearsal**
 
 ```bash
+rm -rf .local/prefix .local/wrangler.prefix.jsonc
 git commit --allow-empty -m "chore(db): rehearse the unified trunk on staging
 
 Staging was reset to production's exact state, 0000 through 0003, then
-0004_unify_schema.sql was applied as a single step. That is the same
-operation production will receive. Backup at .local/staged-backup-2026-08-07.sql."
+0004_unify_schema.sql was applied as a single step. That is precisely the
+operation production will receive. Backup at
+.local/staged-backup-2026-08-07T1100Z.sql, validated before the reset."
 ```
 
 ---
 
-### Task 5: Wipe and replay beta
-
-Beta's database still carries the old history in its `d1_migrations` ledger, so it must be rebuilt to join the trunk.
-
-**Files:**
-- Create: `.local/beta-backup-2026-08-07.sql` (untracked)
-- Create: `.local/reset-beta.sql` (untracked)
+### Task 6: Rebuild beta on the trunk
 
 **Interfaces:**
-- Consumes: `drizzle/migrations` from Task 3.
-- Produces: `code-nest-beta-db` at `0000` through `0004_unify_schema.sql`, reseeded.
+- Consumes: the trunk.
+- Produces: `code-nest-beta-db` at `0000` through `0004`, seeded.
 
-- [ ] **Step 1: Back up beta and get approval**
-
-Show and wait for approval:
+- [ ] **Step 1: Back up beta, with approval**
 
 ```bash
-pnpm exec wrangler d1 export DB --config wrangler.beta.jsonc --remote --output .local/beta-backup-2026-08-07.sql
+pnpm exec wrangler d1 export DB --config wrangler.beta.jsonc --remote --output .local/beta-backup-2026-08-07T1100Z.sql
 ```
 
-- [ ] **Step 2: Generate the beta reset script**
+- [ ] **Step 2: Validate that backup**
+
+Same check as Task 5 Step 2, against the beta file.
+
+- [ ] **Step 3: Build and apply the reset, with approval**
 
 ```bash
 pnpm exec wrangler d1 execute DB --config wrangler.beta.jsonc --remote --json --command "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'" > .local/beta-tables.json
-node -e "const r=require('./.local/beta-tables.json');const names=r[0].results.map(x=>x.name);require('fs').writeFileSync('.local/reset-beta.sql','PRAGMA defer_foreign_keys = true;\n'+names.map(n=>'DROP TABLE IF EXISTS \"'+n+'\";').join('\n')+'\n');console.log('tables to drop:',names.length)"
-cat .local/reset-beta.sql
+node -e "
+const r=require('./.local/beta-tables.json');
+const names=r[0].results.map(x=>x.name);
+require('fs').writeFileSync('.local/reset-beta.sql','PRAGMA defer_foreign_keys = true;\n'+names.map(n=>'DROP TABLE IF EXISTS \"'+n+'\";').join('\n')+'\n');
+console.log('tables to drop:',names.length,'includes d1_migrations:',names.includes('d1_migrations'));
+"
 ```
 
-Confirm `d1_migrations` appears in the printed script.
-
-- [ ] **Step 3: Apply the reset and get approval**
-
-Show and wait for approval. This destroys every table in `code-nest-beta-db`:
+Show and wait for approval:
 
 ```bash
 pnpm exec wrangler d1 execute DB --config wrangler.beta.jsonc --remote --file .local/reset-beta.sql
 ```
 
-- [ ] **Step 4: Replay the full trunk**
-
-Show and wait for approval:
+- [ ] **Step 4: Replay the full trunk, with approval**
 
 ```bash
 pnpm exec wrangler d1 migrations apply DB --config wrangler.beta.jsonc --remote
 ```
 
-Expected: five migrations applied, `0000` through `0004_unify_schema.sql`.
+Expected: five migrations applied, `0000` through `0004`.
 
-- [ ] **Step 5: Reseed**
+- [ ] **Step 5: Seed beta**
+
+`pnpm db:seed:dev` does not seed. It prints instructions and exits zero, and the command it prints uses `--env dev`, which is not an environment in this setup and would fall back to the default config, which binds production. Use the export path instead.
+
+```bash
+pnpm db:seed:dev:export
+ls -la .local/dev-seed.sql
+```
 
 Show and wait for approval:
 
 ```bash
-pnpm db:seed:dev
+pnpm exec wrangler d1 execute DB --config wrangler.beta.jsonc --remote --file .local/dev-seed.sql
 ```
 
-- [ ] **Step 6: Verify and deploy**
+- [ ] **Step 6: Verify beta is populated**
 
 ```bash
 pnpm exec wrangler d1 migrations list DB --config wrangler.beta.jsonc --remote
+pnpm exec wrangler d1 execute DB --config wrangler.beta.jsonc --remote --command "SELECT (SELECT COUNT(*) FROM members) AS members, (SELECT COUNT(*) FROM event_type_rules) AS event_type_rules, (SELECT COUNT(*) FROM point_types) AS point_types, (SELECT COUNT(*) FROM short_links) AS short_links"
+```
+
+Expected: nothing pending, and non-zero counts. A zero `members` count means the seed did not apply; stop.
+
+- [ ] **Step 7: Deploy and check**
+
+```bash
 pnpm deploy:dev
 ```
 
-Expected: nothing pending. Then sign in at `https://beta.ateneocode.org/portal` and load the dashboard, calendar, one event detail page, links, profile, library and announcements. Beta has every feature flag on, so this exercises far more of the schema than staging does. Record which pages were checked.
+Sign in at `https://beta.ateneocode.org/portal` and load dashboard, calendar, an event, links, profile, library and announcements. Beta has every flag on, so this exercises more of the schema than staging. Record which pages were checked.
 
-- [ ] **Step 7: Reset the local development database**
+- [ ] **Step 8: Reset local development**
 
 ```bash
 rm -f .local/dev.db
@@ -598,39 +924,29 @@ pnpm db:migrate:local:sqlite
 pnpm db:seed:local
 ```
 
-Expected: the local database rebuilds from the trunk without error.
-
-- [ ] **Step 8: Commit the record**
+- [ ] **Step 9: Record it**
 
 ```bash
 git commit --allow-empty -m "chore(db): rebuild beta on the unified trunk
 
-code-nest-beta-db was wiped and replayed from 0000 through 0004, then
-reseeded. All three environments now share one migration history.
-Backup at .local/beta-backup-2026-08-07.sql."
+code-nest-beta-db was wiped, replayed from 0000 through 0004, and seeded
+through db:seed:dev:export plus an explicit wrangler execute, because
+db:seed:dev only prints instructions and would have left beta empty.
+All three environments now share one migration history."
 ```
 
 ---
 
-### Task 6: Retire the second directory and document the trunk
-
-With every environment on one history, the second directory and the split it encoded are removed.
+### Task 7: Retire the second directory
 
 **Files:**
-- Delete: `drizzle/release-migrations/` (all six files including `README.md`)
-- Modify: `wrangler.staging.jsonc` (`migrations_dir`), `wrangler.jsonc` (`migrations_dir` and the comment above `database_name`)
+- Delete: `drizzle/release-migrations/`
+- Modify: `wrangler.staging.jsonc`, `wrangler.jsonc`, `docs/superpowers/plans/2026-08-05-beta-to-staging-release.md`
 - Create: `drizzle/migrations/README.md`
-- Modify: `docs/superpowers/plans/2026-08-05-beta-to-staging-release.md`
-
-**Interfaces:**
-- Consumes: the completed state from Tasks 4 and 5.
-- Produces: a single `migrations_dir` value across all three wrangler configs.
 
 - [ ] **Step 1: Point staging and production at the trunk**
 
-In `wrangler.staging.jsonc` and `wrangler.jsonc`, set `"migrations_dir": "drizzle/migrations"` and delete the comments that explain the two-lineage split, which no longer exists. Leave `wrangler.beta.jsonc` as it is; it already points there.
-
-- [ ] **Step 2: Confirm all three agree**
+Set `"migrations_dir": "drizzle/migrations"` in both `wrangler.staging.jsonc` and `wrangler.jsonc`, and delete the comments describing the two-lineage split, which no longer exists.
 
 ```bash
 grep -n "migrations_dir" wrangler.jsonc wrangler.staging.jsonc wrangler.beta.jsonc
@@ -638,24 +954,22 @@ grep -n "migrations_dir" wrangler.jsonc wrangler.staging.jsonc wrangler.beta.jso
 
 Expected: three lines, all `drizzle/migrations`.
 
-- [ ] **Step 3: Delete the second directory**
+- [ ] **Step 2: Delete the second directory**
 
 ```bash
 git rm -r drizzle/release-migrations
 ```
 
-- [ ] **Step 4: Document the trunk**
+- [ ] **Step 3: Document the trunk**
 
 Create `drizzle/migrations/README.md`:
 
 ```markdown
 # Migrations
 
-One history, shared by every environment. `0000` through `0003` are the history
-production has always had. `0004_unify_schema.sql` was generated from
-`src/db/schema.ts` and brings a database up to what the application expects.
-
-Each environment sits at a prefix of this list:
+One history, shared by every environment. `0000` through `0003` are production's
+own history. `0004_unify_schema.sql` brings a database to what
+`src/db/schema.ts` describes.
 
 | Environment | Database | Config |
 | --- | --- | --- |
@@ -663,72 +977,78 @@ Each environment sits at a prefix of this list:
 | staging | `code-nest-staged-db` | `wrangler.staging.jsonc` |
 | production | `code-nest-prod-db` | `wrangler.jsonc` |
 
-## Adding a change
-
-Edit `src/db/schema.ts`, then run `pnpm db:generate`. Never hand-write a
-migration to reconcile an environment. A hand-written migration is a second copy
-of the schema, and the one this project used to keep drifted: it left staging
-without `member_feed_state.tour_seen_at` while `schema.ts` still declared it, and
-nothing caught it. `pnpm db:generate` reporting no changes is the check that the
-directory and `schema.ts` agree.
-
-Apply outward, never inward: beta, then staging, then production.
+Each sits at a prefix of this list. Apply outward, never inward:
 
     pnpm db:migrate:dev
     pnpm db:migrate:staged
     pnpm db:migrate:prod
 
 `pnpm db:migrate:prod` passes no `--config` and reads `wrangler.jsonc` from
-whatever tree is checked out, so keep these configs correct on every branch.
+whatever tree is checked out, so these configs must stay correct on every branch.
 
-Check what is pending without writing anything:
+## Adding a change
+
+Edit `src/db/schema.ts`, run `pnpm db:generate`, review the emitted file.
+
+`drizzle-kit generate` writes DDL only. If your change needs a seed, a backfill
+or a data copy, add it to the same file by hand and extend
+`scripts/verify-preservation.ts` to assert it. This is not optional: `0004`
+exists because nine such statements lived in the old history, and a generated
+migration would have silently dropped every one. An empty `event_type_rules`
+means nobody can create an event.
+
+## Checks
+
+    pnpm exec tsx scripts/verify-trunk.ts         # trunk and schema.ts agree
+    pnpm exec tsx scripts/verify-preservation.ts  # data survives 0004
+
+`verify-trunk` replays this directory into one database and renders `schema.ts`
+into another, then diffs them. Neither side derives from the other. A previous
+version of this project checked convergence by running `db:generate` twice,
+which compares `schema.ts` against a snapshot `db:generate` had just written,
+and would pass on a completely wrong migration.
+
+Read pending migrations without writing:
 
     pnpm exec wrangler d1 migrations list DB --config wrangler.staging.jsonc --remote
-
-## Tables that are present but unused
-
-`0000` created `articles`, `article_*`, `comments`, `announcements`,
-`consultancy_teams`, `favorites`, `lists`, `list_items`, `point_awards`,
-`team_members` and `topics`. Nothing reads them. They are left in place because
-dropping a table in production needs its own decision and a check that it is
-empty. Do not add a migration that drops them without that check.
 ```
 
-- [ ] **Step 5: Mark the superseded plan**
+- [ ] **Step 4: Mark the superseded plan**
 
-At the top of `docs/superpowers/plans/2026-08-05-beta-to-staging-release.md`, directly under the title, add:
+Under the title of `docs/superpowers/plans/2026-08-05-beta-to-staging-release.md`, add:
 
 ```markdown
 > **Superseded in part, 2026-08-07.** The separate migration directory this plan
 > introduced has been replaced by a single history. See
 > `docs/superpowers/specs/2026-08-07-migration-lineage-unification-design.md`.
-> The feature-flag work in tasks 1 to 5 still stands; tasks 1 and part of 2 were
-> implemented in commits f8bd0f3 and dbbebe4.
+> The feature-flag work in tasks 1 to 5 still stands; task 1 and part of task 2
+> shipped in commits f8bd0f3 and dbbebe4.
 ```
 
-- [ ] **Step 6: Full verification**
+- [ ] **Step 5: Full verification**
 
 ```bash
 pnpm typecheck && pnpm test
+pnpm exec tsx scripts/verify-trunk.ts
 pnpm exec wrangler d1 migrations list DB --config wrangler.beta.jsonc --remote
 pnpm exec wrangler d1 migrations list DB --config wrangler.staging.jsonc --remote
 ```
 
-Expected: clean typecheck, 465 tests pass, and both environments report nothing pending.
+Expected: clean typecheck, 467 tests, `CONVERGED`, nothing pending on either environment.
 
-- [ ] **Step 7: Commit and push**
+- [ ] **Step 6: Commit and push**
 
 ```bash
 graphify update .
 git add -A drizzle wrangler.jsonc wrangler.staging.jsonc docs graphify-out
 git commit -m "refactor(db): retire the second migration directory
 
-Every environment is now on one history, so drizzle/release-migrations
-and the split it encoded are removed. All three wrangler configs point at
+Every environment now shares one history, so drizzle/release-migrations
+and the split it encoded are gone. All three wrangler configs point at
 drizzle/migrations.
 
-The new README records why a migration is never hand-written here: the
-bridge that was, drifted, and left staging without a column schema.ts
+The README records why a migration here is never assumed to be pure DDL:
+the bridge that was, drifted, and left staging without a column schema.ts
 declared."
 git push origin beta
 ```
@@ -737,10 +1057,10 @@ git push origin beta
 
 ## Remaining after this plan
 
-Production is still at `0003` and has not been touched. Applying `0004_unify_schema.sql` to `code-nest-prod-db` is deliberately a separate piece of work, because it is the first genuinely irreversible step. Before it runs:
+Production is still at `0003` and untouched. Applying `0004_unify_schema.sql` to `code-nest-prod-db` is deliberately separate, being the first irreversible step. Before it runs:
 
-- confirm the row counts in the eleven unused tables so it is clear what is being left behind
-- take a `wrangler d1 export` backup of production
-- apply the identical file that Task 4 rehearsed on staging
+- re-check the legacy table counts, which were all zero on 2026-08-07
+- take a `wrangler d1 export` backup with a fresh timestamped name and validate it
+- apply the identical file Task 5 rehearsed
 
-Feature-flag enforcement for server actions and internal route handlers, tasks 2 to 5 of the 2026-08-05 release plan, is also still outstanding and unrelated to this work.
+Feature-flag enforcement for server actions and internal route handlers, tasks 2 to 5 of the 2026-08-05 plan, remains outstanding and unrelated.
