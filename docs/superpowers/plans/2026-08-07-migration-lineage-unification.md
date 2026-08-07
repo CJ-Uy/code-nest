@@ -521,6 +521,8 @@ the same value."
 
 ### Task 3: Author 0004_unify_schema.sql and assemble the trunk
 
+> **DONE 2026-08-07, commits `4282520` and `e9dd3ee`.** PRESERVATION OK, CONVERGED, 468 tests. 18 drops, 2 drop-columns, 0 deletes.
+
 **Files:**
 - Delete: `drizzle/migrations/0001_v5_drop_deferred.sql` through `0019_*.sql`, and `drizzle/migrations/meta/`
 - Create: `drizzle/migrations/0001_member_portal_links.sql`, `0002_link_workspace_fields.sql`, `0003_admin_members_nav.sql` (copied from `drizzle/release-migrations`)
@@ -532,7 +534,7 @@ the same value."
 - Consumes: Task 1's `schema.ts`, Task 2's verifier.
 - Produces: `drizzle/migrations` as the single trunk.
 
-- [ ] **Step 1: Confirm the two 0000 files are SQL-equivalent**
+- [x] **Step 1: Confirm the two 0000 files are SQL-equivalent**
 
 They differ in bytes because of line endings: 20,684 versus 21,165. Compare content, not bytes.
 
@@ -542,7 +544,7 @@ git diff --no-index --ignore-cr-at-eol --stat drizzle/migrations/0000_young_bull
 
 Expected: no output, meaning no content difference. Any reported change means stop; the lineages do not share an origin.
 
-- [ ] **Step 2: Replace beta's history with production's**
+- [x] **Step 2: Replace beta's history with production's**
 
 The release copy becomes canonical so the trunk matches what production actually applied.
 
@@ -558,7 +560,7 @@ ls drizzle/migrations/
 
 Expected: exactly four `.sql` files, no `meta/`. `0004_beta_release_bridge.sql` is deliberately not copied; it is the drifted artefact being replaced.
 
-- [ ] **Step 3: Render the target schema for reference**
+- [x] **Step 3: Render the target schema for reference**
 
 Do not use this as the migration. It is a from-empty render used to copy exact DDL for the tables `0004` creates.
 
@@ -573,7 +575,7 @@ pnpm exec drizzle-kit generate --config .local/drizzle.render.config.ts
 
 Expected: one file in `.local/render` containing roughly 44 `CREATE TABLE` statements. Use it as the source of truth for column types, defaults and index definitions when writing `0004`.
 
-- [ ] **Step 4: Author 0004_unify_schema.sql**
+- [x] **Step 4: Author 0004_unify_schema.sql**
 
 Create `drizzle/migrations/0004_unify_schema.sql`. Statements are separated by `--> statement-breakpoint`, matching the rest of the directory. Structure it in this order, because the drops must follow the copy that reads from `point_awards`:
 
@@ -592,7 +594,7 @@ Create `drizzle/migrations/0004_unify_schema.sql`. Statements are separated by `
 
 Open the file with a header comment naming the spec, so the next reader knows why it is authored rather than generated.
 
-- [ ] **Step 5: Write the preservation check**
+- [x] **Step 5: Write the preservation check**
 
 Create `scripts/verify-preservation.ts`. It builds `0000`-`0003`, inserts legacy fixtures, applies `0004`, and asserts. Synthetic rows only.
 
@@ -671,7 +673,7 @@ if (failures.length > 0) {
 console.log("PRESERVATION OK");
 ```
 
-- [ ] **Step 6: Run both checks**
+- [x] **Step 6: Run both checks**
 
 ```bash
 pnpm exec tsx scripts/verify-preservation.ts
@@ -680,7 +682,7 @@ pnpm exec tsx scripts/verify-trunk.ts
 
 Expected: `PRESERVATION OK`, then `CONVERGED`. Iterate on `0004_unify_schema.sql` until both pass. `NOT CONVERGED` prints exactly which objects differ.
 
-- [ ] **Step 7: Enforce the destructive-statement allowlist**
+- [x] **Step 7: Enforce the destructive-statement allowlist**
 
 Every destructive statement in `0004` must be one you intended. A grep for table names is not enough; check the shape of every destructive statement.
 
@@ -700,7 +702,7 @@ Expected exactly **18** `DROP TABLE IF EXISTS`, **2** `DROP COLUMN`, and **zero*
 
 Any count that does not match, any drop of a table not named here, or any bare `DROP TABLE` without `IF EXISTS` is a stop. Confirm each drop against the table above by name; a count alone would pass a migration that dropped the wrong table.
 
-- [ ] **Step 8: Run the suite and clean up**
+- [x] **Step 8: Run the suite and clean up**
 
 ```bash
 pnpm test
@@ -709,7 +711,7 @@ rm -rf .local/render .local/drizzle.render.config.ts
 
 Expected: 467 tests pass.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add -A drizzle/migrations scripts/verify-preservation.ts
