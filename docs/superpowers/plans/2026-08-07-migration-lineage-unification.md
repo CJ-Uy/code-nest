@@ -848,18 +848,24 @@ pnpm exec wrangler d1 export DB --config wrangler.staging.jsonc --remote --outpu
 
 A backup you have not read is a hope, not a backup.
 
+The validator must disable foreign keys first. A D1 export opens with `PRAGMA defer_foreign_keys=TRUE`, which only takes effect inside a transaction, and the dump interleaves `CREATE TABLE` with the `INSERT`s for that table. better-sqlite3 enables foreign keys by default, so an insert whose FK target has not been created yet fails with `no such table`. Verified 2026-08-07: without the pragma a perfectly good backup is condemned.
+
 ```bash
 node -e "
 const Database=require('better-sqlite3');
 const fs=require('fs');
 const db=new Database(':memory:');
-db.exec(fs.readFileSync('.local/staged-backup-2026-08-07T1100Z.sql','utf8'));
-const t=db.prepare(\"SELECT COUNT(*) c FROM sqlite_master WHERE type='table'\").get();
-console.log('tables restored from backup:', t.c);
+db.pragma('foreign_keys = OFF');
+db.exec(fs.readFileSync(process.env.BACKUP,'utf8'));
+const one=(s)=>db.prepare(s).get().c;
+console.log('tables        =', one(\"SELECT COUNT(*) c FROM sqlite_master WHERE type='table'\"));
+console.log('members       =', one('SELECT COUNT(*) c FROM members'));
+console.log('short_links   =', one('SELECT COUNT(*) c FROM short_links'));
+console.log('d1_migrations =', one('SELECT COUNT(*) c FROM d1_migrations'));
 "
 ```
 
-Expected: a plausible table count. A throw means stop; there is no usable backup.
+Set `BACKUP` to the file written in Step 1. Expected: a plausible table count and row counts matching what the environment held before the export. A throw means stop; there is no usable backup and nothing destructive may proceed.
 
 - [ ] **Step 3: Build the reset script**
 
