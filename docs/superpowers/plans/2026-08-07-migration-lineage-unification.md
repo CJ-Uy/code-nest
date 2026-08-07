@@ -813,16 +813,29 @@ journal index 4, and a following db:generate is now a no-op."
 
 ## Execution status, 2026-08-07
 
-Tasks 1 to 4 are complete, committed and pushed. The working tree is clean and every local gate is green:
+Tasks 1 to 4 complete and committed. Task 5 is complete through the rehearsal; only the deploy and browser pass remain.
 
-- `pnpm exec tsx scripts/verify-trunk.ts` prints `CONVERGED`
-- `pnpm exec tsx scripts/verify-preservation.ts` prints `PRESERVATION OK`
-- `pnpm db:generate` reports no schema changes
-- `pnpm test` reports 468 passing
+**Staging now sits at `0000` to `0004_unify_schema.sql` with nothing pending.** It was reset to production's exact `0003` state and then received the single `0004`, which is precisely the operation production will get. Verified after: `event_type_rules` seeded with 3 rows and the `official` label applied, `pt_retention` present, `role_publishing` present, the legacy tables gone, `library_items` created. The preserved DML survived, which was the single largest risk.
 
-**No remote database has been touched.** Beta, staging and production are all exactly as they were before this work started. `drizzle/release-migrations` still exists and `wrangler.staging.jsonc` and `wrangler.jsonc` still point at it, so every environment continues to behave normally. Stopping here indefinitely is safe.
+All three wrangler configs now point at `drizzle/migrations`.
 
-**Resume at Task 5.** It is the first step that touches a remote database and every destructive command in it requires explicit approval. Re-check the measured row counts near the top of this file first if more than a day has passed, and add `nav_pins` to that check, since production's count has never been taken.
+**Production remains untouched** and sits at `0003`. It will offer exactly one pending migration, `0004_unify_schema.sql`, the identical file just rehearsed.
+
+### Corrections learned by executing tasks 5
+
+Four things in this plan were wrong and are fixed above. Each was found by running a step, not by reading it.
+
+1. **The backup validator condemned a good backup.** A D1 export opens with `PRAGMA defer_foreign_keys=TRUE`, which only applies inside a transaction, and interleaves `CREATE TABLE` with that table's inserts. better-sqlite3 enables foreign keys by default, so an insert whose FK target does not exist yet fails. The validator must set `foreign_keys = OFF`.
+
+2. **The reset must not drop `_cf_KV`.** It is a Cloudflare-internal D1 table and `NOT LIKE 'sqlite_%'` does not exclude it.
+
+3. **A reset cannot be done as one file.** `wrangler d1 execute --file` is atomic, so a failed batch rolls back entirely and repeating it fails identically forever. Worse, no drop order exists: inside a transaction SQLite still resolves the foreign keys of already-dropped tables, and the cascade walks transitively, so dropping `members` fails on `consultancy_teams` two hops away. Emptying every table first does not help either, because the failure is schema resolution, not rows. **Drop one table per `--command` invocation so each is its own transaction, and repeat until none remain.** That converged in two passes plus one straggler.
+
+4. **The config repoint belongs here, not in task 7.** Task 5 cannot apply the trunk's `0004` while `wrangler.staging.jsonc` still resolves to `drizzle/release-migrations`, which offers the old bridge instead. Done in commit `2a4512d`.
+
+Also worth knowing: `migrations_dir` resolves relative to the **config file's own directory**, so a temporary config in `.local/` needs `"migrations_dir": "prefix"`, not `".local/prefix"`.
+
+**Resume at Task 6**, the beta rebuild. Task 7 is now partly done; only deleting `drizzle/release-migrations` and writing the README remain.
 
 ---
 
