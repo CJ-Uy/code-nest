@@ -23,7 +23,9 @@ const savePendingSchema = z.object({
 export async function searchMembersAction(query: string) {
 	const actor = await requireActor();
 	const repositories = await getRepositories();
-	return repositories.members.search(actor, query);
+	// Includes pending and inactive members on purpose: access is often granted before
+	// someone is activated, and filtering them out made them impossible to find here.
+	return repositories.members.search(actor, query, { includeInactive: true });
 }
 
 /** Roster entries with no member row yet, so a role can be granted before first sign-in. */

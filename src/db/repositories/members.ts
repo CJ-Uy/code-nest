@@ -35,7 +35,12 @@ export type MemberDb = {
 
 export type MembersRepository = {
 	list(actor: Actor, input?: { limit?: number }): Promise<Member[]>;
-	search(actor: Actor, query: string): Promise<Member[]>;
+	/**
+	 * Active members only by default. Pass includeInactive to also match pending and
+	 * inactive rows, which the roles page needs: someone can be granted access before
+	 * they are activated, and excluding them made them impossible to find at all.
+	 */
+	search(actor: Actor, query: string, options?: { includeInactive?: boolean }): Promise<Member[]>;
 	getById(actor: Actor, id: string): Promise<Member | null>;
 	create(actor: Actor, input: CreateMemberInput): Promise<Member>;
 	updateProfile(actor: Actor, id: string, input: UpdateMemberProfileInput): Promise<Member>;
@@ -50,7 +55,7 @@ export function createMembersRepository(db: MemberDb, audit: AuditRepository): M
 			}
 			return db.select().from(members).orderBy(members.createdAt).limit(Math.min(input?.limit ?? 25, 50));
 		},
-		async search(actor, query) {
+		async search(actor, query, options) {
 			// Roles page authorizes on its own permission; member management also allowed.
 			if (!can(actor, "role:assign") && !can(actor, "member:manage")) {
 				throw new Error("Not authorized to search members.");
@@ -58,21 +63,17 @@ export function createMembersRepository(db: MemberDb, audit: AuditRepository): M
 			const q = query.trim().toLowerCase();
 			if (q.length < 2) return [];
 			const pattern = `%${q}%`;
-			// SQLite LIKE is case-insensitive for ASCII; active members only, capped at 20.
+			const matchesName = or(
+				like(members.name, pattern),
+				like(members.fullName, pattern),
+				like(members.nickname, pattern),
+				like(members.email, pattern),
+			);
+			// SQLite LIKE is case-insensitive for ASCII; capped at 20.
 			return db
 				.select()
 				.from(members)
-				.where(
-					and(
-						eq(members.status, "active"),
-						or(
-							like(members.name, pattern),
-							like(members.fullName, pattern),
-							like(members.nickname, pattern),
-							like(members.email, pattern),
-						),
-					),
-				)
+				.where(options?.includeInactive ? matchesName : and(eq(members.status, "active"), matchesName))
 				.limit(20);
 		},
 		async getById(actor, id) {

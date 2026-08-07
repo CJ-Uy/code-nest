@@ -189,10 +189,20 @@ export function RolesManager({
 					) : (
 						<ul className="grid gap-1">
 							{nonAdminResults.map((m) => (
-								<li key={m.id} className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2">
+								<li
+									key={m.id}
+									className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border px-3 py-2"
+								>
 									<span className="min-w-0 text-sm">
 										<span className="font-medium">{memberName(m)}</span>{" "}
 										<span className="break-all text-muted-foreground">{m.email}</span>
+										{/* Pending and inactive members are searchable here, so label them rather
+										    than leaving an admin to wonder why someone looks unfamiliar. */}
+										{m.status !== "active" ? (
+											<span className="ml-2 rounded-full bg-secondary px-2 py-0.5 text-xs capitalize text-muted-foreground">
+												{m.status}
+											</span>
+										) : null}
 									</span>
 									<Button
 										type="button"

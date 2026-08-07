@@ -62,9 +62,24 @@ describe("roles + member search on D1", () => {
 		const { members } = repos();
 		expect((await members.search(memberAdmin, "dela")).map((m) => m.email)).toContain("juan@code.org");
 		expect((await members.search(memberAdmin, "JUAN@")).length).toBe(1);
-		expect(await members.search(memberAdmin, "old")).toEqual([]); // inactive excluded
+		expect(await members.search(memberAdmin, "old")).toEqual([]); // inactive excluded by default
 		expect(await members.search(memberAdmin, "d")).toEqual([]); // < 2 chars
 		await expect(members.search(plain, "dela")).rejects.toThrow(/Not authorized/);
+	});
+
+	it("members.search: includeInactive finds a member who is not active", async () => {
+		// The roles page needs this. Access is often granted before someone is activated,
+		// and the default filter made those people impossible to find at all.
+		const { members } = repos();
+		const found = await members.search(memberAdmin, "old", { includeInactive: true });
+		expect(found.length).toBeGreaterThan(0);
+		expect(found.every((m) => m.status !== "active")).toBe(true);
+		// The opt-in widens the search rather than replacing it: active members still match.
+		expect((await members.search(memberAdmin, "dela", { includeInactive: true })).map((m) => m.email)).toContain(
+			"juan@code.org",
+		);
+		// Authorization is unchanged by the option.
+		await expect(members.search(plain, "old", { includeInactive: true })).rejects.toThrow(/Not authorized/);
 	});
 
 	it("lists assignable roles (no member, events active) and reads keys", async () => {
