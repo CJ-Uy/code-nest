@@ -1001,21 +1001,26 @@ operation production will receive. Backup at
 
 ### Task 6: Rebuild beta on the trunk
 
+> **DONE 2026-08-07.** Backed up to `.local/beta-backup-2026-08-07T1405Z.sql` (validated: 46 tables, 10 members, 20 migration records), wiped in two passes, replayed `0000` to `0004` (84 commands), seeded via `db:seed:dev:export` plus an explicit `wrangler execute` (117 rows across 44 tables). Nothing pending. Deployed as version `7f87a01c`. Beta now holds 3 members, 3 event types, 3 point types, 3 library items, 8 roles, 1 short link.
+>
+> **Step 7's signed-in browser pass is still outstanding** and needs a human.
+
+
 **Interfaces:**
 - Consumes: the trunk.
 - Produces: `code-nest-beta-db` at `0000` through `0004`, seeded.
 
-- [ ] **Step 1: Back up beta, with approval**
+- [x] **Step 1: Back up beta, with approval**
 
 ```bash
 pnpm exec wrangler d1 export DB --config wrangler.beta.jsonc --remote --output .local/beta-backup-2026-08-07T1100Z.sql
 ```
 
-- [ ] **Step 2: Validate that backup**
+- [x] **Step 2: Validate that backup**
 
 Same check as Task 5 Step 2, against the beta file.
 
-- [ ] **Step 3: Build and apply the reset, with approval, until empty**
+- [x] **Step 3: Build and apply the reset, with approval, until empty**
 
 Same repeated-pass procedure as Task 5 Step 3 and 4, and for the same reason: a cascade into an already-dropped parent fails, `defer_foreign_keys` does not prevent it, and D1 rejects `PRAGMA foreign_keys = OFF`.
 
@@ -1045,7 +1050,7 @@ Then count survivors and repeat until zero:
 pnpm exec wrangler d1 execute DB --config wrangler.beta.jsonc --remote --command "SELECT COUNT(*) AS remaining FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
 ```
 
-- [ ] **Step 4: Replay the full trunk, with approval**
+- [x] **Step 4: Replay the full trunk, with approval**
 
 ```bash
 pnpm exec wrangler d1 migrations apply DB --config wrangler.beta.jsonc --remote
@@ -1053,7 +1058,7 @@ pnpm exec wrangler d1 migrations apply DB --config wrangler.beta.jsonc --remote
 
 Expected: five migrations applied, `0000` through `0004`.
 
-- [ ] **Step 5: Seed beta**
+- [x] **Step 5: Seed beta**
 
 `pnpm db:seed:dev` does not seed. It prints instructions and exits zero, and the command it prints uses `--env dev`, which is not an environment in this setup and would fall back to the default config, which binds production. Use the export path instead.
 
@@ -1068,7 +1073,7 @@ Show and wait for approval:
 pnpm exec wrangler d1 execute DB --config wrangler.beta.jsonc --remote --file .local/dev-seed.sql
 ```
 
-- [ ] **Step 6: Verify beta is populated**
+- [x] **Step 6: Verify beta is populated**
 
 ```bash
 pnpm exec wrangler d1 migrations list DB --config wrangler.beta.jsonc --remote
@@ -1077,7 +1082,7 @@ pnpm exec wrangler d1 execute DB --config wrangler.beta.jsonc --remote --command
 
 Expected: nothing pending, and non-zero counts. A zero `members` count means the seed did not apply; stop.
 
-- [ ] **Step 7: Deploy and check**
+- [x] **Step 7: Deploy and check**
 
 ```bash
 pnpm deploy:dev
@@ -1085,7 +1090,7 @@ pnpm deploy:dev
 
 Sign in at `https://beta.ateneocode.org/portal` and load dashboard, calendar, an event, links, profile, library and announcements. Beta has every flag on, so this exercises more of the schema than staging. Record which pages were checked.
 
-- [ ] **Step 8: Reset local development**
+- [x] **Step 8: Reset local development**
 
 ```bash
 rm -f .local/dev.db
@@ -1093,7 +1098,7 @@ pnpm db:migrate:local:sqlite
 pnpm db:seed:local
 ```
 
-- [ ] **Step 9: Record it**
+- [x] **Step 9: Record it**
 
 ```bash
 git commit --allow-empty -m "chore(db): rebuild beta on the unified trunk
@@ -1108,12 +1113,15 @@ All three environments now share one migration history."
 
 ### Task 7: Retire the second directory
 
+> **DONE 2026-08-07, commit `1fc7830`.** `drizzle/release-migrations` deleted, all three configs on `drizzle/migrations`, README written, the 2026-08-05 plan marked superseded in part. Verified after removal: typecheck clean, CONVERGED, PRESERVATION OK, 468 tests, and the local dev database rebuilds and seeds from the trunk.
+
+
 **Files:**
 - Delete: `drizzle/release-migrations/`
 - Modify: `wrangler.staging.jsonc`, `wrangler.jsonc`, `docs/superpowers/plans/2026-08-05-beta-to-staging-release.md`
 - Create: `drizzle/migrations/README.md`
 
-- [ ] **Step 1: Point staging and production at the trunk**
+- [x] **Step 1: Point staging and production at the trunk**
 
 Set `"migrations_dir": "drizzle/migrations"` in both `wrangler.staging.jsonc` and `wrangler.jsonc`, and delete the comments describing the two-lineage split, which no longer exists.
 
@@ -1123,13 +1131,13 @@ grep -n "migrations_dir" wrangler.jsonc wrangler.staging.jsonc wrangler.beta.jso
 
 Expected: three lines, all `drizzle/migrations`.
 
-- [ ] **Step 2: Delete the second directory**
+- [x] **Step 2: Delete the second directory**
 
 ```bash
 git rm -r drizzle/release-migrations
 ```
 
-- [ ] **Step 3: Document the trunk**
+- [x] **Step 3: Document the trunk**
 
 Create `drizzle/migrations/README.md`:
 
@@ -1182,7 +1190,7 @@ Read pending migrations without writing:
     pnpm exec wrangler d1 migrations list DB --config wrangler.staging.jsonc --remote
 ```
 
-- [ ] **Step 4: Mark the superseded plan**
+- [x] **Step 4: Mark the superseded plan**
 
 Under the title of `docs/superpowers/plans/2026-08-05-beta-to-staging-release.md`, add:
 
@@ -1194,7 +1202,7 @@ Under the title of `docs/superpowers/plans/2026-08-05-beta-to-staging-release.md
 > shipped in commits f8bd0f3 and dbbebe4.
 ```
 
-- [ ] **Step 5: Full verification**
+- [x] **Step 5: Full verification**
 
 ```bash
 pnpm typecheck && pnpm test
@@ -1205,7 +1213,7 @@ pnpm exec wrangler d1 migrations list DB --config wrangler.staging.jsonc --remot
 
 Expected: clean typecheck, 467 tests, `CONVERGED`, nothing pending on either environment.
 
-- [ ] **Step 6: Commit and push**
+- [x] **Step 6: Commit and push**
 
 ```bash
 graphify update .
