@@ -78,6 +78,8 @@ Derived by replaying release `0000`-`0003` and beta's full lineage into throwawa
 
 ### Task 1: Align schema.ts with the trunk
 
+> **DONE 2026-08-07, commit `a49a15a`.** 459 tests, typecheck and eslint clean.
+
 **Files:**
 - Delete: `src/components/portal/guided-tour.tsx`, `src/db/repositories/memberFeed.ts`
 - Modify: `src/app/portal/actions.ts`, `src/db/repositories/index.ts:10,62,135`, `src/db/schema.ts`
@@ -86,7 +88,7 @@ Derived by replaying release `0000`-`0003` and beta's full lineage into throwawa
 - Produces: `src/db/schema.ts` with no `memberFeedState` export and `navPins` aligned on three properties. Tasks 2 and 3 both target this file's output.
 - Removes: `Repositories["memberFeed"]`. `Repositories` is `ReturnType<typeof createDrizzleRepositories>`, so deleting the key from both factories updates the type.
 
-- [ ] **Step 1: Confirm the tour is unreferenced**
+- [x] **Step 1: Confirm the tour is unreferenced**
 
 ```bash
 grep -rn "GuidedTour\|guided-tour\|markTourSeenAction\|memberFeed\|tourSeenAt\|surveysSeenAt\|eventsSeenAt" src --include=*.ts --include=*.tsx
@@ -94,13 +96,13 @@ grep -rn "GuidedTour\|guided-tour\|markTourSeenAction\|memberFeed\|tourSeenAt\|s
 
 Expected: matches only in `guided-tour.tsx`, `memberFeed.ts`, `src/app/portal/actions.ts`, `src/db/repositories/index.ts`, `src/db/schema.ts`. Any other file means stop and report.
 
-- [ ] **Step 2: Delete the dead files**
+- [x] **Step 2: Delete the dead files**
 
 ```bash
 git rm src/components/portal/guided-tour.tsx src/db/repositories/memberFeed.ts
 ```
 
-- [ ] **Step 3: Reduce portal actions to the one live action**
+- [x] **Step 3: Reduce portal actions to the one live action**
 
 Replace the whole of `src/app/portal/actions.ts` with:
 
@@ -114,7 +116,7 @@ export async function signOutAction(): Promise<void> {
 }
 ```
 
-- [ ] **Step 4: Unwire the repository**
+- [x] **Step 4: Unwire the repository**
 
 In `src/db/repositories/index.ts` delete these three lines:
 
@@ -128,7 +130,7 @@ import { createMemberFeedRepository, createUnavailableMemberFeedRepository } fro
 		memberFeed: createUnavailableMemberFeedRepository(),
 ```
 
-- [ ] **Step 5: Edit schema.ts**
+- [x] **Step 5: Edit schema.ts**
 
 Delete the entire `memberFeedState` export.
 
@@ -154,12 +156,12 @@ And give `position` the default the deployed databases carry:
 		position: integer("position").notNull().default(0),
 ```
 
-- [ ] **Step 6: Verify**
+- [x] **Step 6: Verify**
 
 Run: `pnpm typecheck && pnpm test`
 Expected: clean typecheck, 459 tests pass. A failure means something still referenced the tour.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 npx eslint src/app/portal/actions.ts src/db/repositories/index.ts src/db/schema.ts
