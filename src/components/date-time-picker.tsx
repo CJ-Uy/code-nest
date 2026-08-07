@@ -61,7 +61,9 @@ export function DateTimePicker({
 
 	return (
 		<div className="grid gap-4">
-			<div className="rounded-xl border border-border p-3">
+			{/* Capped width: the grid is 7 columns, so in a wide panel the month would stretch
+			    far past the point where it is easier to read. */}
+			<div className="w-full max-w-sm rounded-xl border border-border p-3">
 				<div className="mb-2 flex items-center justify-between">
 					<button type="button" onClick={() => shiftMonth(-1)} aria-label="Previous month" className="rounded-md p-1 hover:bg-muted">
 						<ChevronLeft className="size-4" />
@@ -84,7 +86,10 @@ export function DateTimePicker({
 							onClick={() => pick(`${slot.date}T${time || "18:00"}`)}
 							aria-current={slot.date === day ? "date" : undefined}
 							className={cn(
-								"aspect-square rounded-lg text-sm transition-colors",
+								// Fixed height rather than aspect-square: a square cell grows with the
+								// container width, which made the month grid roughly twice as tall as it
+								// needed to be. 36px still clears the comfortable touch target.
+								"h-9 rounded-lg text-sm transition-colors",
 								slot.inMonth ? "" : "text-muted-foreground/40",
 								slot.date === day ? "bg-primary font-semibold text-primary-foreground" : "hover:bg-muted",
 								slot.date === today && slot.date !== day ? "ring-1 ring-primary/40" : "",

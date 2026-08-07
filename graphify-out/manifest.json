@@ -5,8 +5,8 @@
     "semantic_hash": ""
   },
   ".remember/tmp/last-save.json": {
-    "mtime": 1786111918.451491,
-    "ast_hash": "91527ceb2fce6faba4ba3a2b0547ea79",
+    "mtime": 1786113398.1093733,
+    "ast_hash": "3ec3ab4e64382600e3655d3dc7a7fb29",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -695,8 +695,8 @@
     "semantic_hash": ""
   },
   ".remember/now.md": {
-    "mtime": 1786111964.1839595,
-    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "mtime": 1786113397.8973958,
+    "ast_hash": "09d4494b0e7eccc92888713c522bf487",
     "semantic_hash": ""
   },
   ".remember/recent.md": {
@@ -1715,8 +1715,8 @@
     "semantic_hash": ""
   },
   "src/app/portal/calendar/page.tsx": {
-    "mtime": 1785865591.168599,
-    "ast_hash": "f95e93130025a6070aa665aaed5b6fee",
+    "mtime": 1786113234.3745296,
+    "ast_hash": "5f6514aa7b54e108a035790fb1864685",
     "semantic_hash": ""
   },
   "src/app/portal/events/page.tsx": {
@@ -2545,8 +2545,8 @@
     "semantic_hash": ""
   },
   "src/components/date-time-picker.tsx": {
-    "mtime": 1785732737.2610486,
-    "ast_hash": "3d2294e4eb057eac712ff399a20e47bd",
+    "mtime": 1786113192.4754014,
+    "ast_hash": "ddccd107b8c98c2f93626a27773cb18b",
     "semantic_hash": ""
   },
   "src/lib/date-slots.test.ts": {
@@ -4220,8 +4220,8 @@
     "semantic_hash": ""
   },
   "docs/superpowers/plans/2026-08-07-migration-lineage-unification.md": {
-    "mtime": 1786111494.7414365,
-    "ast_hash": "ca076595f182cb4b4bd2c63dda879b15",
+    "mtime": 1786112322.3900797,
+    "ast_hash": "72bc93954e1d7058df73a797644d6540",
     "semantic_hash": ""
   },
   "docs/superpowers/specs/2026-08-07-migration-lineage-unification-design.md": {
@@ -4287,6 +4287,16 @@
   "drizzle/migrations/README.md": {
     "mtime": 1786112150.2018807,
     "ast_hash": "cee6709dfbe2378d4de8baccb63a6a6d",
+    "semantic_hash": ""
+  },
+  "src/app/portal/calendar/calendar-skeletons.tsx": {
+    "mtime": 1786113279.0183983,
+    "ast_hash": "f0a61e1ba96ef9fa0b4be950ec95e2f3",
+    "semantic_hash": ""
+  },
+  "src/app/portal/calendar/loading.tsx": {
+    "mtime": 1786113245.3046494,
+    "ast_hash": "e233f265680843639b235fc5079f3c04",
     "semantic_hash": ""
   }
 }

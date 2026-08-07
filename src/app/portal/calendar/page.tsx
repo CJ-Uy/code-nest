@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { CalendarDays, ChevronLeft, ChevronRight, List } from "lucide-react";
 import { getRepositories } from "@/db";
@@ -9,6 +10,7 @@ import { utc8Parts } from "@/lib/date-slots";
 import { requireActor } from "@/server/auth/actor";
 import { can } from "@/server/auth/permissions";
 import { CreateEventSheet } from "./create-event-sheet";
+import { CreateEventSkeleton, EventsListSkeleton, MonthGridSkeleton } from "./calendar-skeletons";
 import { EventsList, type EventListItem } from "./events-list";
 
 export const dynamic = "force-dynamic";
@@ -18,22 +20,25 @@ const MONTH_NAMES = [
 	"July", "August", "September", "October", "November", "December",
 ];
 
+/**
+ * The page body awaits nothing. Every database read lives inside a Suspense boundary, so
+ * the heading, the view tabs and the month controls paint on the first frame and a tab or
+ * arrow responds immediately instead of waiting on a round trip.
+ *
+ * The boundary is keyed on view, year and month. Without the key React keeps the existing
+ * boundary mounted and holds the previous month on screen until the new one arrives, which
+ * reads as a dead click.
+ */
 export default async function CalendarPage({
 	searchParams,
 }: {
 	searchParams: Promise<{ year?: string; month?: string; view?: string }>;
 }) {
-	const actor = await requireActor();
 	const params = await searchParams;
 	const view = params.view === "list" ? "list" : "calendar";
-	const now = new Date();
-	const today = utc8Parts(now);
+	const today = utc8Parts(new Date());
 	const year = Number(params.year) || today.year;
 	const month = Number(params.month) || today.month;
-
-	const repositories = await getRepositories();
-	const typeLoad = await loadEventTypes(() => repositories.eventTypeRules.list());
-	const allowedTypes = typeLoad.ok ? allowedEventTypes(actor, typeLoad.rows) : [];
 
 	const prev = month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
 	const next = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
@@ -50,11 +55,9 @@ export default async function CalendarPage({
 					<p className="text-xs font-semibold uppercase text-primary">Member workspace</p>
 					<h1 className="font-heading text-3xl">Calendar</h1>
 				</div>
-				<CreateEventSheet
-					allowedTypes={allowedTypes}
-					typesUnavailable={!typeLoad.ok}
-					canSetReadOnly={can(actor, "event:moderate")}
-				/>
+				<Suspense fallback={<CreateEventSkeleton />}>
+					<CreateEventControl />
+				</Suspense>
 			</div>
 
 			<div className="flex flex-wrap items-center justify-between gap-3">
@@ -66,10 +69,13 @@ export default async function CalendarPage({
 							<Link
 								key={tab.id}
 								href={tab.href}
+								// aria-current marks the active tab for assistive tech, which the styling
+								// alone did not convey.
+								aria-current={active ? "page" : undefined}
 								className={
 									active
 										? "inline-flex items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm font-semibold text-foreground"
-										: "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+										: "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
 								}
 							>
 								<Icon className="size-4" />
@@ -101,17 +107,41 @@ export default async function CalendarPage({
 				) : null}
 			</div>
 
-			{view === "calendar" ? (
-				<CalendarMonth
-					items={await repositories.calendar.getMonth(actor, { year, month }).catch(() => [])}
-					year={year}
-					month={month}
-				/>
-			) : (
-				<EventsList events={await loadEventList(repositories, actor)} types={typeLoad.ok ? typeLoad.rows : []} />
-			)}
+			<Suspense
+				key={`${view}-${year}-${month}`}
+				fallback={view === "calendar" ? <MonthGridSkeleton /> : <EventsListSkeleton />}
+			>
+				{view === "calendar" ? <MonthBody year={year} month={month} /> : <ListBody />}
+			</Suspense>
 		</div>
 	);
+}
+
+async function CreateEventControl() {
+	const actor = await requireActor();
+	const repositories = await getRepositories();
+	const typeLoad = await loadEventTypes(() => repositories.eventTypeRules.list());
+	return (
+		<CreateEventSheet
+			allowedTypes={typeLoad.ok ? allowedEventTypes(actor, typeLoad.rows) : []}
+			typesUnavailable={!typeLoad.ok}
+			canSetReadOnly={can(actor, "event:moderate")}
+		/>
+	);
+}
+
+async function MonthBody({ year, month }: { year: number; month: number }) {
+	const actor = await requireActor();
+	const repositories = await getRepositories();
+	const items = await repositories.calendar.getMonth(actor, { year, month }).catch(() => []);
+	return <CalendarMonth items={items} year={year} month={month} />;
+}
+
+async function ListBody() {
+	const actor = await requireActor();
+	const repositories = await getRepositories();
+	const typeLoad = await loadEventTypes(() => repositories.eventTypeRules.list());
+	return <EventsList events={await loadEventList(repositories, actor)} types={typeLoad.ok ? typeLoad.rows : []} />;
 }
 
 // List view keys off the viewer-scoped `myRole` field from listPublished (plan Shared Seam).
