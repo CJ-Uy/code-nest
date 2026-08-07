@@ -735,6 +735,8 @@ Convergence and preservation both pass."
 
 ### Task 4: Restore a usable drizzle-kit baseline
 
+> **DONE 2026-08-07, commit `a904e45`.** `pnpm db:generate` is now a no-op, CONVERGED, 468 tests.
+
 `meta/_journal.json` has been stale since `0008` while SQL ran to `0019`, so `pnpm db:generate` has been unsafe in this repo for some time. The trunk is the moment to fix it.
 
 **Files:**
@@ -743,7 +745,7 @@ Convergence and preservation both pass."
 **Interfaces:**
 - Produces: a snapshot describing the post-`0004` schema, so a later `db:generate` emits a correct `0005`.
 
-- [ ] **Step 1: Produce a snapshot of the current schema**
+- [x] **Step 1: Produce a snapshot of the current schema**
 
 The render from Task 3 Step 3 writes a `meta/` describing exactly the post-`0004` schema, because `0004` converges to `schema.ts`.
 
@@ -757,7 +759,7 @@ pnpm exec drizzle-kit generate --config .local/drizzle.render.config.ts
 ls .local/render/meta/
 ```
 
-- [ ] **Step 2: Install it as the trunk's baseline at index 4**
+- [x] **Step 2: Install it as the trunk's baseline at index 4**
 
 ```bash
 mkdir -p drizzle/migrations/meta
@@ -775,7 +777,7 @@ console.log('journal written at idx 4');
 "
 ```
 
-- [ ] **Step 3: Verify a subsequent generate is a no-op**
+- [x] **Step 3: Verify a subsequent generate is a no-op**
 
 ```bash
 pnpm db:generate
@@ -783,7 +785,7 @@ pnpm db:generate
 
 Expected: drizzle-kit reports no schema changes and writes no new file. If it writes one, inspect the diff, delete the file, and correct the snapshot before continuing. Do not proceed with a generator that thinks the schema has drifted.
 
-- [ ] **Step 4: Confirm nothing else broke**
+- [x] **Step 4: Confirm nothing else broke**
 
 ```bash
 pnpm exec tsx scripts/verify-trunk.ts
@@ -793,7 +795,7 @@ rm -rf .local/render .local/drizzle.render.config.ts
 
 Expected: `CONVERGED`, 467 tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add drizzle/migrations/meta
@@ -804,6 +806,23 @@ db:generate would have emitted eleven migrations' worth of changes as one
 file. The trunk gets a single snapshot describing the post-0004 schema at
 journal index 4, and a following db:generate is now a no-op."
 ```
+
+---
+
+---
+
+## Execution status, 2026-08-07
+
+Tasks 1 to 4 are complete, committed and pushed. The working tree is clean and every local gate is green:
+
+- `pnpm exec tsx scripts/verify-trunk.ts` prints `CONVERGED`
+- `pnpm exec tsx scripts/verify-preservation.ts` prints `PRESERVATION OK`
+- `pnpm db:generate` reports no schema changes
+- `pnpm test` reports 468 passing
+
+**No remote database has been touched.** Beta, staging and production are all exactly as they were before this work started. `drizzle/release-migrations` still exists and `wrangler.staging.jsonc` and `wrangler.jsonc` still point at it, so every environment continues to behave normally. Stopping here indefinitely is safe.
+
+**Resume at Task 5.** It is the first step that touches a remote database and every destructive command in it requires explicit approval. Re-check the measured row counts near the top of this file first if more than a day has passed, and add `nav_pins` to that check, since production's count has never been taken.
 
 ---
 
