@@ -841,6 +841,13 @@ Also worth knowing: `migrations_dir` resolves relative to the **config file's ow
 
 ### Task 5: Rehearse on staging
 
+> **DONE 2026-08-07.** Staging was reset, replayed to production's `0003`, and `0004_unify_schema.sql` applied as a single step: 84 commands, nothing pending afterwards. Verified on the live database: `event_type_rules` 3 rows with `official` labelled "Official", `pt_retention` seeded, `role_publishing` seeded, the legacy tables gone, `library_items` present. The preserved DML survived, which was the single largest risk in the whole plan. Deployed as version `a54464fc`. Backup at `.local/staged-backup-2026-08-07T0652Z.sql`, validated before the reset.
+>
+> **Step 8's signed-in browser pass is still outstanding** and needs a human; it cannot be done from here.
+>
+> Four plan errors were found by executing these steps rather than reading them, all fixed in commits `5972408`, `16ca7bc`, `2a4512d` and `18179b6`. The largest: a reset cannot be one atomic file, because D1 rolls the whole file back on any failure and no drop order exists that avoids a failure. SQLite resolves a dropped table's foreign keys transitively while still inside the transaction, so dropping a parent walks into children that are already gone. Each drop needs its own transaction. It took two passes plus one straggler.
+
+
 Staging carries the hand-written bridge, so it is neither at production's state nor at the trunk's. It is reset rather than patched, because mirroring production is the only thing that makes the rehearsal meaningful.
 
 **Files:** none tracked. Working files under `.local/`, which is gitignored.
@@ -849,7 +856,7 @@ Staging carries the hand-written bridge, so it is neither at production's state 
 - Consumes: the trunk from Tasks 3 and 4.
 - Produces: `code-nest-staged-db` at `0000` through `0004`.
 
-- [ ] **Step 1: Back up staging, with approval**
+- [x] **Step 1: Back up staging, with approval**
 
 Show and wait for approval. The timestamp makes the name unique so a retry cannot overwrite it.
 
@@ -857,7 +864,7 @@ Show and wait for approval. The timestamp makes the name unique so a retry canno
 pnpm exec wrangler d1 export DB --config wrangler.staging.jsonc --remote --output .local/staged-backup-2026-08-07T1100Z.sql
 ```
 
-- [ ] **Step 2: Prove the backup is restorable before destroying anything**
+- [x] **Step 2: Prove the backup is restorable before destroying anything**
 
 A backup you have not read is a hope, not a backup.
 
@@ -880,7 +887,7 @@ console.log('d1_migrations =', one('SELECT COUNT(*) c FROM d1_migrations'));
 
 Set `BACKUP` to the file written in Step 1. Expected: a plausible table count and row counts matching what the environment held before the export. A throw means stop; there is no usable backup and nothing destructive may proceed.
 
-- [ ] **Step 3: Build the reset script**
+- [x] **Step 3: Build the reset script**
 
 `DROP TABLE` with foreign keys enforced performs an implicit `DELETE FROM` that cascades. If a table dropped earlier in the batch is the parent of one still present, the cascade resolves into a table that no longer exists and the statement fails with `no such table`. Verified locally on 2026-08-07: 2 of 53 drops failed this way.
 
@@ -906,7 +913,7 @@ Expected: `includes d1_migrations: true`. If false, the replay in Step 5 skips e
 `_cf_KV` is a Cloudflare-internal D1 table and must be excluded. The obvious `NOT LIKE 'sqlite_%'` filter does not catch it, and staging's table list contained it on 2026-08-07. Dropping a D1 internal is not something to find out about the hard way, so the generator filters any name beginning with `_cf_`.
 
 
-- [ ] **Step 4: Apply the reset, with approval, until the database is empty**
+- [x] **Step 4: Apply the reset, with approval, until the database is empty**
 
 Show and wait for approval. This destroys every table in `code-nest-staged-db`.
 
@@ -922,7 +929,7 @@ pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --comm
 
 If `remaining` is greater than zero, repeat Step 3 to regenerate the script from the surviving tables, then apply it again with approval. Repeat until `remaining` is zero. Stop and report if it has not reached zero after four passes, since that means something other than cascade ordering is holding a table open.
 
-- [ ] **Step 5: Replay to production's state**
+- [x] **Step 5: Replay to production's state**
 
 Production sits at `0003`. Use a temporary directory holding only `0000`-`0003` rather than moving files out of the tracked trunk, so an interruption cannot leave the repository missing `0004`.
 
@@ -946,7 +953,7 @@ pnpm exec wrangler d1 migrations apply DB --config .local/wrangler.prefix.jsonc 
 
 Expected: four migrations applied. Staging now matches production exactly.
 
-- [ ] **Step 6: Rehearse the real step**
+- [x] **Step 6: Rehearse the real step**
 
 ```bash
 pnpm exec wrangler d1 migrations list DB --config wrangler.staging.jsonc --remote
@@ -960,7 +967,7 @@ Show and wait for approval:
 pnpm exec wrangler d1 migrations apply DB --config wrangler.staging.jsonc --remote
 ```
 
-- [ ] **Step 7: Verify staging**
+- [x] **Step 7: Verify staging**
 
 ```bash
 pnpm exec wrangler d1 migrations list DB --config wrangler.staging.jsonc --remote
@@ -970,7 +977,7 @@ pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --comm
 
 Expected: nothing pending; `event_type_rules` 3; `point_types` at least 1; `events_with_code` 3, matching the three events measured before; `members` 7; and the third query returns no rows.
 
-- [ ] **Step 8: Deploy and check the running site**
+- [x] **Step 8: Deploy and check the running site**
 
 ```bash
 pnpm deploy:staged
@@ -978,7 +985,7 @@ pnpm deploy:staged
 
 Sign in at `https://staged.ateneocode.org/portal` and load dashboard, calendar, one event detail page, links and profile. Confirm no schema errors. Record which pages were checked.
 
-- [ ] **Step 9: Record the rehearsal**
+- [x] **Step 9: Record the rehearsal**
 
 ```bash
 rm -rf .local/prefix .local/wrangler.prefix.jsonc
