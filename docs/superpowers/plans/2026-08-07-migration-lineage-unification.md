@@ -56,9 +56,9 @@ Derived by replaying release `0000`-`0003` and beta's full lineage into throwawa
 | `event_rsvps` | `ADD COLUMN answers_json` |
 | `member_feed_state` | `DROP TABLE` (locked decision 4) |
 | `announcements` | rebuild: drop and recreate at the `schema.ts` shape, 0 rows so no copy |
-| `nav_pins` | rebuild: `created_by` nullable, FK `ON DELETE SET NULL`, `position` default `0`, 0 rows so no copy |
+| `nav_pins` | **nothing.** Release `0003` already creates it with `created_by` nullable, `ON DELETE set null` and `position` default `0`, which is exactly what `schema.ts` describes after Task 1. A rebuild would change nothing and discard every row, and production's count was never measured |
 
-**Absent at `0003`, create fresh at the `schema.ts` shape:** `quick_links`, `term_member_roster`, `rate_limit_counters`, `point_types`, `retention_records`, `event_staff`, `event_invites`, `event_type_rules`, `event_point_awards`, `link_hourly_stats`, plus their indexes.
+**Absent at `0003`, create fresh at the `schema.ts` shape:** `quick_links`, `term_member_roster`, `rate_limit_counters`, `point_types`, `retention_records`, `event_staff`, `event_invites`, `event_type_rules`, `event_point_awards`, `link_hourly_stats`, and also `announcement_reads`, `article_feedback`, `contact_submissions`, `library_items`, `library_lists`, `library_list_items`, `library_comments`, `library_favorites`, plus their indexes. Eighteen in total. The last eight were missed when this list was first written and the convergence gate caught them; the release bridge never created them either, so staging lacks them today.
 
 **Drop, all measured empty (locked decision 6):** `articles`, `article_acl`, `article_components`, `article_questions`, `article_refs`, `article_related`, `article_sections`, `article_topics`, `comments`, `consultancy_teams`, `favorites`, `lists`, `list_items`, `point_awards`, `team_members`, `topics`.
 
@@ -688,11 +688,11 @@ Every destructive statement in `0004` must be one you intended. A grep for table
 grep -inE "drop table|drop column|^[[:space:]]*delete" drizzle/migrations/0004_unify_schema.sql
 ```
 
-Expected exactly **19** `DROP TABLE IF EXISTS`, **2** `DROP COLUMN`, and **zero** `DELETE`:
+Expected exactly **18** `DROP TABLE IF EXISTS`, **2** `DROP COLUMN`, and **zero** `DELETE`:
 
 | Statement | Count | Which |
 | --- | --- | --- |
-| `DROP TABLE IF EXISTS` | 2 | rebuilds: `announcements`, `nav_pins` |
+| `DROP TABLE IF EXISTS` | 1 | rebuild: `announcements` |
 | `DROP TABLE IF EXISTS` | 1 | `member_feed_state` |
 | `DROP TABLE IF EXISTS` | 16 | `article_acl`, `article_components`, `article_questions`, `article_refs`, `article_related`, `article_sections`, `article_topics`, `articles`, `comments`, `consultancy_teams`, `favorites`, `list_items`, `lists`, `point_awards`, `team_members`, `topics` |
 | `DROP COLUMN` | 2 | `members.tour_member_done`, `members.tour_admin_done` |

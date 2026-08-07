@@ -16,7 +16,7 @@
 --   3. announcement_reads is created after announcements is rebuilt, because it
 --      holds a foreign key into it.
 --
--- The announcements and nav_pins rebuilds are drop-and-recreate rather than
+-- The announcements rebuild is drop-and-recreate rather than
 -- ALTER, because SQLite cannot alter nullability or a foreign key. Both were
 -- measured at zero rows in staging on 2026-08-07, so neither copies data.
 
@@ -338,20 +338,10 @@ CREATE TABLE `announcement_reads` (
 );
 --> statement-breakpoint
 CREATE INDEX `announcement_reads_member_id_idx` ON `announcement_reads` (`member_id`);--> statement-breakpoint
-DROP TABLE IF EXISTS `nav_pins`;--> statement-breakpoint
-CREATE TABLE `nav_pins` (
-	`id` text PRIMARY KEY NOT NULL,
-	`label` text NOT NULL,
-	`url` text NOT NULL,
-	`icon` text NOT NULL,
-	`position` integer DEFAULT 0 NOT NULL,
-	`created_by` text,
-	`created_at` integer DEFAULT (unixepoch() * 1000) NOT NULL,
-	`updated_at` integer DEFAULT (unixepoch() * 1000) NOT NULL,
-	FOREIGN KEY (`created_by`) REFERENCES `members`(`id`) ON UPDATE no action ON DELETE set null
-);
---> statement-breakpoint
-CREATE INDEX `nav_pins_position_idx` ON `nav_pins` (`position`);--> statement-breakpoint
+-- nav_pins is deliberately NOT rebuilt. Release 0003 already creates it with
+-- created_by nullable, ON DELETE set null and position DEFAULT 0, which is exactly
+-- what schema.ts describes, so a rebuild would change nothing structurally while
+-- discarding every existing row. Production's nav_pins row count was never measured.
 
 -- 7. The guided tour was never rendered and nothing read these two columns.
 ALTER TABLE `members` DROP COLUMN `tour_member_done`;--> statement-breakpoint
