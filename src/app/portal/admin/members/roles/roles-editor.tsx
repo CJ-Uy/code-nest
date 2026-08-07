@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { AdminEntry, AssignableRole } from "@/db/repositories/roles";
@@ -24,9 +24,9 @@ export function RolesManager({
 }) {
 	const router = useRouter();
 	const [filter, setFilter] = useState("");
-	const [addOpen, setAddOpen] = useState(false);
-	const [query, setQuery] = useState("");
 	const [results, setResults] = useState<Member[]>([]);
+	const [searching, setSearching] = useState(false);
+	const [searchFailed, setSearchFailed] = useState(false);
 	const [editor, setEditor] = useState<Editor | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
 	const [pending, startTransition] = useTransition();
@@ -44,30 +44,50 @@ export function RolesManager({
 			)
 		: admins;
 
+	// One search box for both lists. The admin table filters as you type, and the same
+	// query then looks through everyone else, so finding someone who is not an admin yet
+	// does not mean discovering a second search box first.
+	const adminIds = new Set(admins.map((a) => a.memberId));
+	const nonAdminResults = results.filter((m) => !adminIds.has(m.id));
+
+	useEffect(() => {
+		const term = filter.trim();
+		// Short queries simply never fetch. Any stale results stay in state but are gated
+		// out of the render below, which avoids clearing state from inside the effect.
+		if (term.length < 2) return;
+
+		// cancelled guards against an earlier, slower query overwriting a later one.
+		let cancelled = false;
+		// Debounced so typing a name is not one request per keystroke.
+		const timer = setTimeout(() => {
+			setSearching(true);
+			searchMembersAction(term)
+				.then((rows) => {
+					if (cancelled) return;
+					setResults(rows);
+					setSearchFailed(false);
+				})
+				.catch(() => {
+					if (cancelled) return;
+					setResults([]);
+					setSearchFailed(true);
+				})
+				.finally(() => {
+					if (!cancelled) setSearching(false);
+				});
+		}, 250);
+
+		return () => {
+			cancelled = true;
+			clearTimeout(timer);
+		};
+	}, [filter]);
+
 	function openEditor(memberId: string, displayName: string) {
 		setMessage(null);
 		startTransition(async () => {
 			const { roleKeys, baseVersion } = await loadMemberRolesAction(memberId);
 			setEditor({ memberId, displayName, baseVersion, original: roleKeys, desired: new Set(roleKeys) });
-			setAddOpen(false);
-			setResults([]);
-			setQuery("");
-		});
-	}
-
-	function runSearch() {
-		if (query.trim().length < 2) {
-			setMessage("Type at least 2 characters to search.");
-			return;
-		}
-		setMessage(null);
-		startTransition(async () => {
-			try {
-				setResults(await searchMembersAction(query));
-			} catch {
-				setResults([]);
-				setMessage("Search is unavailable right now.");
-			}
 		});
 	}
 
@@ -101,59 +121,51 @@ export function RolesManager({
 
 	return (
 		<div className="grid gap-4">
-			<div className="flex flex-wrap items-center gap-2">
+			<div className="grid gap-1.5">
 				<Input
 					value={filter}
 					onChange={(e) => setFilter(e.target.value)}
-					placeholder="Search admins by name, email, or role"
+					placeholder="Search anyone by name, email, or role"
 					className="max-w-sm"
+					aria-label="Search admins and members"
 				/>
-				<Button
-					type="button"
-					onClick={() => {
-						setAddOpen((v) => !v);
-						setEditor(null);
-					}}
-				>
-					+ Add new admin
-				</Button>
+				<p className="text-xs text-muted-foreground">
+					Filters the admins below, then looks through everyone else so you can promote someone without a second search.
+				</p>
 			</div>
 
-			{addOpen ? (
+			{q.length >= 2 && (nonAdminResults.length > 0 || searching || searchFailed) ? (
 				<div className="grid gap-2 rounded-xl border border-border p-4">
-					<p className="text-sm font-medium">Add a new admin</p>
-					<div className="flex gap-2">
-						<Input
-							value={query}
-							onChange={(e) => setQuery(e.target.value)}
-							onKeyDown={(e) => {
-								if (e.key === "Enter") {
-									e.preventDefault();
-									runSearch();
-								}
-							}}
-							placeholder="Search member by name or email"
-							className="max-w-sm"
-						/>
-						<Button type="button" variant="outline" onClick={runSearch} disabled={pending}>
-							Search
-						</Button>
+					<div className="flex items-center gap-2">
+						<p className="text-sm font-medium">Not an admin yet</p>
+						{searching ? <span className="text-xs text-muted-foreground">Searching…</span> : null}
 					</div>
-					{results.length > 0 ? (
+					{searchFailed ? (
+						<p className="text-sm text-muted-foreground">Search is unavailable right now.</p>
+					) : nonAdminResults.length === 0 && !searching ? (
+						<p className="text-sm text-muted-foreground">No other members match.</p>
+					) : (
 						<ul className="grid gap-1">
-							{results.map((m) => (
-								<li key={m.id}>
-									<button
+							{nonAdminResults.map((m) => (
+								<li key={m.id} className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2">
+									<span className="min-w-0 text-sm">
+										<span className="font-medium">{memberName(m)}</span>{" "}
+										<span className="break-all text-muted-foreground">{m.email}</span>
+									</span>
+									<Button
 										type="button"
+										size="sm"
+										variant="outline"
+										className="shrink-0"
 										onClick={() => openEditor(m.id, memberName(m))}
-										className="w-full rounded-lg border border-border px-3 py-2 text-left text-sm hover:border-accent"
+										disabled={pending}
 									>
-										<span className="font-medium">{memberName(m)}</span> <span className="text-muted-foreground">{m.email}</span>
-									</button>
+										Add as admin
+									</Button>
 								</li>
 							))}
 						</ul>
-					) : null}
+					)}
 				</div>
 			) : null}
 
