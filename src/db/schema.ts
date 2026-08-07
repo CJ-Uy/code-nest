@@ -510,15 +510,6 @@ export const surveyAnswers = sqliteTable("survey_answers", {
 	value: text("value").notNull(),
 });
 
-export const memberFeedState = sqliteTable("member_feed_state", {
-	memberId: text("member_id")
-		.primaryKey()
-		.references(() => members.id, { onDelete: "cascade" }),
-	surveysSeenAt: integer("surveys_seen_at", { mode: "timestamp_ms" }),
-	eventsSeenAt: integer("events_seen_at", { mode: "timestamp_ms" }),
-	tourSeenAt: integer("tour_seen_at", { mode: "timestamp_ms" }),
-});
-
 export const notifications = sqliteTable(
 	"notifications",
 	{
@@ -567,10 +558,10 @@ export const navPins = sqliteTable(
 		label: text("label").notNull(),
 		url: text("url").notNull(),
 		icon: text("icon").notNull(),
-		position: integer("position").notNull(),
-		createdBy: text("created_by")
-			.notNull()
-			.references(() => members.id, { onDelete: "cascade" }),
+		position: integer("position").notNull().default(0),
+		// Nullable with SET NULL so deleting a member clears authorship rather than
+		// deleting their pins. Matches the shape already applied to staging and production.
+		createdBy: text("created_by").references(() => members.id, { onDelete: "set null" }),
 		createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 		updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
 	},
