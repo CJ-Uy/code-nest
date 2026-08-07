@@ -1,5 +1,12 @@
 # Beta to Staging Release Implementation Plan
 
+> **Superseded in part, 2026-08-07.** The separate migration directory this plan
+> introduced has been replaced by a single history shared by every environment. See
+> `docs/superpowers/specs/2026-08-07-migration-lineage-unification-design.md`.
+> The feature-flag work in tasks 1 to 5 still stands; task 1 and part of task 2 shipped
+> in commits f8bd0f3 and dbbebe4.
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Promote the approved beta features to `code-nest-staged` while hard-disabling unfinished modules, preserving the current public redirect, and rehearsing a production-compatible, data-preserving D1 migration.

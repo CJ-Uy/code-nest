@@ -1,12 +1,12 @@
 {
   ".remember/tmp/last-ndc.ts": {
-    "mtime": 1786082903.704299,
-    "ast_hash": "cac311c0d7fbb71be897daa389e1a656",
+    "mtime": 1786111920.5354826,
+    "ast_hash": "dde61a50e5ca8623cfcc11a35520cb72",
     "semantic_hash": ""
   },
   ".remember/tmp/last-save.json": {
-    "mtime": 1786084051.5489082,
-    "ast_hash": "d6310c10d4aa5d2c489b897e82d9e63b",
+    "mtime": 1786111918.451491,
+    "ast_hash": "91527ceb2fce6faba4ba3a2b0547ea79",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -695,8 +695,8 @@
     "semantic_hash": ""
   },
   ".remember/now.md": {
-    "mtime": 1786084051.3567886,
-    "ast_hash": "dd1bf598192ec6d7a4752b4b0c784639",
+    "mtime": 1786111964.1839595,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
   ".remember/recent.md": {
@@ -4170,8 +4170,8 @@
     "semantic_hash": ""
   },
   "docs/superpowers/plans/2026-08-05-beta-to-staging-release.md": {
-    "mtime": 1785900291.1715238,
-    "ast_hash": "7f700ed24ce950843f99c5c9875508e4",
+    "mtime": 1786112164.0632193,
+    "ast_hash": "99bb3c7b7c7178fae5ed349589287fe5",
     "semantic_hash": ""
   },
   "docs/superpowers/specs/2026-08-05-beta-to-staging-release-design.md": {
@@ -4195,8 +4195,8 @@
     "semantic_hash": ""
   },
   ".remember/today-2026-08-07.md": {
-    "mtime": 1786082944.3259847,
-    "ast_hash": "edefb6eced9cc2cc7b506b25556cda8e",
+    "mtime": 1786111964.1475203,
+    "ast_hash": "7ccbead705515a44c1eed76f3f8bcb51",
     "semantic_hash": ""
   },
   "src/components/portal/nav-visibility.test.ts": {
@@ -4219,44 +4219,14 @@
     "ast_hash": "66226aba15cc7517625a3df329a49830",
     "semantic_hash": ""
   },
-  "drizzle/release-migrations/0000_young_bullseye.sql": {
-    "mtime": 1786065337.2682207,
-    "ast_hash": "e033678e59189f7a79f1f3dc27f1ad2d",
-    "semantic_hash": ""
-  },
-  "drizzle/release-migrations/0001_member_portal_links.sql": {
-    "mtime": 1786065337.2692206,
-    "ast_hash": "5bd3cdb5ac7ae7629c0c6aa9cd14365e",
-    "semantic_hash": ""
-  },
-  "drizzle/release-migrations/0002_link_workspace_fields.sql": {
-    "mtime": 1786065337.2692206,
-    "ast_hash": "4cd24361b9cd1ef2f8e97a260b4b35d1",
-    "semantic_hash": ""
-  },
-  "drizzle/release-migrations/0003_admin_members_nav.sql": {
-    "mtime": 1786065337.2692206,
-    "ast_hash": "994218787d7fedb547a9ec5025a0dddd",
-    "semantic_hash": ""
-  },
-  "drizzle/release-migrations/0004_beta_release_bridge.sql": {
-    "mtime": 1786065337.2692206,
-    "ast_hash": "0ec57723b04127f9e429889ec221c3d3",
-    "semantic_hash": ""
-  },
   "docs/superpowers/plans/2026-08-07-migration-lineage-unification.md": {
-    "mtime": 1786083960.1530993,
-    "ast_hash": "44e8d3e89ff205d1e5ed7b7463bcdafb",
+    "mtime": 1786111494.7414365,
+    "ast_hash": "ca076595f182cb4b4bd2c63dda879b15",
     "semantic_hash": ""
   },
   "docs/superpowers/specs/2026-08-07-migration-lineage-unification-design.md": {
     "mtime": 1786070639.3026645,
     "ast_hash": "d5c812bf4e37950d27bdf6e6ab921f78",
-    "semantic_hash": ""
-  },
-  "drizzle/release-migrations/README.md": {
-    "mtime": 1786065415.5118241,
-    "ast_hash": "878cf67f2053fc695b782ce1c6b6f3ad",
     "semantic_hash": ""
   },
   "drizzle/migrations/0001_member_portal_links.sql": {
@@ -4275,8 +4245,8 @@
     "semantic_hash": ""
   },
   "drizzle/migrations/0004_unify_schema.sql": {
-    "mtime": 1786084408.7129745,
-    "ast_hash": "5c13894678205b49b528e71d9ffc6387",
+    "mtime": 1786084703.131081,
+    "ast_hash": "ad15fbfacd00cd517456e278f5032889",
     "semantic_hash": ""
   },
   "scripts/schema-compare.test.ts": {
@@ -4302,6 +4272,21 @@
   "scripts/verify-trunk.ts": {
     "mtime": 1786083781.9398546,
     "ast_hash": "2ddf3b1db6bd8c108f845ffeadb02ae4",
+    "semantic_hash": ""
+  },
+  "drizzle/migrations/meta/0004_snapshot.json": {
+    "mtime": 1786084850.6791687,
+    "ast_hash": "6ecc3ed865ec651d6c6e58d9ba9eafaf",
+    "semantic_hash": ""
+  },
+  "drizzle/migrations/meta/_journal.json": {
+    "mtime": 1786084850.715079,
+    "ast_hash": "a2f2dfa89d112789da41d91ab647a347",
+    "semantic_hash": ""
+  },
+  "drizzle/migrations/README.md": {
+    "mtime": 1786112150.2018807,
+    "ast_hash": "cee6709dfbe2378d4de8baccb63a6a6d",
     "semantic_hash": ""
   }
 }
