@@ -25,7 +25,9 @@
 	"services": [
 		{
 			"binding": "WORKER_SELF_REFERENCE",
-			"service": "code-nest"
+			// Must match this file's own "name". It said code-nest, which no longer exists,
+			// so every production upload failed with code 10143 until it was corrected.
+			"service": "code-nest-prod"
 		}
 	],
 	"observability": {
