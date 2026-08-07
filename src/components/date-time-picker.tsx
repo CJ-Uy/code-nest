@@ -61,9 +61,9 @@ export function DateTimePicker({
 
 	return (
 		<div className="grid gap-4">
-			{/* Capped width: the grid is 7 columns, so in a wide panel the month would stretch
-			    far past the point where it is easier to read. */}
-			<div className="w-full max-w-sm rounded-xl border border-border p-3">
+			{/* Capped width so the 7 columns do not stretch across a wide panel, and centred so
+			    the narrow block does not sit lopsided against full-width fields above it. */}
+			<div className="mx-auto w-full max-w-sm rounded-xl border border-border p-3">
 				<div className="mb-2 flex items-center justify-between">
 					<button type="button" onClick={() => shiftMonth(-1)} aria-label="Previous month" className="rounded-md p-1 hover:bg-muted">
 						<ChevronLeft className="size-4" />

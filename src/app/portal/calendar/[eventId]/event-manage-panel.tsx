@@ -585,8 +585,16 @@ function DetailsSection({
 	const [graceMinutes, setGraceMinutes] = useState(event.graceMinutes?.toString() ?? "");
 	const [rsvpForm, setRsvpForm] = useState(event.rsvpForm);
 	const [rsvpResponsesPublic, setRsvpResponsesPublic] = useState(event.rsvpResponsesPublic);
+	// Seeded from the event, because updateEventAction defaults allDay to false. Before this
+	// existed the panel never sent the field, so saving any edit to an all-day or multi-day
+	// event silently converted it to a timed one.
+	const [allDay, setAllDay] = useState(event.allDay);
+	const [startDay, setStartDay] = useState(toLocalInput(event.startsAt).slice(0, 10));
+	const [endDay, setEndDay] = useState((event.endsAt ? toLocalInput(event.endsAt) : toLocalInput(event.startsAt)).slice(0, 10));
 
-	const endBeforeStart = Boolean(startsAt && endsAt && fromLocalInput(endsAt) <= fromLocalInput(startsAt));
+	const endBeforeStart = allDay
+		? Boolean(startDay && endDay && endDay < startDay)
+		: Boolean(startsAt && endsAt && fromLocalInput(endsAt) <= fromLocalInput(startsAt));
 	// The event's own current type must always be selectable, even if it fell outside the
 	// actor's allowed types after the rules changed - leaving it unchanged is always legal,
 	// and dropping it from the options would make an unrelated save silently change the type.
@@ -613,8 +621,11 @@ function DetailsSection({
 					type: typesUnavailable ? event.type : type,
 					place,
 					description,
-					startsAt: fromLocalInput(startsAt).toISOString(),
-					endsAt: fromLocalInput(endsAt).toISOString(),
+					// The action snaps an all-day range to the whole UTC+8 days, so send midnight
+					// and let it widen; sending the previous timed values would narrow the event.
+					startsAt: fromLocalInput(allDay ? `${startDay}T00:00` : startsAt).toISOString(),
+					endsAt: fromLocalInput(allDay ? `${endDay}T00:00` : endsAt).toISOString(),
+					allDay,
 					capacity: capacity ? Number(capacity) : null,
 					graceMinutes: graceMinutes === "" ? null : Number(graceMinutes),
 					rsvpForm,
@@ -725,16 +736,67 @@ function DetailsSection({
 				<span className="font-medium">Place</span>
 				<input className={FIELD} value={place} onChange={(e) => setPlace(e.target.value)} />
 			</label>
-			<DateTimePicker
-				startsAt={startsAt}
-				endsAt={endsAt}
-				onChange={(next) => {
-					setStartsAt(next.startsAt);
-					setEndsAt(next.endsAt);
-				}}
-			/>
-			<p className="-mt-2 text-xs text-muted-foreground">Times are saved and shown in UTC+8.</p>
-			{endBeforeStart ? <p className="-mt-2 text-xs text-destructive">End must be after the start.</p> : null}
+			<div className="flex items-start gap-3 rounded-lg border border-border bg-secondary/30 p-3 text-sm">
+				<Checkbox
+					id="edit-all-day"
+					checked={allDay}
+					onCheckedChange={(checked) => {
+						const next = checked === true;
+						setAllDay(next);
+						// Carry the chosen day across so toggling does not lose the date.
+						if (next) {
+							const day = startsAt.slice(0, 10);
+							setStartDay(day);
+							setEndDay((current) => (current < day ? day : current));
+						}
+					}}
+					className="mt-0.5"
+				/>
+				<label htmlFor="edit-all-day" className="grid gap-1">
+					<span className="font-medium">All day / multi-day</span>
+					<span className="text-xs text-muted-foreground">
+						Runs whole days instead of set times. Pick an end date later than the start for a multi-day event.
+					</span>
+				</label>
+			</div>
+
+			{allDay ? (
+				<div className="grid gap-3 sm:grid-cols-2">
+					<label className="grid gap-1.5 text-sm">
+						<span className="font-medium">Starts</span>
+						<input
+							type="date"
+							className={FIELD}
+							value={startDay}
+							onChange={(e) => {
+								setStartDay(e.target.value);
+								setEndDay((current) => (current < e.target.value ? e.target.value : current));
+							}}
+						/>
+					</label>
+					<label className="grid gap-1.5 text-sm">
+						<span className="font-medium">Ends</span>
+						<input type="date" className={FIELD} min={startDay} value={endDay} onChange={(e) => setEndDay(e.target.value)} />
+					</label>
+				</div>
+			) : (
+				<DateTimePicker
+					startsAt={startsAt}
+					endsAt={endsAt}
+					onChange={(next) => {
+						setStartsAt(next.startsAt);
+						setEndsAt(next.endsAt);
+					}}
+				/>
+			)}
+			<p className="-mt-2 text-xs text-muted-foreground">
+				{allDay ? "All-day events cover whole days in UTC+8." : "Times are saved and shown in UTC+8."}
+			</p>
+			{endBeforeStart ? (
+				<p className="-mt-2 text-xs text-destructive">
+					{allDay ? "End date cannot be before the start date." : "End must be after the start."}
+				</p>
+			) : null}
 			<div className="flex items-start gap-3 rounded-lg border border-border bg-secondary/30 p-3 text-sm">
 				<Checkbox
 					id="rsvp-responses-public"
