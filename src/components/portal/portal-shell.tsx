@@ -10,7 +10,8 @@ import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/com
 import { cn } from "@/lib/utils";
 import { Breadcrumb } from "./breadcrumb";
 import { MemberAvatar } from "./member-avatar";
-import { adminNav, primaryNav, secondaryNav, type NavItem } from "./nav-items";
+import { adminNav, primaryNav, secondaryNav, visiblePrimaryNav, visibleSecondaryNav, type NavItem } from "./nav-items";
+import type { FeatureFlags } from "@/server/features";
 import { navPinIconFor } from "./nav-pin-icons";
 import { adminHeading, crumbFor } from "@/app/portal/admin/nav";
 
@@ -22,6 +23,8 @@ export type PortalShellProps = {
 	navPins: { id: string; label: string; url: string; icon: string }[];
 	showAdmin: boolean;
 	adminGroups: AdminNavGroup[];
+	/** Release flags, resolved server-side. Plain booleans so they cross the client boundary. */
+	flags: FeatureFlags;
 	bell: React.ReactNode;
 	signOutAction: () => Promise<void>;
 	children: React.ReactNode;
@@ -110,15 +113,19 @@ function AdminNavLink({ href, label, pathname }: { href: string; label: string; 
 	);
 }
 
-export function PortalShell({ member, memberId, navPins, showAdmin, adminGroups, bell, signOutAction, children }: PortalShellProps) {
+export function PortalShell({ member, memberId, navPins, showAdmin, adminGroups, flags, bell, signOutAction, children }: PortalShellProps) {
 	const pathname = usePathname();
 	const [menuOpen, setMenuOpen] = useState(false);
 	const inAdmin = pathname.startsWith("/portal/admin");
 	const pageHeading = getPageHeading(pathname);
 
-	const sheetItems: NavItem[] = [...secondaryNav, ...(showAdmin ? [adminNav] : [])];
-	const leftTabs = primaryNav.slice(0, 2);
-	const rightTabs = primaryNav.slice(2, 4);
+	// Flagged-off destinations must not render a link. The pages themselves already 404,
+	// but a visible link to a 404 reads as a broken portal rather than an unshipped one.
+	const primary = visiblePrimaryNav(flags);
+	const secondary = visibleSecondaryNav(flags);
+	const sheetItems: NavItem[] = [...secondary, ...(showAdmin ? [adminNav] : [])];
+	const leftTabs = primary.slice(0, 2);
+	const rightTabs = primary.slice(2, 4);
 
 	return (
 		<div className="min-h-screen bg-background text-foreground lg:flex">
@@ -160,13 +167,13 @@ export function PortalShell({ member, memberId, navPins, showAdmin, adminGroups,
 				) : (
 					<>
 						<nav className="flex flex-col gap-1" aria-label="Portal modules">
-							{primaryNav.map((item) => (
+							{primary.map((item) => (
 								<RailItem key={item.id} item={item} pathname={pathname} />
 							))}
 						</nav>
 						<Separator className="my-3 bg-white/10" />
 						<nav className="flex flex-col gap-1" aria-label="More modules">
-							{secondaryNav.map((item) => (
+							{secondary.map((item) => (
 								<RailItem key={item.id} item={item} pathname={pathname} />
 							))}
 							{navPins.length > 0 ? (

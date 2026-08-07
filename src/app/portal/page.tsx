@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { MetricCard, RetentionProgress } from "@/components/portal/overview-metrics";
 import { getActor } from "@/server/auth/actor";
 import { getAppConfig } from "@/server/env";
+import { getFeatureFlags } from "@/server/features";
 import { CHECKIN_LEAD_MS } from "@/db/repositories/events";
 import type { OverviewSummary } from "@/db/repositories/overview";
 
@@ -24,14 +25,16 @@ export default async function PortalOverviewPage() {
 	const actor = await getActor();
 	if (!actor) redirect("/signin");
 
+	const flags = getFeatureFlags();
 	const repositories = await getRepositories();
 	// Each read degrades to an empty/zeroed value so the dashboard never crashes
-	// when a repository is unavailable through the shared-dev adapter.
+	// when a repository is unavailable through the shared-dev adapter. Flagged-off
+	// surfaces skip the read entirely rather than fetching rows nothing will render.
 	const [member, summary, announcements, libraryItems, scanEvents, terms] = await Promise.all([
 		repositories.members.getById(actor, actor.memberId).catch(() => null),
 		repositories.overview.getSummary(actor).catch(() => EMPTY_SUMMARY),
-		repositories.announcements.listForMember(actor, { limit: 3 }).catch(() => []),
-		repositories.library.listItems(actor, { limit: 3 }).catch(() => []),
+		flags.announcements ? repositories.announcements.listForMember(actor, { limit: 3 }).catch(() => []) : Promise.resolve([]),
+		flags.library ? repositories.library.listItems(actor, { limit: 3 }).catch(() => []) : Promise.resolve([]),
 		repositories.events.listPublished(actor, { limit: 100 }).catch(() => []),
 		repositories.retention.listTerms(actor).catch(() => []),
 	]);
@@ -70,20 +73,27 @@ export default async function PortalOverviewPage() {
 				))
 				: null}
 
+			{/* Metrics for flagged-off surfaces drop out rather than showing a zero the member
+			    cannot act on. The grid reflows on its own at two or three cards. */}
 			<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-				<MetricCard
-					label="Retention"
-					value={summary.retention.termName ? String(summary.retention.points) : "0"}
-					description={summary.retention.termName ?? "No active term"}
-					icon={ClipboardCheck}
-				/>
-				<MetricCard label="Surveys" value={String(summary.pendingSurveys)} description="Pending responses" icon={MessageSquare} />
+				{flags.retention ? (
+					<MetricCard
+						label="Retention"
+						value={summary.retention.termName ? String(summary.retention.points) : "0"}
+						description={summary.retention.termName ?? "No active term"}
+						icon={ClipboardCheck}
+					/>
+				) : null}
+				{flags.surveys ? (
+					<MetricCard label="Surveys" value={String(summary.pendingSurveys)} description="Pending responses" icon={MessageSquare} />
+				) : null}
 				<MetricCard label="Events" value={String(summary.upcomingEvents)} description="Upcoming approved events" icon={CalendarDays} />
 				<MetricCard label="Links" value={String(summary.linkClicks)} description="Clicks on your short links" icon={Link2} />
 			</div>
 
-			<div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+			<div className={flags.library && (flags.retention || flags.announcements) ? "grid gap-6 lg:grid-cols-[1.4fr_1fr]" : "grid gap-6"}>
 				<div className="grid gap-6">
+					{flags.retention ? (
 					<Card>
 						<CardHeader>
 							<CardTitle>Retention path</CardTitle>
@@ -93,7 +103,9 @@ export default async function PortalOverviewPage() {
 							<RetentionProgress points={summary.retention.points} retainedAt={summary.retention.retainedAt} />
 						</CardContent>
 					</Card>
+					) : null}
 
+					{flags.announcements ? (
 					<Card>
 						<CardHeader className="flex-row items-center justify-between space-y-0">
 							<div className="flex items-center gap-2">
@@ -124,8 +136,10 @@ export default async function PortalOverviewPage() {
 							)}
 						</CardContent>
 					</Card>
+					) : null}
 				</div>
 
+				{flags.library ? (
 				<Card>
 					<CardHeader className="flex-row items-center justify-between space-y-0">
 						<div className="flex items-center gap-2">
@@ -154,6 +168,7 @@ export default async function PortalOverviewPage() {
 						)}
 					</CardContent>
 				</Card>
+				) : null}
 			</div>
 		</div>
 	);

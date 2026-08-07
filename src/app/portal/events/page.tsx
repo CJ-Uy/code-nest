@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { Filter, Trophy } from "lucide-react";
 import { getRepositories } from "@/db";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { EmptyState } from "@/components/portal/empty-state";
 import { MemberAvatar } from "@/components/portal/member-avatar";
 import { RetentionHistory } from "@/components/retention-history";
 import { requireActor } from "@/server/auth/actor";
+import { isFeatureEnabled } from "@/server/features";
 import { selectLeaderboardPointTypeId } from "./point-type-selection";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +24,11 @@ export default async function RetentionHistoryPage({
 }: {
 	searchParams: Promise<{ termId?: string; view?: string; pointTypeId?: string }>;
 }) {
+	// The portal layout already redirects signed-out visitors to /signin, so this guard is
+	// what a signed-in member hits. Kept above the data loading so a disabled surface
+	// never touches a repository.
+	if (!isFeatureEnabled("retention")) notFound();
+
 	const actor = await requireActor();
 	const params = await searchParams;
 	const view = params.view === "leaderboard" ? "leaderboard" : "history";

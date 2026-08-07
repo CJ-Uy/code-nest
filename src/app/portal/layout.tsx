@@ -4,6 +4,7 @@ import { NotificationBell } from "@/components/portal/notification-bell";
 import { PortalShell } from "@/components/portal/portal-shell";
 import { getActor } from "@/server/auth/actor";
 import { hasAnyAdminScope } from "@/server/auth/admin";
+import { getFeatureFlags } from "@/server/features";
 import { visibleGroups } from "./admin/nav";
 import { signOutAction } from "./actions";
 import { markAllNotificationsReadAction, markNotificationReadAction } from "./notifications/actions";
@@ -32,6 +33,7 @@ export default async function PortalLayout({ children }: { children: React.React
 	if (!member) redirect("/signin");
 
 	const displayName = member.nickname ?? member.fullName ?? member.name ?? member.email;
+	const flags = getFeatureFlags();
 	const showAdmin = hasAnyAdminScope(actor);
 	const adminGroups = showAdmin
 		? visibleGroups(actor).map((group) => ({
@@ -50,14 +52,18 @@ export default async function PortalLayout({ children }: { children: React.React
 				navPins={navPins}
 				showAdmin={showAdmin}
 				adminGroups={adminGroups}
+				flags={flags}
 				signOutAction={signOutAction}
 				bell={
-					<NotificationBell
-						items={feed}
-						unreadCount={unreadCount}
-						onMarkRead={markNotificationReadAction}
-						onMarkAllRead={markAllNotificationsReadAction}
-					/>
+					// The bell is the notifications surface in miniature, so it follows the same flag.
+					flags.notifications ? (
+						<NotificationBell
+							items={feed}
+							unreadCount={unreadCount}
+							onMarkRead={markNotificationReadAction}
+							onMarkAllRead={markAllNotificationsReadAction}
+						/>
+					) : null
 				}
 			>
 				{children}
