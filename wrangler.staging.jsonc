@@ -52,7 +52,10 @@
 			"binding": "DB",
 			"database_name": "code-nest-staged-db",
 			"database_id": "18b0f067-101b-4aac-b724-6382a7d3cdd0",
-			"migrations_dir": "drizzle/migrations"
+			// Staging and production continue production's own migration history, which forked
+			// from beta's at 0001. Pointing this at drizzle/migrations would make D1 treat beta's
+			// 0001-0019 as unapplied and run them, starting with 17 unguarded DROP TABLEs.
+			"migrations_dir": "drizzle/release-migrations"
 		}
 	],
 	"r2_buckets": [

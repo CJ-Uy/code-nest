@@ -25,7 +25,7 @@
 		"test:e2e": "playwright test",
 		"test:watch": "vitest",
 		"db:generate": "drizzle-kit generate",
-		"db:migrate:local": "wrangler d1 migrations apply DB --local",
+		"db:migrate:local": "wrangler d1 migrations apply DB --config wrangler.beta.jsonc --local",
 		"db:migrate:local:sqlite": "tsx src/db/migrate-local-sqlite.ts",
 		"db:migrate:beta": "pnpm db:migrate:dev",
 		"db:migrate:dev": "wrangler d1 migrations apply DB --config wrangler.beta.jsonc --remote",
