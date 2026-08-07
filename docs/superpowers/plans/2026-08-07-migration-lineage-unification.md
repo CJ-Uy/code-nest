@@ -475,14 +475,25 @@ process.exit(1);
 Run: `pnpm test`
 Expected: 468 tests pass, the 459 from Task 1 plus 9 here. `vitest.config.mts:43` already includes `scripts/**/*.test.ts`.
 
-- [ ] **Step 8: Calibrate the comparer against today's beta lineage**
+- [ ] **Step 8: Calibrate the comparer against the current lineage**
 
-Before trusting it on the trunk, point it at the current `drizzle/migrations` and confirm it behaves. Run on 2026-08-07 it reported exactly one problem: `index only in B: point_types_key_unique`, a real unique index on `point_types.key` that `schema.ts` declares and beta's lineage never created.
+Before trusting the comparer on the trunk, point it at the current `drizzle/migrations` and check that it reports exactly the differences we already know about. Side A is the migrations, which Task 1 deliberately did not touch. Side B is `schema.ts`, which Task 1 did change. So the expected output is Task 1's delta plus one pre-existing defect.
 
 Run: `pnpm exec tsx scripts/verify-trunk.ts`
-Expected: `NOT CONVERGED (1)` naming `point_types_key_unique`, and nothing else.
 
-More problems than that means the comparer is too strict and will block Task 3 for benign reasons. Zero problems means it is too loose, because that index really is missing. Either outcome is a stop: fix the comparer before continuing, since Task 3 depends entirely on this being trustworthy.
+Expected: `NOT CONVERGED (5)`, listing exactly these and nothing else.
+
+| Problem | Why it is expected |
+| --- | --- |
+| `table only in A: member_feed_state` | Task 1 removed it from `schema.ts`; the migrations still create it |
+| `nav_pins.created_by differs` (notnull 1 vs 0) | Task 1 made it nullable |
+| `nav_pins.position differs` (dflt null vs 0) | Task 1 added the default |
+| `nav_pins FKs differ` (CASCADE vs SET NULL) | Task 1 changed the action |
+| `index only in B: point_types_key_unique` | Pre-existing. `schema.ts` declares a unique index on `point_types.key` that beta's lineage never created, so beta currently permits duplicate keys |
+
+This is the calibration: the comparer sees the four changes Task 1 made, plus the one real defect, and invents nothing. All five disappear in Task 3, four because the trunk adopts the `schema.ts` shape and the fifth because `0004` creates `point_types` fresh with its unique index.
+
+A different set is a stop. Extra problems mean the comparer is too strict and will block Task 3 for benign reasons. Fewer mean it is too loose. Either way, fix it before continuing, because Task 3 depends entirely on this being trustworthy.
 
 - [ ] **Step 9: Commit**
 
