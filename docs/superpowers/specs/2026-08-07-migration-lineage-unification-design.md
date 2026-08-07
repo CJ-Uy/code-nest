@@ -63,13 +63,17 @@ Collapse to a single migration history that every environment shares, where each
 
 5. **`nav_pins` is aligned on all three properties**: `created_by` nullable, foreign key `ON DELETE SET NULL`, `position` default `0`. Revision 1 changed only nullability and would have left a diff behind. The FK change also alters behaviour: deleting a member now clears authorship instead of deleting their pins, which is the intended semantics.
 
-6. **The 16 legacy tables are declared in `schema.ts`.** Revision 1 said they would simply stay, which contradicted the generate-everything decision: any generator comparing a correct baseline against `schema.ts` must read 39 absent objects as deletions. Declaring them makes their presence intentional and keeps the convergence test honest. **Dropping them is separate, later work**, gated on confirmed row counts, so an irreversible delete is not entangled with a restructuring.
+6. **The 16 legacy tables are dropped in `0004`, guarded.** Measured 2026-08-07: `announcements`, `point_awards`, `articles`, `comments`, `lists`, `list_items`, `topics`, `team_members`, `favorites` and `consultancy_teams` all hold **zero rows in both production and staging**. No code writes to any of them.
+
+   Revision 1 said they would simply stay, which contradicted its own generate-everything decision, since any generator comparing a correct baseline against `schema.ts` must read 39 absent objects as deletions. The interim position was to declare them in `schema.ts` and drop them later, chosen only because the row counts were unknown. They are known now and they are zero, so declaring sixteen dead tables to postpone a provably safe delete buys nothing and leaves `schema.ts` describing tables the product does not have.
+
+   Every drop is `DROP TABLE IF EXISTS` and appears on the destructive-statement allowlist in Verification check 3. The data-preservation test asserts the tables were empty before the drop, so if any environment ever does hold rows the suite fails rather than discarding them.
 
 7. **The single directory keeps the name `drizzle/migrations`.** `drizzle.config.ts`, `vitest.config.mts` and `src/db/migrate-local-sqlite.ts` already hardcode that path.
 
 8. **`announcements` stays one table at the `schema.ts` shape.** The two versions are not two concepts. Both are org-wide member announcements; beta's is a redesign that replaced structured targeting (`audience_kind`, `audience_value`) with a display label, replaced `pinned_until` with a boolean, and dropped scheduling. Its `linked_event_id` is nullable, always written null, and never read, so the table is not event-scoped and must not be renamed to suggest it is. A nullable union of both column sets was rejected: it would forfeit every `NOT NULL` guarantee and move the real rules into application code. Separate `org_announcements` and `event_announcements` tables were rejected as over-engineering for one flagged-off feature.
 
-   If production holds announcement rows, `0004` maps them: `title`, `body`, `created_at` direct; `tag` defaulting to `CODE`; `author_member_id` to `created_by`; `pinned_until` to `pinned` as `pinned_until > now`; `audience_kind` and `audience_value` composed into `audience`; `scheduled_for` and `published_at` dropped; `linked_event_id` null. If the count is zero the table is simply rebuilt.
+   **No column mapping is needed.** Measured 2026-08-07: `announcements` holds zero rows in both production and staging. `0004` drops and recreates the table at the `schema.ts` shape. Had rows existed, the mapping would have been `title`, `body`, `created_at` direct; `tag` defaulting to `CODE`; `author_member_id` to `created_by`; `pinned_until` to `pinned` as `pinned_until > now`; `audience_kind` and `audience_value` composed into `audience`; `scheduled_for` and `published_at` dropped. That mapping is recorded here only so the decision is not re-derived if the counts ever change before `0004` runs, which the preservation test checks.
 
 9. **Convergence is a test in the suite, not a manual step.** Revision 1 proposed running `drizzle-kit generate` twice and expecting an empty diff. That is circular: the second run compares `schema.ts` against the snapshot the first run wrote, and would pass on a completely wrong trunk. See Verification.
 
@@ -138,6 +142,20 @@ Four checks. Each must pass before the next stage.
 - Staging and beta serve the portal without schema errors
 - Production untouched, one migration behind staging, ready to receive the rehearsed file
 
-## Open input
+## Measured environment state, 2026-08-07
 
-Production row counts for `announcements`, `point_awards`, `articles`, `comments`, `lists`, `topics` and `team_members`. A zero count for `announcements` removes the mapping work in decision 8; the rest determine how careful the eventual production step must be and whether the later drop is trivial.
+| Table | production | staging |
+| --- | --- | --- |
+| `announcements` | 0 | 0 |
+| `point_awards` | 0 | 0 |
+| `articles`, `comments`, `lists`, `list_items`, `topics`, `team_members`, `favorites`, `consultancy_teams` | 0 | 0 |
+| `event_type_rules` | not present | 3 |
+| `crs_events` | not present | 3 |
+
+Read with `wrangler d1 execute --remote` using scalar subqueries; a `UNION ALL` of ten counts exceeds D1's compound `SELECT` term limit and fails with `SQLITE_ERROR 7500`.
+
+Consequences: decision 8 needs no data mapping, decision 6 can drop rather than declare, and the `point_awards` to `retention_records` copy inherited from the bridge is a no-op on both environments but is retained because the preservation test asserts on it.
+
+Staging holding three `crs_events` rows is useful: it gives the `crs_events.public_code` backfill a real target during the rehearsal rather than an empty table.
+
+No open inputs remain.
