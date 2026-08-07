@@ -879,7 +879,8 @@ The fix is to repeat the pass. Each pass drops every table whose dependents are 
 pnpm exec wrangler d1 execute DB --config wrangler.staging.jsonc --remote --json --command "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'" > .local/staged-tables.json
 node -e "
 const r=require('./.local/staged-tables.json');
-const names=r[0].results.map(x=>x.name);
+const all=r[0].results.map(x=>x.name);
+const names=all.filter(n=>!n.startsWith('_cf_'));  // _cf_KV is a D1 internal, never drop it
 require('fs').writeFileSync('.local/reset-staged.sql','PRAGMA defer_foreign_keys = true;\n'+names.map(n=>'DROP TABLE IF EXISTS \"'+n+'\";').join('\n')+'\n');
 console.log('tables to drop:',names.length);
 console.log('includes d1_migrations:',names.includes('d1_migrations'));
@@ -888,6 +889,9 @@ cat .local/reset-staged.sql
 ```
 
 Expected: `includes d1_migrations: true`. If false, the replay in Step 5 skips every migration; stop and fix.
+
+`_cf_KV` is a Cloudflare-internal D1 table and must be excluded. The obvious `NOT LIKE 'sqlite_%'` filter does not catch it, and staging's table list contained it on 2026-08-07. Dropping a D1 internal is not something to find out about the hard way, so the generator filters any name beginning with `_cf_`.
+
 
 - [ ] **Step 4: Apply the reset, with approval, until the database is empty**
 
@@ -999,7 +1003,8 @@ Same repeated-pass procedure as Task 5 Step 3 and 4, and for the same reason: a 
 pnpm exec wrangler d1 execute DB --config wrangler.beta.jsonc --remote --json --command "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'" > .local/beta-tables.json
 node -e "
 const r=require('./.local/beta-tables.json');
-const names=r[0].results.map(x=>x.name);
+const all=r[0].results.map(x=>x.name);
+const names=all.filter(n=>!n.startsWith('_cf_'));  // _cf_KV is a D1 internal, never drop it
 require('fs').writeFileSync('.local/reset-beta.sql','PRAGMA defer_foreign_keys = true;
 '+names.map(n=>'DROP TABLE IF EXISTS \"'+n+'\";').join('
 ')+'
