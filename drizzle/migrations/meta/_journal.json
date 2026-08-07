@@ -8,6 +8,13 @@
       "when": 1786084840257,
       "tag": "0004_unify_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1786117238694,
+      "tag": "0005_pending_member_roles",
+      "breakpoints": true
     }
   ]
 }

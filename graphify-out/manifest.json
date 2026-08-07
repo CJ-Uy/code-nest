@@ -1,12 +1,12 @@
 {
   ".remember/tmp/last-ndc.ts": {
-    "mtime": 1786111920.5354826,
-    "ast_hash": "dde61a50e5ca8623cfcc11a35520cb72",
+    "mtime": 1786117233.556686,
+    "ast_hash": "d7968af700c3b700cfe27717e7206f99",
     "semantic_hash": ""
   },
   ".remember/tmp/last-save.json": {
-    "mtime": 1786113913.283264,
-    "ast_hash": "e4dd8d18525c748a5aa75de2c8b31252",
+    "mtime": 1786117232.1364913,
+    "ast_hash": "4641f7d3b7546f122638ca23d74282e4",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -335,8 +335,8 @@
     "semantic_hash": ""
   },
   "src/auth.ts": {
-    "mtime": 1786038414.750828,
-    "ast_hash": "f7adc40b1bd57f24cd628fa2df4d4d40",
+    "mtime": 1786117321.7066483,
+    "ast_hash": "eb01614c5c9730e7c8ab9930a6e7e9ed",
     "semantic_hash": ""
   },
   "src/components/ui/badge.tsx": {
@@ -495,8 +495,8 @@
     "semantic_hash": "80c06aaa0f6d564a3b4b85d6eebe5331"
   },
   "src/db/schema.ts": {
-    "mtime": 1786083446.128683,
-    "ast_hash": "73ac133aaa654eff7ec65dd520df9ba1",
+    "mtime": 1786117226.0315945,
+    "ast_hash": "efbe25137b7cb54101546041c1a7ab25",
     "semantic_hash": ""
   },
   "src/db/seed/data.ts": {
@@ -695,8 +695,8 @@
     "semantic_hash": ""
   },
   ".remember/now.md": {
-    "mtime": 1786113912.999081,
-    "ast_hash": "5a0afea43c89e3b7e333a2c934160f5e",
+    "mtime": 1786117303.9432342,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
   ".remember/recent.md": {
@@ -4195,8 +4195,8 @@
     "semantic_hash": ""
   },
   ".remember/today-2026-08-07.md": {
-    "mtime": 1786111964.1475203,
-    "ast_hash": "7ccbead705515a44c1eed76f3f8bcb51",
+    "mtime": 1786117303.9131398,
+    "ast_hash": "9dc8dfbfd193e2e602e16e67fececbc6",
     "semantic_hash": ""
   },
   "src/components/portal/nav-visibility.test.ts": {
@@ -4280,8 +4280,8 @@
     "semantic_hash": ""
   },
   "drizzle/migrations/meta/_journal.json": {
-    "mtime": 1786084850.715079,
-    "ast_hash": "a2f2dfa89d112789da41d91ab647a347",
+    "mtime": 1786117265.694263,
+    "ast_hash": "9bbb60f5f9ecd14a058448d1f11f2cd6",
     "semantic_hash": ""
   },
   "drizzle/migrations/README.md": {
@@ -4297,6 +4297,26 @@
   "src/app/portal/calendar/loading.tsx": {
     "mtime": 1786113245.3046494,
     "ast_hash": "e233f265680843639b235fc5079f3c04",
+    "semantic_hash": ""
+  },
+  "drizzle/migrations/0005_pending_member_roles.sql": {
+    "mtime": 1786117238.6950874,
+    "ast_hash": "52800e4394afc772851f15df150d9149",
+    "semantic_hash": ""
+  },
+  "drizzle/migrations/meta/0005_snapshot.json": {
+    "mtime": 1786117238.6950874,
+    "ast_hash": "d6b41df2773e8067419871d6d0886a54",
+    "semantic_hash": ""
+  },
+  "src/server/auth/pending-roles.integration.test.ts": {
+    "mtime": 1786117390.2495885,
+    "ast_hash": "649043ed51e7100ba493ff5f62c4e403",
+    "semantic_hash": ""
+  },
+  "src/server/auth/pending-roles.ts": {
+    "mtime": 1786117295.004191,
+    "ast_hash": "1a74b0fcb055a756134f8d29d1c41e31",
     "semantic_hash": ""
   }
 }

@@ -13,6 +13,7 @@ import {
 	splitAuthList,
 } from "@/server/auth/access";
 import { grantBootstrapSuperRole } from "@/server/auth/bootstrap";
+import { claimPendingRoles } from "@/server/auth/pending-roles";
 import { normalizeRoleKeys } from "@/server/auth/permissions";
 import { isRosterSignInAllowed, syncSignedInMemberProfile } from "@/server/auth/roster";
 
@@ -93,13 +94,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 				await db.update(members).set({ status: "active", updatedAt: new Date() }).where(eq(members.id, user.id));
 				// admins can add a roster row by email before the member ever signs in;
 				// backfill the link now so reporting joins find this member.
+				let claimedRoles = 0;
 				if (user.email) {
 					await db
 						.update(termMemberRoster)
 						.set({ memberId: user.id })
 						.where(eq(termMemberRoster.email, user.email.toLowerCase()));
+					// Roles an admin granted to this email before the account existed. An invite
+					// carries no member id, so the grant waits here until there is one.
+					claimedRoles = await claimPendingRoles(db, user.id, user.email);
 				}
-				await createAuditRepository(db as unknown as Parameters<typeof createAuditRepository>[0]).record(
+				const audit = createAuditRepository(db as unknown as Parameters<typeof createAuditRepository>[0]);
+				await audit.record(
 					{ memberId: user.id, roles: ["member"], context: "session" },
 					{
 						action: "member:self_provision",
@@ -108,6 +114,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
 						category: "member",
 					},
 				);
+				// Recorded separately so a grant made before the account existed is still
+				// traceable to the sign-in that applied it.
+				if (claimedRoles > 0) {
+					await audit.record(
+						{ memberId: user.id, roles: ["member"], context: "session" },
+						{
+							action: "role:claim_pending",
+							targetType: "member",
+							targetId: user.id,
+							detail: `roles=${claimedRoles}`,
+							category: "member",
+						},
+					);
+				}
 			},
 		},
 	};

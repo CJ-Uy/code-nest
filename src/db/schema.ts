@@ -120,6 +120,27 @@ export const memberRoles = sqliteTable(
 	(table) => [primaryKey({ columns: [table.memberId, table.roleId] }), index("member_roles_role_id_idx").on(table.roleId)],
 );
 
+/**
+ * Roles granted to someone who has not signed in yet, so they arrive already able to do
+ * their job. An invite is a term_member_roster row keyed by email with no members row at
+ * all, so there is no member id to attach a role to until first sign-in. These rows are
+ * claimed and deleted by the createUser event in auth.ts.
+ *
+ * Email is stored lowercased, matching how term_member_roster is queried.
+ */
+export const pendingMemberRoles = sqliteTable(
+	"pending_member_roles",
+	{
+		email: text("email").notNull(),
+		roleId: text("role_id")
+			.notNull()
+			.references(() => roles.id, { onDelete: "cascade" }),
+		assignedBy: text("assigned_by").references(() => members.id, { onDelete: "set null" }),
+		assignedAt: integer("assigned_at", { mode: "timestamp_ms" }).notNull().default(nowMs),
+	},
+	(table) => [primaryKey({ columns: [table.email, table.roleId] }), index("pending_member_roles_email_idx").on(table.email)],
+);
+
 export const sharedDevTokens = sqliteTable("shared_dev_tokens", {
 	tokenHash: text("token_hash").primaryKey(),
 	memberId: text("member_id")
