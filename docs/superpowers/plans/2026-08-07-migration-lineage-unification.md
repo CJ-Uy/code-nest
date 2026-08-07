@@ -183,6 +183,8 @@ Deleting a member clears authorship instead of deleting their pins."
 
 ### Task 2: Convergence and preservation tests
 
+> **DONE 2026-08-07.** 468 tests, eslint clean. Calibration reported the expected 5 problems.
+
 These are the gate. Everything after depends on them.
 
 **Compare structure, not DDL text.** Verified empirically on 2026-08-07, and the naive approach fails: `ALTER TABLE ADD COLUMN` appends columns to the end of a table, while a from-scratch render emits them in `schema.ts` declaration order. `crs_events` ends up with the same 22 columns in a completely different order. Comparing `sqlite_master.sql` as text reported 8 differing tables that were in fact identical, so a text-based gate never passes and Task 3 would loop forever. Comparing `PRAGMA` output keyed by column name reduced the same comparison to 1 genuine difference.
@@ -201,7 +203,7 @@ SQLite has no boolean type, so hand-written `DEFAULT 0` and a rendered `DEFAULT 
 - Produces from `scripts/sqlite-schema.ts`: `applyMigrations(db, dir)`, `snapshot(db): DbSnapshot`, `openScratch(file)`.
 - Consumed by: Task 3.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `scripts/schema-compare.test.ts`:
 
@@ -267,12 +269,12 @@ describe("compareSnapshots", () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `pnpm exec vitest run scripts/schema-compare.test.ts`
 Expected: FAIL, cannot resolve `./schema-compare`.
 
-- [ ] **Step 3: Implement the pure comparer**
+- [x] **Step 3: Implement the pure comparer**
 
 Create `scripts/schema-compare.ts`. It imports nothing, so the Workers pool can load it.
 
@@ -343,12 +345,12 @@ export function compareSnapshots(a: DbSnapshot, b: DbSnapshot): string[] {
 }
 ```
 
-- [ ] **Step 4: Run the test and watch it pass**
+- [x] **Step 4: Run the test and watch it pass**
 
 Run: `pnpm exec vitest run scripts/schema-compare.test.ts`
 Expected: PASS, 9 tests. A failure resolving `node:fs` means an import leaked in.
 
-- [ ] **Step 5: Implement the sqlite side**
+- [x] **Step 5: Implement the sqlite side**
 
 Create `scripts/sqlite-schema.ts`. Run only through `tsx`, never imported by a test.
 
@@ -422,7 +424,7 @@ export function snapshot(db: Db): DbSnapshot {
 }
 ```
 
-- [ ] **Step 6: Implement the trunk verifier**
+- [x] **Step 6: Implement the trunk verifier**
 
 Create `scripts/verify-trunk.ts`. Side A is the replayed trunk, side B is `schema.ts` rendered from scratch. Neither derives from the other.
 
@@ -470,12 +472,12 @@ for (const problem of problems) console.error("  " + problem);
 process.exit(1);
 ```
 
-- [ ] **Step 7: Confirm the suite still passes**
+- [x] **Step 7: Confirm the suite still passes**
 
 Run: `pnpm test`
 Expected: 468 tests pass, the 459 from Task 1 plus 9 here. `vitest.config.mts:43` already includes `scripts/**/*.test.ts`.
 
-- [ ] **Step 8: Calibrate the comparer against the current lineage**
+- [x] **Step 8: Calibrate the comparer against the current lineage**
 
 Before trusting the comparer on the trunk, point it at the current `drizzle/migrations` and check that it reports exactly the differences we already know about. Side A is the migrations, which Task 1 deliberately did not touch. Side B is `schema.ts`, which Task 1 did change. So the expected output is Task 1's delta plus one pre-existing defect.
 
@@ -495,7 +497,7 @@ This is the calibration: the comparer sees the four changes Task 1 made, plus th
 
 A different set is a stop. Extra problems mean the comparer is too strict and will block Task 3 for benign reasons. Fewer mean it is too loose. Either way, fix it before continuing, because Task 3 depends entirely on this being trustworthy.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add scripts/schema-compare.ts scripts/schema-compare.test.ts scripts/sqlite-schema.ts scripts/verify-trunk.ts
