@@ -5,8 +5,8 @@
     "semantic_hash": ""
   },
   ".remember/tmp/last-save.json": {
-    "mtime": 1786063880.8339083,
-    "ast_hash": "3501d195e5d9757cba30cefead5b152e",
+    "mtime": 1786064280.981824,
+    "ast_hash": "595d47ef9f843fa74859a3d8b0cebbe1",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -725,8 +725,8 @@
     "semantic_hash": ""
   },
   ".remember/now.md": {
-    "mtime": 1786063880.625877,
-    "ast_hash": "72dc90a8f3c21a220d26e0642200c884",
+    "mtime": 1786064280.7374723,
+    "ast_hash": "aa9a5631c671c4253ed03e22ab845ccc",
     "semantic_hash": ""
   },
   ".remember/recent.md": {
@@ -2285,8 +2285,8 @@
     "semantic_hash": ""
   },
   "src/components/links/charts.tsx": {
-    "mtime": 1785177642.921438,
-    "ast_hash": "2d478c30f81f3097b1e4aad6cea18ad8",
+    "mtime": 1786064691.2648773,
+    "ast_hash": "8d117bebede5d4b009adaa5c9c302f39",
     "semantic_hash": ""
   },
   "src/components/links/styled-link-qr.tsx": {
@@ -4362,6 +4362,16 @@
   "src/components/portal/nav-visibility.ts": {
     "mtime": 1786064146.4180062,
     "ast_hash": "de74e0224f9c635dc39c8f84b9d4e99b",
+    "semantic_hash": ""
+  },
+  "src/components/links/chart-geometry.test.ts": {
+    "mtime": 1786064676.3526464,
+    "ast_hash": "59f733aca40f28bfc1898d45868cb258",
+    "semantic_hash": ""
+  },
+  "src/components/links/chart-geometry.ts": {
+    "mtime": 1786064664.1577244,
+    "ast_hash": "66226aba15cc7517625a3df329a49830",
     "semantic_hash": ""
   }
 }
