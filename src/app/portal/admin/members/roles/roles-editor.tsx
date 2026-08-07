@@ -4,12 +4,25 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { AdminEntry, AssignableRole } from "@/db/repositories/roles";
+import type { AdminEntry, AssignableRole, InvitedEntry } from "@/db/repositories/roles";
 import type { Member } from "@/db/types";
 import type { RoleKey } from "@/server/auth/permissions";
-import { loadMemberRolesAction, saveMemberRolesAction, searchMembersAction } from "./actions";
+import {
+	loadMemberRolesAction,
+	saveMemberRolesAction,
+	savePendingRolesAction,
+	searchInvitedAction,
+	searchMembersAction,
+} from "./actions";
 
-type Editor = { memberId: string; displayName: string; baseVersion: string; original: RoleKey[]; desired: Set<RoleKey> };
+/**
+ * One editor drives both cases. A member has an id and a baseVersion for conflict
+ * detection; an invited email has neither, because nobody holds those roles yet and there
+ * is no member row to point at until they first sign in.
+ */
+type Editor =
+	| { kind: "member"; memberId: string; displayName: string; baseVersion: string; original: RoleKey[]; desired: Set<RoleKey> }
+	| { kind: "invited"; email: string; displayName: string; desired: Set<RoleKey> };
 
 export function RolesManager({
 	admins,
@@ -25,6 +38,7 @@ export function RolesManager({
 	const router = useRouter();
 	const [filter, setFilter] = useState("");
 	const [results, setResults] = useState<Member[]>([]);
+	const [invited, setInvited] = useState<InvitedEntry[]>([]);
 	const [searching, setSearching] = useState(false);
 	const [searchFailed, setSearchFailed] = useState(false);
 	const [editor, setEditor] = useState<Editor | null>(null);
@@ -58,18 +72,21 @@ export function RolesManager({
 
 		// cancelled guards against an earlier, slower query overwriting a later one.
 		let cancelled = false;
-		// Debounced so typing a name is not one request per keystroke.
+		// Debounced so typing a name is not one request per keystroke. Both lists are
+		// searched together, because someone you are looking for might not have signed in.
 		const timer = setTimeout(() => {
 			setSearching(true);
-			searchMembersAction(term)
-				.then((rows) => {
+			Promise.all([searchMembersAction(term), searchInvitedAction(term).catch(() => [])])
+				.then(([members, invitedRows]) => {
 					if (cancelled) return;
-					setResults(rows);
+					setResults(members);
+					setInvited(invitedRows);
 					setSearchFailed(false);
 				})
 				.catch(() => {
 					if (cancelled) return;
 					setResults([]);
+					setInvited([]);
 					setSearchFailed(true);
 				})
 				.finally(() => {
@@ -87,8 +104,13 @@ export function RolesManager({
 		setMessage(null);
 		startTransition(async () => {
 			const { roleKeys, baseVersion } = await loadMemberRolesAction(memberId);
-			setEditor({ memberId, displayName, baseVersion, original: roleKeys, desired: new Set(roleKeys) });
+			setEditor({ kind: "member", memberId, displayName, baseVersion, original: roleKeys, desired: new Set(roleKeys) });
 		});
+	}
+
+	function openInvitedEditor(email: string, roleKeys: RoleKey[]) {
+		setMessage(null);
+		setEditor({ kind: "invited", email, displayName: email, desired: new Set(roleKeys) });
 	}
 
 	function toggle(key: RoleKey, on: boolean) {
@@ -103,9 +125,29 @@ export function RolesManager({
 
 	function save() {
 		if (!editor) return;
+		const desiredRoleKeys = [...editor.desired];
+
+		if (editor.kind === "invited") {
+			setMessage(null);
+			startTransition(async () => {
+				try {
+					await savePendingRolesAction({ email: editor.email, desiredRoleKeys });
+					setEditor(null);
+					setMessage(
+						desiredRoleKeys.length > 0
+							? "Saved. They will have these roles the first time they sign in."
+							: "Saved. No roles are waiting for them now.",
+					);
+					router.refresh();
+				} catch (error) {
+					setMessage(error instanceof Error ? error.message : "Could not save.");
+				}
+			});
+			return;
+		}
+
 		const removingOwn = editor.memberId === actorMemberId && editor.original.some((k) => !editor.desired.has(k));
 		if (removingOwn && !window.confirm("This removes your own access. Continue?")) return;
-		const desiredRoleKeys = [...editor.desired];
 		setMessage(null);
 		startTransition(async () => {
 			try {
@@ -169,9 +211,58 @@ export function RolesManager({
 				</div>
 			) : null}
 
+			{q.length >= 2 && invited.length > 0 ? (
+				<div className="grid gap-2 rounded-xl border border-border p-4">
+					<div className="grid gap-0.5">
+						<p className="text-sm font-medium">Invited, not signed in yet</p>
+						<p className="text-xs text-muted-foreground">
+							Roles granted here apply the first time they sign in, so they arrive able to do the job.
+						</p>
+					</div>
+					<ul className="grid gap-1">
+						{invited.map((entry) => (
+							<li
+								key={entry.email}
+								className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border px-3 py-2"
+							>
+								<span className="min-w-0 text-sm">
+									<span className="break-all font-medium">{entry.email}</span>
+									{entry.roleKeys.length > 0 ? (
+										<span className="ml-2 inline-flex flex-wrap gap-1 align-middle">
+											{entry.roleKeys.map((k) => (
+												<span key={k} className="rounded-full bg-secondary px-2 py-0.5 text-xs">
+													{labelOf.get(k) ?? k}
+												</span>
+											))}
+										</span>
+									) : null}
+								</span>
+								<Button
+									type="button"
+									size="sm"
+									variant="outline"
+									className="shrink-0"
+									onClick={() => openInvitedEditor(entry.email, entry.roleKeys)}
+									disabled={pending}
+								>
+									{entry.roleKeys.length > 0 ? "Edit waiting roles" : "Grant roles"}
+								</Button>
+							</li>
+						))}
+					</ul>
+				</div>
+			) : null}
+
 			{editor ? (
 				<div className="grid gap-3 rounded-xl border border-accent/50 bg-accent/5 p-4">
-					<p className="font-medium">Roles for {editor.displayName}</p>
+					<div className="grid gap-0.5">
+						<p className="font-medium">Roles for {editor.displayName}</p>
+						{editor.kind === "invited" ? (
+							<p className="text-xs text-muted-foreground">
+								They have not signed in yet. These apply automatically on their first sign-in.
+							</p>
+						) : null}
+					</div>
 					<div className="grid gap-2">
 						{assignableRoles.map((role) => {
 							const disabled = !role.assignable || (role.key === "super" && !canGrantSuper);
