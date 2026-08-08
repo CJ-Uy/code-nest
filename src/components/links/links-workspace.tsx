@@ -265,7 +265,16 @@ export function LinksWorkspace({ initialLinks, actorMemberId, canModerate }: Lin
 					<TableBody>
 						{sorted.map((link) => (
 							<TableRow key={link.id} className="cursor-pointer" onClick={() => openDialog(link.id)}>
-								<TableCell className="min-w-48"><p className="font-medium">{link.title}</p><p className="truncate text-xs text-muted-foreground">to {link.destinationUrl}</p></TableCell>
+								{/* Both lines are capped so the destination URL cannot set the column width.
+							    truncate needs a bounded box, and a table cell in auto layout just grows
+							    to fit its widest content, so the cap has to sit on these elements. The
+							    full text stays available on hover. */}
+							<TableCell className="min-w-48">
+								<p className="max-w-xs truncate font-medium" title={link.title}>{link.title}</p>
+								<p className="max-w-xs truncate text-xs text-muted-foreground" title={link.destinationUrl}>
+									to {link.destinationUrl}
+								</p>
+							</TableCell>
 								<TableCell><ShortLinkCell origin={origin} baseLabel={baseLabel} slug={link.slug} /></TableCell>
 								<TableCell><TagList tags={link.tags} /></TableCell>
 								<TableCell className="text-right tabular-nums">{link.clickCount}</TableCell>
