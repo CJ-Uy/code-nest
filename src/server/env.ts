@@ -43,6 +43,7 @@ const rawEnvSchema = z.object({
 	FEATURE_ANNOUNCEMENTS: featureFlagSchema,
 	FEATURE_NOTIFICATIONS: featureFlagSchema,
 	FEATURE_SURVEYS: featureFlagSchema,
+	FEATURE_LEADERBOARD: featureFlagSchema,
 	FEATURE_PUBLIC_SITE: featureFlagSchema,
 });
 
@@ -92,6 +93,7 @@ export function getAppConfig(): AppConfig {
 		FEATURE_ANNOUNCEMENTS: runtimeEnvValue("FEATURE_ANNOUNCEMENTS"),
 		FEATURE_NOTIFICATIONS: runtimeEnvValue("FEATURE_NOTIFICATIONS"),
 		FEATURE_SURVEYS: runtimeEnvValue("FEATURE_SURVEYS"),
+		FEATURE_LEADERBOARD: runtimeEnvValue("FEATURE_LEADERBOARD"),
 		FEATURE_PUBLIC_SITE: runtimeEnvValue("FEATURE_PUBLIC_SITE"),
 	});
 

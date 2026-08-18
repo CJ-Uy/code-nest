@@ -18,6 +18,7 @@ function configWith(flags: Partial<Record<string, boolean>>) {
 		FEATURE_NOTIFICATIONS: false,
 		FEATURE_SURVEYS: false,
 		FEATURE_PUBLIC_SITE: false,
+		FEATURE_LEADERBOARD: false,
 		...flags,
 	} as Parameters<typeof featureFlagsFromConfig>[0];
 }
@@ -42,6 +43,9 @@ describe("release feature flags", () => {
 		expect(featureFlagsFromConfig(configWith({ FEATURE_LIBRARY: true })).announcements).toBe(false);
 		expect(featureFlagsFromConfig(configWith({ FEATURE_PUBLIC_SITE: true })).publicSite).toBe(true);
 		expect(featureFlagsFromConfig(configWith({ FEATURE_SURVEYS: true })).surveys).toBe(true);
+		expect(featureFlagsFromConfig(configWith({ FEATURE_LEADERBOARD: true })).leaderboard).toBe(true);
+		// leaderboard is independent of retention in config; the points page is what pairs them.
+		expect(featureFlagsFromConfig(configWith({ FEATURE_LEADERBOARD: true })).retention).toBe(false);
 	});
 
 	it("names the offending surface when a guard rejects", () => {

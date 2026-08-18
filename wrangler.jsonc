@@ -47,7 +47,8 @@
 		"FEATURE_ANNOUNCEMENTS": "false",
 		"FEATURE_NOTIFICATIONS": "false",
 		"FEATURE_SURVEYS": "false",
-		"FEATURE_PUBLIC_SITE": "false"
+		"FEATURE_PUBLIC_SITE": "false",
+		"FEATURE_LEADERBOARD": "false"
 	},
 	"d1_databases": [
 		{

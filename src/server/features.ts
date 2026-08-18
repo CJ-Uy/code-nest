@@ -2,9 +2,20 @@ import { getAppConfig, type AppConfig } from "./env";
 
 /**
  * Product surfaces that are finished on beta but not yet ready for staging or production.
- * Beta enables all six; staging and production disable all six until each surface ships.
+ *
+ * `leaderboard` is a sub-surface of `retention`, not a peer: it only renders on the points
+ * page, so enabling it while retention is off does nothing. It is separate because the
+ * points page is wanted without the ranking table.
  */
-export const FEATURE_KEYS = ["retention", "library", "announcements", "notifications", "surveys", "publicSite"] as const;
+export const FEATURE_KEYS = [
+	"retention",
+	"library",
+	"announcements",
+	"notifications",
+	"surveys",
+	"publicSite",
+	"leaderboard",
+] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
 export type FeatureFlags = Record<FeatureKey, boolean>;
@@ -18,6 +29,7 @@ export function featureFlagsFromConfig(config: AppConfig): FeatureFlags {
 		notifications: config.FEATURE_NOTIFICATIONS,
 		surveys: config.FEATURE_SURVEYS,
 		publicSite: config.FEATURE_PUBLIC_SITE,
+		leaderboard: config.FEATURE_LEADERBOARD,
 	};
 }
 

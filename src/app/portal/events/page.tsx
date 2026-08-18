@@ -31,7 +31,10 @@ export default async function RetentionHistoryPage({
 
 	const actor = await requireActor();
 	const params = await searchParams;
-	const view = params.view === "leaderboard" ? "leaderboard" : "history";
+	const showLeaderboard = isFeatureEnabled("leaderboard");
+	// Gated on the resolved view, not just the tab list, so a hand-typed ?view=leaderboard
+	// falls back to the history tab instead of rendering a hidden surface.
+	const view = showLeaderboard && params.view === "leaderboard" ? "leaderboard" : "history";
 
 	const repositories = await getRepositories();
 	const terms = await repositories.retention.listTerms(actor).catch(() => []);
@@ -54,7 +57,9 @@ export default async function RetentionHistoryPage({
 
 	const tabs = [
 		{ id: "history", label: "My points", href: "/portal/events" },
-		{ id: "leaderboard", label: "Leaderboard", href: "/portal/events?view=leaderboard" },
+		...(showLeaderboard
+			? [{ id: "leaderboard", label: "Leaderboard", href: "/portal/events?view=leaderboard" }]
+			: []),
 	];
 
 	return (

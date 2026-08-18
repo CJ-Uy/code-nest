@@ -40,12 +40,13 @@
 		"LOCAL_STORAGE_DIR": "./.local/uploads",
 		"NEXT_PRIVATE_MINIMAL_MODE": "1",
 		// Unfinished surfaces stay hidden on staging until each one ships. Only "true" enables.
-		"FEATURE_RETENTION": "false",
+		"FEATURE_RETENTION": "true",
 		"FEATURE_LIBRARY": "false",
 		"FEATURE_ANNOUNCEMENTS": "false",
 		"FEATURE_NOTIFICATIONS": "false",
 		"FEATURE_SURVEYS": "false",
-		"FEATURE_PUBLIC_SITE": "false"
+		"FEATURE_PUBLIC_SITE": "false",
+		"FEATURE_LEADERBOARD": "false"
 	},
 	"d1_databases": [
 		{
