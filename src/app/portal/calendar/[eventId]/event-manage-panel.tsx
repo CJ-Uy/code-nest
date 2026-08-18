@@ -266,24 +266,31 @@ function BulkCheckin({ eventId }: { eventId: string }) {
 	const [raw, setRaw] = useState("");
 	const [result, setResult] = useState<BulkCheckinResult | null>(null);
 	const [error, setError] = useState<string | null>(null);
-	const [pending, startTransition] = useTransition();
+	// The size of the batch in flight, or null when idle. Held separately from `raw` because
+	// raw is cleared on success: reading the count off the live preview made a finished run
+	// report "Checking in 0...". Doubles as the busy flag.
+	const [inFlight, setInFlight] = useState<number | null>(null);
 
 	const preview = parseEmailColumn(raw);
 	const overCap = preview.valid.length > 500;
 
-	function submit() {
+	async function submit() {
 		setResult(null);
 		setError(null);
-		startTransition(async () => {
-			try {
-				const next = await markPresentBulkAction(eventId, raw);
-				setResult(next);
-				setRaw("");
-				router.refresh();
-			} catch (e) {
-				setError(e instanceof Error ? e.message : "Bulk check-in failed.");
-			}
-		});
+		setInFlight(preview.valid.length);
+		try {
+			const next = await markPresentBulkAction(eventId, raw);
+			setResult(next);
+			setRaw("");
+			// Deliberately not inside a transition and deliberately not awaited. The result is
+			// already in hand; refresh only reconciles the Present list above. Gating the button
+			// on it left the spinner running for as long as the event page took to re-render.
+			router.refresh();
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Bulk check-in failed.");
+		} finally {
+			setInFlight(null);
+		}
 	}
 
 	return (
@@ -296,7 +303,7 @@ function BulkCheckin({ eventId }: { eventId: string }) {
 				className={cn(FIELD, "min-h-24 font-mono text-xs")}
 				value={raw}
 				rows={5}
-				disabled={pending}
+				disabled={inFlight !== null}
 				placeholder={"member1@example.com\nmember2@example.com"}
 				onChange={(e) => setRaw(e.target.value)}
 			/>
@@ -304,11 +311,16 @@ function BulkCheckin({ eventId }: { eventId: string }) {
 				<span className="min-w-0 break-all">
 					{preview.valid.length} valid, {preview.dedupedInput} duplicate, {preview.invalid.length} invalid
 				</span>
-				<Button type="button" size="sm" onClick={submit} disabled={pending || preview.valid.length === 0 || overCap}>
-					{pending ? (
+				<Button
+					type="button"
+					size="sm"
+					onClick={() => void submit()}
+					disabled={inFlight !== null || preview.valid.length === 0 || overCap}
+				>
+					{inFlight !== null ? (
 						<>
 							<LoaderCircle className="size-4 animate-spin" />
-							Checking in {preview.valid.length}…
+							Checking in {inFlight}…
 						</>
 					) : (
 						<>Check in {preview.valid.length}</>
@@ -377,8 +389,10 @@ function CheckinsSection({
 	const [flash, setFlash] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [overlayOpen, setOverlayOpen] = useState(false);
-	// Named rather than discarded: marking present is a write and needs to say so.
-	const [pending, startTransition] = useTransition();
+	// A plain flag, not useTransition: router.refresh() below would extend a transition's
+	// pending state until the whole event page re-rendered, leaving the busy line up long
+	// after the write landed. This tracks the write and nothing else.
+	const [busy, setBusy] = useState(false);
 	// Held rather than confirmed inline, so the removal warning is a real dialog.
 	const [pendingRemoval, setPendingRemoval] = useState<{ memberId: string; label: string } | null>(null);
 
@@ -389,45 +403,48 @@ function CheckinsSection({
 	const closesAt = event.endsAt?.getTime() ?? event.startsAt.getTime();
 	const windowOpen = now >= opensAt && now <= closesAt;
 
-	function markById(memberId: string, label?: string) {
+	async function markById(memberId: string, label?: string) {
 		setError(null);
 		setFlash(null);
-		startTransition(async () => {
-			try {
-				const res = await markPresentAction(event.id, memberId);
-				const who = label ?? "Member";
-				setFlash(res.alreadyPresent ? `${who} was already checked in.` : `Checked in ${who}.`);
-				router.refresh();
-			} catch (e) {
-				setError(e instanceof Error ? e.message : "Could not mark present.");
-			}
-		});
+		setBusy(true);
+		try {
+			const res = await markPresentAction(event.id, memberId);
+			const who = label ?? "Member";
+			setFlash(res.alreadyPresent ? `${who} was already checked in.` : `Checked in ${who}.`);
+			// Not awaited: the outcome is already reported, refresh only reconciles the list.
+			router.refresh();
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Could not mark present.");
+		} finally {
+			setBusy(false);
+		}
 	}
 
 	function mark(m: FoundMember) {
-		markById(m.memberId, displayName(m));
+		void markById(m.memberId, displayName(m));
 	}
 
 	// undoScan lets a scanner reverse their own scan and a manager reverse anyone's, so the
 	// button is shown to everyone who can see this section and the server decides. A refused
 	// removal surfaces in the same error line as a refused check-in.
-	function confirmRemoval() {
+	async function confirmRemoval() {
 		const target = pendingRemoval;
 		if (!target) return;
 		setPendingRemoval(null);
 		setError(null);
 		setFlash(null);
-		startTransition(async () => {
-			try {
-				const res = await undoPresentAction(event.id, target.memberId);
-				setFlash(
-					res.removed ? `Removed ${target.label} from attendance.` : `${target.label} was not checked in.`,
-				);
-				router.refresh();
-			} catch (e) {
-				setError(e instanceof Error ? e.message : "Could not remove that check-in.");
-			}
-		});
+		setBusy(true);
+		try {
+			const res = await undoPresentAction(event.id, target.memberId);
+			setFlash(
+				res.removed ? `Removed ${target.label} from attendance.` : `${target.label} was not checked in.`,
+			);
+			router.refresh();
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Could not remove that check-in.");
+		} finally {
+			setBusy(false);
+		}
 	}
 
 	return (
@@ -496,13 +513,13 @@ function CheckinsSection({
 
 			{/* The search and the Present list both write through this section, so one busy line
 			    covers every path rather than each row growing its own spinner. */}
-			{pending ? (
+			{busy ? (
 				<p className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
 					<LoaderCircle className="size-4 animate-spin" />
 					Working…
 				</p>
 			) : null}
-			{!pending && flash ? <p className="text-sm text-accent">{flash}</p> : null}
+			{!busy && flash ? <p className="text-sm text-accent">{flash}</p> : null}
 			{error ? <p className="text-sm text-destructive">{error}</p> : null}
 
 			<div className="grid gap-1">
@@ -523,7 +540,7 @@ function CheckinsSection({
 									type="button"
 									variant="ghost"
 									size="sm"
-									disabled={pending}
+									disabled={busy}
 									// Muted until hovered, then the destructive surface takes over so the icon
 									// reads as white. The explicit hover:bg beats the ghost variant's accent wash,
 									// which would otherwise tint the button on hover and mute the icon with it.
@@ -560,7 +577,7 @@ function CheckinsSection({
 							</DialogPrimitive.Close>
 							<Button
 								className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-								onClick={confirmRemoval}
+								onClick={() => void confirmRemoval()}
 							>
 								<X className="size-4" />
 								Remove
