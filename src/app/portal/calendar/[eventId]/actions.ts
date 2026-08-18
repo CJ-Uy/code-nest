@@ -158,6 +158,19 @@ export async function markPresentBulkAction(eventId: string, raw: string): Promi
 	return result;
 }
 
+/**
+ * Remove a check-in recorded by mistake. undoScan also deletes the matching
+ * event_attendance retention record, so the points awarded by the scan come back off -
+ * a removal that left the points behind would be worse than no removal at all.
+ */
+export async function undoPresentAction(eventId: string, memberId: string) {
+	const actor = await requireActor();
+	const repositories = await getRepositories();
+	const result = await repositories.events.undoScan(actor, { eventId, memberId });
+	revalidate(eventId);
+	return result;
+}
+
 export async function rsvpAction(eventId: string, state: "going" | "none", answers: unknown) {
 	const actor = await requireActor();
 	const input = eventsContract.rsvp.input.parse({

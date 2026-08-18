@@ -37,6 +37,7 @@ import {
 	searchMembersAction,
 	setEventReadOnlyAction,
 	transferOwnershipAction,
+	undoPresentAction,
 	updateEventAction,
 } from "./actions";
 import type { BulkCheckinResult } from "./actions";
@@ -394,6 +395,24 @@ function CheckinsSection({
 		markById(m.memberId, displayName(m));
 	}
 
+	// undoScan lets a scanner reverse their own scan and a manager reverse anyone's, so the
+	// button is shown to everyone who can see this section and the server decides. A refused
+	// removal surfaces in the same error line as a refused check-in.
+	function removePresent(memberId: string, label: string) {
+		if (!window.confirm(`Remove ${label} from attendance? Any points from this check-in are removed too.`)) return;
+		setError(null);
+		setFlash(null);
+		startTransition(async () => {
+			try {
+				const res = await undoPresentAction(event.id, memberId);
+				setFlash(res.removed ? `Removed ${label} from attendance.` : `${label} was not checked in.`);
+				router.refresh();
+			} catch (e) {
+				setError(e instanceof Error ? e.message : "Could not remove that check-in.");
+			}
+		});
+	}
+
 	return (
 		<div className="grid gap-3">
 			<div
@@ -470,11 +489,21 @@ function CheckinsSection({
 				) : (
 					<ul className="divide-y divide-border rounded-lg border border-border">
 						{attendance.map((a) => (
-							<li key={a.memberId} className="flex items-center justify-between px-3 py-2 text-sm">
-								<span className="truncate">{displayName(a)}</span>
-								<span className="text-xs text-muted-foreground">
+							<li key={a.memberId} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+								<span className="min-w-0 flex-1 truncate">{displayName(a)}</span>
+								<span className="shrink-0 text-xs text-muted-foreground">
 									{formatUtc8Time(a.scannedAt)}
 								</span>
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									className="size-8 shrink-0 p-0 text-muted-foreground hover:text-destructive"
+									onClick={() => removePresent(a.memberId, displayName(a))}
+								>
+									<X className="size-4" />
+									<span className="sr-only">Remove {displayName(a)} from attendance</span>
+								</Button>
 							</li>
 						))}
 					</ul>
