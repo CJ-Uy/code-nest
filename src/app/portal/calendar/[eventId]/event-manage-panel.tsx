@@ -395,10 +395,16 @@ function CheckinsSection({
 	const [busy, setBusy] = useState(false);
 	// Held rather than confirmed inline, so the removal warning is a real dialog.
 	const [pendingRemoval, setPendingRemoval] = useState<{ memberId: string; label: string } | null>(null);
+	// Members the server has confirmed removed. `attendance` is a server prop, so it only
+	// changes once router.refresh() completes a full re-render of this page - six DB reads
+	// away. Without this the row sat there under a message saying it was gone.
+	const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
 
 	// ponytail: snapshot "now" at mount. This banner is advisory; recordScan enforces the
 	// window server-side. A member who lingers past the boundary just refreshes.
 	const [now] = useState(() => Date.now());
+	// What the officer should see right now: the server list minus anything just removed.
+	const visibleAttendance = attendance.filter((row) => !removedIds.has(row.memberId));
 	const opensAt = event.startsAt.getTime() - CHECKIN_LEAD_MS;
 	const closesAt = event.endsAt?.getTime() ?? event.startsAt.getTime();
 	const windowOpen = now >= opensAt && now <= closesAt;
@@ -411,6 +417,13 @@ function CheckinsSection({
 			const res = await markPresentAction(event.id, memberId);
 			const who = label ?? "Member";
 			setFlash(res.alreadyPresent ? `${who} was already checked in.` : `Checked in ${who}.`);
+			// Checked in again after a removal: stop hiding the row the refresh will bring back.
+			setRemovedIds((prev) => {
+				if (!prev.has(memberId)) return prev;
+				const next = new Set(prev);
+				next.delete(memberId);
+				return next;
+			});
 			// Not awaited: the outcome is already reported, refresh only reconciles the list.
 			router.refresh();
 		} catch (e) {
@@ -439,6 +452,8 @@ function CheckinsSection({
 			setFlash(
 				res.removed ? `Removed ${target.label} from attendance.` : `${target.label} was not checked in.`,
 			);
+			// Only on a confirmed removal - never hide a row the server still stands behind.
+			if (res.removed) setRemovedIds((prev) => new Set(prev).add(target.memberId));
 			router.refresh();
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Could not remove that check-in.");
@@ -524,13 +539,13 @@ function CheckinsSection({
 
 			<div className="grid gap-1">
 				<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-					Present · {attendance.length}
+					Present · {visibleAttendance.length}
 				</p>
-				{attendance.length === 0 ? (
+				{visibleAttendance.length === 0 ? (
 					<p className="text-sm text-muted-foreground">No one checked in yet.</p>
 				) : (
 					<ul className="divide-y divide-border rounded-lg border border-border">
-						{attendance.map((a) => (
+						{visibleAttendance.map((a) => (
 							<li key={a.memberId} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
 								<span className="min-w-0 flex-1 truncate">{displayName(a)}</span>
 								<span className="shrink-0 text-xs text-muted-foreground">
@@ -780,7 +795,10 @@ function DetailsSection({
 	typesUnavailable: boolean;
 }) {
 	const router = useRouter();
-	const [pending, startTransition] = useTransition();
+	// A plain flag, not useTransition: router.refresh() inside a transition keeps isPending
+	// true until the whole page re-renders, which left "Saving…" on screen well after the
+	// save had landed. This tracks the write only.
+	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [saved, setSaved] = useState(false);
 
@@ -819,48 +837,52 @@ function DetailsSection({
 		? allowedEventTypes
 		: [...allowedEventTypes, currentType];
 
-	function save() {
+	async function save() {
 		setError(null);
 		setSaved(false);
-		startTransition(async () => {
-			try {
-				await updateEventAction({
-					eventId: event.id,
-					title,
-					type: typesUnavailable ? event.type : type,
-					place,
-					description,
-					// The action snaps an all-day range to the whole UTC+8 days, so send midnight
-					// and let it widen; sending the previous timed values would narrow the event.
-					startsAt: fromLocalInput(allDay ? `${startDay}T00:00` : startsAt).toISOString(),
-					endsAt: fromLocalInput(allDay ? `${endDay}T00:00` : endsAt).toISOString(),
-					allDay,
-					capacity: capacity ? Number(capacity) : null,
-					graceMinutes: graceMinutes === "" ? null : Number(graceMinutes),
-					rsvpForm,
-					rsvpResponsesPublic,
-				});
-				setSaved(true);
-				router.refresh();
-			} catch (e) {
-				setError(e instanceof Error ? e.message : "Could not save.");
-			}
-		});
+		setBusy(true);
+		try {
+			await updateEventAction({
+				eventId: event.id,
+				title,
+				type: typesUnavailable ? event.type : type,
+				place,
+				description,
+				// The action snaps an all-day range to the whole UTC+8 days, so send midnight
+				// and let it widen; sending the previous timed values would narrow the event.
+				startsAt: fromLocalInput(allDay ? `${startDay}T00:00` : startsAt).toISOString(),
+				endsAt: fromLocalInput(allDay ? `${endDay}T00:00` : endsAt).toISOString(),
+				allDay,
+				capacity: capacity ? Number(capacity) : null,
+				graceMinutes: graceMinutes === "" ? null : Number(graceMinutes),
+				rsvpForm,
+				rsvpResponsesPublic,
+			});
+			setSaved(true);
+			// Not awaited: the save is already confirmed, refresh only reconciles the page.
+			router.refresh();
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Could not save.");
+		} finally {
+			setBusy(false);
+		}
 	}
 
-	function remove() {
+	async function remove() {
 		if (!window.confirm("Delete this event? Attendance and points already earned are kept.")) return;
-		startTransition(async () => {
-			try {
-				await deleteEventAction(event.id);
-				router.push("/portal/calendar");
-			} catch (e) {
-				setError(e instanceof Error ? e.message : "Could not delete.");
-			}
-		});
+		setBusy(true);
+		try {
+			await deleteEventAction(event.id);
+			// Left busy on purpose: the navigation away is the end state, so re-enabling the
+			// buttons here would just offer a second delete on a page that is leaving.
+			router.push("/portal/calendar");
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Could not delete.");
+			setBusy(false);
+		}
 	}
 
-	function toggleReadOnly() {
+	async function toggleReadOnly() {
 		const next = !event.readOnly;
 		if (next) {
 			const collected = event.attendingCount;
@@ -871,14 +893,15 @@ function DetailsSection({
 				: "Make this informational? Signup, check-in, attendance and points are turned off for members.";
 			if (!window.confirm(warning)) return;
 		}
-		startTransition(async () => {
-			try {
-				await setEventReadOnlyAction({ eventId: event.id, readOnly: next });
-				router.refresh();
-			} catch (e) {
-				setError(e instanceof Error ? e.message : "Could not change the event type.");
-			}
-		});
+		setBusy(true);
+		try {
+			await setEventReadOnlyAction({ eventId: event.id, readOnly: next });
+			router.refresh();
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Could not change the event type.");
+		} finally {
+			setBusy(false);
+		}
 	}
 
 	return (
@@ -889,7 +912,7 @@ function DetailsSection({
 				<div className="grid gap-2 rounded-lg border border-border bg-secondary/30 p-3 text-sm">
 					<div className="flex flex-wrap items-center justify-between gap-2">
 						<span className="font-medium">{event.readOnly ? "Informational event" : "Normal event"}</span>
-						<Button type="button" variant="outline" size="sm" onClick={toggleReadOnly} disabled={pending}>
+						<Button type="button" variant="outline" size="sm" onClick={() => void toggleReadOnly()} disabled={busy}>
 							{event.readOnly ? "Allow signups again" : "Make informational"}
 						</Button>
 					</div>
@@ -1029,8 +1052,8 @@ function DetailsSection({
 			{error ? <p className="text-sm text-destructive">{error}</p> : null}
 
 			<div className="flex items-center gap-3">
-				<Button type="button" onClick={save} disabled={pending || endBeforeStart}>
-					{pending ? "Saving…" : "Save changes"}
+				<Button type="button" onClick={() => void save()} disabled={busy || endBeforeStart}>
+					{busy ? "Saving…" : "Save changes"}
 				</Button>
 				{saved ? (
 					<span className="inline-flex items-center gap-1 text-sm text-accent">
@@ -1044,7 +1067,7 @@ function DetailsSection({
 					<p className="text-sm font-medium">Delete event</p>
 					<p className="text-xs text-muted-foreground">Removes it from the calendar. Earned points stay.</p>
 				</div>
-				<Button type="button" variant="outline" className="text-destructive" onClick={remove} disabled={pending}>
+				<Button type="button" variant="outline" className="text-destructive" onClick={() => void remove()} disabled={busy}>
 					<Trash2 className="size-4" />
 					Delete
 				</Button>
