@@ -4,18 +4,38 @@ import type { CalendarItem } from "@/lib/calendar";
 import { layoutMonthBars, toWeeks } from "@/lib/calendar-layout";
 import { colourClasses } from "@/lib/event-type-colours";
 import { toLocalDate } from "@/lib/date-slots";
+import { formatPoints, heatStep } from "@/lib/points";
+import type { PointsDay } from "@/db/repositories/retention";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 // Three bars plus a "+N more" line is what fits a 375px cell without the grid growing unbounded.
 const MAX_LANES = 3;
 
+export type PointsMode = "badge" | "heat";
+
+const HEAT_CLASS = ["", "bg-accent/15", "bg-accent/30", "bg-accent/50", "bg-accent/70"];
+
 function isoFor(year: number, month: number, day: number): string {
 	return new Date(Date.UTC(year, month - 1, day)).toISOString().slice(0, 10);
 }
 
-export function CalendarMonth({ items, year, month }: { items: CalendarItem[]; year: number; month: number }) {
+export function CalendarMonth({
+	items,
+	year,
+	month,
+	pointsByDay = [],
+	pointsMode = "badge",
+}: {
+	items: CalendarItem[];
+	year: number;
+	month: number;
+	pointsByDay?: PointsDay[];
+	pointsMode?: PointsMode;
+}) {
 	const todayIso = toLocalDate(new Date());
+	const pointsFor = new Map(pointsByDay.map((day) => [day.date, day.points]));
+	const maxPoints = pointsByDay.reduce((peak, day) => Math.max(peak, day.points), 0);
 
 	// Sunday-first, matching this grid's own history. date-slots' buildMonthGrid is Monday-first and
 	// drives the create-event picker; reusing it here would silently move the week start.
@@ -63,19 +83,35 @@ export function CalendarMonth({ items, year, month }: { items: CalendarItem[]; y
 								}
 								const isToday = iso === todayIso;
 								const overflow = overflowByDay.get(iso) ?? 0;
+								const dayPoints = pointsFor.get(iso) ?? 0;
+								const heat = pointsMode === "heat" ? heatStep(dayPoints, maxPoints) : 0;
 								return (
 									<div
 										key={iso}
 										className={cn(
 											"min-h-20 border-b border-r border-border p-1 sm:min-h-28 sm:p-1.5",
 											(cellIndex + 1) % 7 === 0 && "border-r-0",
-											isToday && "bg-accent/5",
+											// Today's wash only when no heat tint is competing for the same surface.
+											isToday && heat === 0 && "bg-accent/5",
+											HEAT_CLASS[heat],
 										)}
+										// Colour is never the only carrier of the value: every earning day states it
+										// here for assistive tech and on hover, in both modes.
+										title={dayPoints > 0 ? `${formatPoints(dayPoints)} points on ${iso}` : undefined}
+										aria-label={dayPoints > 0 ? `${iso}, ${formatPoints(dayPoints)} points` : undefined}
 									>
-										<div className="flex justify-end">
+										<div className="flex items-start justify-between gap-1">
+											{pointsMode === "badge" && dayPoints !== 0 ? (
+												<span className="min-w-0 truncate rounded bg-accent/15 px-1 text-[10px] font-semibold tabular-nums text-accent-foreground/90 sm:text-[11px]">
+													{dayPoints > 0 ? "+" : ""}
+													{formatPoints(dayPoints)}
+												</span>
+											) : (
+												<span />
+											)}
 											<span
 												className={cn(
-													"grid size-6 place-items-center rounded-full text-xs tabular-nums",
+													"grid size-6 shrink-0 place-items-center rounded-full text-xs tabular-nums",
 													isToday ? "bg-accent font-semibold text-accent-foreground" : "text-muted-foreground",
 												)}
 											>
@@ -141,6 +177,18 @@ export function CalendarMonth({ items, year, month }: { items: CalendarItem[]; y
 					</div>
 				);
 			})}
+
+			{/* Heat mode alone cannot say "how much", so the scale names the real maximum.
+			    Badge mode needs no legend - it prints the figures. */}
+			{pointsMode === "heat" && maxPoints > 0 ? (
+				<div className="flex items-center justify-end gap-2 border-t border-border px-3 py-2 text-[10px] text-muted-foreground">
+					<span>None</span>
+					{[1, 2, 3, 4].map((step) => (
+						<span key={step} className={cn("size-3 rounded-sm border border-border", HEAT_CLASS[step])} />
+					))}
+					<span>{formatPoints(maxPoints)} pts</span>
+				</div>
+			) : null}
 		</div>
 	);
 }

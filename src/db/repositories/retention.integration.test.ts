@@ -441,4 +441,50 @@ describe("retention repository on D1", () => {
 			expect(terms.map((term) => term.id)).toContain("term_past");
 		});
 	});
+
+	describe("myPointsByDay", () => {
+		// 2026-07-15T16:30Z is 2026-07-16 00:30 in UTC+8. A late-evening scan has to land on the
+		// day the member actually attended, which is what the month grid labels the cell.
+		it("groups on the UTC+8 day, not the UTC day", async () => {
+			const { repo } = makeRepo();
+			await insertRecord({ id: "r_late", points: 2, recordedAt: Date.parse("2026-07-15T16:30:00.000Z") });
+			await insertRecord({ id: "r_early", points: 1, recordedAt: Date.parse("2026-07-15T15:00:00.000Z") });
+
+			const days = await repo.myPointsByDay(plainMember, { year: 2026, month: 7 });
+			const byDate = new Map(days.map((day) => [day.date, day.points]));
+			expect(byDate.get("2026-07-16")).toBe(2);
+			expect(byDate.get("2026-07-15")).toBe(1);
+		});
+
+		it("sums fractional points for a day without float dust", async () => {
+			const { repo } = makeRepo();
+			for (const [index, points] of [0.1, 0.2, 0.75].entries()) {
+				await insertRecord({
+					id: `r_frac_${index}`,
+					points,
+					recordedAt: Date.parse("2026-07-20T02:00:00.000Z"),
+				});
+			}
+			const days = await repo.myPointsByDay(plainMember, { year: 2026, month: 7 });
+			expect(days).toEqual([{ date: "2026-07-20", points: 1.05, records: 3 }]);
+		});
+
+		it("counts a null-points attendance note as a record worth zero", async () => {
+			const { repo } = makeRepo();
+			await insertRecord({ id: "r_note", points: null, recordedAt: Date.parse("2026-07-21T02:00:00.000Z") });
+			const days = await repo.myPointsByDay(plainMember, { year: 2026, month: 7 });
+			expect(days).toEqual([{ date: "2026-07-21", points: 0, records: 1 }]);
+		});
+
+		it("excludes other members and other months", async () => {
+			const { repo } = makeRepo();
+			await insertRecord({ id: "r_mine", points: 3, recordedAt: Date.parse("2026-07-10T02:00:00.000Z") });
+			await insertRecord({ id: "r_theirs", memberId: "mem_b", points: 9, recordedAt: Date.parse("2026-07-10T02:00:00.000Z") });
+			await insertRecord({ id: "r_august", points: 7, recordedAt: Date.parse("2026-08-10T02:00:00.000Z") });
+
+			const days = await repo.myPointsByDay(plainMember, { year: 2026, month: 7 });
+			expect(days).toEqual([{ date: "2026-07-10", points: 3, records: 1 }]);
+		});
+	});
+
 });

@@ -4,16 +4,23 @@ import { CalendarDays, ChevronLeft, ChevronRight, List } from "lucide-react";
 import { getRepositories } from "@/db";
 import { allowedEventTypes } from "@/db/repositories/eventTypeRules";
 import { Button } from "@/components/ui/button";
-import { CalendarMonth } from "@/components/calendar-month";
+import { CalendarMonth, type PointsMode } from "@/components/calendar-month";
 import { loadEventTypes } from "@/lib/event-type-load";
 import { utc8Parts } from "@/lib/date-slots";
 import { requireActor } from "@/server/auth/actor";
 import { can } from "@/server/auth/permissions";
+import { isFeatureEnabled } from "@/server/features";
 import { CreateEventSheet } from "./create-event-sheet";
 import { CreateEventSkeleton, EventsListSkeleton, MonthGridSkeleton } from "./calendar-skeletons";
 import { EventsList, type EventListItem } from "./events-list";
 
 export const dynamic = "force-dynamic";
+
+// Two ways to read the same month: exact figures per day, or shape at a glance.
+const POINTS_TABS = [
+	{ id: "badge" as const, label: "Points" },
+	{ id: "heat" as const, label: "Heatmap" },
+];
 
 const MONTH_NAMES = [
 	"January", "February", "March", "April", "May", "June",
@@ -32,10 +39,13 @@ const MONTH_NAMES = [
 export default async function CalendarPage({
 	searchParams,
 }: {
-	searchParams: Promise<{ year?: string; month?: string; view?: string }>;
+	searchParams: Promise<{ year?: string; month?: string; view?: string; points?: string }>;
 }) {
 	const params = await searchParams;
 	const view = params.view === "list" ? "list" : "calendar";
+	// Points overlay only exists where the points surface itself is enabled.
+	const showPoints = isFeatureEnabled("retention");
+	const pointsMode: PointsMode = params.points === "heat" ? "heat" : "badge";
 	const today = utc8Parts(new Date());
 	const year = Number(params.year) || today.year;
 	const month = Number(params.month) || today.month;
@@ -85,13 +95,35 @@ export default async function CalendarPage({
 					})}
 				</div>
 
+				{view === "calendar" && showPoints ? (
+					<div className="inline-flex rounded-lg border border-border p-0.5" role="group" aria-label="Points display">
+						{POINTS_TABS.map((tab) => {
+							const active = pointsMode === tab.id;
+							return (
+								<Link
+									key={tab.id}
+									href={monthHref(year, month, tab.id)}
+									aria-current={active ? "true" : undefined}
+									className={
+										active
+											? "rounded-md bg-secondary px-3 py-1.5 text-sm font-semibold text-foreground"
+											: "rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+									}
+								>
+									{tab.label}
+								</Link>
+							);
+						})}
+					</div>
+				) : null}
+
 				{view === "calendar" ? (
 					<div className="flex w-full items-center justify-between gap-1 sm:w-auto sm:justify-start sm:gap-2">
 						<Button asChild variant="outline" size="sm">
-							<Link href={`/portal/calendar?year=${today.year}&month=${today.month}`}>Today</Link>
+							<Link href={monthHref(today.year, today.month, pointsMode)}>Today</Link>
 						</Button>
 						<Button asChild variant="outline" size="icon" aria-label="Previous month">
-							<Link href={`/portal/calendar?year=${prev.year}&month=${prev.month}`}>
+							<Link href={monthHref(prev.year, prev.month, pointsMode)}>
 								<ChevronLeft />
 							</Link>
 						</Button>
@@ -99,7 +131,7 @@ export default async function CalendarPage({
 							{MONTH_NAMES[month - 1]} {year}
 						</span>
 						<Button asChild variant="outline" size="icon" aria-label="Next month">
-							<Link href={`/portal/calendar?year=${next.year}&month=${next.month}`}>
+							<Link href={monthHref(next.year, next.month, pointsMode)}>
 								<ChevronRight />
 							</Link>
 						</Button>
@@ -108,10 +140,14 @@ export default async function CalendarPage({
 			</div>
 
 			<Suspense
-				key={`${view}-${year}-${month}`}
+				key={`${view}-${year}-${month}-${pointsMode}`}
 				fallback={view === "calendar" ? <MonthGridSkeleton /> : <EventsListSkeleton />}
 			>
-				{view === "calendar" ? <MonthBody year={year} month={month} /> : <ListBody />}
+				{view === "calendar" ? (
+					<MonthBody year={year} month={month} pointsMode={pointsMode} showPoints={showPoints} />
+				) : (
+					<ListBody />
+				)}
 			</Suspense>
 		</div>
 	);
@@ -130,11 +166,32 @@ async function CreateEventControl() {
 	);
 }
 
-async function MonthBody({ year, month }: { year: number; month: number }) {
+async function MonthBody({
+	year,
+	month,
+	pointsMode,
+	showPoints,
+}: {
+	year: number;
+	month: number;
+	pointsMode: PointsMode;
+	showPoints: boolean;
+}) {
 	const actor = await requireActor();
 	const repositories = await getRepositories();
 	const items = await repositories.calendar.getMonth(actor, { year, month }).catch(() => []);
-	return <CalendarMonth items={items} year={year} month={month} />;
+	// A failed points read degrades to a plain calendar rather than taking the month down with it.
+	const pointsByDay = showPoints
+		? await repositories.retention.myPointsByDay(actor, { year, month }).catch(() => [])
+		: [];
+	return (
+		<CalendarMonth items={items} year={year} month={month} pointsByDay={pointsByDay} pointsMode={pointsMode} />
+	);
+}
+
+function monthHref(year: number, month: number, pointsMode: PointsMode): string {
+	const points = pointsMode === "heat" ? "&points=heat" : "";
+	return `/portal/calendar?year=${year}&month=${month}${points}`;
 }
 
 async function ListBody() {

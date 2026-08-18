@@ -3,6 +3,8 @@ import type { InferSelectModel } from "drizzle-orm";
 import { createId } from "@/lib/ids";
 import { crsAttendance, crsEvents, eventRsvps, members, pointTypes, retentionRecords, terms } from "@/db/schema";
 import type { RetentionRecordSource } from "@/db/schema";
+import { fromLocalInput } from "@/lib/date-slots";
+import { quantizePoints } from "@/lib/points";
 import { RETENTION_POINT_TYPE_ID } from "@/lib/point-types";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
@@ -63,6 +65,9 @@ export type MyHistorySummary = {
 	recordCount: number;
 };
 
+/** One calendar day of the viewer's own points, keyed the way the month grid labels cells. */
+export type PointsDay = { date: string; points: number; records: number };
+
 export type TermOption = { id: string; name: string; isCurrent: boolean };
 
 export type TermAdminRow = {
@@ -98,10 +103,13 @@ export type RetentionRepository = {
 		input: { termId?: string },
 		now?: Date,
 	): Promise<{ summary: MyHistorySummary | null; records: TypedRetentionRecord[] }>;
+	myPointsByDay(actor: Actor, input: { year: number; month: number }): Promise<PointsDay[]>;
 	listTerms(actor: Actor, now?: Date): Promise<TermOption[]>;
 	listTermsAdmin(actor: Actor, now?: Date): Promise<TermAdminRow[]>;
 	upsertTerm(actor: Actor, input: TermUpsertInput, now?: Date): Promise<TermAdminRow>;
 };
+
+const UTC8_OFFSET_MS = 8 * 60 * 60 * 1000;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Db = any;
@@ -437,6 +445,44 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				recordedAt: row.recordedAt,
 			}));
 			return { summary, records };
+		},
+
+		/**
+		 * The viewer's own points per day for one month. Grouped on recorded_at shifted into
+		 * UTC+8 so a scan at 9pm Manila lands on the day the member actually attended, not the
+		 * next UTC day - the month grid labels its cells the same way via toLocalDate().
+		 *
+		 * Scoped to actor.memberId with no permission check: this is the viewer reading their
+		 * own ledger, the same data myHistory already returns to them.
+		 */
+		async myPointsByDay(actor, input) {
+			const start = fromLocalInput(`${input.year}-${String(input.month).padStart(2, "0")}-01T00:00`);
+			const nextMonth = input.month === 12 ? { y: input.year + 1, m: 1 } : { y: input.year, m: input.month + 1 };
+			const end = fromLocalInput(`${nextMonth.y}-${String(nextMonth.m).padStart(2, "0")}-01T00:00`);
+
+			const dayKey = sql`strftime('%Y-%m-%d', (${retentionRecords.recordedAt} + ${UTC8_OFFSET_MS}) / 1000, 'unixepoch')`;
+			const rows = await db
+				.select({
+					date: dayKey,
+					// COALESCE: points is nullable - an attendance note with no points still counts as a record.
+					points: sql<number>`coalesce(sum(coalesce(${retentionRecords.points}, 0)), 0)`,
+					records: sql<number>`count(*)`,
+				})
+				.from(retentionRecords)
+				.where(
+					and(
+						eq(retentionRecords.memberId, actor.memberId),
+						gte(retentionRecords.recordedAt, start),
+						lte(retentionRecords.recordedAt, new Date(end.getTime() - 1)),
+					),
+				)
+				.groupBy(dayKey);
+			return rows.map((row: { date: string; points: number; records: number }) => ({
+				date: row.date,
+				// Sum of REAL columns, so quantize before it reaches a badge.
+				points: quantizePoints(Number(row.points)),
+				records: Number(row.records),
+			}));
 		},
 
 		async listTerms(actor, now = new Date()) {

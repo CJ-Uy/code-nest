@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PointTypeRow } from "@/db/repositories/pointTypes";
 import type { MyHistorySummary, TermOption, TypedRetentionRecord } from "@/db/repositories/retention";
+import { formatPoints } from "@/lib/points";
+import { cn } from "@/lib/utils";
 
 const STATUS_LABEL: Record<MyHistorySummary["status"], string> = {
 	retained: "Retained",
@@ -86,47 +88,78 @@ export function RetentionHistory({
 							const points = totals.get(type.id) ?? 0;
 							const next = milestones.find((milestone) => points < milestone.points);
 							const target = next?.points ?? milestones.at(-1)?.points ?? 0;
-							const progress = target > 0 ? Math.max(0, Math.min(100, Math.round((points / target) * 100))) : 100;
 							return (
 								<section key={type.id} className="grid gap-3 px-4 py-4">
 									<div className="flex flex-wrap items-baseline justify-between gap-2">
 										<h3 className="min-w-0 break-words font-semibold">{type.label}</h3>
-										<span className="shrink-0 font-heading text-xl tabular-nums">{points} points</span>
+										<span className="shrink-0 font-heading text-xl tabular-nums">
+											{formatPoints(points)} points
+										</span>
 									</div>
+									<p className="text-sm text-muted-foreground">
+										{next
+											? `${formatPoints(next.points - points)} to ${next.title}`
+											: "Every milestone reached."}
+									</p>
+									{/* The rail scrolls rather than compressing: a point type may carry up to 20
+									    milestones, and squeezing them would make every label unreadable. */}
 									<div
 										role="progressbar"
 										aria-label={`${type.label} milestone progress`}
 										aria-valuemin={0}
 										aria-valuemax={target}
 										aria-valuenow={Math.max(0, Math.min(points, target))}
-										className="h-2 overflow-hidden rounded-full bg-muted"
+										aria-valuetext={`${formatPoints(points)} of ${target} points`}
+										className="overflow-x-auto pb-1"
 									>
-										<div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
-									</div>
-									<ul className="grid gap-2">
-										{milestones.map((milestone) => {
-											const reached = points >= milestone.points;
-											return (
-												<li key={milestone.points} className="flex items-start justify-between gap-3 text-sm">
-													<div className="min-w-0">
-														<p
-															className={reached ? "break-words font-medium" : "break-words text-muted-foreground"}
-														>
-															{milestone.title}
-														</p>
-														{milestone.description ? (
-															<p className="mt-0.5 break-words text-xs text-muted-foreground">
-																{milestone.description}
+										<ol className="flex min-w-max items-start">
+											{milestones.map((milestone, index) => {
+												const floor = index === 0 ? 0 : milestones[index - 1].points;
+												const span = milestone.points - floor;
+												const reached = points >= milestone.points;
+												// Each segment fills only for its own span, so the rail shows progress
+												// through the current tier instead of one bar against the final target.
+												const fill = reached
+													? 100
+													: span <= 0
+														? 0
+														: Math.max(0, Math.min(100, ((points - floor) / span) * 100));
+												return (
+													<li key={milestone.points} className="flex w-28 shrink-0 flex-col gap-1.5 sm:w-32">
+														<div className="flex items-center">
+															<div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+																<div className="h-full rounded-full bg-primary" style={{ width: `${fill}%` }} />
+															</div>
+															<span
+																className={cn(
+																	"ml-1 size-3 shrink-0 rounded-full border-2",
+																	reached ? "border-primary bg-primary" : "border-border bg-background",
+																)}
+															/>
+														</div>
+														<div className="pr-1 text-right">
+															<p className="text-xs font-semibold tabular-nums">
+																{milestone.points} pts {reached ? "✓" : ""}
 															</p>
-														) : null}
-													</div>
-													<span className="shrink-0 tabular-nums">
-														{milestone.points} pts {reached ? "✓" : ""}
-													</span>
-												</li>
-											);
-										})}
-									</ul>
+															<p
+																className={cn(
+																	"min-w-0 break-words text-xs",
+																	reached ? "font-medium" : "text-muted-foreground",
+																)}
+															>
+																{milestone.title}
+															</p>
+															{milestone.description ? (
+																<p className="mt-0.5 min-w-0 break-words text-[11px] text-muted-foreground">
+																	{milestone.description}
+																</p>
+															) : null}
+														</div>
+													</li>
+												);
+											})}
+										</ol>
+									</div>
 								</section>
 							);
 						})}

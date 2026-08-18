@@ -13,6 +13,7 @@ export function createUnavailableRetentionRepository(): RetentionRepository {
 		listMemberTermHistory: unavailable,
 		listForEvent: unavailable,
 		myHistory: unavailable,
+		myPointsByDay: unavailable,
 		listTerms: unavailable,
 		listTermsAdmin: unavailable,
 		upsertTerm: unavailable,
