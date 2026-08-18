@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Dialog as DialogPrimitive } from "radix-ui";
 import { useRouter } from "next/navigation";
 import {
 	ArrowLeftRight,
 	Check,
 	Coins,
 	Crown,
+	LoaderCircle,
 	Pencil,
 	ScanLine,
 	Search,
@@ -294,6 +296,7 @@ function BulkCheckin({ eventId }: { eventId: string }) {
 				className={cn(FIELD, "min-h-24 font-mono text-xs")}
 				value={raw}
 				rows={5}
+				disabled={pending}
 				placeholder={"member1@example.com\nmember2@example.com"}
 				onChange={(e) => setRaw(e.target.value)}
 			/>
@@ -302,7 +305,14 @@ function BulkCheckin({ eventId }: { eventId: string }) {
 					{preview.valid.length} valid, {preview.dedupedInput} duplicate, {preview.invalid.length} invalid
 				</span>
 				<Button type="button" size="sm" onClick={submit} disabled={pending || preview.valid.length === 0 || overCap}>
-					Check in {preview.valid.length}
+					{pending ? (
+						<>
+							<LoaderCircle className="size-4 animate-spin" />
+							Checking in {preview.valid.length}…
+						</>
+					) : (
+						<>Check in {preview.valid.length}</>
+					)}
 				</Button>
 				{overCap ? <span className="text-destructive">Max 500 emails per batch.</span> : null}
 			</div>
@@ -367,7 +377,10 @@ function CheckinsSection({
 	const [flash, setFlash] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [overlayOpen, setOverlayOpen] = useState(false);
-	const [, startTransition] = useTransition();
+	// Named rather than discarded: marking present is a write and needs to say so.
+	const [pending, startTransition] = useTransition();
+	// Held rather than confirmed inline, so the removal warning is a real dialog.
+	const [pendingRemoval, setPendingRemoval] = useState<{ memberId: string; label: string } | null>(null);
 
 	// ponytail: snapshot "now" at mount. This banner is advisory; recordScan enforces the
 	// window server-side. A member who lingers past the boundary just refreshes.
@@ -398,14 +411,18 @@ function CheckinsSection({
 	// undoScan lets a scanner reverse their own scan and a manager reverse anyone's, so the
 	// button is shown to everyone who can see this section and the server decides. A refused
 	// removal surfaces in the same error line as a refused check-in.
-	function removePresent(memberId: string, label: string) {
-		if (!window.confirm(`Remove ${label} from attendance? Any points from this check-in are removed too.`)) return;
+	function confirmRemoval() {
+		const target = pendingRemoval;
+		if (!target) return;
+		setPendingRemoval(null);
 		setError(null);
 		setFlash(null);
 		startTransition(async () => {
 			try {
-				const res = await undoPresentAction(event.id, memberId);
-				setFlash(res.removed ? `Removed ${label} from attendance.` : `${label} was not checked in.`);
+				const res = await undoPresentAction(event.id, target.memberId);
+				setFlash(
+					res.removed ? `Removed ${target.label} from attendance.` : `${target.label} was not checked in.`,
+				);
 				router.refresh();
 			} catch (e) {
 				setError(e instanceof Error ? e.message : "Could not remove that check-in.");
@@ -477,7 +494,15 @@ function CheckinsSection({
 				</div>
 			) : null}
 
-			{flash ? <p className="text-sm text-accent">{flash}</p> : null}
+			{/* The search and the Present list both write through this section, so one busy line
+			    covers every path rather than each row growing its own spinner. */}
+			{pending ? (
+				<p className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
+					<LoaderCircle className="size-4 animate-spin" />
+					Working…
+				</p>
+			) : null}
+			{!pending && flash ? <p className="text-sm text-accent">{flash}</p> : null}
 			{error ? <p className="text-sm text-destructive">{error}</p> : null}
 
 			<div className="grid gap-1">
@@ -498,8 +523,12 @@ function CheckinsSection({
 									type="button"
 									variant="ghost"
 									size="sm"
-									className="size-8 shrink-0 p-0 text-muted-foreground hover:text-destructive"
-									onClick={() => removePresent(a.memberId, displayName(a))}
+									disabled={pending}
+									// Muted until hovered, then the destructive surface takes over so the icon
+									// reads as white. The explicit hover:bg beats the ghost variant's accent wash,
+									// which would otherwise tint the button on hover and mute the icon with it.
+									className="size-8 shrink-0 p-0 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
+									onClick={() => setPendingRemoval({ memberId: a.memberId, label: displayName(a) })}
 								>
 									<X className="size-4" />
 									<span className="sr-only">Remove {displayName(a)} from attendance</span>
@@ -509,6 +538,37 @@ function CheckinsSection({
 					</ul>
 				)}
 			</div>
+
+			{/* A real dialog, not window.confirm: this removes points as well as attendance, and the
+			    warning has to be readable on a phone where the native prompt truncates. Mirrors the
+			    delete-confirmation in links-workspace. */}
+			<DialogPrimitive.Root
+				open={Boolean(pendingRemoval)}
+				onOpenChange={(open) => !open && setPendingRemoval(null)}
+			>
+				<DialogPrimitive.Portal>
+					<DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-black/45" />
+					<DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 w-[min(100%-1.5rem,420px)] -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-background p-6 shadow-lg">
+						<DialogPrimitive.Title className="font-heading text-xl">Remove from attendance?</DialogPrimitive.Title>
+						<DialogPrimitive.Description className="mt-1 min-w-0 break-words text-sm text-muted-foreground">
+							{pendingRemoval?.label} will no longer be marked present, and any points this
+							check-in awarded are removed with it. You can check them in again afterwards.
+						</DialogPrimitive.Description>
+						<div className="mt-5 flex justify-end gap-2">
+							<DialogPrimitive.Close asChild>
+								<Button variant="outline">Cancel</Button>
+							</DialogPrimitive.Close>
+							<Button
+								className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+								onClick={confirmRemoval}
+							>
+								<X className="size-4" />
+								Remove
+							</Button>
+						</div>
+					</DialogPrimitive.Content>
+				</DialogPrimitive.Portal>
+			</DialogPrimitive.Root>
 		</div>
 	);
 }
