@@ -141,6 +141,7 @@ export type EventsRepository = {
 	recordScan(actor: Actor, input: RecordScanInput): Promise<RecordScanResult>;
 	undoScan(actor: Actor, input: UndoScanInput): Promise<{ removed: boolean }>;
 	searchAttendableMembers(actor: Actor, input: MemberSearchInput): Promise<AttendableMember[]>;
+	resolveAttendableEmails(actor: Actor, input: { eventId: string; emails: string[] }): Promise<AttendableMember[]>;
 	listAttendance(actor: Actor, eventId: string): Promise<AttendanceRow[]>;
 };
 
@@ -479,8 +480,8 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 			const ids = awards.map((award) => award.pointTypeId);
 			if (new Set(ids).size !== ids.length) throw new Error("Point type IDs must be unique.");
 			for (const award of awards) {
-				if (!Number.isInteger(award.points) || award.points < -100 || award.points > 100) {
-					throw new Error("Award points must be an integer from -100 to 100.");
+				if (!Number.isFinite(award.points) || award.points < -100 || award.points > 100) {
+					throw new Error("Award points must be a number from -100 to 100.");
 				}
 			}
 
@@ -833,6 +834,50 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 				),
 			]);
 			return { removed: true };
+		},
+
+		// Exact-email lookup for the bulk paste box. Deliberately narrower than
+		// searchAttendableMembers: only owners, event admins and moderators, because a pasted
+		// roster is an admin action while a scanner works one member at a time.
+		async resolveAttendableEmails(actor, input) {
+			const { event, role } = await requireEvent(actor, input.eventId);
+			if (!canOperate(role, actor)) throw new Error("Not authorized to record attendance for this event.");
+			const broad = role === "owner" || role === "admin" || can(actor, "event:moderate");
+			if (!broad) throw new Error("Only event admins can check members in from a pasted list.");
+			// Unlike the search path this throws instead of returning empty: the caller asked for a
+			// specific, deliberate write, so silence would look like "none of these emails exist".
+			assertNotReadOnly(event, "This event does not take check-ins.");
+			const emails = input.emails.map((email) => email.trim().toLowerCase()).filter(Boolean);
+			if (emails.length === 0) return [];
+			const rows = await db
+				.select({
+					memberId: members.id,
+					fullName: members.fullName,
+					name: members.name,
+					email: members.email,
+					scannedMemberId: crsAttendance.memberId,
+				})
+				.from(members)
+				.leftJoin(
+					crsAttendance,
+					and(eq(crsAttendance.memberId, members.id), eq(crsAttendance.eventId, input.eventId)),
+				)
+				.where(inArray(sql`lower(${members.email})`, emails));
+			return rows.map(
+				(row: {
+					memberId: string;
+					fullName: string | null;
+					name: string | null;
+					email: string;
+					scannedMemberId: string | null;
+				}) => ({
+					memberId: row.memberId,
+					fullName: row.fullName,
+					name: row.name,
+					email: row.email,
+					alreadyScanned: row.scannedMemberId !== null,
+				}),
+			);
 		},
 
 		async searchAttendableMembers(actor, input) {

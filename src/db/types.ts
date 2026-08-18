@@ -1,5 +1,6 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { z } from "zod";
+import { quantizePoints } from "@/lib/points";
 import type {
 	members,
 	surveyAnswers,
@@ -32,6 +33,13 @@ export const updateMemberProfileInputSchema = z.object({
 
 export type UpdateMemberProfileInput = z.infer<typeof updateMemberProfileInputSchema>;
 
+// Points are REAL now, so 0.75 is a legal award. Quantizing here - the single input
+// boundary both the manual sheet and the award editor pass through - keeps every
+// stored value at 2dp, so sums and exports never surface float dust.
+const pointsValueSchema = z.number().finite().transform(quantizePoints);
+// Bounds must be asserted before the transform: .transform() returns a pipe with no .min().
+const awardPointsSchema = z.number().finite().min(-100).max(100).transform(quantizePoints);
+
 export const createManualRetentionRecordInputSchema = z.object({
 	memberIds: z
 		.array(z.string().trim().min(1))
@@ -41,7 +49,7 @@ export const createManualRetentionRecordInputSchema = z.object({
 	termId: z.string().trim().min(1),
 	pointTypeId: z.string().trim().min(1, "Select a point type."),
 	eventId: z.string().trim().min(1).nullable().default(null),
-	points: z.number().int().nullable().default(null),
+	points: pointsValueSchema.nullable().default(null),
 	reason: z.string().trim().min(1, "A reason is required.").max(500),
 });
 
@@ -49,7 +57,7 @@ export type CreateManualRetentionRecordInput = z.infer<typeof createManualRetent
 
 export const eventAwardInputSchema = z.object({
 	pointTypeId: z.string().trim().min(1),
-	points: z.number().int().min(-100).max(100),
+	points: awardPointsSchema,
 });
 
 export const eventAwardsInputSchema = z

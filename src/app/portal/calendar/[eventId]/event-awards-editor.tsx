@@ -183,9 +183,10 @@ export function EventAwardsEditor({
 							type="number"
 							min={-100}
 							max={100}
-							step={1}
+							step={0.01}
+							inputMode="decimal"
 							value={points}
-							placeholder="e.g. 5"
+							placeholder="e.g. 0.75"
 							onChange={(event) => setPoints(event.target.value)}
 							disabled={pending || availableRows.length === 0}
 						/>

@@ -9,7 +9,7 @@ export const retentionRecordOutputSchema = z.object({
 	eventId: z.string().nullable(),
 	pointTypeId: z.string(),
 	pointTypeLabel: z.string(),
-	points: z.number().int().nullable(),
+	points: z.number().nullable(),
 	reason: z.string(),
 	source: z.enum(["event_attendance", "manual"]),
 	recordedBy: z.string(),
@@ -17,7 +17,7 @@ export const retentionRecordOutputSchema = z.object({
 });
 
 export const retentionSummaryOutputSchema = z.object({
-	totalPoints: z.number().int(),
+	totalPoints: z.number(),
 	recordCount: z.number().int(),
 	retainedAt: z.number().int(),
 	probationBelow: z.number().int(),
@@ -28,13 +28,13 @@ export const leaderboardRowOutputSchema = z.object({
 	memberId: z.string(),
 	fullName: z.string().nullable(),
 	name: z.string().nullable(),
-	totalPoints: z.number().int(),
+	totalPoints: z.number(),
 });
 
 export const myHistorySummaryOutputSchema = z.object({
 	termId: z.string(),
 	termName: z.string(),
-	totalPoints: z.number().int(),
+	totalPoints: z.number(),
 	retainedAt: z.number().int(),
 	probationBelow: z.number().int(),
 	status: z.enum(["retained", "on_track", "probation"]),
@@ -56,7 +56,7 @@ export const termMasterRowOutputSchema = z.object({
 	eventTitle: z.string().nullable(),
 	pointTypeId: z.string(),
 	pointTypeLabel: z.string(),
-	points: z.number().int().nullable(),
+	points: z.number().nullable(),
 	reason: z.string(),
 	source: z.enum(["event_attendance", "manual"]),
 	recordedAt: z.coerce.date(),

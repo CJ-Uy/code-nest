@@ -351,6 +351,40 @@ describe("events repository on D1", () => {
 		).resolves.toMatchObject({ alreadyPresent: false });
 	});
 
+	it("resolves pasted emails case-insensitively and flags who is already present", async () => {
+		const event = await makeApprovedEvent();
+		const { repo } = makeRepos();
+		await repo.recordScan(eventsAdmin, { eventId: event.id, memberId: "mem_a", termId: "term_1" });
+
+		const matched = await repo.resolveAttendableEmails(eventsAdmin, {
+			eventId: event.id,
+			emails: ["A@Example.com", "b@example.com", "ghost@example.com"],
+		});
+
+		expect(matched).toHaveLength(2);
+		expect(matched.find((m) => m.memberId === "mem_a")?.alreadyScanned).toBe(true);
+		expect(matched.find((m) => m.memberId === "mem_b")?.alreadyScanned).toBe(false);
+	});
+
+	it("refuses a pasted list from a staffed scanner", async () => {
+		const event = await makeApprovedEvent();
+		const { repo } = makeRepos();
+		await repo.addStaff(owner, event.id, scanner.memberId, "scanner");
+		// The scanner can check members in one at a time; only the pasted-list path is closed.
+		await expect(
+			repo.resolveAttendableEmails(scanner, { eventId: event.id, emails: ["a@example.com"] }),
+		).rejects.toThrow("event admins");
+	});
+
+	it("round-trips a fractional award through the real column", async () => {
+		const event = await makeApprovedEvent();
+		const { repo } = makeRepos();
+
+		await repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_retention", points: 0.75 }]);
+		const awards = await repo.listAwards(eventsAdmin, event.id);
+		expect(awards).toMatchObject([{ pointTypeId: "pt_retention", points: 0.75 }]);
+	});
+
 	it("validates every setAwards value inside the repository", async () => {
 		const event = await makeApprovedEvent();
 		const { repo } = makeRepos();
@@ -360,7 +394,6 @@ describe("events repository on D1", () => {
 				{ pointTypeId: "pt_retention", points: 2 },
 				{ pointTypeId: "pt_retention", points: 3 },
 			],
-			[{ pointTypeId: "pt_retention", points: 2.5 }],
 			[{ pointTypeId: "pt_retention", points: 101 }],
 			[{ pointTypeId: "pt_missing", points: 2 }],
 			[{ pointTypeId: "pt_retired", points: 2 }],

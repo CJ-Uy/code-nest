@@ -68,7 +68,7 @@ export function RetentionForm({
 
 			<label className="grid gap-2 text-sm font-medium">
 				Points (optional, may be negative)
-				<Input name="points" type="number" inputMode="numeric" step="1" placeholder="Leave blank for none" />
+				<Input name="points" type="number" inputMode="decimal" step="0.01" placeholder="Leave blank for none" />
 			</label>
 
 			<label className="grid gap-2 text-sm font-medium">

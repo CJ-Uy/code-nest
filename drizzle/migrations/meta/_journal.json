@@ -15,6 +15,13 @@
       "when": 1786117238694,
       "tag": "0005_pending_member_roles",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1787061265029,
+      "tag": "0006_daily_kulan_gath",
+      "breakpoints": true
     }
   ]
 }

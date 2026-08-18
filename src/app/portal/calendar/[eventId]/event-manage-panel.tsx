@@ -25,18 +25,21 @@ import { EventScanOverlay } from "@/components/event-scan-overlay";
 import type { EventTypeRow } from "@/db/repositories/eventTypeRules";
 import { formatUtc8Time, fromLocalInput, toLocalInput } from "@/lib/date-slots";
 import { answerLabel, type EventSignupAnswers, type EventSignupField } from "@/lib/event-signup-form";
+import { parseEmailColumn } from "@/lib/roster-emails";
 import { cn } from "@/lib/utils";
 import {
 	addStaffAction,
 	deleteEventAction,
 	inviteAction,
 	markPresentAction,
+	markPresentBulkAction,
 	removeStaffAction,
 	searchMembersAction,
 	setEventReadOnlyAction,
 	transferOwnershipAction,
 	updateEventAction,
 } from "./actions";
+import type { BulkCheckinResult } from "./actions";
 import type { AwardEditorRow } from "./award-editor-input";
 import { EventAwardsEditor } from "./event-awards-editor";
 import { EventSignupFormEditor } from "../event-signup-form-editor";
@@ -250,6 +253,102 @@ function MemberPicker({
 	);
 }
 
+/* ---------- Bulk check-in ---------- */
+
+// Same paste-a-column shape as admin member invites, so an officer who has used one
+// recognizes the other. Results are per-email rather than a single count: "not found"
+// is the answer people actually need after pasting a roster.
+function BulkCheckin({ eventId }: { eventId: string }) {
+	const router = useRouter();
+	const [raw, setRaw] = useState("");
+	const [result, setResult] = useState<BulkCheckinResult | null>(null);
+	const [error, setError] = useState<string | null>(null);
+	const [pending, startTransition] = useTransition();
+
+	const preview = parseEmailColumn(raw);
+	const overCap = preview.valid.length > 500;
+
+	function submit() {
+		setResult(null);
+		setError(null);
+		startTransition(async () => {
+			try {
+				const next = await markPresentBulkAction(eventId, raw);
+				setResult(next);
+				setRaw("");
+				router.refresh();
+			} catch (e) {
+				setError(e instanceof Error ? e.message : "Bulk check-in failed.");
+			}
+		});
+	}
+
+	return (
+		<div className="grid gap-2">
+			<label className="text-sm font-medium" htmlFor="bulk-checkin-emails">
+				Paste a column of emails
+			</label>
+			<textarea
+				id="bulk-checkin-emails"
+				className={cn(FIELD, "min-h-24 font-mono text-xs")}
+				value={raw}
+				rows={5}
+				placeholder={"member1@example.com\nmember2@example.com"}
+				onChange={(e) => setRaw(e.target.value)}
+			/>
+			<div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+				<span className="min-w-0 break-all">
+					{preview.valid.length} valid, {preview.dedupedInput} duplicate, {preview.invalid.length} invalid
+				</span>
+				<Button type="button" size="sm" onClick={submit} disabled={pending || preview.valid.length === 0 || overCap}>
+					Check in {preview.valid.length}
+				</Button>
+				{overCap ? <span className="text-destructive">Max 500 emails per batch.</span> : null}
+			</div>
+
+			{error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+			{result ? (
+				<div className="grid gap-2 rounded-lg border border-border bg-secondary/30 px-3 py-2 text-sm">
+					<p className="text-accent">
+						Checked in {result.checkedIn.length}
+						{result.alreadyPresent.length > 0 ? ` · ${result.alreadyPresent.length} already present` : ""}
+					</p>
+					{result.notFound.length > 0 ? (
+						<EmailFailureList label={`Not found (${result.notFound.length})`} emails={result.notFound} />
+					) : null}
+					{result.invalid.length > 0 ? (
+						<EmailFailureList label={`Not a valid email (${result.invalid.length})`} emails={result.invalid} />
+					) : null}
+					{result.failed.length > 0 ? (
+						<EmailFailureList
+							label={`Could not check in (${result.failed.length})`}
+							emails={result.failed.map((f) => `${f.email} - ${f.reason}`)}
+						/>
+					) : null}
+				</div>
+			) : null}
+		</div>
+	);
+}
+
+// min-w-0 + break-all: these are user-supplied strings and a long one otherwise widens
+// the whole manage panel on a phone.
+function EmailFailureList({ label, emails }: { label: string; emails: string[] }) {
+	return (
+		<details className="min-w-0">
+			<summary className="cursor-pointer text-destructive">{label}</summary>
+			<ul className="mt-1 grid gap-0.5 text-xs text-muted-foreground">
+				{emails.map((email) => (
+					<li key={email} className="min-w-0 break-all">
+						{email}
+					</li>
+				))}
+			</ul>
+		</details>
+	);
+}
+
 /* ---------- Check-ins ---------- */
 
 function CheckinsSection({
@@ -352,6 +451,10 @@ function CheckinsSection({
 							)
 						}
 					/>
+					<div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+						<span className="h-px flex-1 bg-border" /> or paste a list <span className="h-px flex-1 bg-border" />
+					</div>
+					<BulkCheckin eventId={event.id} />
 				</div>
 			) : null}
 

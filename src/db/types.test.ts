@@ -82,9 +82,18 @@ describe("eventAwardsInputSchema", () => {
 		).toHaveLength(2);
 	});
 
-	it("rejects non-integer and out-of-range points", () => {
-		expect(() => eventAwardsInputSchema.parse([{ pointTypeId: "pt_retention", points: 2.5 }])).toThrow();
+	it("accepts fractional points and quantizes to 2dp", () => {
+		expect(eventAwardsInputSchema.parse([{ pointTypeId: "pt_retention", points: 0.75 }])).toEqual([
+			{ pointTypeId: "pt_retention", points: 0.75 },
+		]);
+		expect(eventAwardsInputSchema.parse([{ pointTypeId: "pt_retention", points: 2.567 }])).toEqual([
+			{ pointTypeId: "pt_retention", points: 2.57 },
+		]);
+	});
+
+	it("rejects out-of-range points", () => {
 		expect(() => eventAwardsInputSchema.parse([{ pointTypeId: "pt_retention", points: 101 }])).toThrow();
+		expect(() => eventAwardsInputSchema.parse([{ pointTypeId: "pt_retention", points: -101 }])).toThrow();
 	});
 
 	it("rejects more than 100 awards", () => {

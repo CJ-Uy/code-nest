@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { check, index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { check, index, integer, primaryKey, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import type { EventSignupAnswers, EventSignupField } from "@/lib/event-signup-form";
 import type { PointMilestone } from "@/lib/point-milestones";
 
@@ -426,7 +426,8 @@ export const eventPointAwards = sqliteTable(
 	{
 		eventId: text("event_id").notNull().references(() => crsEvents.id, { onDelete: "cascade" }),
 		pointTypeId: text("point_type_id").notNull().references(() => pointTypes.id),
-		points: integer("points").notNull(),
+		// real, not integer: awards carry fractions like 0.75. Quantised to 2dp on write by quantizePoints().
+		points: real("points").notNull(),
 	},
 	(table) => [primaryKey({ columns: [table.eventId, table.pointTypeId] })],
 );
@@ -443,7 +444,7 @@ export const retentionRecords = sqliteTable(
 			.references(() => terms.id, { onDelete: "cascade" }),
 		eventId: text("event_id").references(() => crsEvents.id, { onDelete: "set null" }),
 		pointTypeId: text("point_type_id").notNull().default("pt_retention"),
-		points: integer("points"),
+		points: real("points"),
 		reason: text("reason").notNull(),
 		source: text("source").$type<RetentionRecordSource>().notNull().default("manual"),
 		recordedBy: text("recorded_by")

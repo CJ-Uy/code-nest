@@ -34,10 +34,25 @@ describe("event award editor helpers", () => {
 		})).toEqual([{ pointTypeId: "pt_retention", points: 4 }]);
 	});
 
-	it("rejects decimals and out-of-range values", () => {
+	it("accepts a fractional award", () => {
 		const rows = buildAwardEditorRows(types, awards);
-		expect(() => parseActiveAwardValues(rows, { pt_retention: "1.5" })).toThrow("Retention");
+		expect(parseActiveAwardValues(rows, { pt_retention: "0.75" })).toEqual([
+			{ pointTypeId: "pt_retention", points: 0.75 },
+		]);
+	});
+
+	it("quantizes a third decimal instead of rejecting it", () => {
+		const rows = buildAwardEditorRows(types, awards);
+		expect(parseActiveAwardValues(rows, { pt_retention: "0.756" })).toEqual([
+			{ pointTypeId: "pt_retention", points: 0.76 },
+		]);
+	});
+
+	it("still rejects out-of-range values", () => {
+		const rows = buildAwardEditorRows(types, awards);
 		expect(() => parseActiveAwardValues(rows, { pt_retention: "101" })).toThrow("Retention");
+		expect(() => parseActiveAwardValues(rows, { pt_retention: "-101" })).toThrow("Retention");
+		expect(() => parseActiveAwardValues(rows, { pt_retention: "abc" })).toThrow("Retention");
 	});
 
 	it("formats only currently active awards", () => {

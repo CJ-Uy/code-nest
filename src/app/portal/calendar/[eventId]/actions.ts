@@ -6,6 +6,7 @@ import { getRepositories } from "@/db";
 import { eventsContract } from "@/db/contract/events";
 import { eventTypeKeySchema } from "@/lib/event-type-key";
 import { eventSignupAnswersSchema, eventSignupFormInputSchema } from "@/lib/event-signup-form";
+import { parseEmailColumn } from "@/lib/roster-emails";
 import { requireActor } from "@/server/auth/actor";
 import { endOfUtc8Day, startOfUtc8Day } from "@/lib/date-slots";
 
@@ -84,6 +85,75 @@ export async function markPresentAction(eventId: string, memberId: string) {
 	const currentTerm = terms.find((t) => t.isCurrent);
 	if (!currentTerm) throw new Error("No active school year to record attendance against.");
 	const result = await repositories.events.recordScan(actor, { eventId, memberId, termId: currentTerm.id });
+	revalidate(eventId);
+	return result;
+}
+
+export type BulkCheckinResult = {
+	/** Newly checked in by this submission. */
+	checkedIn: string[];
+	/** Matched a member who was already present, so nothing changed. */
+	alreadyPresent: string[];
+	/** Valid emails with no matching member. */
+	notFound: string[];
+	/** Tokens that were not valid emails at all. */
+	invalid: string[];
+	/** Matched a member but the check-in itself failed. */
+	failed: { email: string; reason: string }[];
+	dedupedInput: number;
+};
+
+/**
+ * Bulk counterpart to markPresentAction: paste a column of emails, check them all in.
+ * Each row still goes through recordScan, so the window rules, point award, dedupe and
+ * audit log are identical to a scan - only the member lookup is different.
+ */
+export async function markPresentBulkAction(eventId: string, raw: string): Promise<BulkCheckinResult> {
+	const actor = await requireActor();
+	const text = z.string().max(64 * 1024, "Too much text pasted - split into smaller batches.").parse(raw);
+	const { valid, invalid, dedupedInput } = parseEmailColumn(text);
+	if (valid.length > 500) {
+		throw new Error("Too many emails (max 500 per submission). Split into smaller batches.");
+	}
+
+	const repositories = await getRepositories();
+	const terms = await repositories.retention.listTerms(actor).catch(() => []);
+	const currentTerm = terms.find((t) => t.isCurrent);
+	if (!currentTerm) throw new Error("No active school year to record attendance against.");
+
+	const matched = await repositories.events.resolveAttendableEmails(actor, { eventId, emails: valid });
+	const byEmail = new Map(matched.map((member) => [member.email.toLowerCase(), member]));
+
+	const result: BulkCheckinResult = {
+		checkedIn: [],
+		alreadyPresent: [],
+		notFound: [],
+		invalid,
+		failed: [],
+		dedupedInput,
+	};
+
+	// ponytail: sequential, not Promise.all. 500 concurrent writes against one D1 binding
+	// buys nothing and the awards upsert would contend. Raise it only if a real roster drags.
+	for (const email of valid) {
+		const member = byEmail.get(email);
+		if (!member) {
+			result.notFound.push(email);
+			continue;
+		}
+		try {
+			const scan = await repositories.events.recordScan(actor, {
+				eventId,
+				memberId: member.memberId,
+				termId: currentTerm.id,
+			});
+			if (scan.alreadyPresent) result.alreadyPresent.push(email);
+			else result.checkedIn.push(email);
+		} catch (error) {
+			result.failed.push({ email, reason: error instanceof Error ? error.message : "Could not check in." });
+		}
+	}
+
 	revalidate(eventId);
 	return result;
 }

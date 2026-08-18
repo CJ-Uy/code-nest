@@ -1,6 +1,7 @@
 import type { EventAwardInput } from "@/db/types";
 import type { EventPointAwardRow } from "@/db/repositories/events";
 import type { PointTypeRow } from "@/db/repositories/pointTypes";
+import { formatPoints, quantizePoints } from "@/lib/points";
 
 export type AwardEditorRow = {
 	pointTypeId: string;
@@ -42,9 +43,9 @@ export function parseActiveAwardValues(
 		if (row.retired) return [];
 		const raw = values[row.pointTypeId]?.trim() ?? "";
 		if (raw === "") return [];
-		const points = Number(raw);
-		if (!Number.isInteger(points) || points < -100 || points > 100) {
-			throw new Error(`${row.label} must be a whole number from -100 to 100.`);
+		const points = quantizePoints(Number(raw));
+		if (!Number.isFinite(points) || points < -100 || points > 100) {
+			throw new Error(`${row.label} must be a number from -100 to 100, with at most 2 decimals.`);
 		}
 		return [{ pointTypeId: row.pointTypeId, points }];
 	});
@@ -53,7 +54,7 @@ export function parseActiveAwardValues(
 export function formatAwardSummary(awards: EventPointAwardRow[]): string {
 	const text = awards
 		.filter((award) => award.pointTypeActive)
-		.map((award) => `${award.points} ${award.pointTypeLabel}`)
+		.map((award) => `${formatPoints(award.points)} ${award.pointTypeLabel}`)
 		.join(" · ");
 	return `Worth: ${text || "No points"}`;
 }
