@@ -20,7 +20,7 @@ vi.mock("./actions", () => ({
 	updateEventAction: vi.fn(),
 }));
 
-import { EventManagePanel, type ManageEvent } from "./event-manage-panel";
+import { EventManagePanel, isOptimisticallyRemoved, type ManageEvent } from "./event-manage-panel";
 
 function renderPanel(event: ManageEvent): string {
 	return renderToStaticMarkup(
@@ -65,5 +65,20 @@ describe("EventManagePanel check-in access", () => {
 
 		expect(markup).toContain("Scan attendance");
 		expect(markup).not.toContain("bulk-checkin-emails");
+	});
+
+	it("stops hiding a removed member when a refreshed row represents a later check-in", () => {
+		const removedAt = new Date("2026-08-25T10:00:00.000Z");
+		const removedScans = new Map([["member-1", removedAt.getTime()]]);
+		const removedRow = {
+			memberId: "member-1",
+			fullName: "Member One",
+			name: "Member",
+			scannedAt: removedAt,
+		};
+		const laterCheckin = { ...removedRow, scannedAt: new Date("2026-08-25T10:05:00.000Z") };
+
+		expect(isOptimisticallyRemoved(removedScans, removedRow)).toBe(true);
+		expect(isOptimisticallyRemoved(removedScans, laterCheckin)).toBe(false);
 	});
 });

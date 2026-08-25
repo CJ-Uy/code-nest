@@ -9,7 +9,8 @@ const SCALE = 10 ** POINTS_MAX_DECIMALS;
 
 /** Round to 2 decimals. Input already at or below that precision is unchanged. */
 export function quantizePoints(value: number): number {
-	return Math.round(value * SCALE) / SCALE;
+	const magnitude = Math.round((Math.abs(value) + Number.EPSILON) * SCALE) / SCALE;
+	return Math.sign(value) * magnitude;
 }
 
 /**

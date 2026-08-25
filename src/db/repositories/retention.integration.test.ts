@@ -98,6 +98,28 @@ describe("retention repository on D1", () => {
 		expect(summary.status).toBe("retained");
 	});
 
+	it("quantizes fractional aggregates before threshold checks and output", async () => {
+		const { repo } = makeRepo();
+		await env.DB.prepare("UPDATE terms SET retained_at = ?, probation_below = ? WHERE id = ?")
+			.bind(0.8, 0.4, "term_1")
+			.run();
+		await insertRecord({ id: "ret_fraction_a", points: 0.1 });
+		await insertRecord({ id: "ret_fraction_b", points: 0.7 });
+
+		const summary = await repo.getMemberTermSummary(plainMember, { memberId: "mem_a", termId: "term_1" });
+		const history = await repo.myHistory(plainMember, { termId: "term_1" });
+		const adminBoard = await repo.leaderboard(retentionAdmin, { termId: "term_1" });
+		const publicBoard = await repo.publicLeaderboard(plainMember, {
+			termId: "term_1",
+			pointTypeId: RETENTION_POINT_TYPE_ID,
+		});
+
+		expect(summary).toMatchObject({ totalPoints: 0.8, status: "retained" });
+		expect(history.summary).toMatchObject({ totalPoints: 0.8, status: "retained" });
+		expect(adminBoard[0].totalPoints).toBe(0.8);
+		expect(publicBoard[0].totalPoints).toBe(0.8);
+	});
+
 	it("counts only retention-bearing point types for retention totals and status", async () => {
 		const { repo } = makeRepo();
 		await insertRecord({ id: "ret_keep", pointTypeId: "pt_retention", points: 20 });
@@ -307,6 +329,22 @@ describe("retention repository on D1", () => {
 
 		const [row] = await db.select().from(schema.retentionRecords);
 		expect(row.points).toBe(-5);
+	});
+
+	it("quantizes a direct manual repository write to two decimals", async () => {
+		const { db, repo } = makeRepo();
+
+		await repo.createManual(retentionAdmin, {
+			memberIds: ["mem_a"],
+			termId: "term_1",
+			eventId: null,
+			pointTypeId: "pt_retention",
+			points: -0.755,
+			reason: "Fractional deduction",
+		});
+
+		const [row] = await db.select().from(schema.retentionRecords);
+		expect(row.points).toBe(-0.76);
 	});
 
 	it("requires an active point type and records it", async () => {

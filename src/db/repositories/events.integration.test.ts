@@ -380,9 +380,9 @@ describe("events repository on D1", () => {
 		const event = await makeApprovedEvent();
 		const { repo } = makeRepos();
 
-		await repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_retention", points: 0.75 }]);
+		await repo.setAwards(eventsAdmin, event.id, [{ pointTypeId: "pt_retention", points: 0.756 }]);
 		const awards = await repo.listAwards(eventsAdmin, event.id);
-		expect(awards).toMatchObject([{ pointTypeId: "pt_retention", points: 0.75 }]);
+		expect(awards).toMatchObject([{ pointTypeId: "pt_retention", points: 0.76 }]);
 	});
 
 	it("validates every setAwards value inside the repository", async () => {

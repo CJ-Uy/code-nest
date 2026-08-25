@@ -60,6 +60,13 @@ export type StaffMember = {
 	role: "owner" | "admin" | "scanner";
 };
 export type AttendanceRow = { memberId: string; fullName: string | null; name: string | null; scannedAt: Date };
+
+export function isOptimisticallyRemoved(
+	removedScans: ReadonlyMap<string, number>,
+	attendance: AttendanceRow,
+): boolean {
+	return removedScans.get(attendance.memberId) === attendance.scannedAt.getTime();
+}
 export type InviteRow = { memberId: string; fullName: string | null; name: string | null; invitedAt: Date };
 export type SignupResponseRow = {
 	memberId: string;
@@ -398,17 +405,20 @@ function CheckinsSection({
 	// after the write landed. This tracks the write and nothing else.
 	const [busy, setBusy] = useState(false);
 	// Held rather than confirmed inline, so the removal warning is a real dialog.
-	const [pendingRemoval, setPendingRemoval] = useState<{ memberId: string; label: string } | null>(null);
-	// Members the server has confirmed removed. `attendance` is a server prop, so it only
-	// changes once router.refresh() completes a full re-render of this page - six DB reads
-	// away. Without this the row sat there under a message saying it was gone.
-	const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
+	const [pendingRemoval, setPendingRemoval] = useState<{
+		memberId: string;
+		label: string;
+		scannedAt: number;
+	} | null>(null);
+	// Scans the server has confirmed removed. Matching the scan timestamp hides the stale
+	// server prop immediately without hiding a later check-in for the same member.
+	const [removedScans, setRemovedScans] = useState<Map<string, number>>(new Map());
 
 	// ponytail: snapshot "now" at mount. This banner is advisory; recordScan enforces the
 	// window server-side. A member who lingers past the boundary just refreshes.
 	const [now] = useState(() => Date.now());
 	// What the officer should see right now: the server list minus anything just removed.
-	const visibleAttendance = attendance.filter((row) => !removedIds.has(row.memberId));
+	const visibleAttendance = attendance.filter((row) => !isOptimisticallyRemoved(removedScans, row));
 	const opensAt = event.startsAt.getTime() - CHECKIN_LEAD_MS;
 	const closesAt = event.endsAt?.getTime() ?? event.startsAt.getTime();
 	const windowOpen = now >= opensAt && now <= closesAt;
@@ -422,9 +432,9 @@ function CheckinsSection({
 			const who = label ?? "Member";
 			setFlash(res.alreadyPresent ? `${who} was already checked in.` : `Checked in ${who}.`);
 			// Checked in again after a removal: stop hiding the row the refresh will bring back.
-			setRemovedIds((prev) => {
+			setRemovedScans((prev) => {
 				if (!prev.has(memberId)) return prev;
-				const next = new Set(prev);
+				const next = new Map(prev);
 				next.delete(memberId);
 				return next;
 			});
@@ -457,7 +467,9 @@ function CheckinsSection({
 				res.removed ? `Removed ${target.label} from attendance.` : `${target.label} was not checked in.`,
 			);
 			// Only on a confirmed removal - never hide a row the server still stands behind.
-			if (res.removed) setRemovedIds((prev) => new Set(prev).add(target.memberId));
+			if (res.removed) {
+				setRemovedScans((prev) => new Map(prev).set(target.memberId, target.scannedAt));
+			}
 			router.refresh();
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Could not remove that check-in.");
@@ -568,7 +580,13 @@ function CheckinsSection({
 									// reads as white. The explicit hover:bg beats the ghost variant's accent wash,
 									// which would otherwise tint the button on hover and mute the icon with it.
 									className="size-8 shrink-0 p-0 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
-									onClick={() => setPendingRemoval({ memberId: a.memberId, label: displayName(a) })}
+									onClick={() =>
+										setPendingRemoval({
+											memberId: a.memberId,
+											label: displayName(a),
+											scannedAt: a.scannedAt.getTime(),
+										})
+									}
 								>
 									<X className="size-4" />
 									<span className="sr-only">Remove {displayName(a)} from attendance</span>

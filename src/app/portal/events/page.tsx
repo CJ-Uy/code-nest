@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/select";
 import { EmptyState } from "@/components/portal/empty-state";
 import { MemberAvatar } from "@/components/portal/member-avatar";
 import { RetentionHistory } from "@/components/retention-history";
+import { formatPoints } from "@/lib/points";
 import { requireActor } from "@/server/auth/actor";
 import { isFeatureEnabled } from "@/server/features";
 import { selectLeaderboardPointTypeId } from "./point-type-selection";
@@ -145,7 +146,7 @@ export default async function RetentionHistoryPage({
 										{name}
 										{isMe ? <span className="ml-2 text-xs text-accent">You</span> : null}
 									</span>
-									<span className="tabular-nums font-heading text-lg">{row.totalPoints}</span>
+									<span className="tabular-nums font-heading text-lg">{formatPoints(row.totalPoints)}</span>
 								</div>
 							);
 						})}

@@ -26,6 +26,7 @@ import { buildExistingAttendanceAwardUpsert, buildScanAwardUpsert } from "./even
 import { canCreateType, createEventTypeRulesRepository } from "./eventTypeRules";
 import { notify } from "./notifications";
 import { validateEventSignupAnswers, type EventSignupAnswers, type EventSignupField } from "@/lib/event-signup-form";
+import { quantizePoints } from "@/lib/points";
 
 export const CHECKIN_LEAD_MS = 30 * 60 * 1000;
 
@@ -484,6 +485,10 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 					throw new Error("Award points must be a number from -100 to 100.");
 				}
 			}
+			const quantizedAwards = awards.map((award) => ({
+				...award,
+				points: quantizePoints(award.points),
+			}));
 
 			if (ids.length > 0) {
 				const types = await db
@@ -517,10 +522,10 @@ export function createEventsRepository(db: Db, audit: AuditRepository): EventsRe
 					),
 				),
 			];
-			if (awards.length > 0) {
+			if (quantizedAwards.length > 0) {
 				queries.push(
 					db.insert(eventPointAwards).values(
-						awards.map((award) => ({
+						quantizedAwards.map((award) => ({
 							eventId,
 							pointTypeId: award.pointTypeId,
 							points: award.points,

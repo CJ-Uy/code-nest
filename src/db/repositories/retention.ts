@@ -215,7 +215,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				.limit(1);
 			const retainedAt = term?.retainedAt ?? 0;
 			const probationBelow = term?.probationBelow ?? 0;
-			const totalPoints = Number(agg?.totalPoints ?? 0);
+			const totalPoints = quantizePoints(Number(agg?.totalPoints ?? 0));
 			const recordCount = Number(agg?.recordCount ?? 0);
 			return {
 				totalPoints,
@@ -230,7 +230,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 			if (!can(actor, "retention:record")) {
 				throw new Error("Not authorized to read the retention leaderboard.");
 			}
-			return db
+			const rows: LeaderboardRow[] = await db
 				.select({
 					memberId: retentionRecords.memberId,
 					fullName: members.fullName,
@@ -245,10 +245,11 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				.orderBy(desc(sql`coalesce(sum(${retentionRecords.points}), 0)`))
 				.limit(Math.min(input.limit ?? 50, 100))
 				.offset(input.offset ?? 0);
+			return rows.map((row) => ({ ...row, totalPoints: quantizePoints(Number(row.totalPoints)) }));
 		},
 
 		async publicLeaderboard(_actor, input) {
-			return db
+			const rows: LeaderboardRow[] = await db
 				.select({
 					memberId: retentionRecords.memberId,
 					fullName: members.fullName,
@@ -262,6 +263,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				.orderBy(desc(sql`coalesce(sum(${retentionRecords.points}), 0)`))
 				.limit(Math.min(input.limit ?? 25, 100))
 				.offset(input.offset ?? 0);
+			return rows.map((row) => ({ ...row, totalPoints: quantizePoints(Number(row.totalPoints)) }));
 		},
 
 		async createManual(actor, input) {
@@ -281,6 +283,10 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 			if (!pointType) {
 				throw new Error("Point type is not active.");
 			}
+			if (input.points !== null && (!Number.isFinite(input.points) || input.points < -100 || input.points > 100)) {
+				throw new Error("Points must be a number from -100 to 100.");
+			}
+			const points = input.points === null ? null : quantizePoints(input.points);
 
 			const recordedAt = new Date();
 			const rows = input.memberIds.map((memberId) => ({
@@ -289,7 +295,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				termId: input.termId,
 				eventId: input.eventId,
 				pointTypeId: input.pointTypeId,
-				points: input.points,
+				points,
 				reason: input.reason,
 				source: "manual" as const,
 				recordedBy: actor.memberId,
@@ -301,7 +307,7 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				await db.insert(retentionRecords).values(row);
 			}
 
-			const pointsLabel = input.points === null ? "no points" : `${input.points} points`;
+			const pointsLabel = points === null ? "no points" : `${points} points`;
 			for (const row of rows) {
 				await audit.record(actor, {
 					action: "retention:record_manual",
@@ -418,9 +424,11 @@ export function createRetentionRepository(db: Db, audit: AuditRepository): Reten
 				.where(and(eq(retentionRecords.memberId, actor.memberId), eq(retentionRecords.termId, termId)))
 				.orderBy(desc(retentionRecords.recordedAt));
 
-			const totalPoints = rows.reduce(
-				(sum: number, row) => sum + (row.pointTypeId === RETENTION_POINT_TYPE_ID ? (row.points ?? 0) : 0),
-				0,
+			const totalPoints = quantizePoints(
+				rows.reduce(
+					(sum: number, row) => sum + (row.pointTypeId === RETENTION_POINT_TYPE_ID ? (row.points ?? 0) : 0),
+					0,
+				),
 			);
 			const summary: MyHistorySummary = {
 				termId: term.id,

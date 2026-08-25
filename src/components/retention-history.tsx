@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PointTypeRow } from "@/db/repositories/pointTypes";
 import type { MyHistorySummary, TermOption, TypedRetentionRecord } from "@/db/repositories/retention";
-import { formatPoints } from "@/lib/points";
+import { formatPoints, quantizePoints } from "@/lib/points";
 import { cn } from "@/lib/utils";
 
 const STATUS_LABEL: Record<MyHistorySummary["status"], string> = {
@@ -29,7 +29,7 @@ export function RetentionHistory({
 	const visibleRecords = selectedPointTypeId ? records.filter((record) => record.pointTypeId === selectedPointTypeId) : records;
 	const totals = new Map<string, number>();
 	for (const record of records) {
-		totals.set(record.pointTypeId, (totals.get(record.pointTypeId) ?? 0) + (record.points ?? 0));
+		totals.set(record.pointTypeId, quantizePoints((totals.get(record.pointTypeId) ?? 0) + (record.points ?? 0)));
 	}
 	const milestoneTypes = pointTypes.filter((type) => (type.milestones?.length ?? 0) > 0);
 
@@ -68,7 +68,7 @@ export function RetentionHistory({
 							</Badge>
 						</div>
 						<CardDescription>
-							{summary.totalPoints} points · retained at {summary.retainedAt} · {summary.recordCount} records
+							{formatPoints(summary.totalPoints)} points · retained at {summary.retainedAt} · {summary.recordCount} records
 						</CardDescription>
 					</CardHeader>
 				</Card>
