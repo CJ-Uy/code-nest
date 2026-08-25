@@ -136,6 +136,25 @@ describe("attendance reports", () => {
 		expect(lateFromTs).toBe(1);
 	});
 
+	it("quantizes fractional point totals in event, member, and attendance reports", async () => {
+		for (const [id, points] of [["ret_fraction_a", 0.1], ["ret_fraction_b", 0.2]] as const) {
+			await env.DB.prepare(
+				"INSERT INTO retention_records (id, member_id, term_id, event_id, point_type_id, points, reason, source, recorded_by, recorded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			)
+				.bind(id, "mem_ontime", "term_1", "evt_1", RETENTION_POINT_TYPE_ID, points, id, "manual", "mem_admin", EVENT_START.getTime())
+				.run();
+		}
+
+		const reports = createAttendanceReports(drizzle(env.DB, { schema }));
+		const [eventSummary] = await reports.termEventSummaries(admin, "term_1");
+		const [memberSummary] = await reports.termMemberSummaries(admin, "term_1", { q: "ontime" });
+		const [attendance] = await reports.memberAttendance(admin, "mem_ontime", "term_1");
+
+		expect(eventSummary.pointsIssued).toBe(10.3);
+		expect(memberSummary.pointsByType[RETENTION_POINT_TYPE_ID]).toBe(5.3);
+		expect(attendance.pointsEarned).toBe(5.3);
+	});
+
 	it("caps limit at 200 however large the request", async () => {
 		await seedManyMembers(250);
 		const reports = createAttendanceReports(drizzle(env.DB, { schema }));

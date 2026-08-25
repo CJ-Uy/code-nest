@@ -3,6 +3,7 @@ import { alias } from "drizzle-orm/sqlite-core";
 import { auditLogs, crsAttendance, crsEvents, eventRsvps, members, pointTypes, retentionRecords, terms } from "@/db/schema";
 import type { EventStatus } from "@/db/schema";
 import { DEFAULT_GRACE_MINUTES } from "@/lib/point-types";
+import { quantizePoints } from "@/lib/points";
 import type { Actor } from "@/server/auth/permissions";
 import { can } from "@/server/auth/permissions";
 
@@ -153,7 +154,7 @@ export function createAttendanceReports(db: Db) {
 				.groupBy(retentionRecords.eventId);
 
 			const absentByEvent = new Map(absents.map((row) => [row.eventId, Number(row.count)]));
-			const pointsByEvent = new Map(points.map((row) => [row.eventId, Number(row.points)]));
+			const pointsByEvent = new Map(points.map((row) => [row.eventId, quantizePoints(Number(row.points))]));
 
 			return summaries.map((row) => ({
 				eventId: row.eventId,
@@ -298,7 +299,7 @@ export function createAttendanceReports(db: Db) {
 			const pointsByMember = new Map<string, Record<string, number>>();
 			for (const row of points) {
 				const memberPoints = pointsByMember.get(row.memberId) ?? {};
-				memberPoints[row.pointTypeId] = Number(row.points);
+				memberPoints[row.pointTypeId] = quantizePoints(Number(row.points));
 				pointsByMember.set(row.memberId, memberPoints);
 			}
 
@@ -336,7 +337,7 @@ export function createAttendanceReports(db: Db) {
 				.where(and(eq(retentionRecords.memberId, memberId), eq(retentionRecords.termId, termId), sql`${retentionRecords.eventId} is not null`))
 				.groupBy(retentionRecords.eventId);
 
-			const pointsByEvent = new Map(points.map((row) => [row.eventId, Number(row.points)]));
+			const pointsByEvent = new Map(points.map((row) => [row.eventId, quantizePoints(Number(row.points))]));
 			const rows = new Map<string, MemberAttendanceRow>();
 			for (const row of rsvps) {
 				rows.set(row.eventId, { eventId: row.eventId, eventTitle: row.eventTitle, startsAt: row.startsAt, graceMinutes: row.graceMinutes, scannedAt: null, rsvpState: row.rsvpState, pointsEarned: pointsByEvent.get(row.eventId) ?? 0 });

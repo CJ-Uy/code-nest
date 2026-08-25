@@ -10,6 +10,7 @@ import {
 } from "@/db/schema";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { RETENTION_POINT_TYPE_ID } from "@/lib/point-types";
+import { quantizePoints } from "@/lib/points";
 import type { Actor } from "@/server/auth/permissions";
 import type * as schema from "@/db/schema";
 
@@ -58,7 +59,7 @@ export function createOverviewRepository(db: Db): OverviewRepository {
 							eq(retentionRecords.pointTypeId, RETENTION_POINT_TYPE_ID),
 						),
 					);
-				points = Number(row?.total ?? 0);
+				points = quantizePoints(Number(row?.total ?? 0));
 			}
 
 			const [surveyRow] = await db

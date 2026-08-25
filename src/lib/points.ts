@@ -5,11 +5,12 @@
  */
 export const POINTS_MAX_DECIMALS = 2;
 
-const SCALE = 10 ** POINTS_MAX_DECIMALS;
-
 /** Round to 2 decimals. Input already at or below that precision is unchanged. */
 export function quantizePoints(value: number): number {
-	const magnitude = Math.round((Math.abs(value) + Number.EPSILON) * SCALE) / SCALE;
+	const [coefficient, exponent = "0"] = Math.abs(value).toString().split("e");
+	const shifted = Number(`${coefficient}e${Number(exponent) + POINTS_MAX_DECIMALS}`);
+	const [roundedCoefficient, roundedExponent = "0"] = Math.round(shifted).toString().split("e");
+	const magnitude = Number(`${roundedCoefficient}e${Number(roundedExponent) - POINTS_MAX_DECIMALS}`);
 	return Math.sign(value) * magnitude;
 }
 

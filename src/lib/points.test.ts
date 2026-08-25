@@ -16,6 +16,8 @@ describe("quantizePoints", () => {
 
 	it("keeps negative deductions symmetric", () => {
 		expect(quantizePoints(-0.755)).toBe(-0.76);
+		expect(quantizePoints(10.075)).toBe(10.08);
+		expect(quantizePoints(-10.075)).toBe(-10.08);
 	});
 
 	it("clears binary float dust from a sum", () => {

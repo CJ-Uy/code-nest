@@ -111,4 +111,21 @@ describe("overview repository on D1", () => {
 			linkClicks: 0,
 		});
 	});
+
+	it("quantizes fractional retention totals", async () => {
+		for (const [id, points] of [["ret_fraction_a", 0.1], ["ret_fraction_b", 0.2]] as const) {
+			await env.DB.prepare(`
+				INSERT INTO retention_records
+					(id, member_id, term_id, point_type_id, points, reason, source, recorded_by, recorded_at)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+			`)
+				.bind(id, "mem_ov", "term_now", "pt_retention", points, id, "manual", "mem_admin", NOW.getTime())
+				.run();
+		}
+
+		const repository = createOverviewRepository(drizzle(env.DB, { schema }));
+		const summary = await repository.getSummary(memberActor, NOW);
+
+		expect(summary.retention.points).toBe(0.3);
+	});
 });

@@ -12,6 +12,7 @@ import { createAttendanceReports } from "@/db/repositories/attendance-reports";
 import { members, memberRoles, pointTypes, retentionRecords, roles } from "@/db/schema";
 import { requireActor } from "@/server/auth/actor";
 import { can } from "@/server/auth/permissions";
+import { formatPoints, quantizePoints } from "@/lib/points";
 import { loadRetentionPickers } from "../../data/retention/data";
 import { firstParams, formatDate, formatDateTime, formatTime, PAGE_SIZE, Pager, sectionTitle, TermSelector, type SearchParams } from "../../data/shared";
 
@@ -69,6 +70,7 @@ export default async function AdminMemberProfilePage({
 	if (selectedTerm) urlParams.set("termId", selectedTerm.id);
 	urlParams.set("page", String(query.page));
 	const memberName = member.fullName ?? member.name ?? member.email;
+	const pointTotals = pointRows.map((row) => ({ ...row, total: quantizePoints(Number(row.total)) }));
 
 	return (
 		<div className="grid gap-5">
@@ -94,7 +96,7 @@ export default async function AdminMemberProfilePage({
 				{sectionTitle("Points by type")}
 				<Card>
 					<CardContent className="divide-y divide-border p-0">
-						{pointRows.filter((row) => Number(row.total) !== 0).length === 0 ? <p className="px-4 py-2.5 text-sm text-muted-foreground">No points yet. Add a manual record or scan attendance to populate this section.</p> : pointRows.filter((row) => Number(row.total) !== 0).map((row) => <div key={row.pointTypeId} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm"><span className="min-w-0 break-all font-medium">{row.label}</span><span className="tabular-nums">{Number(row.total)}</span></div>)}
+						{pointTotals.filter((row) => row.total !== 0).length === 0 ? <p className="px-4 py-2.5 text-sm text-muted-foreground">No points yet. Add a manual record or scan attendance to populate this section.</p> : pointTotals.filter((row) => row.total !== 0).map((row) => <div key={row.pointTypeId} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm"><span className="min-w-0 break-all font-medium">{row.label}</span><span className="tabular-nums">{formatPoints(row.total)}</span></div>)}
 					</CardContent>
 				</Card>
 			</section>
@@ -106,7 +108,7 @@ export default async function AdminMemberProfilePage({
 						<table className="w-full min-w-[760px] text-left text-sm">
 							<thead className="border-b border-border text-xs uppercase tracking-[0.08em] text-muted-foreground"><tr><th className="px-4 py-2.5 font-semibold">Event</th><th className="px-4 py-2.5 font-semibold">Date</th><th className="px-4 py-2.5 font-semibold">Scanned at</th><th className="px-4 py-2.5 font-semibold">Status</th><th className="px-4 py-2.5 text-right font-semibold">Points</th></tr></thead>
 							<tbody className="divide-y divide-border">
-								{attendanceRows.length === 0 ? <tr><td className="px-4 py-2.5 text-muted-foreground" colSpan={5}>No event attendance yet. RSVP or scan attendance to populate this section.</td></tr> : attendanceRows.map((row) => <tr key={row.eventId} className={!row.scannedAt ? "text-muted-foreground" : undefined}><td className="min-w-0 px-4 py-2.5"><span className="break-all font-medium">{row.eventTitle}</span></td><td className="px-4 py-2.5 tabular-nums">{formatDate(row.startsAt)}</td><td className="px-4 py-2.5 tabular-nums">{row.scannedAt ? formatTime(row.scannedAt) : ""}</td><td className="px-4 py-2.5"><AttendanceStatusCell scannedAt={row.scannedAt} startsAt={row.startsAt} graceMinutes={row.graceMinutes} /></td><td className="px-4 py-2.5 text-right tabular-nums">{row.pointsEarned}</td></tr>)}
+								{attendanceRows.length === 0 ? <tr><td className="px-4 py-2.5 text-muted-foreground" colSpan={5}>No event attendance yet. RSVP or scan attendance to populate this section.</td></tr> : attendanceRows.map((row) => <tr key={row.eventId} className={!row.scannedAt ? "text-muted-foreground" : undefined}><td className="min-w-0 px-4 py-2.5"><span className="break-all font-medium">{row.eventTitle}</span></td><td className="px-4 py-2.5 tabular-nums">{formatDate(row.startsAt)}</td><td className="px-4 py-2.5 tabular-nums">{row.scannedAt ? formatTime(row.scannedAt) : ""}</td><td className="px-4 py-2.5"><AttendanceStatusCell scannedAt={row.scannedAt} startsAt={row.startsAt} graceMinutes={row.graceMinutes} /></td><td className="px-4 py-2.5 text-right tabular-nums">{formatPoints(row.pointsEarned)}</td></tr>)}
 							</tbody>
 						</table>
 					</CardContent>

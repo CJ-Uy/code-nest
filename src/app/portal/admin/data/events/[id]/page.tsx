@@ -14,6 +14,7 @@ import { crsEvents, eventStaff, retentionRecords } from "@/db/schema";
 import { requireActor } from "@/server/auth/actor";
 import { can } from "@/server/auth/permissions";
 import { displayName, formatDateTime, formatTime, sectionTitle } from "../../shared";
+import { formatPoints, quantizePoints } from "@/lib/points";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,7 @@ export default async function EventRosterPage({ params }: { params: Promise<{ id
 			.where(eq(retentionRecords.eventId, id))
 			.groupBy(retentionRecords.memberId),
 	]);
-	const pointsByMember = new Map(pointRows.map((row) => [row.memberId, Number(row.points)]));
+	const pointsByMember = new Map(pointRows.map((row) => [row.memberId, quantizePoints(Number(row.points))]));
 	const attendees = roster.filter((row) => row.scannedAt);
 	const absents = roster.filter((row) => !row.scannedAt);
 	const scannerCount = Number(scannerRows[0]?.count ?? 0);
@@ -106,7 +107,7 @@ export default async function EventRosterPage({ params }: { params: Promise<{ id
 											<td className="px-4 py-2.5 tabular-nums text-muted-foreground">{row.scannedAt ? formatTime(row.scannedAt) : ""}</td>
 											<td className="px-4 py-2.5"><AttendanceStatusCell scannedAt={row.scannedAt} startsAt={row.startsAt} graceMinutes={row.graceMinutes} /></td>
 											<td className="min-w-0 break-all px-4 py-2.5">{row.scannedByName ?? row.scannedById ?? "Unknown"}</td>
-											<td className="px-4 py-2.5 text-right tabular-nums">{pointsByMember.get(row.memberId) ?? 0}</td>
+											<td className="px-4 py-2.5 text-right tabular-nums">{formatPoints(pointsByMember.get(row.memberId) ?? 0)}</td>
 										</tr>
 									))
 								)}
