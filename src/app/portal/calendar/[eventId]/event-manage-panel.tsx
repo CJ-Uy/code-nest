@@ -126,6 +126,7 @@ export function EventManagePanel({
 	const canManage = isOwner || event.myRole === "admin" || event.canModerate;
 	const canScan = event.myRole !== null || event.canModerate;
 	const canOverrideWindow = isOwner || event.myRole === "admin" || event.canModerate;
+	const canBulkCheckIn = canManage;
 
 	const allTabs: { id: Section; label: string; icon: typeof Users; show: boolean }[] = [
 		{ id: "checkins", label: "Check-ins", icon: ScanLine, show: canScan },
@@ -171,6 +172,7 @@ export function EventManagePanel({
 						event={event}
 						attendance={attendance}
 						canOverrideWindow={canOverrideWindow}
+						canBulkCheckIn={canBulkCheckIn}
 						termId={termId}
 					/>
 				) : null}
@@ -378,11 +380,13 @@ function CheckinsSection({
 	event,
 	attendance,
 	canOverrideWindow,
+	canBulkCheckIn,
 	termId,
 }: {
 	event: ManageEvent;
 	attendance: AttendanceRow[];
 	canOverrideWindow: boolean;
+	canBulkCheckIn: boolean;
 	termId: string | null;
 }) {
 	const router = useRouter();
@@ -519,10 +523,14 @@ function CheckinsSection({
 							)
 						}
 					/>
-					<div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-						<span className="h-px flex-1 bg-border" /> or paste a list <span className="h-px flex-1 bg-border" />
-					</div>
-					<BulkCheckin eventId={event.id} />
+					{canBulkCheckIn ? (
+						<>
+							<div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+								<span className="h-px flex-1 bg-border" /> or paste a list <span className="h-px flex-1 bg-border" />
+							</div>
+							<BulkCheckin eventId={event.id} />
+						</>
+					) : null}
 				</div>
 			) : null}
 
